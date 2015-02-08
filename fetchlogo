@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ ! -d "$(pwd)/logos" ]; then
+	mkdir logos
+fi
+
+cd logos
+
+FILE=$(basename $2)
+EXT=${FILE##*.}
+OUT=$1.$EXT
+
+wget -q -O $OUT $2
+
+exit
