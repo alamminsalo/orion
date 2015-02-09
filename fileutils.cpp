@@ -32,3 +32,9 @@ bool util::writeFile(const char *path, std::string data){
 	file.close();
 	return 1;
 }
+
+void util::writeImage(const char* path, FILE *data){
+	std::ofstream file(path);
+	file << data;
+	file.close();
+}

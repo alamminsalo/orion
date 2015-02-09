@@ -28,7 +28,7 @@ void run(){
 	std::cout << "Running as service mode..\n";
 	while(true){
 		cman.readJSON(DATAURI);
-		cman.checkStreams();
+		cman.checkStreams(true);
 		sleep(60);
 	}
 };
@@ -83,12 +83,12 @@ int main(int argc, const char **argv){
 	else if (arg == "check"){
 		if (!argv[2]){
 			cman.readJSON(DATAURI);
-			cman.checkStreams();
+			cman.checkStreams(false);
 			cman.writeJSON(DATAURI);
 		}
 		else if (argc == 3){
 			cman.readJSON(DATAURI);
-			cman.checkStream(cman.find(argv[2]));
+			cman.checkStream(cman.find(argv[2]),false);
 			cman.writeJSON(DATAURI);
 		}
 		else printMenu();

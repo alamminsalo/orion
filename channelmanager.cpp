@@ -11,9 +11,7 @@ bool ChannelManager::readJSON(const char *path){
 	rapidjson::Document doc;
 	doc.Parse(str.c_str());
 
-	if (!doc.HasMember("channels")){
-		std::cout<<"Error: Bad file format: Missing field \"channels\".\n";
-			return false;
+	if (!doc.HasMember("channels")){ std::cout<<"Error: Bad file format: Missing field \"channels\".\n"; return false;
 	}
 
 	const rapidjson::Value &arr = doc["channels"];
@@ -92,22 +90,24 @@ void ChannelManager::update(Channel *channel){
 		uristr += "/channels/";
 		uristr += channel->getUriName();
 
-		std::string resp = conn.Get(uristr.c_str());
+		const char *resp = conn.Get(uristr.c_str());
 
-		if (resp != ""){
-			rapidjson::Document doc;
-			doc.Parse(resp.c_str());
-			//assert(doc.IsObject());
-			
-			if (!doc.HasMember("error")){
-				channel->setName(doc["display_name"].GetString());
-				channel->setInfo(doc["status"].GetString());
-
-				std::string cmdstr = "./fetchlogo " + channel->getUriName() + " " + doc["logo"].GetString();	
-				system(cmdstr.c_str());
-			}
-			else channel->setInfo("Channel not found.");
+		if (!resp){
+			std::cout << "Error: char *resp is NULL\n";
+			return;
 		}
+		rapidjson::Document doc;
+		doc.Parse(resp);
+		assert(doc.IsObject());
+		
+		if (!doc.HasMember("error")){
+			channel->setName(doc["display_name"].GetString());
+			channel->setInfo(doc["status"].GetString());
+
+			std::string cmdstr = "./fetchlogo " + channel->getUriName() + " " + doc["logo"].GetString();
+			system(cmdstr.c_str());
+		}
+		else channel->setInfo("Channel not found.");
 	}
 	else std::cout << "Error: Channel is null\n";
 }
@@ -122,37 +122,47 @@ void ChannelManager::setAlert(const char* name, bool val){
 	}
 }
 
-void ChannelManager::checkStream(Channel *channel){
+void ChannelManager::checkStream(Channel *channel, bool quiet){
 	if (!channel){
-		std::cout << "Error: Channel* is NULL\n";
+		if (!quiet)
+			std::cout << "Error: Channel* is NULL\n";
 		return;
 	}
 	if (channel->hasAlert()){
-		rapidjson::Document doc;
-		std::string uristr;
 
 		if (channel->getName().empty() || channel->getInfo().empty()){
-			std::cout << "Fetching data for new channel...\n";
+			if (!quiet)
+				std::cout << "Fetching data for new channel...\n";
 			update(channel);
 			writeJSON(DATAURI);
 		}
 
 		std::string name = channel->getUriName();
 
-		std::cout<<"Checking channel "<< name <<"...";
+		if (!quiet)
+			std::cout<<"Checking channel "<< name <<"...";
 
+		std::string uristr;
 		uristr = TWITCH_URI;
 		uristr += "/streams/";
 		uristr += name;
 
-		std::string response = conn.Get(uristr.c_str());
+		const char *resp = conn.Get(uristr.c_str());
 
-		doc.Parse(response.c_str());
-		//assert(doc.IsObject());
+		if (!resp){
+			if (!quiet)
+				std::cout << "Error: char *resp is NULL\n";
+			return;
+		}
+
+		rapidjson::Document doc;
+		doc.Parse(resp);
+		assert(doc.IsObject());
 
 		if (!doc.HasMember("error")){
 			if (doc["stream"].IsNull()){
-				std::cout<<"offline\n";
+				if (!quiet)
+					std::cout<<"offline\n";
 				if (channel->isOnline()){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
 					system(cmdstr.c_str());
@@ -160,7 +170,8 @@ void ChannelManager::checkStream(Channel *channel){
 				}
 			}
 			else {
-				std::cout<<"online\n";
+				if (!quiet)
+					std::cout<<"online\n";
 				if (!channel->isOnline()){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
 					system(cmdstr.c_str());
@@ -169,15 +180,20 @@ void ChannelManager::checkStream(Channel *channel){
 				channel->updateTime();
 			}
 		}
-		else std::cout << "not found\n";
+		else {
+			if (!quiet)	
+				std::cout << "not found\n";
+		}
 	}
 }
 
-void ChannelManager::checkStreams(){
-	std::cout << "Checking all streams..\n";
+void ChannelManager::checkStreams(bool quiet){
+	if (!quiet)
+		std::cout << "Checking all streams..\n";
 	for (unsigned int i=0; i<channels.size(); i++)
-		checkStream(&channels.at(i));
-	std::cout << "Done checking\n";
+		checkStream(&channels.at(i),quiet);
+	if (!quiet)
+		std::cout << "Done checking\n";
 }
 
 void ChannelManager::printList(){

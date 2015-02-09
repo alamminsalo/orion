@@ -23,8 +23,8 @@ class ChannelManager{
 		~ChannelManager(){};	
 		bool readJSON(const char*);
 		bool writeJSON(const char*);
-		void checkStream(Channel*);
-		void checkStreams();
+		void checkStream(Channel*,bool);
+		void checkStreams(bool);
 		void update(Channel*);
 		void updateChannels();
 		void add(Channel &channel);
