@@ -5,6 +5,7 @@
 
 
 void printMenu(){
+	std::cout<<"streamwatch is a small service to notify user about twitch channels and their state\n";
 	std::cout<<"\n";
 	std::cout<<"Syntax: streamwatch [OPTION]\n";
 	std::cout<<"\nOptions:\n";
@@ -14,6 +15,7 @@ void printMenu(){
 	std::cout<<"list\t\t--\tLists all channels\n";	
 	std::cout<<"update\t\t--\tUpdates data of all channels\n";	
 	std::cout<<"check\t\t--\tChecks stream state of all channels\n";	
+	std::cout<<"check <id>\t--\tChecks stream state by channel name\n";	
 	std::cout<<"remove-all\t--\tRemoves all channels\n";	
 	std::cout<<"set <id>\t--\tEnables channel notification alert\n";	
 	std::cout<<"unset <id>\t--\tDisables channel notification alert\n";	
@@ -23,6 +25,7 @@ void printMenu(){
 ChannelManager cman;
 
 void run(){
+	std::cout << "Running as service mode..\n";
 	while(true){
 		cman.readJSON(DATAURI);
 		cman.checkStreams();
@@ -78,9 +81,17 @@ int main(int argc, const char **argv){
 		cman.writeJSON(DATAURI);
 	}
 	else if (arg == "check"){
-		cman.readJSON(DATAURI);
-		cman.checkStreams();
-		cman.writeJSON(DATAURI);
+		if (!argv[2]){
+			cman.readJSON(DATAURI);
+			cman.checkStreams();
+			cman.writeJSON(DATAURI);
+		}
+		else if (argc == 3){
+			cman.readJSON(DATAURI);
+			cman.checkStream(cman.find(argv[2]));
+			cman.writeJSON(DATAURI);
+		}
+		else printMenu();
 	}
 	else if (arg == "remove"){
 		if (!argv[2]){

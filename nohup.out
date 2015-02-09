@@ -1,0 +1,28 @@
+
+Syntax: streamwatch [OPTION]
+
+Options:
+start		--	Starts watch server
+add <id>	--	Adds a new channel by name
+remove <id>	--	Remove a channel by name
+list		--	Lists all channels
+update		--	Updates data of all channels
+check		--	Checks stream state of all channels
+remove-all	--	Removes all channels
+set <id>	--	Enables channel notification alert
+unset <id>	--	Disables channel notification alert
+
+
+Syntax: streamwatch [OPTION]
+
+Options:
+start		--	Starts watch server
+add <id>	--	Adds a new channel by name
+remove <id>	--	Remove a channel by name
+list		--	Lists all channels
+update		--	Updates data of all channels
+check		--	Checks stream state of all channels
+remove-all	--	Removes all channels
+set <id>	--	Enables channel notification alert
+unset <id>	--	Disables channel notification alert
+

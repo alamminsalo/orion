@@ -1,7 +1,6 @@
 #include "channelmanager.h"
 
 ChannelManager::ChannelManager(){
-	TWITCH_URI = "https://api.twitch.tv/kraken"; 
 }
 
 bool ChannelManager::readJSON(const char *path){
@@ -98,7 +97,7 @@ void ChannelManager::update(Channel *channel){
 		if (resp != ""){
 			rapidjson::Document doc;
 			doc.Parse(resp.c_str());
-			assert(doc.IsObject());
+			//assert(doc.IsObject());
 			
 			if (!doc.HasMember("error")){
 				channel->setName(doc["display_name"].GetString());
@@ -149,13 +148,13 @@ void ChannelManager::checkStream(Channel *channel){
 		std::string response = conn.Get(uristr.c_str());
 
 		doc.Parse(response.c_str());
-		assert(doc.IsObject());
+		//assert(doc.IsObject());
 
 		if (!doc.HasMember("error")){
 			if (doc["stream"].IsNull()){
 				std::cout<<"offline\n";
 				if (channel->isOnline()){
-					std::string cmdstr = "notify-send -i $(pwd)/logos/"+channel->getUriName()+".* \"" + channel->getName() + " has gone offline\"";
+					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
 					system(cmdstr.c_str());
 					channel->setOnline(false);
 				}
@@ -163,7 +162,7 @@ void ChannelManager::checkStream(Channel *channel){
 			else {
 				std::cout<<"online\n";
 				if (!channel->isOnline()){
-					std::string cmdstr = "notify-send -i $(pwd)/logos/"+channel->getUriName()+".* \"" + channel->getName() + " is online\"";
+					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
 					system(cmdstr.c_str());
 					channel->setOnline(true);
 				}
@@ -175,8 +174,10 @@ void ChannelManager::checkStream(Channel *channel){
 }
 
 void ChannelManager::checkStreams(){
+	std::cout << "Checking all streams..\n";
 	for (unsigned int i=0; i<channels.size(); i++)
 		checkStream(&channels.at(i));
+	std::cout << "Done checking\n";
 }
 
 void ChannelManager::printList(){

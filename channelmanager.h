@@ -11,13 +11,12 @@
 #include <stdlib.h>
 #include <iomanip>
 
+#define TWITCH_URI "https://api.twitch.tv/kraken/"
+
 class ChannelManager{
 	protected:
 		std::vector<Channel> channels;
 		Connector conn;
-		const char *TWITCH_URI;
-		Channel *find(const char*);
-		int findPos(const char*);
 	
 	public:
 		ChannelManager();
@@ -35,6 +34,8 @@ class ChannelManager{
 		void add(const char*);
 		void printList();
 		void setAlert(const char*,bool);
+		Channel *find(const char*);
+		int findPos(const char*);
 };
 
 #endif //CHANNEL_MANAGER_H
