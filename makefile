@@ -1,7 +1,7 @@
 CPP = main.cpp channelmanager.cpp channel.cpp fileutils.cpp connector.cpp threadman.cpp
 OBJECTS = main.o channelmanager.o channel.o fileutils.o connector.o threadman.o
 LIBS = -lcurl -pthread
-OPTIONS = -std=c++11
+OPTIONS = -std=c++0x
 NAME = streamwatch
 
 #$(NAME): $(OBJECTS)
