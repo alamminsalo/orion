@@ -19,21 +19,13 @@ void printMenu(){
 	std::cout<<"remove-all\t--\tRemoves all channels\n";	
 	std::cout<<"set <id>\t--\tEnables channel notification alert\n";	
 	std::cout<<"unset <id>\t--\tDisables channel notification alert\n";	
+	std::cout<<"clear\t\t--\tClears all channel data, preserving them in the list\n";	
 	std::cout<<"\n";
 };
 
-ChannelManager cman;
-
-void run(){
-	std::cout << "Running as service mode..\n";
-	while(true){
-		cman.readJSON(DATAURI);
-		cman.checkStreams(true);
-		sleep(60);
-	}
-};
-
 int main(int argc, const char **argv){
+	ChannelManager cman;
+
 	if (argc == 1){
 		printMenu();
 		return 0;
@@ -48,7 +40,8 @@ int main(int argc, const char **argv){
 			return 0;
 		}
 		cman.readJSON(DATAURI);
-		cman.add(argv[2]);
+		for (int i=2; argv[i]; i++)
+			cman.add(argv[i]);
 		cman.writeJSON(DATAURI);
 	}
 	else if (arg == "set"){
@@ -58,7 +51,7 @@ int main(int argc, const char **argv){
 			return 0;
 		}
 		cman.readJSON(DATAURI);
-		cman.setAlert(argv[2],true);
+		cman.setAlert(argv[2],"on");
 		cman.writeJSON(DATAURI);
 	}
 	else if (arg == "unset"){
@@ -68,7 +61,7 @@ int main(int argc, const char **argv){
 			return 0;
 		}
 		cman.readJSON(DATAURI);
-		cman.setAlert(argv[2],false);
+		cman.setAlert(argv[2],"off");
 		cman.writeJSON(DATAURI);
 	}
 	else if (arg == "list"){
@@ -76,20 +69,14 @@ int main(int argc, const char **argv){
 		cman.printList();
 	}
 	else if (arg == "update"){
-		cman.readJSON(DATAURI);
-		cman.updateChannels();
-		cman.writeJSON(DATAURI);
+		cman.updateChannels(true);
 	}
 	else if (arg == "check"){
 		if (!argv[2]){
-			cman.readJSON(DATAURI);
-			cman.checkStreams(false);
-			cman.writeJSON(DATAURI);
+			cman.checkStreams(true);
 		}
 		else if (argc == 3){
-			cman.readJSON(DATAURI);
 			cman.checkStream(cman.find(argv[2]),false);
-			cman.writeJSON(DATAURI);
 		}
 		else printMenu();
 	}
@@ -105,7 +92,7 @@ int main(int argc, const char **argv){
 	}
 	else if (arg == "remove-all"){
 		char opt;
-		std::cout << "\nThis will remove all your stored channel data. Are you sure? (y/n)\n";
+		std::cout << "This will remove all your stored channel data. Are you sure? (y/n)\n";
 		std::cin >> opt;
 		if (opt == 'y' || opt == 'Y'){
 			cman.readJSON(DATAURI);
@@ -115,9 +102,19 @@ int main(int argc, const char **argv){
 		else std::cout << "Canceled.\n";
 	}
 	else if (arg == "start"){
-		run();
+		std::cout << "Running as service mode..\n";
+		while(true){
+			cman.checkStreams(true);
+			sleep(60);
+		}
+	}
+	else if (arg == "clear"){
+		std::cout << "Clearing data..\n";
+		cman.clearData();
 	}
 	else printMenu();
+
+	std::cout << "::PROGRAM_EXIT::\n";
 
 	return 0;
 }

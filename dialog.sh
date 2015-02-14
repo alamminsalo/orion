@@ -2,7 +2,7 @@
 
 TITLE=$2$([ ! $4 = "off" ] &&  echo " is streaming" || echo " is now offline")
 
-ICON=$(pwd)/logos/$1.*
+ICON=$(pwd)/logos/$1
 
 MSG=$3
 

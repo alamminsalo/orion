@@ -19,7 +19,8 @@ std::string util::readFile(const char *path){
 	while (getline(file, data))
 		str += data;
 	file.close();
-	return notabs(str);
+	//return notabs(str);
+	return str;
 }
 
 bool util::writeFile(const char *path, std::string data){
@@ -37,4 +38,14 @@ void util::writeImage(const char* path, FILE *data){
 	std::ofstream file(path);
 	file << data;
 	file.close();
+}
+
+bool util::fileExists(const char* file){
+	struct stat buf;
+    return (stat(file, &buf) != -1);
+}
+
+bool util::folderExists(const char* file){
+	struct stat buf;
+    return (stat(file, &buf) != -1 && S_ISDIR(buf.st_mode));
 }

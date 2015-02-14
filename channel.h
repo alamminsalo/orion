@@ -8,78 +8,46 @@
 class Channel{
 	private:
 	std::string name;
-	std::string status;
 	std::string uri;
 	std::string info;
 	std::string alert;
 	bool online;
 	time_t timestamp;
+    std::string logopath;
+    std::string previewpath;
 
 	public:
 		Channel();
-		Channel(const char *, const char *, const char *);
-		Channel(const char *, const char *, const char *, const char *);
-		Channel(const char *newName, const char *newUri, const char *newInfo, const char *newAlert, time_t newTime);
-		Channel(const Channel&);
+        Channel(const char*);
+        Channel(const char*, const char*, const char*);
+        Channel(const char*, const char*, const char*, const char*);
+        Channel(const char*, const char*, const char*, const char*, time_t);
+        Channel(const char*, const char*, const char*, const char*, time_t, const char*);
+        Channel(const char*, const char*, const char*, const char*, time_t, const char*, const char*);
+        Channel(const Channel&);
 		~Channel(){};
-
-		void setName(const char *newName){
-			name = newName;
-		};
-
-		void setURIName(const char *newUri){
-			uri = newUri;
-		};
-
-		void setInfo(const char *newInfo){
-			info = newInfo;
-		};
-
-		void enableAlert(){
-			alert = "on";
-		};
-		
-		void disableAlert(){
-			alert = "off";
-		};
-		std::string lastOnline();
-
-		void updateTime(){
-			timestamp = time(0);
-		};
-
-		time_t getTime(){
-			return timestamp;
-		}
-
-		std::string getName(){
-			return name;
-		};
-
-		std::string getUriName(){
-			return uri;
-		};
-		std::string getFullUri(){
-			return "https://twitch.tv/" + uri;
-		};
-
-		std::string getInfo(){
-			return info;
-		};
-
-		bool hasAlert(){
-			return (alert == "on" ? true : false);
-		};
-
 		std::string getJSON();
-
-		void setOnline(bool b){
-			online = b;
-		};
-
-		bool isOnline(){
-			return online;
-		};
+		void setName(const char*);	
+		void setURIName(const char*);	
+		void setInfo(const char*);	
+        void setAlert(const char*);
+        void setLastSeen(time_t);
+		std::string lastOnline();
+		void updateTime();
+		time_t getTime();
+		std::string getName();
+		std::string getUriName();
+		std::string getFullUri();
+		std::string getInfo();
+		bool hasAlert();
+		void setOnline(const bool);
+        bool isOnline();
+        bool isEmpty();
+		void clear();
+        void setLogoPath(const char*);
+        std::string getLogoPath();
+        void setPreviewPath(const char*);
+        std::string getPreviewPath();
 };
 
 #endif //CHANNEL_H

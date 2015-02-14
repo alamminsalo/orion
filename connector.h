@@ -7,15 +7,19 @@
 #include <string>
 
 struct Data{
-	char *str;
+    char* str;
 	size_t bytes;
 };
 
-size_t write_data(void*,size_t,size_t,Data*);
+static size_t write_data(char*,size_t,size_t,void*);
 
+namespace conn{
+	std::string Get(const std::string);
+	void GetFile(const std::string,const std::string);
+}
+/*
 class Connector{
-	CURL *curl;
-
+	//CURL *curl;
 	public:
 	Connector();
 	~Connector();
@@ -23,5 +27,5 @@ class Connector{
 	const char* Get(const char*);
 	bool GetFile(const char*,const char*);
 };
-
+*/
 #endif //CONNECTOR_H
