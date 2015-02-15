@@ -1,4 +1,4 @@
-# streamwatch
+# KStream
 
 Service for checking streams on twitch
 
