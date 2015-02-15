@@ -15,8 +15,8 @@ StreamItem::~StreamItem(){
 
 void StreamItem::update(){
     if (this->icon().pixmap(QSize(32,32)).isNull()){ //MISSING ICON
-        QString logopath = "logos/" + getUriName();
-        setIcon(QIcon(logopath));
+        //QString logopath = "logos/" + getUriName();
+        setIcon(QIcon(channel->getLogoPath().c_str()));
     }
     if (this->text().isEmpty() && !getName().isEmpty()){
         this->setText(getName()/* + "\n" + getInfo()*/);

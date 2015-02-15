@@ -31,7 +31,7 @@ Channel::Channel(const char *name, const char *uri, const char *info, const char
     this->logopath = logo;
 }
 
-Channel::Channel(const char *name, const char *uri, const char *info, const char *alert, time_t time, const char* logo, const char* preview) : Channel(uri,name,info,alert,time,logo){
+Channel::Channel(const char *name, const char *uri, const char *info, const char *alert, time_t time, const char* logo, const char* preview) : Channel(name,uri,info,alert,time,logo){
     this->previewpath = preview;
 }
 

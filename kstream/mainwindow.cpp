@@ -116,9 +116,7 @@ void MainWindow::showContextMenu(const QPoint& pos){
                 remove(item);
         }
         else if (act == "Watch"){
-            std::string cmd = "./watch.sh "+item->getUriName().toStdString();
-            std::thread t(system,cmd.c_str());
-            t.detach();
+            cman->play(item->getChannel());
         }
     }
 }

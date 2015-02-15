@@ -46,6 +46,7 @@ class ChannelManager{
 		int findPos(const char*);
 		std::vector<Channel> *getChannels(){ return &channels; };
 		void clearData();
+        void play(Channel*);
 };
 
 #endif //CHANNEL_MANAGER_H

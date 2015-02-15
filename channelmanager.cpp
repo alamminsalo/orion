@@ -194,6 +194,7 @@ void ChannelManager::update(Channel *channel, std::string data){
 					std::cout << "Done.\n";
 				}
 			}
+            else channel->setLogoPath("logos/default.png");
 		}
 
 	}
@@ -329,4 +330,9 @@ void ChannelManager::clearData(){
 		channels.at(i).clear();
 	}
 	writeJSON(DATAURI);
+}
+void ChannelManager::play(Channel* channel){
+    std::string cmd = "./play.sh "+channel->getFullUri();
+    std::thread t(system,cmd.c_str());
+    t.detach();
 }
