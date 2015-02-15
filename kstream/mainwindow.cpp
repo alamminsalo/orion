@@ -7,12 +7,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setWindowIcon(QIcon("logo"));
+    this->setWindowIcon(QIcon("icon"));
+
     this->setupTray();
 
     cman = new ChannelManager();
 
-    ui->listWidget->setSortingEnabled(true);
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showContextMenu(const QPoint&)));
 
@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     updateList();
     uitimer = new QTimer(this);
     connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
-    uitimer->start(500);
+    uitimer->start(1000);
 
     checkStreams();
     updatetimer = new QTimer(this);
@@ -33,12 +33,19 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     qDebug() << "Destroyer: MainWindow";
+
     if (cman) delete cman;
+    qDebug() << "Deleted cman";
+
     if (uitimer) delete uitimer;
     if (updatetimer) delete updatetimer;
-    if (tray) delete tray;
+    qDebug() << "Deleted timers";
+
+    delete tray;
+    qDebug() << "Deleted tray";
+
     if (ui) delete ui;
-    qDebug() << "MainWindow successfully destroyed!";
+    qDebug() << "Deleted ui";
 }
 
 void MainWindow::loadList(){
@@ -67,6 +74,7 @@ void MainWindow::addItem(Channel* channel){
 }
 
 void MainWindow::updateList(){
+    ui->listWidget->sortItems();
     for (int i=0; i<ui->listWidget->count(); i++){
         dynamic_cast<StreamItem*>(ui->listWidget->item(i))->update();
     }
@@ -130,16 +138,19 @@ void MainWindow::remove(StreamItem* item){
 }
 
 void MainWindow::setupTray(){
-    tray = new QSystemTrayIcon();
-
-    QMenu *traymenu = new QMenu();
+    tray = new QSystemTrayIcon(this);
+    QMenu *traymenu = new QMenu(this);
     QAction *showAction = new QAction("Show list",tray);
     traymenu->addAction(showAction);
     connect(showAction,SIGNAL(triggered()),this,SLOT(toggleShow()));
 
     tray->setContextMenu(traymenu);
-    tray->setIcon(QIcon("logo"));
+    tray->setIcon(QIcon("icon"));
     tray->show();
+}
+
+void MainWindow::trayGone(){
+    qDebug() << "Tray destroyed";
 }
 
 void MainWindow::toggleShow(){
@@ -149,3 +160,4 @@ void MainWindow::toggleShow(){
     }
     else hide();
 }
+

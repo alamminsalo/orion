@@ -40,6 +40,7 @@ public slots:
     void checkStreams();
     void showContextMenu(const QPoint&);
     void toggleShow();
+    void trayGone();
 
 private slots:
     void on_addButton_clicked();

@@ -262,7 +262,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 						}
 					}
 				}
-				channel->updateTime();
+
 			}
 		}
     }

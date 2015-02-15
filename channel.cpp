@@ -119,6 +119,8 @@ bool Channel::hasAlert(){
 
 void Channel::setOnline(bool b){
 	online = b;
+    if (online)
+        updateTime();
 }
 
 bool Channel::isOnline(){
