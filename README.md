@@ -27,8 +27,15 @@ Copy the contents from ./kstream/resources/ to the build dir
 See if it works
 
 
+##Notifications
+
+Needs libnotify-bin installed (or equivalent)
+
+See dialog.sh
+
 ##Watching streams
 
 Needs livestreamer installed
 
 See 'play.sh'
+
