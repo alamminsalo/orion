@@ -33,6 +33,7 @@ HEADERS  += mainwindow.h\
 
 FORMS    += mainwindow.ui
 
-OTHER_FILES +=
+OTHER_FILES += \
+    logo.svg
 
 QMAKE_CXXFLAGS += -std=c++0x

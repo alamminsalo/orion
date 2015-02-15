@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    this->setWindowIcon(QIcon("logo"));
     this->setupTray();
 
     cman = new ChannelManager();
@@ -140,6 +140,7 @@ void MainWindow::setupTray(){
     connect(showAction,SIGNAL(triggered()),this,SLOT(toggleShow()));
 
     tray->setContextMenu(traymenu);
+    tray->setIcon(QIcon("logo"));
     tray->show();
 }
 
