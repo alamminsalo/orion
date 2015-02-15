@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>KStream</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
@@ -76,7 +76,9 @@
         <string notr="true"/>
        </property>
        <property name="icon">
-        <iconset theme="list-add"/>
+        <iconset theme="list-add">
+         <normaloff/>
+        </iconset>
        </property>
        <property name="iconSize">
         <size>

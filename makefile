@@ -2,7 +2,7 @@ CPP = main.cpp channelmanager.cpp channel.cpp fileutils.cpp connector.cpp thread
 OBJECTS = main.o channelmanager.o channel.o fileutils.o connector.o threadman.o
 LIBS = -lcurl -pthread
 OPTIONS = -std=c++0x
-NAME = streamwatch
+NAME = kstream-core
 
 #$(NAME): $(OBJECTS)
 	#clang++ -o $(NAME) $(OBJECTS) $(LIBS)
