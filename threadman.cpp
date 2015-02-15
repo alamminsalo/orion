@@ -5,9 +5,9 @@ ThreadManager::ThreadManager(ChannelManager *c){
 }
 
 ThreadManager::~ThreadManager(){
-	for (size_t i=0; i<threads.size(); i++)
+    std::cout << "Destroyer:ThreadManager\n";
+    for (unsigned int i=0; i<threads.size(); i++)
 		threads.at(i).join();
-	std::cout << "Finished threadmanager.\n";
 }
 
 void t_check(Channel *channel){
@@ -15,7 +15,7 @@ void t_check(Channel *channel){
 		std::string uristr = TWITCH_URI;
 		uristr += "/streams/";
 		uristr += channel->getUriName();
-		//Connector conn;
+
 		std::string str = conn::Get(uristr.c_str());	
 
 		cman_ptr->check(channel,str);
@@ -27,7 +27,6 @@ void t_update(Channel *channel){
 		std::string uristr = TWITCH_URI;
 		uristr += "/channels/";
 		uristr += channel->getUriName();
-		//Connector conn;
 		std::string str = conn::Get(uristr.c_str());	
 
 		cman_ptr->update(channel,str);
@@ -49,7 +48,7 @@ void t_getfile(std::string uri, std::string path){
 
 void ThreadManager::complete_threads(){
 	try{
-		for (size_t i=0; i < threads.size(); i++){
+        for (unsigned int i=0; i < threads.size(); i++){
 				threads.at(i).join();
 		}
 
@@ -62,7 +61,7 @@ void ThreadManager::complete_threads(){
 
 void complete_async(std::vector<std::thread> *threads){
     try{
-        for (size_t i=0; i < threads->size(); i++){
+        for (unsigned int i=0; i < threads->size(); i++){
                 threads->at(i).join();
         }
 

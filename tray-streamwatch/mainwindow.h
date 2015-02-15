@@ -8,6 +8,8 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
+#include <QList>
+#include <QSystemTrayIcon>
 
 namespace Ui {
 class MainWindow;
@@ -18,14 +20,13 @@ class ChannelManager;
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
-    ChannelManager cman;
-    std::vector<StreamItem> items;
+    ChannelManager *cman;
     QTimer *uitimer;
     QTimer *updatetimer;
+    QSystemTrayIcon *tray;
 
-    bool hasElement(Channel*);
-    void sortItems();
     void remove(StreamItem*);
+    void setupTray();
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -38,6 +39,7 @@ public slots:
     void updateList();
     void checkStreams();
     void showContextMenu(const QPoint&);
+    void toggleShow();
 
 private slots:
     void on_addButton_clicked();

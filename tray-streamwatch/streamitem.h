@@ -12,37 +12,22 @@ protected:
 
 public:
     StreamItem(Channel*);
+    ~StreamItem();
 
-    bool online() const{
-        return this->channel->isOnline();
-    };
+    bool online() const;
 
-    const QString getName() {
-        return channel->getName().c_str();
-    };
+    const QString getName();
 
-    const QString getUriName(){
-        return channel->getUriName().c_str();
-    };
+    const QString getUriName();
 
-    const QString getInfo(){
-        return channel->getInfo().c_str();
-    };
+    const QString getInfo();
 
-    virtual bool operator< (const StreamItem& other) const{
-        return (this->online() != other.online()) ? this->online() : (QString::compare(this->text(),other.text()) < 0);
-    };
+    virtual bool operator< (const QListWidgetItem& other) const;
 
-    void checkContent();
+    void update();
 
     Channel* getChannel();
 
 };
-
-/*
-inline bool operator< (const StreamItem& left, const StreamItem& right){
-    return (left.online != right.online) ? left.online : (QListWidgetItem)left < (QListWidgetItem)right;
-}
-*/
 
 #endif // STREAMITEM_H

@@ -7,8 +7,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    //setupMenu();
 
+    this->setupTray();
+
+    cman = new ChannelManager();
+
+    ui->listWidget->setSortingEnabled(true);
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showContextMenu(const QPoint&)));
 
@@ -23,25 +27,28 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
     updatetimer->start(20000);
 
-    this->setStyleSheet("QToolTip {max-width:320px;}");
+    this->setStyleSheet("QToolTip {max-width:336px;}");
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
-    delete uitimer;
-    delete updatetimer;
+    qDebug() << "Destroyer: MainWindow";
+    if (cman) delete cman;
+    if (uitimer) delete uitimer;
+    if (updatetimer) delete updatetimer;
+    if (tray) delete tray;
+    if (ui) delete ui;
+    qDebug() << "MainWindow successfully destroyed!";
 }
 
 void MainWindow::loadList(){
-    items.clear();
-    cman.readJSON(DATAURI);
-    unsigned int nsize = cman.getChannels()->size();
+    ui->listWidget->clear();
+    cman->readJSON(DATAURI);
+    unsigned int nsize = cman->getChannels()->size();
     for (unsigned int i=0; i < nsize; i++){
-        Channel* channel = &cman.getChannels()->at(i);
+        Channel* channel = &cman->getChannels()->at(i);
         addItem(channel);
     }
-    //sortItems();
 }
 
 void MainWindow::addItem(Channel* channel){
@@ -49,66 +56,24 @@ void MainWindow::addItem(Channel* channel){
     logopath.append(channel->getUriName().c_str());
 
     if (channel->isEmpty())
-        cman.checkStream(channel,true);
+        cman->checkStream(channel,true);
 
-    StreamItem item(channel);
+    StreamItem* item = new StreamItem(channel);
 
     if (util::fileExists(logopath.toStdString().c_str()))
-        item.setIcon(QIcon(logopath));
+        item->setIcon(QIcon(logopath));
 
-    items.push_back(item);
-    /*for (unsigned int i=0; i < items.size(); i++){
-        if (items.at(i).getChannel() == channel){
-            ui->listWidget->addItem(&items.at(i));
-            break;
-        }
-    }*/
-}
-
-void MainWindow::sortItems(){
-    std::sort(items.begin(),items.end());
-    //ui->listWidget->sortItems();
-    /*qDebug() << "SORTED ORDER:";
-    for (size_t i=0; i < items.size(); i++)
-        qDebug() << items.at(i).text();
-    qDebug() << "ORDER:";
-    for (unsigned int i=0; i < items.size(); i++){
-        if (ui->listWidget->item(i))
-            qDebug() << items.at(i).getName() << ", " << ui->listWidget->item(i)->text();
-    }
-    qDebug() << "END:";*/
+    ui->listWidget->addItem(item);
 }
 
 void MainWindow::updateList(){
-    sortItems();
-
-    for (unsigned int i=0; i < items.size(); i++){
-        StreamItem &item = items.at(i);
-        item.checkContent();
-
-        if (item.online())
-            item.setTextColor(QColor(0, 0, 0));
-        else
-            item.setTextColor(QColor(200, 200, 200));
-
-        if (ui->listWidget->row(&item) == -1)
-            ui->listWidget->addItem(&item);
-
+    for (int i=0; i<ui->listWidget->count(); i++){
+        dynamic_cast<StreamItem*>(ui->listWidget->item(i))->update();
     }
 }
-
-bool MainWindow::hasElement(Channel *channel){
-    for (unsigned int i=0; i<items.size(); i++){
-        if (items.at(i).text().toStdString() == channel->getName())
-            return true;
-    }
-    return false;
-}
-
-
 
 void MainWindow::checkStreams(){
-    cman.checkStreams(false);
+    cman->checkStreams(false);
 }
 
 void MainWindow::deleteItems(){
@@ -123,43 +88,35 @@ void MainWindow::on_addButton_clicked()
     input.setWindowTitle("Add channel");
     input.setLabelText("Channel name");
 
-    //qDebug() << input.textValue();
     if (input.exec()){
         std::string val = input.textValue().toStdString();
         if (!val.empty()){
-            cman.add(val.c_str());
-            cman.writeJSON(DATAURI);
+            cman->add(val.c_str());
+            cman->writeJSON(DATAURI);
             loadList();
         }
     }
-    else qDebug() << "Canceled";
-    //checkStreams();
 }
 
 void MainWindow::showContextMenu(const QPoint& pos){
-    StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->selectedItems().first());
+    StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->currentItem());
 
     QMenu menu;
-    menu.addAction("Watch");
+    menu.addAction(QIcon::fromTheme("vlc"),"Watch");
     if (!item->online())
         menu.actions().first()->setEnabled(false);
-    menu.addAction(QIcon::fromTheme("dialog-close"),"Remove");
-
+    menu.addAction(QIcon::fromTheme("list-remove"),"Remove");
 
     QAction* action = menu.exec(mapToGlobal(pos));
     if (action){
         QString act = action->text();
-
 
         if (act == "Remove"){
             if (QMessageBox::question(this,"Remove channel","Remove this channel?",QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
                 remove(item);
         }
         else if (act == "Watch"){
-            //QProcess process;
-            std::string cmd = "./watch.sh "+dynamic_cast<StreamItem*>(item)->getUriName().toStdString();
-            //system(cmd.c_str());
-            //process.execute(cmd.c_str());
+            std::string cmd = "./watch.sh "+item->getUriName().toStdString();
             std::thread t(system,cmd.c_str());
             t.detach();
         }
@@ -167,15 +124,29 @@ void MainWindow::showContextMenu(const QPoint& pos){
 }
 
 void MainWindow::remove(StreamItem* item){
-    cman.remove(item->getChannel());
-    cman.writeJSON(DATAURI);
+    cman->remove(item->getChannel());
+    cman->writeJSON(DATAURI);
+    ui->listWidget->removeItemWidget(item);
 
-    for (unsigned int i=0; i < items.size(); i++){
-        if (&items.at(i) == item){
-            items.erase(items.begin() + i);
-            break;
-        }
+    loadList();
+}
+
+void MainWindow::setupTray(){
+    tray = new QSystemTrayIcon();
+
+    QMenu *traymenu = new QMenu();
+    QAction *showAction = new QAction("Show list",tray);
+    traymenu->addAction(showAction);
+    connect(showAction,SIGNAL(triggered()),this,SLOT(toggleShow()));
+
+    tray->setContextMenu(traymenu);
+    tray->show();
+}
+
+void MainWindow::toggleShow(){
+    if (!isVisible()){
+        show();
+        raise();
     }
-    updateList();
-
+    else hide();
 }

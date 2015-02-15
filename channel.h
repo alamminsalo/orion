@@ -4,6 +4,8 @@
 #include <ctime>
 #include <string>
 #include <stdlib.h>
+#include <iostream>
+#include "fileutils.h"
 
 class Channel{
 	private:
@@ -25,7 +27,7 @@ class Channel{
         Channel(const char*, const char*, const char*, const char*, time_t, const char*);
         Channel(const char*, const char*, const char*, const char*, time_t, const char*, const char*);
         Channel(const Channel&);
-		~Channel(){};
+        ~Channel();
 		std::string getJSON();
 		void setName(const char*);	
 		void setURIName(const char*);	

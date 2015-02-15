@@ -9,7 +9,7 @@ Connector::~Connector(){
 }
 */
 
-static size_t write_data(char *ptr, size_t size, size_t nmemb, void *data){
+size_t conn::write_data(char *ptr, size_t size, size_t nmemb, void *data){
 	size_t numBytes = size * nmemb;
 
     if (data) {

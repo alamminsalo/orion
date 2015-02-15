@@ -1,5 +1,9 @@
 #include "channel.h"
 
+Channel::~Channel(){
+    std::cout << "Destroyer: Channel\n";
+}
+
 Channel::Channel(){
 	alert = "on";
 	timestamp = time(0);
@@ -43,10 +47,15 @@ Channel::Channel(const Channel &channel){
 }
 
 std::string Channel::lastOnline(){
-	if (timestamp == 0)
-		return "Never";
-	std::string ret = ctime(&timestamp);
-	return ret.substr(0,ret.find("\n"));
+    std::string date;
+    if (timestamp == 0){
+        date = "Never";
+    }
+    else{
+        date = ctime(&timestamp);
+        date = date.substr(0,date.find("\n"));
+    }
+    return date;
 }
 
 std::string Channel::getJSON(){
@@ -56,7 +65,7 @@ std::string Channel::getJSON(){
     JSON_str += "\"info\":\""+info+"\",";
     JSON_str += "\"alert\":\""+alert+"\",";
     JSON_str += "\"logo\":\""+logopath+"\",";
-    //JSON_str += "\"preview\":\""+this->alert+"\",";
+    JSON_str += "\"preview\":\""+previewpath+"\",";
     JSON_str += "\"lastSeen\":"+std::to_string((unsigned long)timestamp);
 	JSON_str += "}";
 
@@ -128,9 +137,7 @@ std::string Channel::getLogoPath(){
 }
 
 std::string Channel::getPreviewPath(){
-    std::string path = "preview/";
-    path += online ? uri:"offline";
-    return path;
+    return util::fileExists(previewpath.c_str()) ? previewpath : "preview/offline.png";
 }
 
 void Channel::setLogoPath(const char *path){

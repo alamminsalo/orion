@@ -10,7 +10,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include "threadman.h"
-//#include "tray-streamwatch/mainwindow.h"
 
 #define TWITCH_URI "https://api.twitch.tv/kraken/"
 
@@ -21,13 +20,11 @@ class ChannelManager{
 	protected:
 		unsigned int update_counter, check_counter;
 		std::vector<Channel> channels;
-		//Connector conn;
-		ThreadManager* tman;
-        //MainWindow *ui;
+        ThreadManager* tman;
 	
 	public:
 		ChannelManager();
-        //ChannelManager(MainWindow*);
+
 		~ChannelManager();	
 		bool readJSON(const char*);
 		bool writeJSON(const char*);

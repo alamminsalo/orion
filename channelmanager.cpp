@@ -5,6 +5,7 @@ ChannelManager::ChannelManager(){
 }
 
 ChannelManager::~ChannelManager(){
+    std::cout << "Destroyer: ChannelManager\n";
 	delete tman;
 }
 
@@ -50,6 +51,8 @@ bool ChannelManager::readJSON(const char *path){
             std::cout << "lastSeen missing\n";
         if (!arr[i].HasMember("logo"))
             std::cout << "logo missing\n";
+        if (!arr[i].HasMember("preview"))
+            std::cout << "preview missing\n";
 
         /*std::cout << arr[i]["title"].GetString() << std::endl;//Check that these fields exist
         std::cout << arr[i]["uri"].GetString() << std::endl;
@@ -64,7 +67,8 @@ bool ChannelManager::readJSON(const char *path){
             arr[i]["info"].GetString(),
             arr[i]["alert"].GetString(),
             arr[i]["lastSeen"].GetInt(),
-            arr[i]["logo"].GetString()
+            arr[i]["logo"].GetString(),
+            arr[i]["preview"].GetString()
 		);
 		add(channel);
 	}
@@ -252,6 +256,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 							std::string previewuri = doc["stream"]["preview"]["medium"].GetString();
 							std::string extension = previewuri.substr(previewuri.find_last_of("."));
 							std::string previewpath = "preview/" + channel->getUriName() + extension;
+                            channel->setPreviewPath(previewpath.c_str());
 							conn::GetFile(previewuri,previewpath);
 						}
 					}
@@ -263,62 +268,6 @@ void ChannelManager::check(Channel *channel, std::string data){
 }
 
 void ChannelManager::checkStream(Channel *channel, bool sync){
-    /*if (!channel){
-		if (!quiet)
-			std::cout << "Error: Channel* is NULL\n";
-		return;
-	}
-	if (channel->hasAlert()){
-
-		if (channel->getName().empty() || channel->getInfo().empty()){
-			if (!quiet)
-				//std::cout << "Fetching data for new channel...\n";
-			update(channel);
-			writeJSON(DATAURI);
-		}
-
-		std::string name = channel->getUriName();
-
-		if (!quiet)
-			std::cout<<"Checking channel "<< name <<"...";
-
-		std::string uristr;
-		uristr = TWITCH_URI;
-		uristr += "/streams/";
-		uristr += name;
-
-		std::string resp = conn::Get(uristr);
-
-		rapidjson::Document doc;
-		doc.Parse(resp.c_str());
-		assert(doc.IsObject());
-
-		if (!doc.HasMember("error")){
-			if (doc["stream"].IsNull()){
-				if (!quiet)
-					std::cout<<"offline\n";
-				if (channel->isOnline()){
-					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
-					system(cmdstr.c_str());
-					channel->setOnline(false);
-				}
-			}
-			else {
-				if (!quiet)
-					std::cout<<"online\n";
-				if (!channel->isOnline()){
-					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
-					system(cmdstr.c_str());
-					channel->setOnline(true);
-				}
-				channel->updateTime();
-			}
-		}
-		else {
-			if (!quiet)	
-				std::cout << "not found\n";
-		}
-    }*/
     tman->check(channel);
     if (sync){
         tman->complete_threads();
