@@ -7,6 +7,8 @@ Includes Qt-written GUI and a cli-version
 
 ##Building
 
+Needs libcurl installed
+
 ###kstream-core:
 
 Just run 'make' in the root folder
