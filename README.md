@@ -22,6 +22,10 @@ Adjust the build configurations
 
 Build
 
+Copy the contents from ./kstream/resources/ to the build dir
+
+See if it works
+
 
 ##Watching streams
 
