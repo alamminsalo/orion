@@ -8,10 +8,6 @@ StreamItem::~StreamItem(){
     qDebug() << "Destroyer: StreamItem";
 }
 
-/*
- * Sets visual content for this item
- * (if content not present)
- */
 
 void StreamItem::update(){
     if (this->icon().pixmap(QSize(32,32)).isNull()){ //MISSING ICON
@@ -19,7 +15,7 @@ void StreamItem::update(){
         setIcon(QIcon(channel->getLogoPath().c_str()));
     }
     if (this->text().isEmpty() && !getName().isEmpty()){
-        this->setText(getName()/* + "\n" + getInfo()*/);
+        this->setText(getName());
     }
     QString image = "<img src=\"";
     image += channel->getPreviewPath().c_str();
@@ -41,6 +37,7 @@ void StreamItem::update(){
         this->setTextColor(QColor(0, 0, 0));
     }
     else this->setTextColor(QColor(200, 200, 200));
+
 }
 
 Channel* StreamItem::getChannel(){

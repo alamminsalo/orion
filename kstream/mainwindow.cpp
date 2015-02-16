@@ -9,43 +9,59 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowIcon(QIcon("icon"));
 
-    this->setupTray();
+    this->setStyleSheet("QToolTip {max-width:336px;}");
 
-    cman = new ChannelManager();
+    this->setupTray();
 
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->listWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showContextMenu(const QPoint&)));
 
-    loadList();
-    updateList();
+    cman = new ChannelManager(this);
+    cman->load();
+
     uitimer = new QTimer(this);
     connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
     uitimer->start(1000);
+    updateList();
 
-    checkStreams();
     updatetimer = new QTimer(this);
     connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
-    updatetimer->start(20000);
-
-    this->setStyleSheet("QToolTip {max-width:336px;}");
+    updatetimer->start(10000);
+    checkStreams();
 }
 
 MainWindow::~MainWindow()
 {
     qDebug() << "Destroyer: MainWindow";
 
-    if (cman) delete cman;
-    qDebug() << "Deleted cman";
+    qDebug() << "Deleting ui..";
+    delete ui;
 
-    if (uitimer) delete uitimer;
-    if (updatetimer) delete updatetimer;
-    qDebug() << "Deleted timers";
+    qDebug() << "Clearing channel list..";
+    ui->listWidget->clear();
 
-    delete tray;
-    qDebug() << "Deleted tray";
+    qDebug() << "Stopping timers..";
+    uitimer->stop();
+    updatetimer->stop();
 
-    if (ui) delete ui;
-    qDebug() << "Deleted ui";
+    disconnect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
+    disconnect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
+
+    qDebug() << "Deleting timers..";
+    delete uitimer;
+    delete updatetimer;
+
+    qDebug() << "Deleting channelmanager..";
+    delete cman;
+
+    qDebug() << "Deleting tray..";
+    delete traymenuaction;
+    qDebug() << "..";
+    delete traymenu;
+    qDebug() << "..";
+    tray->deleteLater();
+
+    qDebug() << "All done!";
 }
 
 void MainWindow::loadList(){
@@ -53,9 +69,21 @@ void MainWindow::loadList(){
     cman->readJSON(DATAURI);
     unsigned int nsize = cman->getChannels()->size();
     for (unsigned int i=0; i < nsize; i++){
-        Channel* channel = &cman->getChannels()->at(i);
-        addItem(channel);
+        //Channel* channel = &cman->getChannels()
+        //addItem(channel);
     }
+}
+
+void MainWindow::update(Channel *channel){
+    qDebug() << channel;
+    for (unsigned int i=0; i < cman->getChannels()->size(); i++){
+        StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->item(i));
+        if (item->getChannel() == channel){
+            item->update();
+            break;
+        }
+    }
+    ui->listWidget->sortItems();
 }
 
 void MainWindow::addItem(Channel* channel){
@@ -67,6 +95,8 @@ void MainWindow::addItem(Channel* channel){
 
     StreamItem* item = new StreamItem(channel);
 
+    item->update();
+
     if (util::fileExists(logopath.toStdString().c_str()))
         item->setIcon(QIcon(logopath));
 
@@ -74,10 +104,10 @@ void MainWindow::addItem(Channel* channel){
 }
 
 void MainWindow::updateList(){
-    ui->listWidget->sortItems();
     for (int i=0; i<ui->listWidget->count(); i++){
         dynamic_cast<StreamItem*>(ui->listWidget->item(i))->update();
     }
+    ui->listWidget->sortItems();
 }
 
 void MainWindow::checkStreams(){
@@ -101,7 +131,7 @@ void MainWindow::on_addButton_clicked()
         if (!val.empty()){
             cman->add(val.c_str());
             cman->writeJSON(DATAURI);
-            loadList();
+            //loadList();
         }
     }
 }
@@ -131,18 +161,15 @@ void MainWindow::showContextMenu(const QPoint& pos){
 
 void MainWindow::remove(StreamItem* item){
     cman->remove(item->getChannel());
-    cman->writeJSON(DATAURI);
-    ui->listWidget->removeItemWidget(item);
-
-    loadList();
+    delete item;
 }
 
 void MainWindow::setupTray(){
-    tray = new QSystemTrayIcon(this);
-    QMenu *traymenu = new QMenu(this);
-    QAction *showAction = new QAction("Show list",tray);
-    traymenu->addAction(showAction);
-    connect(showAction,SIGNAL(triggered()),this,SLOT(toggleShow()));
+    tray = new QSystemTrayIcon();
+    traymenu = new QMenu();
+    traymenuaction = new QAction("Show list",tray);
+    traymenu->addAction(traymenuaction);
+    connect(traymenuaction,SIGNAL(triggered()),this,SLOT(toggleShow()));
 
     tray->setContextMenu(traymenu);
     tray->setIcon(QIcon("icon"));

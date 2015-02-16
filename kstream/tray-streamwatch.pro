@@ -36,4 +36,4 @@ FORMS    += mainwindow.ui
 OTHER_FILES += \
     logo.svg
 
-QMAKE_CXXFLAGS += -std=c++0x
+QMAKE_CXXFLAGS += -std=c++11

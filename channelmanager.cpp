@@ -1,16 +1,33 @@
 #include "channelmanager.h"
 
 ChannelManager::ChannelManager(){
-	tman = new ThreadManager(this);
+    tman = new ThreadManager(this);
+    main = 0;
+    alive = true;
+}
+
+ChannelManager::ChannelManager(MainWindow *mw) : ChannelManager()
+{
+    main = mw;
 }
 
 ChannelManager::~ChannelManager(){
     std::cout << "Destroyer: ChannelManager\n";
+    clearData();
+    alive = false;
 	delete tman;
 }
 
-bool ChannelManager::readJSON(const char *path){
+void ChannelManager::load(){
+    readJSON(DATAURI);
+    if (main){
+        for (unsigned int i=0; i < channels.size(); i++)
+                main->addItem(channels.at(i));
+    }
+    //tman->startPolling();
+}
 
+bool ChannelManager::readJSON(const char *path){
 	std::string str = util::readFile(path);	
     if (str.empty())
 		return false;
@@ -61,7 +78,7 @@ bool ChannelManager::readJSON(const char *path){
         std::cout << arr[i]["lastSeen"].GetInt() << std::endl;
         std::cout << arr[i]["logo"].GetString() << std::endl;*/
 
-        Channel channel(
+        channels.push_back(new Channel(
             arr[i]["title"].GetString(),
             arr[i]["uri"].GetString(),
             arr[i]["info"].GetString(),
@@ -69,8 +86,7 @@ bool ChannelManager::readJSON(const char *path){
             arr[i]["lastSeen"].GetInt(),
             arr[i]["logo"].GetString(),
             arr[i]["preview"].GetString()
-		);
-		add(channel);
+        ));
 	}
 	return true;
 }
@@ -78,8 +94,8 @@ bool ChannelManager::readJSON(const char *path){
 bool ChannelManager::writeJSON(const char *path){
 	std::string output_str = "";
 	output_str += "{\"channels\":[";
-	for (unsigned int i=0; i<channels.size(); i++){
-		output_str += channels.at(i).getJSON() + (i+1 < channels.size() ? ",":"");
+    for (unsigned int i=0; i < channels.size(); i++){
+        output_str += channels.at(i)->getJSON() + (i+1 < channels.size() ? ",":"");
 	}
 	output_str += "]}";
 
@@ -88,24 +104,26 @@ bool ChannelManager::writeJSON(const char *path){
 	return false;
 }
 
-void ChannelManager::add(Channel &channel){
-    if (!find(channel.getUriName().c_str()))
-		channels.push_back(channel);
+void ChannelManager::add(Channel *channel){
+    channels.push_back(channel);
+    if (main) {
+        main->addItem(channel);
+    }
 }
 
 void ChannelManager::add(const char* title, const char* uri, const char *info, const char *alert){
-	Channel channel(title,uri,info,alert);
-	add(channel);
+    add(new Channel(title,uri,info,alert));
 }
 
 void ChannelManager::add(const char* uriName){
 	add("",uriName,"","on");
+    this->update(find(uriName));
 }
 
 Channel *ChannelManager::find(const char* uriName){
 	for (unsigned int i=0; i<channels.size(); i++){
-		if (channels.at(i).getUriName() == uriName)
-			return &channels.at(i);
+        if (channels.at(i)->getUriName() == uriName)
+            return channels.at(i);
 	}
 	//std::cout << "Couldn't find channel " << uriName << std::endl;
 	return 0;
@@ -113,7 +131,7 @@ Channel *ChannelManager::find(const char* uriName){
 
 int ChannelManager::findPos(const char* uriName){
 	for (unsigned int i=0; i<channels.size(); i++){
-		if (channels.at(i).getUriName() == uriName)
+        if (channels.at(i)->getUriName() == uriName)
 			return i;
 	}
 	//std::cout << "Couldn't find channel " << uriName << std::endl;
@@ -121,9 +139,9 @@ int ChannelManager::findPos(const char* uriName){
 }
 
 void ChannelManager::updateChannels(bool sync){
-	readJSON(DATAURI);
+    //readJSON(DATAURI);
 	for (unsigned int i=0; i<channels.size(); i++){
-		tman->update(&channels.at(i));
+        tman->update(channels.at(i));
 	}
 	if (sync){
 		//std::cout << "\nWaiting threads...\n";
@@ -138,7 +156,6 @@ void ChannelManager::update(Channel *channel){
 	std::string uristr = TWITCH_URI;
 	uristr += "/channels/";
 	uristr += channel->getUriName();
-	//Connector conn;
 	update(channel,conn::Get(uristr).c_str());
 }
 
@@ -239,6 +256,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
 					system(cmdstr.c_str());
 					channel->setOnline(false);
+                    //if (main) main->update(channel);
                 }
 			}
 			else {
@@ -246,6 +264,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
 					system(cmdstr.c_str());
 					channel->setOnline(true);
+                    //if (main) main->update(channel);
 
                     if (!util::folderExists("preview")){
                         std::cout << "dir \"preview\" not found, making..\n";
@@ -266,6 +285,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 			}
 		}
     }
+
 }
 
 void ChannelManager::checkStream(Channel *channel, bool sync){
@@ -278,11 +298,9 @@ void ChannelManager::checkStream(Channel *channel, bool sync){
 }
 
 void ChannelManager::checkStreams(bool sync){
-	readJSON(DATAURI);
 	for (unsigned int i=0; i<channels.size(); i++){
-		tman->check(&channels.at(i));
+        tman->check(channels.at(i));
 	}
-	//std::cout << "\nWaiting for threads\n";
     if (sync){
         tman->complete_threads(); //HELP
 		writeJSON(DATAURI);
@@ -293,7 +311,7 @@ void ChannelManager::checkStreams(bool sync){
 void ChannelManager::printList(){
 	std::cout<<"\n";
 	for (unsigned int i=0; i<channels.size(); i++){
-		Channel *channel = &channels.at(i);
+        Channel *channel = channels.at(i);
 		std::cout << "Name: " << channel->getName() << std::endl;
 		std::cout << "Info: " << channel->getInfo() << std::endl;
 		std::cout << "URL: " << channel->getFullUri() << std::endl;
@@ -307,32 +325,37 @@ void ChannelManager::printList(){
 
 void ChannelManager::remove(const char *channelName){	
 	int i = findPos(channelName);
-	if (i != -1)
+    if (i != -1){
+        delete channels.at(i);
 		channels.erase(channels.begin() + i);
+    }
 }
 
 void ChannelManager::remove(Channel* channel){
     for (unsigned int i=0; i < channels.size(); i++){
-        if (&channels.at(i) == channel){
+        if (channels.at(i) == channel){
+            delete channel;
             channels.erase(channels.begin() + i);
         }
     }
 }
-
+/*DANGER AHEAD
 void ChannelManager::removeAll(){
 	channels.clear();
-}
+}*/
 
 void ChannelManager::clearData(){
-	readJSON(DATAURI);
-
-	for (size_t i = 0; i < channels.size(); i++){
-		channels.at(i).clear();
+    for (unsigned int i = 0; i < channels.size(); i++){
+        delete channels.at(i);
 	}
-	writeJSON(DATAURI);
+    channels.clear();
 }
 void ChannelManager::play(Channel* channel){
     std::string cmd = "./play.sh "+channel->getFullUri();
     std::thread t(system,cmd.c_str());
     t.detach();
+}
+
+void ChannelManager::updateGui(){
+    if (main) main->updateList();
 }

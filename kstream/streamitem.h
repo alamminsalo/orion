@@ -5,12 +5,15 @@
 #include <QDebug>
 #include "../channel.h"
 
+class Channel;
+
 class StreamItem: public QListWidgetItem
 {
 protected:
     Channel* channel;
 
 public:
+    explicit StreamItem(QWidget *parent = 0);
     StreamItem(Channel*);
     ~StreamItem();
 

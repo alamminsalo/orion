@@ -105,7 +105,7 @@ std::string Channel::getUriName(){
 }
 
 std::string Channel::getFullUri(){
-	return "https://twitch.tv/" + uri;
+    return "http://twitch.tv/" + uri;
 }
 
 std::string Channel::getInfo(){

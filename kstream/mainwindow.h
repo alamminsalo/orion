@@ -24,6 +24,8 @@ class MainWindow : public QMainWindow
     QTimer *uitimer;
     QTimer *updatetimer;
     QSystemTrayIcon *tray;
+    QMenu *traymenu;
+    QAction *traymenuaction;
 
     void remove(StreamItem*);
     void setupTray();
@@ -34,6 +36,7 @@ public:
 
     void loadList();
     void addItem(Channel*);
+    void update(Channel*);
 
 public slots:
     void updateList();
