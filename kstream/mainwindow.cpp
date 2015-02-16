@@ -64,16 +64,6 @@ MainWindow::~MainWindow()
     qDebug() << "All done!";
 }
 
-void MainWindow::loadList(){
-    ui->listWidget->clear();
-    cman->readJSON(DATAURI);
-    unsigned int nsize = cman->getChannels()->size();
-    for (unsigned int i=0; i < nsize; i++){
-        //Channel* channel = &cman->getChannels()
-        //addItem(channel);
-    }
-}
-
 void MainWindow::update(Channel *channel){
     qDebug() << channel;
     for (unsigned int i=0; i < cman->getChannels()->size(); i++){
@@ -114,10 +104,6 @@ void MainWindow::checkStreams(){
     cman->checkStreams(false);
 }
 
-void MainWindow::deleteItems(){
-
-}
-
 
 void MainWindow::on_addButton_clicked()
 {
@@ -131,7 +117,6 @@ void MainWindow::on_addButton_clicked()
         if (!val.empty()){
             cman->add(val.c_str());
             cman->writeJSON(DATAURI);
-            //loadList();
         }
     }
 }

@@ -5,4 +5,4 @@
 #
 #Takes full channel url as parameter
 
-livestreamer $1 best -np 'mplayer'
+livestreamer $1 best --player 'mplayer -cache 2048' --hls-segment-threads 2

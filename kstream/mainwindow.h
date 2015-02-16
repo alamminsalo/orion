@@ -34,7 +34,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void loadList();
     void addItem(Channel*);
     void update(Channel*);
 

@@ -24,7 +24,6 @@ void ChannelManager::load(){
         for (unsigned int i=0; i < channels.size(); i++)
                 main->addItem(channels.at(i));
     }
-    //tman->startPolling();
 }
 
 bool ChannelManager::readJSON(const char *path){
@@ -256,7 +255,6 @@ void ChannelManager::check(Channel *channel, std::string data){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
 					system(cmdstr.c_str());
 					channel->setOnline(false);
-                    //if (main) main->update(channel);
                 }
 			}
 			else {
@@ -264,7 +262,6 @@ void ChannelManager::check(Channel *channel, std::string data){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
 					system(cmdstr.c_str());
 					channel->setOnline(true);
-                    //if (main) main->update(channel);
 
                     if (!util::folderExists("preview")){
                         std::cout << "dir \"preview\" not found, making..\n";
@@ -339,10 +336,6 @@ void ChannelManager::remove(Channel* channel){
         }
     }
 }
-/*DANGER AHEAD
-void ChannelManager::removeAll(){
-	channels.clear();
-}*/
 
 void ChannelManager::clearData(){
     for (unsigned int i = 0; i < channels.size(); i++){

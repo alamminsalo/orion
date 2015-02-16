@@ -9,8 +9,6 @@
 
 class ChannelManager;
 
-//static ChannelManager *cman_ptr;
-
 void t_update(Channel*, ChannelManager*);
 void t_check(Channel*, ChannelManager*);
 void t_poll(ChannelManager*);

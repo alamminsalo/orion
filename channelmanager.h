@@ -44,7 +44,6 @@ class ChannelManager{
 		void add(const char*,const char*,const char*,const char*);
 		void remove(const char*);
         void remove(Channel*);
-        //void removeAll();
 		void add(const char*);
 		void printList();
         void setAlert(const char*,const char*);

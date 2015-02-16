@@ -11,9 +11,11 @@ Needs libcurl installed
 
 ###kstream-core:
 
-Just run 'make' in the root folder
+~~Just run 'make' in the root folder~~
 
-(builds the cli-version)
+~~(builds the cli-version)~~
+
+Not tested currently
 
 
 ###qt-gui
