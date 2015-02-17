@@ -2,8 +2,9 @@
 
 ChannelManager::ChannelManager(){
     tman = new ThreadManager(this);
-    main = 0;
+    main = NULL;
     alive = true;
+    threadsrunning = false;
 }
 
 ChannelManager::ChannelManager(MainWindow *mw) : ChannelManager()
@@ -13,9 +14,12 @@ ChannelManager::ChannelManager(MainWindow *mw) : ChannelManager()
 
 ChannelManager::~ChannelManager(){
     std::cout << "Destroyer: ChannelManager\n";
-    clearData();
     alive = false;
-	delete tman;
+    std::cout << "Waiting for threads to finish..\n";
+    while (threadsrunning)
+        usleep(500);
+    delete tman;
+    clearData();
 }
 
 void ChannelManager::load(){
@@ -148,7 +152,10 @@ void ChannelManager::updateChannels(bool sync){
 		//std::cout << "\nThreads done.\n";
 		writeJSON(DATAURI);
 	}
-	else tman->complete_threads_async();
+    else {
+        tman->complete_threads_async();
+        threadsrunning = true;
+    }
 }
 
 void ChannelManager::update(Channel *channel){
@@ -255,13 +262,15 @@ void ChannelManager::check(Channel *channel, std::string data){
 					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
 					system(cmdstr.c_str());
 					channel->setOnline(false);
+                    channel->setChanged(true);
                 }
 			}
 			else {
 				if (!channel->isOnline()){
-					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
+                    std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
 					system(cmdstr.c_str());
 					channel->setOnline(true);
+                    channel->setChanged(true);
 
                     if (!util::folderExists("preview")){
                         std::cout << "dir \"preview\" not found, making..\n";
@@ -291,7 +300,10 @@ void ChannelManager::checkStream(Channel *channel, bool sync){
         tman->complete_threads();
         writeJSON(DATAURI);
     }
-    else tman->complete_threads_async();
+    else {
+        tman->complete_threads_async();
+        threadsrunning = true;
+    }
 }
 
 void ChannelManager::checkStreams(bool sync){
@@ -302,7 +314,10 @@ void ChannelManager::checkStreams(bool sync){
         tman->complete_threads(); //HELP
 		writeJSON(DATAURI);
 	}
-    else tman->complete_threads_async();
+    else {
+        tman->complete_threads_async();
+        threadsrunning = true;
+    }
 }
 
 void ChannelManager::printList(){
@@ -344,11 +359,19 @@ void ChannelManager::clearData(){
     channels.clear();
 }
 void ChannelManager::play(Channel* channel){
-    std::string cmd = "./play.sh "+channel->getFullUri();
-    std::thread t(system,cmd.c_str());
-    t.detach();
+    if (util::fileExists("play.sh")){
+        std::string cmd = "./play.sh "+channel->getFullUri()+" &";
+        std::cout << cmd << "\n";
+        system(cmd.c_str());
+    }
+    else std::cout << "Couldn't locate 'play.sh'\n";
 }
 
 void ChannelManager::updateGui(){
     if (main) main->updateList();
+}
+
+void ChannelManager::finishThreads()
+{
+    threadsrunning = false;
 }

@@ -54,16 +54,16 @@ void t_poll(ChannelManager *cman){
 }
 
 void ThreadManager::complete_threads(){
-	try{
+    try{
         for (unsigned int i=0; i < threads.size(); i++){
-				threads.at(i).join();
-		}
+            threads.at(i).join();
+        }
 
-		threads.clear();
+        threads.clear();
 
-	} catch(std::exception& e){
+    } catch(std::exception& e){
         std::cout << "\nError: "<< e.what() << "\n";
-	}
+    }
 }
 
 void complete_async(std::vector<std::thread> *threads,ChannelManager *cman){
@@ -77,6 +77,7 @@ void complete_async(std::vector<std::thread> *threads,ChannelManager *cman){
         std::cout << e.what();
     }
     cman->writeJSON(DATAURI);
+    cman->finishThreads();
 }
 
 void ThreadManager::complete_threads_async(){

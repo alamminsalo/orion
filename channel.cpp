@@ -8,6 +8,7 @@ Channel::Channel(){
 	alert = "on";
 	timestamp = time(0);
 	online = false;
+    changed = true;
 }
 
 Channel::Channel(const char* uri) : Channel(){
@@ -58,7 +59,7 @@ std::string Channel::lastOnline(){
     return date;
 }
 
-std::string Channel::getJSON(){
+const std::string Channel::getJSON() const{
 	std::string JSON_str = "{";
     JSON_str += "\"title\":\""+name+"\",";
     JSON_str += "\"uri\":\""+uri+"\",";
@@ -140,6 +141,15 @@ std::string Channel::getLogoPath(){
 
 std::string Channel::getPreviewPath(){
     return util::fileExists(previewpath.c_str()) ? previewpath : "preview/offline.png";
+}
+
+bool Channel::hasChanged()
+{
+    return changed;
+}
+
+void Channel::setChanged(bool b){
+    changed = b;
 }
 
 void Channel::setLogoPath(const char *path){

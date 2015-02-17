@@ -25,6 +25,7 @@ class ChannelManager{
         ThreadManager* tman;
         MainWindow *main;
         bool alive;
+        bool threadsrunning;
 	
 	public:
 		ChannelManager();
@@ -54,6 +55,7 @@ class ChannelManager{
         void play(Channel*);
         bool isAlive(){ return alive; }
         void updateGui();
+        void finishThreads();
 };
 
 #endif //CHANNEL_MANAGER_H

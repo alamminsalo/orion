@@ -10,33 +10,38 @@ StreamItem::~StreamItem(){
 
 
 void StreamItem::update(){
-    if (this->icon().pixmap(QSize(32,32)).isNull()){ //MISSING ICON
-        //QString logopath = "logos/" + getUriName();
-        setIcon(QIcon(channel->getLogoPath().c_str()));
-    }
-    if (this->text().isEmpty() && !getName().isEmpty()){
-        this->setText(getName());
-    }
-    QString image = "<img src=\"";
-    image += channel->getPreviewPath().c_str();
-    image += "\"></img>";
-    QString tooltip = "<table><tr><td>"+getInfo()+"</td></tr>";
-    tooltip += "<tr><td>"+image+"</td></tr>";
 
-    if (!online()){
-        tooltip += "<tr><td>Last seen: ";
-        tooltip += this->getChannel()->lastOnline().c_str();
-        tooltip += "</td></tr>";
-    }
-    else tooltip+= "<tr><td><b>Now streaming</b></td></tr>";
+    if (channel->hasChanged()){     //To reduce some useless updating
 
-    tooltip += "</table>";
-    setToolTip(tooltip);
+        if (this->icon().pixmap(QSize(32,32)).isNull()){ //MISSING ICON
+            setIcon(QIcon(channel->getLogoPath().c_str()));
+        }
+        if (this->text().isEmpty() && !getName().isEmpty()){
+            this->setText(getName());
+        }
+        QString image = "<img src=\"";
+        image += channel->getPreviewPath().c_str();
+        image += "\"></img>";
+        QString tooltip = "<table><tr><td>"+getInfo()+"</td></tr>";
+        tooltip += "<tr><td>"+image+"</td></tr>";
 
-    if (this->online()){
-        this->setTextColor(QColor(0, 0, 0));
+        if (!online()){
+            tooltip += "<tr><td>Last seen: ";
+            tooltip += this->getChannel()->lastOnline().c_str();
+            tooltip += "</td></tr>";
+        }
+        else tooltip+= "<tr><td><b>Now streaming</b></td></tr>";
+
+        tooltip += "</table>";
+        setToolTip(tooltip);
+
+        if (this->online()){
+            this->setTextColor(QColor(0, 0, 0));
+        }
+        else this->setTextColor(QColor(200, 200, 200));
+
+        channel->setChanged(false);
     }
-    else this->setTextColor(QColor(200, 200, 200));
 
 }
 

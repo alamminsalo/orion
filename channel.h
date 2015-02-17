@@ -14,6 +14,7 @@ class Channel{
 	std::string info;
 	std::string alert;
 	bool online;
+    bool changed;
 	time_t timestamp;
     std::string logopath;
     std::string previewpath;
@@ -28,7 +29,7 @@ class Channel{
         Channel(const char*, const char*, const char*, const char*, time_t, const char*, const char*);
         Channel(const Channel&);
         ~Channel();
-		std::string getJSON();
+        const std::string getJSON() const;
 		void setName(const char*);	
 		void setURIName(const char*);	
 		void setInfo(const char*);	
@@ -50,6 +51,8 @@ class Channel{
         std::string getLogoPath();
         void setPreviewPath(const char*);
         std::string getPreviewPath();
+        bool hasChanged();
+        void setChanged(bool b);
 };
 
 #endif //CHANNEL_H
