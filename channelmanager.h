@@ -3,7 +3,6 @@
 
 #include "channel.h"
 #include "fileutils.h"
-#include "global.h"
 #include "connector.h"
 #include <rapidjson/document.h>
 #include <vector>

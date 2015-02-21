@@ -27,7 +27,6 @@ HEADERS  += mainwindow.h\
     ../channelmanager.h \
     ../connector.h \
     ../fileutils.h \
-    ../global.h \
     ../threadman.h \
     streamitem.h
 
