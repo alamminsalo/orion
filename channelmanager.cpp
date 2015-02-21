@@ -3,8 +3,6 @@
 ChannelManager::ChannelManager(){
     tman = new ThreadManager(this);
     main = NULL;
-    alive = true;
-    threadsrunning = false;
 }
 
 ChannelManager::ChannelManager(MainWindow *mw) : ChannelManager()
@@ -14,20 +12,21 @@ ChannelManager::ChannelManager(MainWindow *mw) : ChannelManager()
 
 ChannelManager::~ChannelManager(){
     std::cout << "Destroyer: ChannelManager\n";
-    alive = false;
-    std::cout << "Waiting for threads to finish..\n";
-    while (threadsrunning)
-        usleep(500);
     delete tman;
     clearData();
 }
 
 void ChannelManager::load(){
     readJSON(DATAURI);
-    if (main){
+    /*if (main){
         for (unsigned int i=0; i < channels.size(); i++)
                 main->addItem(channels.at(i));
-    }
+    }*/
+}
+
+void ChannelManager::save()
+{
+    writeJSON(DATAURI);
 }
 
 bool ChannelManager::readJSON(const char *path){
@@ -119,8 +118,20 @@ void ChannelManager::add(const char* title, const char* uri, const char *info, c
 }
 
 void ChannelManager::add(const char* uriName){
-	add("",uriName,"","on");
-    this->update(find(uriName));
+    Channel *channel = find(uriName);
+    if (channel){
+        main->showAlreadyAdded(channel);
+    }
+    else{
+        channel = new Channel(uriName);
+        if (update(channel)){
+            add(channel);
+        }
+        else {
+            delete channel;
+            main->showNotFound();
+        }
+    }
 }
 
 Channel *ChannelManager::find(const char* uriName){
@@ -154,22 +165,20 @@ void ChannelManager::updateChannels(bool sync){
 	}
     else {
         tman->complete_threads_async();
-        threadsrunning = true;
     }
 }
 
-void ChannelManager::update(Channel *channel){
+bool ChannelManager::update(Channel *channel){
 	std::string uristr = TWITCH_URI;
 	uristr += "/channels/";
 	uristr += channel->getUriName();
-	update(channel,conn::Get(uristr).c_str());
+    return update(channel,conn::Get(uristr).c_str());
 }
 
-void ChannelManager::update(Channel *channel, std::string data){
-    //std::cout << data << "\n";
+bool ChannelManager::update(Channel *channel, std::string data){
 	if (data.empty()){
 		std::cout << "Error: empty data. Skipping update..\n";
-		return;
+        return false;
 	}
 
 	rapidjson::Document doc;
@@ -177,7 +186,7 @@ void ChannelManager::update(Channel *channel, std::string data){
 	
     if (!doc.IsObject()){
         std::cout << "Error: " << data << "\n";
-		return;
+        return false;
     }
 
 	if (!doc.HasMember("error")){
@@ -219,13 +228,10 @@ void ChannelManager::update(Channel *channel, std::string data){
 			}
             else channel->setLogoPath("logos/default.png");
 		}
+        return true;
 
 	}
-    else {
-        std::string channelName = "NOT FOUND ("+channel->getUriName()+")";
-        channel->setName(channelName.c_str());
-        channel->setInfo("Channel not found.");
-    }
+    else return false;
 }
 
 void ChannelManager::setAlert(const char* name, const char* val){
@@ -251,7 +257,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 	
     std::string logopath = "./logos/" + channel->getUriName();
     if (channel->getName().empty() || channel->getInfo().empty() || !util::fileExists(logopath.c_str())){
-        update(channel);
+        if (!update(channel)) return;
     }
 
 	if (channel->hasAlert()){
@@ -259,17 +265,23 @@ void ChannelManager::check(Channel *channel, std::string data){
 		if (!doc.HasMember("error")){
 			if (doc["stream"].IsNull()){
                 if (channel->isOnline()){
-					std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
-					system(cmdstr.c_str());
+                    //std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
+                    //system(cmdstr.c_str());
 					channel->setOnline(false);
+
+                    main->notify(channel);
+
                     channel->setChanged(true);
                 }
 			}
 			else {
 				if (!channel->isOnline()){
-                    std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
-					system(cmdstr.c_str());
+                    //std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
+                    //system(cmdstr.c_str());
 					channel->setOnline(true);
+
+                    main->notify(channel);
+
                     channel->setChanged(true);
 
                     if (!util::folderExists("preview")){
@@ -302,7 +314,6 @@ void ChannelManager::checkStream(Channel *channel, bool sync){
     }
     else {
         tman->complete_threads_async();
-        threadsrunning = true;
     }
 }
 
@@ -316,7 +327,6 @@ void ChannelManager::checkStreams(bool sync){
 	}
     else {
         tman->complete_threads_async();
-        threadsrunning = true;
     }
 }
 
@@ -344,12 +354,14 @@ void ChannelManager::remove(const char *channelName){
 }
 
 void ChannelManager::remove(Channel* channel){
+    tman->wait_for_threads();
     for (unsigned int i=0; i < channels.size(); i++){
         if (channels.at(i) == channel){
             delete channel;
             channels.erase(channels.begin() + i);
         }
     }
+    save();
 }
 
 void ChannelManager::clearData(){
@@ -360,18 +372,9 @@ void ChannelManager::clearData(){
 }
 void ChannelManager::play(Channel* channel){
     if (util::fileExists("play.sh")){
-        std::string cmd = "./play.sh "+channel->getFullUri()+" &";
+        std::string cmd = "./play.sh "+channel->getFullUri()+" "+channel->getInfo()+" &";
         std::cout << cmd << "\n";
         system(cmd.c_str());
     }
     else std::cout << "Couldn't locate 'play.sh'\n";
-}
-
-void ChannelManager::updateGui(){
-    if (main) main->updateList();
-}
-
-void ChannelManager::finishThreads()
-{
-    threadsrunning = false;
 }

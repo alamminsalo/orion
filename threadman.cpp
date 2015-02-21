@@ -2,10 +2,13 @@
 
 ThreadManager::ThreadManager(ChannelManager *c){
     cman = c;
+    polling = false;
 }
 
 ThreadManager::~ ThreadManager(){
     std::cout << "Destroyer: ThreadManager\n";
+    polling = false;
+    this->wait_for_threads();
     this->complete_threads();
 }
 
@@ -45,11 +48,11 @@ void t_getfile(std::string uri, std::string path){
 	conn::GetFile(uri.c_str(),path.c_str());
 }
 
-void t_poll(ChannelManager *cman){
-    while (cman->isAlive()){
-        cman->checkStreams(true);
-        for (int i=0; i < 30 && cman->isAlive(); i++)
-            sleep(1);
+void t_poll(ThreadManager *tman){
+    while (tman->isPolling()){
+        //cman->checkStreams(true);
+        for (int i=0; i < 30 && tman->isPolling(); i++)
+            usleep(1000);
     }
 }
 
@@ -66,7 +69,7 @@ void ThreadManager::complete_threads(){
     }
 }
 
-void complete_async(std::vector<std::thread> *threads,ChannelManager *cman){
+void t_complete_async(std::vector<std::thread> *threads,ThreadManager *tman){
     try{
         for (unsigned int i=0; i < threads->size(); i++){
                 threads->at(i).join();
@@ -76,12 +79,13 @@ void complete_async(std::vector<std::thread> *threads,ChannelManager *cman){
     } catch(std::exception& e){
         std::cout << e.what();
     }
-    cman->writeJSON(DATAURI);
-    cman->finishThreads();
+
+    tman->finish_threads();
 }
 
 void ThreadManager::complete_threads_async(){
-    std::thread t(complete_async,&threads,cman);
+    threadsrunning = true;
+    std::thread t(t_complete_async,&threads,this);
     t.detach();
 }
 
@@ -98,6 +102,21 @@ void ThreadManager::getfile(std::string uri, std::string path){
 }
 
 void ThreadManager::startPolling(){
-    threads.push_back(std::thread(t_poll,cman));
+    polling = true;
+    threads.push_back(std::thread(t_poll,this));
 }
 
+bool ThreadManager::isPolling()
+{
+    return polling;
+}
+
+void ThreadManager::finish_threads(){
+    cman->save();
+    threadsrunning = false;
+}
+
+void ThreadManager::wait_for_threads(){
+    std::cout << "Waiting for threads to finish..\n";
+    while (threadsrunning) usleep(500);
+}

@@ -10,6 +10,9 @@
 #include <QMessageBox>
 #include <QList>
 #include <QSystemTrayIcon>
+#include <QSettings>
+#include <QProcess>
+#include <stdlib.h>
 
 namespace Ui {
 class MainWindow;
@@ -29,13 +32,21 @@ class MainWindow : public QMainWindow
 
     void remove(StreamItem*);
     void setupTray();
+    void loadList();
+    StreamItem* find(Channel*);
+    int findAt(Channel*);
 
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    virtual void show();
+    virtual void hide();
     void addItem(Channel*);
     void update(Channel*);
+    void showNotFound();
+    void showAlreadyAdded(Channel*);
+    void notify(Channel*);
 
 public slots:
     void updateList();

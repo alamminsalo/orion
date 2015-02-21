@@ -13,6 +13,7 @@
 #include "kstream/mainwindow.h"
 
 #define TWITCH_URI "https://api.twitch.tv/kraken"
+#define DATAURI "./data.json"
 
 class ThreadManager;
 class MainWindow;
@@ -24,8 +25,6 @@ class ChannelManager{
         std::vector<Channel*> channels;
         ThreadManager* tman;
         MainWindow *main;
-        bool alive;
-        bool threadsrunning;
 	
 	public:
 		ChannelManager();
@@ -33,13 +32,14 @@ class ChannelManager{
 
 		~ChannelManager();	
         void load();
+        void save();
 		bool readJSON(const char*);
 		bool writeJSON(const char*);
 		void checkStream(Channel*,bool);
 		void check(Channel*,std::string);
         void checkStreams(bool sync);
-		void update(Channel*);
-		void update(Channel*,std::string);
+        bool update(Channel*);
+        bool update(Channel*,std::string);
         void updateChannels(bool sync);
         void add(Channel *channel);
 		void add(const char*,const char*,const char*,const char*);
@@ -53,9 +53,8 @@ class ChannelManager{
         std::vector<Channel*> *getChannels(){ return &channels; }
 		void clearData();
         void play(Channel*);
-        bool isAlive(){ return alive; }
-        void updateGui();
-        void finishThreads();
+        Channel* getLastAdded();
+        bool channelExists(const char*);
 };
 
 #endif //CHANNEL_MANAGER_H

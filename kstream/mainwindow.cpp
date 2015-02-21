@@ -7,6 +7,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+
     this->setWindowIcon(QIcon("icon"));
 
     this->setStyleSheet("QToolTip {max-width:336px;}");
@@ -17,7 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->listWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showContextMenu(const QPoint&)));
 
     cman = new ChannelManager(this);
-    cman->load();
+
+    loadList();
 
     uitimer = new QTimer(this);
     connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
@@ -33,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     qDebug() << "Destroyer: MainWindow";
+    hide();
 
     qDebug() << "Deleting ui..";
     delete ui;
@@ -68,12 +72,37 @@ void MainWindow::update(Channel *channel){
     qDebug() << channel;
     for (unsigned int i=0; i < cman->getChannels()->size(); i++){
         StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->item(i));
-        if (item->getChannel() == channel){
+        if (item && item->getChannel() == channel){
             item->update();
             break;
         }
     }
     ui->listWidget->sortItems();
+}
+
+void MainWindow::showNotFound()
+{
+    QMessageBox::information(this,"404", "Channel not found",QMessageBox::Ok);
+}
+
+StreamItem* MainWindow::find(Channel *channel){
+    for (int i=0; i<ui->listWidget->count(); i++){
+        StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->item(i));
+        if (item->getChannel() == channel){
+            return item;
+        }
+    }
+    return NULL;
+}
+
+int MainWindow::findAt(Channel *channel){
+    return ui->listWidget->row(find(channel));
+}
+
+void MainWindow::showAlreadyAdded(Channel *channel)
+{
+    ui->listWidget->setCurrentItem(find(channel));
+    QMessageBox::information(this,"Error", "Channel already on list",QMessageBox::Ok);
 }
 
 void MainWindow::addItem(Channel* channel){
@@ -107,7 +136,7 @@ void MainWindow::checkStreams(){
 
 void MainWindow::on_addButton_clicked()
 {
-    QInputDialog input;
+    QInputDialog input(this);
     input.resize(300,120);
     input.setWindowTitle("Add channel");
     input.setLabelText("Channel name");
@@ -116,7 +145,7 @@ void MainWindow::on_addButton_clicked()
         std::string val = input.textValue().toStdString();
         if (!val.empty()){
             cman->add(val.c_str());
-            cman->writeJSON(DATAURI);
+            cman->save();
         }
     }
 }
@@ -145,8 +174,10 @@ void MainWindow::showContextMenu(const QPoint& pos){
 }
 
 void MainWindow::remove(StreamItem* item){
-    cman->remove(item->getChannel());
     delete item;
+    qDebug() << "Removed from list";
+    cman->remove(item->getChannel());
+    qDebug() << "Removed from channelmanager";
 }
 
 void MainWindow::setupTray(){
@@ -161,15 +192,45 @@ void MainWindow::setupTray(){
     tray->show();
 }
 
+void MainWindow::loadList()
+{
+    cman->load();
+    for (unsigned int i=0; i < cman->getChannels()->size(); i++){
+        addItem(cman->getChannels()->at(i));
+    }
+}
+
 void MainWindow::trayGone(){
     qDebug() << "Tray destroyed";
 }
 
 void MainWindow::toggleShow(){
     if (!isVisible()){
-        show();
+        this->show();
         raise();
     }
     else hide();
+}
+
+void MainWindow::show(){
+    QSettings settings;
+    restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
+    restoreState(settings.value("mainWindowState").toByteArray());
+    QMainWindow::show();
+}
+
+void MainWindow::hide(){
+    QSettings settings;
+    settings.setValue("mainWindowGeometry", saveGeometry());
+    settings.setValue("mainWindowState", saveState());
+    QMainWindow::hide();
+}
+
+
+void MainWindow::notify(Channel *channel){
+    std::string title = channel->getName() + (channel->isOnline() ? " is streaming" : " has gone offline");
+    std::string cmd = "./dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
+    QProcess process;
+    process.startDetached(cmd.c_str());
 }
 

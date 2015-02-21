@@ -96,7 +96,7 @@ int main(int argc, const char **argv){
 		std::cin >> opt;
 		if (opt == 'y' || opt == 'Y'){
 			cman.readJSON(DATAURI);
-			cman.removeAll();
+			cman.clearData();
 			cman.writeJSON(DATAURI);
 		}
 		else std::cout << "Canceled.\n";

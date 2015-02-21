@@ -9,15 +9,12 @@
 
 class ChannelManager;
 
-void t_update(Channel*, ChannelManager*);
-void t_check(Channel*, ChannelManager*);
-void t_poll(ChannelManager*);
-void t_getfile(std::string,std::string);
-
 class ThreadManager{
 
 	std::vector<std::thread> threads;
     ChannelManager *cman;
+    bool threadsrunning;
+    bool polling;
 
 	public:
 		ThreadManager(ChannelManager*);		
@@ -28,9 +25,18 @@ class ThreadManager{
 		void getfile(std::string,std::string);
 
         void startPolling();
+        bool isPolling();
 
 		void complete_threads();
         void complete_threads_async();
+        void wait_for_threads();
+        void finish_threads();
 };
+
+void t_update(Channel*, ChannelManager*);
+void t_check(Channel*, ChannelManager*);
+void t_poll(ThreadManager*);
+void t_getfile(std::string,std::string);
+void t_complete_async(std::vector<std::thread>*, ThreadManager*);
 
 #endif
