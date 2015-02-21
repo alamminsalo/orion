@@ -8,7 +8,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-
     this->setWindowIcon(QIcon("icon"));
 
     this->setStyleSheet("QToolTip {max-width:336px;}");
@@ -36,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     qDebug() << "Destroyer: MainWindow";
-    hide();
+    saveSettings();
 
     qDebug() << "Deleting ui..";
     delete ui;
@@ -204,6 +203,11 @@ void MainWindow::trayGone(){
     qDebug() << "Tray destroyed";
 }
 
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    saveSettings();
+}
+
 void MainWindow::toggleShow(){
     if (!isVisible()){
         this->show();
@@ -212,17 +216,25 @@ void MainWindow::toggleShow(){
     else hide();
 }
 
-void MainWindow::show(){
+void MainWindow::saveSettings(){
+    QSettings settings;
+    settings.setValue("mainWindowGeometry", saveGeometry());
+    settings.setValue("mainWindowState", saveState());
+}
+
+void MainWindow::loadSettings(){
     QSettings settings;
     restoreGeometry(settings.value("mainWindowGeometry").toByteArray());
     restoreState(settings.value("mainWindowState").toByteArray());
+}
+
+void MainWindow::show(){
+    loadSettings();
     QMainWindow::show();
 }
 
 void MainWindow::hide(){
-    QSettings settings;
-    settings.setValue("mainWindowGeometry", saveGeometry());
-    settings.setValue("mainWindowState", saveState());
+    saveSettings();
     QMainWindow::hide();
 }
 

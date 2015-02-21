@@ -35,6 +35,8 @@ class MainWindow : public QMainWindow
     void loadList();
     StreamItem* find(Channel*);
     int findAt(Channel*);
+    void loadSettings();
+    void saveSettings();
 
 public:
     explicit MainWindow(QWidget *parent = 0);
@@ -54,6 +56,7 @@ public slots:
     void showContextMenu(const QPoint&);
     void toggleShow();
     void trayGone();
+    void closeEvent(QCloseEvent*);
 
 private slots:
     void on_addButton_clicked();
