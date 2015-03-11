@@ -35,7 +35,7 @@ bool ChannelManager::readJSON(const char *path){
 		return false;
 
 	rapidjson::Document doc;
-	doc.Parse(str.c_str());
+    doc.Parse<0>(str.c_str());
 
 
     if (!doc.IsObject())
@@ -182,7 +182,7 @@ bool ChannelManager::update(Channel *channel, std::string data){
 	}
 
 	rapidjson::Document doc;
-	doc.Parse(data.c_str());
+    doc.Parse<0>(data.c_str());
 	
     if (!doc.IsObject()){
         std::cout << "Error: " << data << "\n";
@@ -248,7 +248,7 @@ void ChannelManager::check(Channel *channel, std::string data){
 	}
 
 	rapidjson::Document doc;
-	doc.Parse(data.c_str());
+    doc.Parse<0>(data.c_str());
 
     if (!doc.IsObject()){
         std::cout << "Error: " << data << "\n";
@@ -372,7 +372,7 @@ void ChannelManager::clearData(){
 }
 void ChannelManager::play(Channel* channel){
     if (util::fileExists("play.sh")){
-        std::string cmd = "./play.sh "+channel->getFullUri()+" "+channel->getInfo()+" &";
+        std::string cmd = "./play.sh "+channel->getFullUri()+" &";
         std::cout << cmd << "\n";
         system(cmd.c_str());
     }
