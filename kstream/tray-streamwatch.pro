@@ -20,7 +20,9 @@ SOURCES += mainwindow.cpp\
     ../connector.cpp \
     ../fileutils.cpp \
     ../threadman.cpp \
-    streamitem.cpp
+    streamitem.cpp \
+    tray.cpp
+    #../main.cpp
 
 HEADERS  += mainwindow.h\
     ../channel.h \
@@ -28,7 +30,18 @@ HEADERS  += mainwindow.h\
     ../connector.h \
     ../fileutils.h \
     ../threadman.h \
-    streamitem.h
+    streamitem.h \
+    tray.h \
+    ../rapidjson/include/rapidjson/internal/pow10.h \
+    ../rapidjson/include/rapidjson/internal/stack.h \
+    ../rapidjson/include/rapidjson/internal/strfunc.h \
+    ../rapidjson/include/rapidjson/document.h \
+    ../rapidjson/include/rapidjson/filestream.h \
+    ../rapidjson/include/rapidjson/prettywriter.h \
+    ../rapidjson/include/rapidjson/rapidjson.h \
+    ../rapidjson/include/rapidjson/reader.h \
+    ../rapidjson/include/rapidjson/stringbuffer.h \
+    ../rapidjson/include/rapidjson/writer.h
 
 FORMS    += mainwindow.ui
 

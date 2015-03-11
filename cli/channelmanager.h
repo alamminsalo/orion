@@ -9,13 +9,11 @@
 #include <iostream>
 #include <stdlib.h>
 #include "threadman.h"
-#include "kstream/mainwindow.h"
 
 #define TWITCH_URI "https://api.twitch.tv/kraken"
 #define DATAURI "./data.json"
 
 class ThreadManager;
-class MainWindow;
 
 class ChannelManager{
 
@@ -23,12 +21,9 @@ class ChannelManager{
 		unsigned int update_counter, check_counter;
         std::vector<Channel*> channels;
         ThreadManager* tman;
-        MainWindow *main;
 	
 	public:
 		ChannelManager();
-        ChannelManager(MainWindow*);
-
 		~ChannelManager();	
         void load();
         void save();

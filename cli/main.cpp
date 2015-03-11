@@ -24,6 +24,7 @@ void printMenu(){
 
 int main(int argc, const char **argv){
 	ChannelManager cman;
+	cman.readJSON(DATAURI);
 
 	if (argc == 1){
 		printMenu();
@@ -38,7 +39,6 @@ int main(int argc, const char **argv){
 			printMenu();
 			return 0;
 		}
-		cman.readJSON(DATAURI);
 		for (int i=2; argv[i]; i++)
 			cman.add(argv[i]);
 		cman.writeJSON(DATAURI);
@@ -49,7 +49,6 @@ int main(int argc, const char **argv){
 			printMenu();
 			return 0;
 		}
-		cman.readJSON(DATAURI);
 		cman.setAlert(argv[2],"on");
 		cman.writeJSON(DATAURI);
 	}
@@ -59,7 +58,6 @@ int main(int argc, const char **argv){
 			printMenu();
 			return 0;
 		}
-		cman.readJSON(DATAURI);
 		cman.setAlert(argv[2],"off");
 		cman.writeJSON(DATAURI);
 	}
@@ -85,7 +83,6 @@ int main(int argc, const char **argv){
 			printMenu();
 			return 0;
 		}
-		cman.readJSON(DATAURI);
 		cman.remove(argv[2]);
 		cman.writeJSON(DATAURI);
 	}
@@ -94,7 +91,6 @@ int main(int argc, const char **argv){
 		std::cout << "This will remove all your stored channel data. Are you sure? (y/n)\n";
 		std::cin >> opt;
 		if (opt == 'y' || opt == 'Y'){
-			cman.readJSON(DATAURI);
 			cman.clearData();
 			cman.writeJSON(DATAURI);
 		}
@@ -104,7 +100,7 @@ int main(int argc, const char **argv){
 		std::cout << "Running as service mode..\n";
 		while(true){
 			cman.checkStreams(true);
-			sleep(60);
+			sleep(30);
 		}
 	}
 	else if (arg == "clear"){
