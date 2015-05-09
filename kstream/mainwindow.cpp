@@ -73,17 +73,17 @@ MainWindow::~MainWindow()
     qDebug() << "All done!";
 }
 
-void MainWindow::update(Channel *channel){
-    qDebug() << channel;
-    for (unsigned int i=0; i < cman->getChannels()->size(); i++){
-        StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->item(i));
-        if (item && item->getChannel() == channel){
-            item->update();
-            break;
-        }
-    }
-    ui->listWidget->sortItems();
-}
+//void MainWindow::update(Channel *channel){
+//    qDebug() << channel;
+//    for (unsigned int i=0; i < cman->getChannels()->size(); i++){
+//        StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->item(i));
+//        if (item && item->getChannel() == channel){
+//            item->update();
+//            break;
+//        }
+//    }
+//    ui->listWidget->sortItems();
+//}
 
 void MainWindow::showNotFound()
 {
