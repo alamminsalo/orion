@@ -44,11 +44,8 @@ public:
 
     virtual void show();
     virtual void hide();
-    void addItem(Channel*);
+
     void update(Channel*);
-    void showNotFound();
-    void showAlreadyAdded(Channel*);
-    void notify(Channel*);
 
 public slots:
     void updateList();
@@ -58,8 +55,13 @@ public slots:
     void trayGone();
     void closeEvent(QCloseEvent*);
 
+
 private slots:
     void on_addButton_clicked();
+    void showNotFound();
+    void showAlreadyAdded(Channel*);
+    void notify(Channel*);
+    void addItem(Channel*);
 
 private:
     Ui::MainWindow *ui;

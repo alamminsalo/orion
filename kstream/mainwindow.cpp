@@ -15,14 +15,20 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setupTray();
 
     ui->listWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->listWidget->setSortingEnabled(true);
     connect(ui->listWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showContextMenu(const QPoint&)));
 
-    cman = new ChannelManager(this);
+    cman = new ChannelManager();
+    connect(cman,SIGNAL(channelExists(Channel*)),this,SLOT(showAlreadyAdded(Channel*)));
+    connect(cman,SIGNAL(channelNotFound()),this,SLOT(showNotFound()));
+    connect(cman,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
+    connect(cman,SIGNAL(newChannel(Channel*)),this,SLOT(addItem(Channel*)));
 
     loadList();
 
     uitimer = new QTimer(this);
-    connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
+
+    //connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
     uitimer->start(1000);
     updateList();
 
@@ -47,7 +53,7 @@ MainWindow::~MainWindow()
     uitimer->stop();
     updatetimer->stop();
 
-    disconnect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
+    //disconnect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
     disconnect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
 
     qDebug() << "Deleting timers..";
@@ -118,6 +124,7 @@ void MainWindow::addItem(Channel* channel){
     if (util::fileExists(logopath.toStdString().c_str()))
         item->setIcon(QIcon(logopath));
 
+    connect(channel,SIGNAL(updated()),item,SLOT(update()));
     ui->listWidget->addItem(item);
 }
 
@@ -141,11 +148,12 @@ void MainWindow::on_addButton_clicked()
     input.setLabelText("Channel name");
 
     if (input.exec()){
-        std::string val = input.textValue().toStdString();
+        std::string val = input.textValue().trimmed().toStdString();
         if (!val.empty()){
             cman->add(val.c_str());
-            cman->save();
+            //cman->save();
         }
+        else QMessageBox::information(this,"Error", "Bad input",QMessageBox::Ok);
     }
 }
 

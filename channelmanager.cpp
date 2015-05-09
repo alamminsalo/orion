@@ -2,26 +2,17 @@
 
 ChannelManager::ChannelManager(){
     tman = new ThreadManager(this);
-    main = NULL;
-}
-
-ChannelManager::ChannelManager(MainWindow *mw) : ChannelManager()
-{
-    main = mw;
 }
 
 ChannelManager::~ChannelManager(){
     std::cout << "Destroyer: ChannelManager\n";
     delete tman;
+    save();
     clearData();
 }
 
 void ChannelManager::load(){
     readJSON(DATAURI);
-    /*if (main){
-        for (unsigned int i=0; i < channels.size(); i++)
-                main->addItem(channels.at(i));
-    }*/
 }
 
 void ChannelManager::save()
@@ -108,9 +99,7 @@ bool ChannelManager::writeJSON(const char *path){
 
 void ChannelManager::add(Channel *channel){
     channels.push_back(channel);
-    if (main) {
-        main->addItem(channel);
-    }
+    emit newChannel(channel);
 }
 
 void ChannelManager::add(const char* title, const char* uri, const char *info, const char *alert){
@@ -120,7 +109,7 @@ void ChannelManager::add(const char* title, const char* uri, const char *info, c
 void ChannelManager::add(const char* uriName){
     Channel *channel = find(uriName);
     if (channel){
-        main->showAlreadyAdded(channel);
+        emit channelExists(channel);
     }
     else{
         channel = new Channel(uriName);
@@ -129,7 +118,7 @@ void ChannelManager::add(const char* uriName){
         }
         else {
             delete channel;
-            main->showNotFound();
+            emit channelNotFound();
         }
     }
 }
@@ -161,7 +150,7 @@ void ChannelManager::updateChannels(bool sync){
 		//std::cout << "\nWaiting threads...\n";
 		tman->complete_threads(); //HALTS UNTIL COMPLETED!
 		//std::cout << "\nThreads done.\n";
-		writeJSON(DATAURI);
+        //writeJSON(DATAURI);
 	}
     else {
         tman->complete_threads_async();
@@ -219,11 +208,12 @@ bool ChannelManager::update(Channel *channel, std::string data){
 				std::string logopath = "logos/" + channel->getUriName() + extension;
 
 				channel->setLogoPath(logopath.c_str());
+                channel->setLogourl(logouri.c_str());
 
 				if (!util::fileExists(logopath.c_str())){
-					std::cout << "Fetching logo...";
-					conn::GetFile(doc["logo"].GetString(),logopath);
-					std::cout << "Done.\n";
+                    //std::cout << "Fetching logo...";
+                    conn::GetFile(logouri,logopath);
+                    //std::cout << "Done.\n";
 				}
 			}
             else channel->setLogoPath("logos/default.png");
@@ -231,7 +221,7 @@ bool ChannelManager::update(Channel *channel, std::string data){
         return true;
 
 	}
-    else return false;
+    return false;
 }
 
 void ChannelManager::setAlert(const char* name, const char* val){
@@ -269,9 +259,7 @@ void ChannelManager::check(Channel *channel, std::string data){
                     //system(cmdstr.c_str());
 					channel->setOnline(false);
 
-                    main->notify(channel);
-
-                    channel->setChanged(true);
+                    emit channelStateChanged(channel);
                 }
 			}
 			else {
@@ -280,26 +268,30 @@ void ChannelManager::check(Channel *channel, std::string data){
                     //system(cmdstr.c_str());
 					channel->setOnline(true);
 
-                    main->notify(channel);
-
-                    channel->setChanged(true);
+                    emit channelStateChanged(channel);
 
                     if (!util::folderExists("preview")){
                         std::cout << "dir \"preview\" not found, making..\n";
                         system("mkdir preview");
                     }
 
-					if (!doc["stream"]["preview"].IsNull()){
-						if (!doc["stream"]["preview"]["medium"].IsNull()){
-							std::string previewuri = doc["stream"]["preview"]["medium"].GetString();
-							std::string extension = previewuri.substr(previewuri.find_last_of("."));
-							std::string previewpath = "preview/" + channel->getUriName() + extension;
-                            channel->setPreviewPath(previewpath.c_str());
-							conn::GetFile(previewuri,previewpath);
-						}
-					}
-				}
 
+				}
+                if (!doc["stream"]["viewers"].IsNull()){
+                    channel->setViewers(doc["stream"]["viewers"].GetInt());
+                }
+                if (!doc["stream"]["preview"].IsNull()){
+                    if (!doc["stream"]["preview"]["medium"].IsNull()){
+                        std::cout << "Fetching preview image...";
+                        std::string previewuri = doc["stream"]["preview"]["medium"].GetString();
+                        std::string extension = previewuri.substr(previewuri.find_last_of("."));
+                        std::string previewpath = "preview/" + channel->getUriName() + extension;
+                        channel->setPreviewPath(previewpath.c_str());
+                        channel->setPreviewurl(previewuri.c_str());
+                        conn::GetFile(previewuri,previewpath);
+                        std::cout << "Done.\n";
+                    }
+                }
 			}
 		}
     }
@@ -310,7 +302,7 @@ void ChannelManager::checkStream(Channel *channel, bool sync){
     tman->check(channel);
     if (sync){
         tman->complete_threads();
-        writeJSON(DATAURI);
+        //writeJSON(DATAURI);
     }
     else {
         tman->complete_threads_async();
@@ -323,7 +315,7 @@ void ChannelManager::checkStreams(bool sync){
 	}
     if (sync){
         tman->complete_threads(); //HELP
-		writeJSON(DATAURI);
+        //writeJSON(DATAURI);
 	}
     else {
         tman->complete_threads_async();
@@ -361,7 +353,6 @@ void ChannelManager::remove(Channel* channel){
             channels.erase(channels.begin() + i);
         }
     }
-    save();
 }
 
 void ChannelManager::clearData(){

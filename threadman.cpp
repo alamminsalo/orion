@@ -112,7 +112,7 @@ bool ThreadManager::isPolling()
 }
 
 void ThreadManager::finish_threads(){
-    cman->save();
+    //cman->save();
     threadsrunning = false;
 }
 

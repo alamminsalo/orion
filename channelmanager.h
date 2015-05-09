@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include "threadman.h"
 #include "kstream/mainwindow.h"
+#include <QObject>
 
 #define TWITCH_URI "https://api.twitch.tv/kraken"
 #define DATAURI "./data.json"
@@ -17,17 +18,15 @@
 class ThreadManager;
 class MainWindow;
 
-class ChannelManager{
-
+class ChannelManager: public QObject{
+    Q_OBJECT
 	protected:
 		unsigned int update_counter, check_counter;
         std::vector<Channel*> channels;
         ThreadManager* tman;
-        MainWindow *main;
 	
 	public:
 		ChannelManager();
-        ChannelManager(MainWindow*);
 
 		~ChannelManager();	
         void load();
@@ -54,6 +53,13 @@ class ChannelManager{
         void play(Channel*);
         Channel* getLastAdded();
         bool channelExists(const char*);
+
+    signals:
+        void channelExists(Channel*);
+        void channelNotFound();
+        void channelStateChanged(Channel*);
+        void newChannel(Channel*);
+
 };
 
 #endif //CHANNEL_MANAGER_H

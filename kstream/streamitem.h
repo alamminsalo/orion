@@ -2,18 +2,20 @@
 #define STREAMITEM_H
 
 #include <QListWidgetItem>
+#include <QObject>
 #include <QDebug>
 #include "../channel.h"
 
 class Channel;
 
-class StreamItem: public QListWidgetItem
-{
+class StreamItem: public QObject, public QListWidgetItem{
+
+    Q_OBJECT
 protected:
     Channel* channel;
 
 public:
-    explicit StreamItem(QWidget *parent = 0);
+    //explicit StreamItem(QWidget *parent = 0);
     StreamItem(Channel*);
     ~StreamItem();
 
@@ -27,9 +29,11 @@ public:
 
     virtual bool operator< (const QListWidgetItem& other) const;
 
-    void update();
 
-    Channel* getChannel();
+    Channel* getChannel() const;
+
+public slots:
+        void update();
 
 };
 

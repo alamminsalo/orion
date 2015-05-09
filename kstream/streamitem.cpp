@@ -11,14 +11,15 @@ StreamItem::~StreamItem(){
 
 void StreamItem::update(){
 
-    if (channel->hasChanged()){     //To reduce some useless updating
+    //if (channel->hasChanged()){     //To reduce some useless updating
 
         if (this->icon().pixmap(QSize(32,32)).isNull()){ //MISSING ICON
             setIcon(QIcon(channel->getLogoPath().c_str()));
         }
-        if (this->text().isEmpty() && !getName().isEmpty()){
-            this->setText(getName());
-        }
+        //if (this->text().isEmpty() && !getName().isEmpty()){
+        QString title = getName();
+
+        //}
         QString image = "<img src=\"";
         image += channel->getPreviewPath().c_str();
         image += "\"></img>";
@@ -30,27 +31,28 @@ void StreamItem::update(){
             tooltip += this->getChannel()->lastOnline().c_str();
             tooltip += "</td></tr>";
         }
-        else tooltip+= "<tr><td><b>Now streaming</b></td></tr>";
+        else {
+            QString viewercount = std::to_string(channel->getViewers()).c_str();
+            tooltip += "<tr><td><b>Now streaming:</b> <i>"+viewercount+" viewers</i></td></tr>";
+        }
+
+        this->setText(title);
 
         tooltip += "</table>";
-        setToolTip(tooltip);
+        QListWidgetItem::setToolTip(tooltip);
 
         if (this->online()){
             this->setTextColor(QColor(0, 0, 0));
         }
         else this->setTextColor(QColor(200, 200, 200));
-
-        channel->setChanged(false);
-    }
-
 }
 
-Channel* StreamItem::getChannel(){
+Channel* StreamItem::getChannel() const{
     return channel;
 }
 
 bool StreamItem::online() const{
-    return this->channel->isOnline();
+    return channel->isOnline();
 }
 
 const QString StreamItem::getName(){
@@ -67,5 +69,16 @@ const QString StreamItem::getInfo(){
 
 bool StreamItem::operator< (const QListWidgetItem& other) const{
     const StreamItem& stritem = dynamic_cast<const StreamItem&>(other);
-    return (this->online() != stritem.online()) ? this->online() : (QString::compare(this->text(),stritem.text()) < 0);
+    //return (this->online() != stritem.online()) ? this->online() : (QString::compare(this->text(),stritem.text()) < 0);
+    //return (this->online() != stritem.online()) ? this->online() : (channel->getViewers() >= stritem.getChannel()->getViewers());
+
+    if (online() == stritem.online()){ //BOTH ONLINE OR BOTH OFFLINE
+        if (online()){  //BOTH ONLINE, COMPARISON BY VIEWER COUNT
+            return (channel->getViewers() >= stritem.getChannel()->getViewers());
+        }
+        else{ //BOTH OFFLINE, COMPARISON BY DEFAULT QSTRING METHOD
+            return (QString::compare(this->text(),stritem.text()) < 0);
+        }
+    }
+    return online();    //OTHER IS ONLINE AND OTHER IS NOT
 }

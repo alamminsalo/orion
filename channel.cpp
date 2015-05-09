@@ -4,11 +4,21 @@ Channel::~Channel(){
     std::cout << "Destroyer: Channel\n";
 }
 
+
+unsigned int Channel::getViewers() const
+{
+    return viewers;
+}
+
+void Channel::setViewers(unsigned int value)
+{
+    viewers = value;
+}
 Channel::Channel(){
-	alert = "on";
-	timestamp = time(0);
-	online = false;
-    changed = true;
+    alert = "on";
+    timestamp = time(0);
+    online = false;
+    //changed = true;
 }
 
 Channel::Channel(const char* uri) : Channel(){
@@ -45,6 +55,7 @@ Channel::Channel(const Channel &channel){
 	this->online = channel.online;
     this->logopath = channel.logopath;
     this->previewpath = channel.previewpath;
+    emit updated();
 }
 
 std::string Channel::lastOnline(){
@@ -75,6 +86,7 @@ const std::string Channel::getJSON() const{
 
 void Channel::setName(const char *newName){
 	name = newName;
+
 }
 
 void Channel::setURIName(const char *newUri){
@@ -122,6 +134,7 @@ void Channel::setOnline(bool b){
 	online = b;
     if (online)
         updateTime();
+    emit updated();
 }
 
 bool Channel::isOnline(){
@@ -143,21 +156,37 @@ std::string Channel::getPreviewPath(){
     return util::fileExists(previewpath.c_str()) ? previewpath : "preview/offline.png";
 }
 
-bool Channel::hasChanged()
-{
-    return changed;
-}
+//bool Channel::hasChanged()
+//{
+//    return changed;
+//}
 
-void Channel::setChanged(bool b){
-    changed = b;
-}
+//void Channel::setChanged(bool b){
+//    changed = b;
+//}
 
 void Channel::setLogoPath(const char *path){
     logopath = path;
 }
 
+void Channel::setLogourl(const char *uri){
+    logouri = uri;
+}
+
 void Channel::setPreviewPath(const char *path){
     previewpath = path;
+}
+
+std::string Channel::getLogourl(){
+    return logouri;
+}
+
+void Channel::setPreviewurl(const char *uri){
+    previewuri = uri;
+}
+
+std::string Channel::getPreviewurl(){
+    return previewuri;
 }
 
 void Channel::setLastSeen(time_t time){

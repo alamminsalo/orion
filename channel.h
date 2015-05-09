@@ -6,21 +6,28 @@
 #include <stdlib.h>
 #include <iostream>
 #include "fileutils.h"
+#include <QObject>
 
-class Channel{
+class Channel: public QObject{
+
+    Q_OBJECT
+
 	private:
 	std::string name;
 	std::string uri;
 	std::string info;
 	std::string alert;
+    unsigned int viewers;
 	bool online;
-    bool changed;
+    //bool changed;
 	time_t timestamp;
     std::string logopath;
     std::string previewpath;
+    std::string logouri;
+    std::string previewuri;
 
 	public:
-		Channel();
+        Channel();
         Channel(const char*);
         Channel(const char*, const char*, const char*);
         Channel(const char*, const char*, const char*, const char*);
@@ -51,8 +58,20 @@ class Channel{
         std::string getLogoPath();
         void setPreviewPath(const char*);
         std::string getPreviewPath();
-        bool hasChanged();
-        void setChanged(bool b);
+//        bool hasChanged();
+//        void setChanged(bool b);
+
+        std::string getLogourl();
+        void setLogourl(const char*);
+
+        std::string getPreviewurl();
+        void setPreviewurl(const char*);
+
+        unsigned int getViewers() const;
+        void setViewers(unsigned int value);
+
+signals:
+        void updated();
 };
 
 #endif //CHANNEL_H
