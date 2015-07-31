@@ -26,15 +26,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     loadList();
 
-    uitimer = new QTimer(this);
+    //uitimer = new QTimer(this);
 
     //connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
-    uitimer->start(1000);
-    updateList();
+    //uitimer->start(1000);
+    //updateList();
 
     updatetimer = new QTimer(this);
     connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
-    updatetimer->start(10000);
+    updatetimer->start(30000);
     checkStreams();
 }
 
