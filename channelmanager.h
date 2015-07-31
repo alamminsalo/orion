@@ -53,6 +53,8 @@ class ChannelManager: public QObject{
         void play(Channel*);
         Channel* getLastAdded();
         bool channelExists(const char*);
+        void checkAllStreams();
+        void parseOnlineStreams(std::string);
 
     signals:
         void channelExists(Channel*);

@@ -156,14 +156,14 @@ std::string Channel::getPreviewPath(){
     return util::fileExists(previewpath.c_str()) ? previewpath : "preview/offline.png";
 }
 
-//bool Channel::hasChanged()
-//{
-//    return changed;
-//}
+bool Channel::isChanged()
+{
+    return changed;
+}
 
-//void Channel::setChanged(bool b){
-//    changed = b;
-//}
+void Channel::setChanged(bool b){
+    changed = b;
+}
 
 void Channel::setLogoPath(const char *path){
     logopath = path;

@@ -3,6 +3,7 @@
 ThreadManager::ThreadManager(ChannelManager *c){
     cman = c;
     polling = false;
+    threadsrunning = false;
 }
 
 ThreadManager::~ ThreadManager(){
@@ -24,6 +25,18 @@ void t_check(Channel *channel, ChannelManager *cman){
 	}
 }
 
+void t_checkAll(ChannelManager *cman){
+    std::string url = TWITCH_URI;
+    url += "/streams?channel=";
+    for(size_t i = 0; i < cman->getChannels()->size(); i++){
+        if (i > 0){
+            url += ",";
+        }
+        url += cman->getChannels()->at(i)->getUriName();
+    }
+    cman->parseOnlineStreams(conn::Get(url));
+}
+
 void t_update(Channel *channel, ChannelManager *cman){
 	if (channel){
 		std::string uristr = TWITCH_URI;
@@ -35,7 +48,7 @@ void t_update(Channel *channel, ChannelManager *cman){
 	}
 }
 
-void t_getfile(std::string uri, std::string path){
+void t_getfile(std::string uri, std::string path, Channel* channel){
 	std::cout << "uri: " << uri << " path: " << path << "\n";
 	if (uri.empty()){
 		std::cout << "No url set for file!\n";
@@ -46,6 +59,7 @@ void t_getfile(std::string uri, std::string path){
 		return;
 	}
 	conn::GetFile(uri.c_str(),path.c_str());
+    channel->updated();
 }
 
 void t_poll(ThreadManager *tman){
@@ -97,8 +111,12 @@ void ThreadManager::check(Channel *channel){
     threads.push_back(std::thread(t_check,channel,cman));
 }
 
-void ThreadManager::getfile(std::string uri, std::string path){
-	threads.push_back(std::thread(t_getfile,uri,path));
+void ThreadManager::checkAll(){
+    threads.push_back(std::thread(t_checkAll,cman));
+}
+
+void ThreadManager::getfile(std::string uri, std::string path, Channel* channel){
+    threads.push_back(std::thread(t_getfile,uri,path,channel));
 }
 
 void ThreadManager::startPolling(){

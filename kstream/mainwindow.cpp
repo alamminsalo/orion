@@ -136,7 +136,8 @@ void MainWindow::updateList(){
 }
 
 void MainWindow::checkStreams(){
-    cman->checkStreams(false);
+    //cman->checkStreams(false);
+    cman->checkAllStreams();
 }
 
 

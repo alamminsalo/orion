@@ -22,6 +22,7 @@ size_t conn::write_data(char *ptr, size_t size, size_t nmemb, void *data){
 
 std::string conn::Get(const std::string uri){
 	std::string data;
+    std::cout << uri << std::endl;
 	CURL* curl = curl_easy_init();
 	if (curl){
 		CURLcode res;

@@ -19,7 +19,7 @@ class Channel: public QObject{
 	std::string alert;
     unsigned int viewers;
 	bool online;
-    //bool changed;
+    bool changed;
 	time_t timestamp;
     std::string logopath;
     std::string previewpath;
@@ -58,8 +58,8 @@ class Channel: public QObject{
         std::string getLogoPath();
         void setPreviewPath(const char*);
         std::string getPreviewPath();
-//        bool hasChanged();
-//        void setChanged(bool b);
+        bool isChanged();
+        void setChanged(bool b);
 
         std::string getLogourl();
         void setLogourl(const char*);

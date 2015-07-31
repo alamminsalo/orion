@@ -361,6 +361,7 @@ void ChannelManager::clearData(){
 	}
     channels.clear();
 }
+
 void ChannelManager::play(Channel* channel){
     if (util::fileExists("play.sh")){
         std::string cmd = "./play.sh "+channel->getFullUri()+" &";
@@ -368,4 +369,74 @@ void ChannelManager::play(Channel* channel){
         system(cmd.c_str());
     }
     else std::cout << "Couldn't locate 'play.sh'\n";
+}
+
+void ChannelManager::checkAllStreams()
+{
+    foreach (Channel *channel, channels)
+        channel->setChanged(false);
+    if (channels.size() > 0)
+        tman->checkAll();
+}
+
+void ChannelManager::parseOnlineStreams(std::string data)
+{
+    rapidjson::Document doc;
+    doc.Parse<0>(data.c_str());
+
+    if (doc.HasParseError() || !doc.IsObject())
+        return;
+
+    const rapidjson::Value& streams = doc["streams"];
+
+    //std::cout << streams.Size();
+
+// PARSE ONLINE CHANNELS
+    for (rapidjson::SizeType i=0; i < streams.Size(); i++){
+        const rapidjson::Value& item = streams[i];
+        Channel *channel = find(item["channel"]["name"].GetString());
+        std::cout << item["channel"]["name"].GetString() << std::endl;
+        if (!channel)
+            continue;
+
+        if (!util::folderExists("preview")){
+            std::cout << "dir \"preview\" not found, making..\n";
+            system("mkdir preview");
+        }
+
+        if (!item["viewers"].IsNull()){
+            channel->setViewers(item["viewers"].GetInt());
+            std::cout << channel->getViewers() << std::endl;
+        }
+
+        if (channel->getPreviewurl().empty() && !item["preview"].IsNull()){
+            if (!item["preview"]["medium"].IsNull()){
+                std::cout << "Fetching preview image...";
+                std::string previewuri = item["preview"]["medium"].GetString();
+                std::string extension = previewuri.substr(previewuri.find_last_of("."));
+                std::string previewpath = "preview/" + channel->getUriName() + extension;
+                channel->setPreviewPath(previewpath.c_str());
+                channel->setPreviewurl(previewuri.c_str());
+                tman->getfile(previewuri,previewpath,channel);
+                std::cout << "Done.\n";
+            }
+        }
+
+        if (!channel->isOnline()){
+            std::cout << channel->getUriName() << std::endl;
+            channel->setOnline(true);
+            emit channelStateChanged(channel);
+        }
+        channel->setChanged(true);
+    }
+
+//PARSE OFFLINE CHANNELS
+    foreach (Channel *channel, channels){
+        if (!channel->isChanged() && channel->isOnline()){
+            channel->setOnline(false);
+            emit channelStateChanged(channel);
+        }
+    }
+
+    qDebug() << "Done!";
 }
