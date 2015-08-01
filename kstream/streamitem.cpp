@@ -4,6 +4,7 @@ StreamItem::StreamItem(Channel* channel)
 {
     this->channel = channel;
     update();
+    updateIcon();
 }
 StreamItem::~StreamItem(){
     qDebug() << "Destroyer: StreamItem";
@@ -11,10 +12,10 @@ StreamItem::~StreamItem(){
 
 
 void StreamItem::update(){
-        if (this->icon().pixmap(QSize(32,32)).isNull() &&
+        /*if (this->icon().pixmap(QSize(32,32)).isNull() &&
                 util::fileExists(channel->getLogoPath().c_str())){ //MISSING ICON
             updateIcon();
-        }
+        }*/
 
         QString title = getName();
         QString image = "<img src=\"";
@@ -43,7 +44,10 @@ void StreamItem::update(){
 
 void StreamItem::updateIcon()
 {
-    setIcon(QIcon(channel->getLogoPath().c_str()));
+    if (!channel->getLogoPath().empty())
+        setIcon(QIcon(channel->getLogoPath().c_str()));
+    else
+        setIcon(QIcon("logos/loading.gif"));
 }
 
 Channel* StreamItem::getChannel() const{

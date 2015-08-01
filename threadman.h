@@ -24,7 +24,7 @@ class ThreadManager{
         void checkAll();
 		void update(Channel*);
         void add(Channel*);
-        void getfile(std::string,std::string,Channel*);
+        void getfile(std::string,std::string);
 
         void startPolling();
         bool isPolling();
@@ -40,7 +40,7 @@ void t_update(Channel*, ChannelManager*);
 void t_check(Channel*, ChannelManager*);
 void t_checkAll(ChannelManager*);
 void t_poll(ThreadManager*);
-void t_getfile(std::string,std::string,Channel*);
+void t_getfile(std::string,std::string);
 void t_complete_async(std::vector<std::thread>*, ThreadManager*);
 
 #endif

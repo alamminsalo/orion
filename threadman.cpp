@@ -61,7 +61,7 @@ void t_add(Channel *channel, ChannelManager *cman){
     }
 }
 
-void t_getfile(std::string uri, std::string path, Channel* channel){
+void t_getfile(std::string uri, std::string path){
     //std::cout << "uri: " << uri << " path: " << path << "\n";
 	if (uri.empty()){
 		std::cout << "No url set for file!\n";
@@ -131,8 +131,8 @@ void ThreadManager::checkAll(){
     threads.push_back(std::thread(t_checkAll,cman));
 }
 
-void ThreadManager::getfile(std::string uri, std::string path, Channel* channel){
-    threads.push_back(std::thread(t_getfile,uri,path,channel));
+void ThreadManager::getfile(std::string uri, std::string path){
+    threads.push_back(std::thread(t_getfile,uri,path));
 }
 
 void ThreadManager::startPolling(){

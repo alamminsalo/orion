@@ -114,8 +114,8 @@ void ChannelManager::add(const char* uriName){
     else{
         channel = new Channel(uriName);
         add(channel);
-        channel->setLogoPath("logos/loading.gif");
         tman->add(channel);
+        tman->check(channel);
     }
 }
 
@@ -221,7 +221,8 @@ bool ChannelManager::update(Channel *channel, std::string data){
             channel->setLogoPath("logos/default.png");
         }
         channel->updated();
-        tman->check(channel);
+        //tman->check(channel);
+        //checkStream(channel,false);
         return true;
 	}
     return false;
@@ -418,7 +419,7 @@ void ChannelManager::parseOnlineStreams(std::string data)
                 std::string previewpath = "preview/" + channel->getUriName() + extension;
                 channel->setPreviewPath(previewpath.c_str());
                 channel->setPreviewurl(previewuri.c_str());
-                tman->getfile(previewuri,previewpath,channel);
+                tman->getfile(previewuri,previewpath);
             }
         }
 
