@@ -26,12 +26,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     loadList();
 
-    //uitimer = new QTimer(this);
-
-    //connect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
-    //uitimer->start(1000);
-    //updateList();
-
     updatetimer = new QTimer(this);
     connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
     updatetimer->start(30000);
@@ -172,10 +166,10 @@ void MainWindow::showContextMenu(const QPoint& pos){
 }
 
 void MainWindow::remove(StreamItem* item){
-    delete item;
-    qDebug() << "Removed from list";
     cman->remove(item->getChannel());
     qDebug() << "Removed from channelmanager";
+    delete item;
+    qDebug() << "Removed from list";
 }
 
 void MainWindow::setupTray(){
@@ -241,7 +235,7 @@ void MainWindow::hide(){
 void MainWindow::notify(Channel *channel){
     std::string title = channel->getName() + (channel->isOnline() ? " is streaming" : " has gone offline");
     std::string cmd = "./dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
-    QProcess process;
-    process.startDetached(cmd.c_str());
+    //QProcess process;
+    QProcess::startDetached(cmd.c_str());
 }
 

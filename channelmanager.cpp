@@ -350,7 +350,7 @@ void ChannelManager::remove(const char *channelName){
 void ChannelManager::remove(Channel* channel){
     tman->wait_for_threads();
     for (unsigned int i=0; i < channels.size(); i++){
-        if (channels.at(i) == channel){
+        if (channels[i] == channel){
             delete channel;
             channels.erase(channels.begin() + i);
         }

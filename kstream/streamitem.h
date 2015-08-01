@@ -29,13 +29,11 @@ public:
 
     virtual bool operator< (const QListWidgetItem& other) const;
 
-
     Channel* getChannel() const;
 
 public slots:
         void update();
         void updateIcon();
-
 };
 
 #endif // STREAMITEM_H

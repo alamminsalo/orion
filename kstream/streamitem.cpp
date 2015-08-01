@@ -1,4 +1,6 @@
 #include "streamitem.h"
+#include <QTimer>
+#include <QApplication>
 
 StreamItem::StreamItem(Channel* channel)
 {
@@ -6,17 +8,13 @@ StreamItem::StreamItem(Channel* channel)
     update();
     updateIcon();
 }
+
 StreamItem::~StreamItem(){
     qDebug() << "Destroyer: StreamItem";
 }
 
 
 void StreamItem::update(){
-        /*if (this->icon().pixmap(QSize(32,32)).isNull() &&
-                util::fileExists(channel->getLogoPath().c_str())){ //MISSING ICON
-            updateIcon();
-        }*/
-
         QString title = getName();
         QString image = "<img src=\"";
         image += channel->getPreviewPath().c_str();
