@@ -27,7 +27,7 @@ void t_check(Channel *channel, ChannelManager *cman){
 
 void t_checkAll(ChannelManager *cman){
     std::string url = TWITCH_URI;
-    url += "/streams?channel=";
+    url += "/streams?limit=100&channel=";
     for(size_t i = 0; i < cman->getChannels()->size(); i++){
         if (i > 0){
             url += ",";
@@ -61,7 +61,7 @@ void t_add(Channel *channel, ChannelManager *cman){
     }
 }
 
-void t_getfile(std::string uri, std::string path){
+void t_getfile(std::string uri, std::string path, Channel* channel){
     //std::cout << "uri: " << uri << " path: " << path << "\n";
 	if (uri.empty()){
 		std::cout << "No url set for file!\n";
@@ -72,6 +72,9 @@ void t_getfile(std::string uri, std::string path){
 		return;
 	}
 	conn::GetFile(uri.c_str(),path.c_str());
+    if (channel){
+        channel->iconUpdated();
+    }
 }
 
 void t_poll(ThreadManager *tman){
@@ -131,8 +134,8 @@ void ThreadManager::checkAll(){
     threads.push_back(std::thread(t_checkAll,cman));
 }
 
-void ThreadManager::getfile(std::string uri, std::string path){
-    threads.push_back(std::thread(t_getfile,uri,path));
+void ThreadManager::getfile(std::string uri, std::string path, Channel* channel){
+    threads.push_back(std::thread(t_getfile,uri,path, channel));
 }
 
 void ThreadManager::startPolling(){

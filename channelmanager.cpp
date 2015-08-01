@@ -191,13 +191,6 @@ bool ChannelManager::update(Channel *channel, std::string data){
 			else channel->setName(channel->getUriName().c_str());
 		}
 
-        if (doc.HasMember("status")){
-			const rapidjson::Value& status = doc["status"];
-			if (!status.IsNull())
-				channel->setInfo(doc["status"].GetString());
-			else channel->setInfo("No status found");
-		}
-
         if (doc.HasMember("logo") && !doc["logo"].IsNull()){
 
 				std::string logouri = doc["logo"].GetString();
@@ -391,43 +384,67 @@ void ChannelManager::parseOnlineStreams(std::string data)
 
     //std::cout << streams.Size();
 
-// PARSE ONLINE CHANNELS
+    // PARSE ONLINE CHANNELS
     for (rapidjson::SizeType i=0; i < streams.Size(); i++){
         const rapidjson::Value& item = streams[i];
         Channel *channel = find(item["channel"]["name"].GetString());
         //std::cout << item["channel"]["name"].GetString() << std::endl;
-        if (!channel)
-            continue;
+        if (channel){
 
-        if (!item["viewers"].IsNull()){
-            channel->setViewers(item["viewers"].GetInt());
-            std::cout << channel->getViewers() << std::endl;
-        }
-
-        if (channel->getPreviewurl().empty() && !item["preview"].IsNull()){
-            if (!item["preview"]["medium"].IsNull()){
-                std::cout << "Fetching preview image...";
-                std::string previewuri = item["preview"]["medium"].GetString();
-                std::string extension = previewuri.substr(previewuri.find_last_of("."));
-                std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
-                channel->setPreviewPath(previewpath.c_str());
-                channel->setPreviewurl(previewuri.c_str());
-                tman->getfile(previewuri,previewpath);
+            if (!item["display_name"].IsNull()){
+                channel->setName(item["display_name"].GetString());
             }
-        }
 
-        if (!channel->isOnline()){
-            channel->setOnline(true);
-            emit channelStateChanged(channel);
+            if (!item["channel"]["logo"].IsNull()){
+                std::string logouri = item["channel"]["logo"].GetString();
+                std::string extension = logouri.substr(logouri.find_last_of("."));
+                std::string logopath = "resources/logos/" + channel->getUriName() + extension;
+
+                channel->setLogourl(logouri.c_str());
+                channel->setLogoPath(logopath.c_str());
+
+                if (!util::fileExists(logopath.c_str())){
+                    tman->getfile(logouri,logopath,channel);
+                }
+            }
+
+            if (!item["viewers"].IsNull()){
+                channel->setViewers(item["viewers"].GetInt());
+            }
+
+            if (channel->getPreviewurl().empty() && !item["preview"].IsNull()){
+                if (!item["preview"]["medium"].IsNull()){
+                    //std::cout << "Fetching preview image...";
+                    std::string previewuri = item["preview"]["medium"].GetString();
+                    std::string extension = previewuri.substr(previewuri.find_last_of("."));
+                    std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
+                    channel->setPreviewPath(previewpath.c_str());
+                    channel->setPreviewurl(previewuri.c_str());
+                    tman->getfile(previewuri,previewpath);
+                }
+            }
+
+            if (!channel->isOnline()){
+                channel->setOnline(true);
+                emit channelStateChanged(channel);
+            }
+            channel->setChanged(true);
         }
-        channel->setChanged(true);
     }
 
-//PARSE OFFLINE CHANNELS
+    //PARSE OFFLINE CHANNELS
     foreach (Channel *channel, channels){
-        if (!channel->isChanged() && channel->isOnline()){
-            channel->setOnline(false);
-            emit channelStateChanged(channel);
+        if (!channel->isChanged()){
+
+            //If missing display name or channel logo data, update channel data
+            if (channel->getName().empty() || !util::fileExists(channel->getLogoPath().c_str())){
+                tman->update(channel);
+            }
+
+            if (channel->isOnline()){
+                channel->setOnline(false);
+                emit channelStateChanged(channel);
+            }
         }
     }
 }

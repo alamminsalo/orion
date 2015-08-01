@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
     updatetimer->start(30000);
     checkStreams();
-    cman->updateChannels(true);
+    //cman->updateChannels(true);
 }
 
 MainWindow::~MainWindow()
