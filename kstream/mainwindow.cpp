@@ -20,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     cman = new ChannelManager();
     connect(cman,SIGNAL(channelExists(Channel*)),this,SLOT(showAlreadyAdded(Channel*)));
-    connect(cman,SIGNAL(channelNotFound()),this,SLOT(showNotFound()));
+    connect(cman,SIGNAL(channelNotFound(Channel*)),this,SLOT(showNotFound(Channel*)));
     connect(cman,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
     connect(cman,SIGNAL(newChannel(Channel*)),this,SLOT(addItem(Channel*)));
 
@@ -50,15 +50,17 @@ MainWindow::~MainWindow()
     ui->listWidget->clear();
 
     qDebug() << "Stopping timers..";
-    uitimer->stop();
+    //uitimer->stop();
     updatetimer->stop();
 
     //disconnect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
-    disconnect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
+    //disconnect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
 
     qDebug() << "Deleting timers..";
-    delete uitimer;
-    delete updatetimer;
+    //7if (uitimer)
+       //delete uitimer;
+    if (updatetimer)
+        delete updatetimer;
 
     qDebug() << "Deleting channelmanager..";
     delete cman;
@@ -73,21 +75,12 @@ MainWindow::~MainWindow()
     qDebug() << "All done!";
 }
 
-//void MainWindow::update(Channel *channel){
-//    qDebug() << channel;
-//    for (unsigned int i=0; i < cman->getChannels()->size(); i++){
-//        StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->item(i));
-//        if (item && item->getChannel() == channel){
-//            item->update();
-//            break;
-//        }
-//    }
-//    ui->listWidget->sortItems();
-//}
-
-void MainWindow::showNotFound()
+void MainWindow::showNotFound(Channel *channel)
 {
     QMessageBox::information(this,"404", "Channel not found",QMessageBox::Ok);
+    StreamItem *item = find(channel);
+    if (item)
+        remove(item);
 }
 
 StreamItem* MainWindow::find(Channel *channel){
@@ -114,18 +107,16 @@ void MainWindow::addItem(Channel* channel){
     QString logopath = "logos/";
     logopath.append(channel->getUriName().c_str());
 
-    if (channel->isEmpty())
-        cman->checkStream(channel,true);
+    //if (channel->isEmpty())
+        //cman->checkStream(channel,false);
 
     StreamItem* item = new StreamItem(channel);
 
-    item->update();
-
-    if (util::fileExists(logopath.toStdString().c_str()))
-        item->setIcon(QIcon(logopath));
-
     connect(channel,SIGNAL(updated()),item,SLOT(update()));
+    connect(channel,SIGNAL(iconUpdated()),item,SLOT(updateIcon()));
     ui->listWidget->addItem(item);
+
+    //cman->checkStream(channel,false);
 }
 
 void MainWindow::updateList(){
@@ -136,7 +127,6 @@ void MainWindow::updateList(){
 }
 
 void MainWindow::checkStreams(){
-    //cman->checkStreams(false);
     cman->checkAllStreams();
 }
 
@@ -162,7 +152,7 @@ void MainWindow::showContextMenu(const QPoint& pos){
     StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->currentItem());
 
     QMenu menu;
-    menu.addAction(QIcon::fromTheme("vlc"),"Watch");
+    menu.addAction(QIcon::fromTheme("mpv"),"Watch");
     if (!item->online())
         menu.actions().first()->setEnabled(false);
     menu.addAction(QIcon::fromTheme("list-remove"),"Remove");

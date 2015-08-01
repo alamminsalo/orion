@@ -48,8 +48,21 @@ void t_update(Channel *channel, ChannelManager *cman){
 	}
 }
 
+void t_add(Channel *channel, ChannelManager *cman){
+    if (channel){
+        std::string uristr = TWITCH_URI;
+        uristr += "/channels/";
+        uristr += channel->getUriName();
+        std::string str = conn::Get(uristr.c_str());
+
+       if (!cman->update(channel,str)){
+           cman->channelNotFound(channel);
+       }
+    }
+}
+
 void t_getfile(std::string uri, std::string path, Channel* channel){
-	std::cout << "uri: " << uri << " path: " << path << "\n";
+    //std::cout << "uri: " << uri << " path: " << path << "\n";
 	if (uri.empty()){
 		std::cout << "No url set for file!\n";
 		return;
@@ -59,7 +72,6 @@ void t_getfile(std::string uri, std::string path, Channel* channel){
 		return;
 	}
 	conn::GetFile(uri.c_str(),path.c_str());
-    channel->updated();
 }
 
 void t_poll(ThreadManager *tman){
@@ -105,6 +117,10 @@ void ThreadManager::complete_threads_async(){
 
 void ThreadManager::update(Channel *channel){
     threads.push_back(std::thread(t_update,channel,cman));
+}
+
+void ThreadManager::add(Channel *channel){
+    threads.push_back(std::thread(t_add,channel,cman));
 }
 
 void ThreadManager::check(Channel *channel){

@@ -58,7 +58,7 @@ public slots:
 
 private slots:
     void on_addButton_clicked();
-    void showNotFound();
+    void showNotFound(Channel*);
     void showAlreadyAdded(Channel*);
     void notify(Channel*);
     void addItem(Channel*);

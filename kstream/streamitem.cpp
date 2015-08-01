@@ -3,6 +3,7 @@
 StreamItem::StreamItem(Channel* channel)
 {
     this->channel = channel;
+    update();
 }
 StreamItem::~StreamItem(){
     qDebug() << "Destroyer: StreamItem";
@@ -10,16 +11,12 @@ StreamItem::~StreamItem(){
 
 
 void StreamItem::update(){
-
-    //if (channel->hasChanged()){     //To reduce some useless updating
-
-        if (this->icon().pixmap(QSize(32,32)).isNull()){ //MISSING ICON
-            setIcon(QIcon(channel->getLogoPath().c_str()));
+        if (this->icon().pixmap(QSize(32,32)).isNull() &&
+                util::fileExists(channel->getLogoPath().c_str())){ //MISSING ICON
+            updateIcon();
         }
-        //if (this->text().isEmpty() && !getName().isEmpty()){
-        QString title = getName();
 
-        //}
+        QString title = getName();
         QString image = "<img src=\"";
         image += channel->getPreviewPath().c_str();
         image += "\"></img>";
@@ -30,21 +27,23 @@ void StreamItem::update(){
             tooltip += "<tr><td>Last seen: ";
             tooltip += this->getChannel()->lastOnline().c_str();
             tooltip += "</td></tr>";
+            setTextColor(QColor(200, 200, 200));
         }
         else {
             QString viewercount = std::to_string(channel->getViewers()).c_str();
             tooltip += "<tr><td><b>Now streaming:</b> <i>"+viewercount+" viewers</i></td></tr>";
+            setTextColor(QColor(0, 0, 0));
         }
 
         this->setText(title);
 
         tooltip += "</table>";
         QListWidgetItem::setToolTip(tooltip);
+}
 
-        if (this->online()){
-            this->setTextColor(QColor(0, 0, 0));
-        }
-        else this->setTextColor(QColor(200, 200, 200));
+void StreamItem::updateIcon()
+{
+    setIcon(QIcon(channel->getLogoPath().c_str()));
 }
 
 Channel* StreamItem::getChannel() const{
@@ -56,7 +55,9 @@ bool StreamItem::online() const{
 }
 
 const QString StreamItem::getName(){
-    return channel->getName().c_str();
+    if (!channel->getName().empty())
+        return channel->getName().c_str();
+    return channel->getUriName().c_str();
 }
 
 const QString StreamItem::getUriName(){

@@ -23,6 +23,7 @@ class ThreadManager{
 		void check(Channel*);
         void checkAll();
 		void update(Channel*);
+        void add(Channel*);
         void getfile(std::string,std::string,Channel*);
 
         void startPolling();
@@ -34,6 +35,7 @@ class ThreadManager{
         void finish_threads();
 };
 
+void t_add(Channel*, ChannelManager*);
 void t_update(Channel*, ChannelManager*);
 void t_check(Channel*, ChannelManager*);
 void t_checkAll(ChannelManager*);

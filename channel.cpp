@@ -167,6 +167,7 @@ void Channel::setChanged(bool b){
 
 void Channel::setLogoPath(const char *path){
     logopath = path;
+    emit iconUpdated();
 }
 
 void Channel::setLogourl(const char *uri){

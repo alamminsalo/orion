@@ -72,6 +72,7 @@ class Channel: public QObject{
 
 signals:
         void updated();
+        void iconUpdated();
 };
 
 #endif //CHANNEL_H

@@ -34,6 +34,7 @@ public:
 
 public slots:
         void update();
+        void updateIcon();
 
 };
 

@@ -113,13 +113,9 @@ void ChannelManager::add(const char* uriName){
     }
     else{
         channel = new Channel(uriName);
-        if (update(channel)){
-            add(channel);
-        }
-        else {
-            delete channel;
-            emit channelNotFound();
-        }
+        add(channel);
+        channel->setLogoPath("logos/loading.gif");
+        tman->add(channel);
     }
 }
 
@@ -200,26 +196,33 @@ bool ChannelManager::update(Channel *channel, std::string data){
 		}
 
 
-		if (doc.HasMember("logo")){
-			if (!doc["logo"].IsNull()){
+        if (doc.HasMember("logo") && !doc["logo"].IsNull()){
 
 				std::string logouri = doc["logo"].GetString();
 				std::string extension = logouri.substr(logouri.find_last_of("."));
 				std::string logopath = "logos/" + channel->getUriName() + extension;
 
-				channel->setLogoPath(logopath.c_str());
+
                 channel->setLogourl(logouri.c_str());
 
-				if (!util::fileExists(logopath.c_str())){
+                if (!util::fileExists(logopath.c_str())){
                     //std::cout << "Fetching logo...";
-                    conn::GetFile(logouri,logopath);
-                    //std::cout << "Done.\n";
-				}
-			}
-            else channel->setLogoPath("logos/default.png");
-		}
-        return true;
+                    //conn::GetFile(logouri,logopath);
+                    //channel->setLogoPath(logopath.c_str());
+                    //channel->updated();
+                conn::GetFile(logouri,logopath);
 
+                    //std::cout << "Done.\n";
+                }
+                channel->setLogoPath(logopath.c_str());
+
+		}
+        else{
+            channel->setLogoPath("logos/default.png");
+        }
+        channel->updated();
+        tman->check(channel);
+        return true;
 	}
     return false;
 }
@@ -245,10 +248,10 @@ void ChannelManager::check(Channel *channel, std::string data){
 		return;
     }
 	
-    std::string logopath = "./logos/" + channel->getUriName();
-    if (channel->getName().empty() || channel->getInfo().empty() || !util::fileExists(logopath.c_str())){
-        if (!update(channel)) return;
-    }
+    //std::string logopath = "./logos/" + channel->getUriName();
+    //if (channel->getName().empty() || channel->getInfo().empty() || !util::fileExists(logopath.c_str())){
+      //  if (!update(channel)) return;
+    //}
 
 	if (channel->hasAlert()){
 
@@ -258,7 +261,6 @@ void ChannelManager::check(Channel *channel, std::string data){
                     //std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
                     //system(cmdstr.c_str());
 					channel->setOnline(false);
-
                     emit channelStateChanged(channel);
                 }
 			}
@@ -268,13 +270,11 @@ void ChannelManager::check(Channel *channel, std::string data){
                     //system(cmdstr.c_str());
 					channel->setOnline(true);
 
-                    emit channelStateChanged(channel);
-
                     if (!util::folderExists("preview")){
                         std::cout << "dir \"preview\" not found, making..\n";
                         system("mkdir preview");
                     }
-
+                    emit channelStateChanged(channel);
 
 				}
                 if (!doc["stream"]["viewers"].IsNull()){
@@ -293,6 +293,7 @@ void ChannelManager::check(Channel *channel, std::string data){
                     }
                 }
 			}
+            channel->updated();
 		}
     }
 
@@ -395,7 +396,7 @@ void ChannelManager::parseOnlineStreams(std::string data)
     for (rapidjson::SizeType i=0; i < streams.Size(); i++){
         const rapidjson::Value& item = streams[i];
         Channel *channel = find(item["channel"]["name"].GetString());
-        std::cout << item["channel"]["name"].GetString() << std::endl;
+        //std::cout << item["channel"]["name"].GetString() << std::endl;
         if (!channel)
             continue;
 
@@ -418,12 +419,10 @@ void ChannelManager::parseOnlineStreams(std::string data)
                 channel->setPreviewPath(previewpath.c_str());
                 channel->setPreviewurl(previewuri.c_str());
                 tman->getfile(previewuri,previewpath,channel);
-                std::cout << "Done.\n";
             }
         }
 
         if (!channel->isOnline()){
-            std::cout << channel->getUriName() << std::endl;
             channel->setOnline(true);
             emit channelStateChanged(channel);
         }
@@ -437,6 +436,4 @@ void ChannelManager::parseOnlineStreams(std::string data)
             emit channelStateChanged(channel);
         }
     }
-
-    qDebug() << "Done!";
 }

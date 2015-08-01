@@ -58,7 +58,7 @@ class ChannelManager: public QObject{
 
     signals:
         void channelExists(Channel*);
-        void channelNotFound();
+        void channelNotFound(Channel*);
         void channelStateChanged(Channel*);
         void newChannel(Channel*);
 
