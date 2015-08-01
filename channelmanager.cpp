@@ -2,6 +2,14 @@
 
 ChannelManager::ChannelManager(){
     tman = new ThreadManager(this);
+    if (!util::folderExists("resources/preview")){
+        std::cout << "dir \"preview\" not found, making..\n";
+        system("mkdir resources/preview");
+    }
+    if (!util::folderExists("resources/logos")){
+        std::cout << "dir \"preview\" not found, making..\n";
+        system("mkdir resources/logos");
+    }
 }
 
 ChannelManager::~ChannelManager(){
@@ -144,7 +152,7 @@ void ChannelManager::updateChannels(bool sync){
 	}
 	if (sync){
 		//std::cout << "\nWaiting threads...\n";
-		tman->complete_threads(); //HALTS UNTIL COMPLETED!
+        //tman->complete_threads(); //HALTS UNTIL COMPLETED! //TODO
 		//std::cout << "\nThreads done.\n";
         //writeJSON(DATAURI);
 	}
@@ -190,17 +198,11 @@ bool ChannelManager::update(Channel *channel, std::string data){
 			else channel->setInfo("No status found");
 		}
 
-        if (!util::folderExists("logos")){
-			std::cout << "dir \"logos\" not found, making..\n";
-			system("mkdir logos");
-		}
-
-
         if (doc.HasMember("logo") && !doc["logo"].IsNull()){
 
 				std::string logouri = doc["logo"].GetString();
 				std::string extension = logouri.substr(logouri.find_last_of("."));
-				std::string logopath = "logos/" + channel->getUriName() + extension;
+                std::string logopath = "resources/logos/" + channel->getUriName() + extension;
 
 
                 channel->setLogourl(logouri.c_str());
@@ -218,7 +220,7 @@ bool ChannelManager::update(Channel *channel, std::string data){
 
 		}
         else{
-            channel->setLogoPath("logos/default.png");
+            channel->setLogoPath("resources/logos/default.png");
         }
         channel->updated();
         //tman->check(channel);
@@ -270,11 +272,6 @@ void ChannelManager::check(Channel *channel, std::string data){
                     //std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
                     //system(cmdstr.c_str());
 					channel->setOnline(true);
-
-                    if (!util::folderExists("preview")){
-                        std::cout << "dir \"preview\" not found, making..\n";
-                        system("mkdir preview");
-                    }
                     emit channelStateChanged(channel);
 
 				}
@@ -286,7 +283,7 @@ void ChannelManager::check(Channel *channel, std::string data){
                         std::cout << "Fetching preview image...";
                         std::string previewuri = doc["stream"]["preview"]["medium"].GetString();
                         std::string extension = previewuri.substr(previewuri.find_last_of("."));
-                        std::string previewpath = "preview/" + channel->getUriName() + extension;
+                        std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
                         channel->setPreviewPath(previewpath.c_str());
                         channel->setPreviewurl(previewuri.c_str());
                         conn::GetFile(previewuri,previewpath);
@@ -365,8 +362,8 @@ void ChannelManager::clearData(){
 }
 
 void ChannelManager::play(Channel* channel){
-    if (util::fileExists("play.sh")){
-        std::string cmd = "./play.sh "+channel->getFullUri()+" &";
+    if (util::fileExists("resources/scripts/play.sh")){
+        std::string cmd = "resources/scripts/play.sh "+channel->getFullUri()+" &";
         std::cout << cmd << "\n";
         system(cmd.c_str());
     }
@@ -375,8 +372,9 @@ void ChannelManager::play(Channel* channel){
 
 void ChannelManager::checkAllStreams()
 {
-    foreach (Channel *channel, channels)
+    foreach (Channel *channel, channels){
         channel->setChanged(false);
+    }
     if (channels.size() > 0)
         tman->checkAll();
 }
@@ -401,11 +399,6 @@ void ChannelManager::parseOnlineStreams(std::string data)
         if (!channel)
             continue;
 
-        if (!util::folderExists("preview")){
-            std::cout << "dir \"preview\" not found, making..\n";
-            system("mkdir preview");
-        }
-
         if (!item["viewers"].IsNull()){
             channel->setViewers(item["viewers"].GetInt());
             std::cout << channel->getViewers() << std::endl;
@@ -416,7 +409,7 @@ void ChannelManager::parseOnlineStreams(std::string data)
                 std::cout << "Fetching preview image...";
                 std::string previewuri = item["preview"]["medium"].GetString();
                 std::string extension = previewuri.substr(previewuri.find_last_of("."));
-                std::string previewpath = "preview/" + channel->getUriName() + extension;
+                std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
                 channel->setPreviewPath(previewpath.c_str());
                 channel->setPreviewurl(previewuri.c_str());
                 tman->getfile(previewuri,previewpath);

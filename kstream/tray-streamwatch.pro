@@ -22,7 +22,6 @@ SOURCES += mainwindow.cpp\
     ../threadman.cpp \
     streamitem.cpp \
     tray.cpp
-    #../main.cpp
 
 HEADERS  += mainwindow.h\
     ../channel.h \
@@ -46,6 +45,12 @@ HEADERS  += mainwindow.h\
 FORMS    += mainwindow.ui
 
 OTHER_FILES += \
-    logo.svg
+    resources/logo.svg
 
 QMAKE_CXXFLAGS += -std=c++11 -O2
+
+copydata.commands = $(COPY_DIR) $$PWD/resources $$OUT_PWD
+first.depends = $(first) copydata
+export(first.depends)
+export(copydata.commands)
+QMAKE_EXTRA_TARGETS += first copydata

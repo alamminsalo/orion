@@ -100,7 +100,7 @@ void t_complete_async(std::vector<std::thread> *threads,ThreadManager *tman){
         for (unsigned int i=0; i < threads->size(); i++){
                 threads->at(i).join();
         }
-
+        std::cout << "\nTHREAD NUM: " << threads->size() << std::endl;
         threads->clear();
     } catch(std::exception& e){
         std::cout << e.what();

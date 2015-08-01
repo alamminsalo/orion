@@ -42,10 +42,11 @@ void StreamItem::update(){
 
 void StreamItem::updateIcon()
 {
-    if (!channel->getLogoPath().empty())
+    if (!channel->getLogoPath().empty() && util::fileExists(channel->getLogoPath().c_str())){
         setIcon(QIcon(channel->getLogoPath().c_str()));
+    }
     else
-        setIcon(QIcon("logos/loading.gif"));
+        setIcon(QIcon("resources/logos/default.png"));
 }
 
 Channel* StreamItem::getChannel() const{
@@ -72,9 +73,6 @@ const QString StreamItem::getInfo(){
 
 bool StreamItem::operator< (const QListWidgetItem& other) const{
     const StreamItem& stritem = dynamic_cast<const StreamItem&>(other);
-    //return (this->online() != stritem.online()) ? this->online() : (QString::compare(this->text(),stritem.text()) < 0);
-    //return (this->online() != stritem.online()) ? this->online() : (channel->getViewers() >= stritem.getChannel()->getViewers());
-
     if (online() == stritem.online()){ //BOTH ONLINE OR BOTH OFFLINE
         if (online()){  //BOTH ONLINE, COMPARISON BY VIEWER COUNT
             return (channel->getViewers() >= stritem.getChannel()->getViewers());

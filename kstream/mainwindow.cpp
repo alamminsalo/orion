@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->setWindowIcon(QIcon("icon"));
+    this->setWindowIcon(QIcon("resources/icon.svg"));
 
     this->setStyleSheet("QToolTip {max-width:336px;}");
 
@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
     updatetimer->start(30000);
     checkStreams();
+    cman->updateChannels(true);
 }
 
 MainWindow::~MainWindow()
@@ -180,7 +181,7 @@ void MainWindow::setupTray(){
     connect(traymenuaction,SIGNAL(triggered()),this,SLOT(toggleShow()));
 
     tray->setContextMenu(traymenu);
-    tray->setIcon(QIcon("icon"));
+    tray->setIcon(QIcon("resources/icon.svg"));
     tray->show();
 }
 
@@ -233,9 +234,11 @@ void MainWindow::hide(){
 
 
 void MainWindow::notify(Channel *channel){
+#ifdef Q_OS_LINUX
     std::string title = channel->getName() + (channel->isOnline() ? " is streaming" : " has gone offline");
-    std::string cmd = "./dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
+    std::string cmd = "resources/scripts/dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
     //QProcess process;
     QProcess::startDetached(cmd.c_str());
+#endif
 }
 

@@ -153,7 +153,7 @@ std::string Channel::getLogoPath(){
 }
 
 std::string Channel::getPreviewPath(){
-    return util::fileExists(previewpath.c_str()) ? previewpath : "preview/offline.png";
+    return util::fileExists(previewpath.c_str()) ? previewpath : "resources/preview/offline.png";
 }
 
 bool Channel::isChanged()
