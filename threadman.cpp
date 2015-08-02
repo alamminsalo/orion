@@ -21,7 +21,7 @@ void t_check(Channel *channel, ChannelManager *cman){
 
 		std::string str = conn::Get(uristr.c_str());	
 
-        cman->check(channel,str);
+        cman->parseStreamDataToJSON(str);
 	}
 }
 
@@ -44,20 +44,24 @@ void t_update(Channel *channel, ChannelManager *cman){
 		uristr += channel->getUriName();
 		std::string str = conn::Get(uristr.c_str());	
 
-        cman->update(channel,str);
+        cman->parseChannelDataToJSON(str);
 	}
 }
 
 void t_add(Channel *channel, ChannelManager *cman){
     if (channel){
         std::string uristr = TWITCH_URI;
-        uristr += "/channels/";
-        uristr += channel->getUriName();
-        std::string str = conn::Get(uristr.c_str());
+        uristr += "/streams/" + channel->getUriName();
 
-       if (!cman->update(channel,str)){
-           cman->channelNotFound(channel);
-       }
+        int val = cman->parseStreamDataToJSON(conn::Get(uristr.c_str()));
+        if (val == -1){         //Channel not found
+            cman->channelNotFound(channel);
+        }
+        else if (val == 0){     //Channel found, stream offline. Get channel data
+           uristr = TWITCH_URI;
+           uristr += "/channels/" + channel->getUriName();
+           cman->parseChannelDataToJSON(conn::Get(uristr.c_str()));
+        }
     }
 }
 

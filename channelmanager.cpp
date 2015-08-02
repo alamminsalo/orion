@@ -2,13 +2,43 @@
 
 ChannelManager::ChannelManager(){
     tman = new ThreadManager(this);
+}
+
+void ChannelManager::checkResources()
+{
+    if (!util::folderExists("resources")){
+        std::cout << "dir \"resources\" not found, making...\n";
+        system("mkdir resources");
+    }
+    if (!util::fileExists("resources/icon.svg")){
+        std::cout << "logo file not found, fetching...\n";
+        conn::GetFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/icon.svg","resources/icon.svg");
+    }
     if (!util::folderExists("resources/preview")){
         std::cout << "dir \"preview\" not found, making..\n";
         system("mkdir resources/preview");
     }
+    if (!util::fileExists("resources/preview/offline.png")){
+        std::cout << "offline.png not found, fetching...\n";
+        tman->getfile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/preview/offline.png","resources/preview/offline.png");
+    }
     if (!util::folderExists("resources/logos")){
-        std::cout << "dir \"preview\" not found, making..\n";
+        std::cout << "dir \"logos\" not found, making..\n";
         system("mkdir resources/logos");
+    }
+    if (!util::folderExists("resources/scripts")){
+        std::cout << "dir \"scripts\" not found, making..\n";
+        system("mkdir resources/scripts");
+    }
+    if (!util::fileExists("resources/scripts/play.sh")){
+        tman->getfile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh","resources/scripts/play.sh");
+    }
+    if (!util::fileExists("resources/scripts/dialog.sh")){
+        tman->getfile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh","resources/scripts/dialog.sh");
+    }
+    if (!util::fileExists("resources/logos/default.png")){
+        std::cout << "default channel logo not found, fetching..." << std::endl;
+        conn::GetFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
     }
 }
 
@@ -123,7 +153,7 @@ void ChannelManager::add(const char* uriName){
         channel = new Channel(uriName);
         add(channel);
         tman->add(channel);
-        tman->check(channel);
+        //tman->check(channel);
     }
 }
 
@@ -161,133 +191,11 @@ void ChannelManager::updateChannels(bool sync){
     }
 }
 
-bool ChannelManager::update(Channel *channel){
-	std::string uristr = TWITCH_URI;
-	uristr += "/channels/";
-	uristr += channel->getUriName();
-    return update(channel,conn::Get(uristr).c_str());
-}
-
-bool ChannelManager::update(Channel *channel, std::string data){
-	if (data.empty()){
-		std::cout << "Error: empty data. Skipping update..\n";
-        return false;
-	}
-
-	rapidjson::Document doc;
-    doc.Parse<0>(data.c_str());
-	
-    if (!doc.IsObject()){
-        std::cout << "Error: " << data << "\n";
-        return false;
-    }
-
-	if (!doc.HasMember("error")){
-
-        if (doc.HasMember("display_name")){
-			const rapidjson::Value& name = doc["display_name"];
-			if (!name.IsNull())
-				channel->setName(doc["display_name"].GetString());
-			else channel->setName(channel->getUriName().c_str());
-		}
-
-        if (doc.HasMember("logo") && !doc["logo"].IsNull()){
-
-				std::string logouri = doc["logo"].GetString();
-				std::string extension = logouri.substr(logouri.find_last_of("."));
-                std::string logopath = "resources/logos/" + channel->getUriName() + extension;
-
-
-                channel->setLogourl(logouri.c_str());
-
-                if (!util::fileExists(logopath.c_str())){
-                    //std::cout << "Fetching logo...";
-                    //conn::GetFile(logouri,logopath);
-                    //channel->setLogoPath(logopath.c_str());
-                    //channel->updated();
-                conn::GetFile(logouri,logopath);
-
-                    //std::cout << "Done.\n";
-                }
-                channel->setLogoPath(logopath.c_str());
-
-		}
-        else{
-            channel->setLogoPath("resources/logos/default.png");
-        }
-        channel->updated();
-        //tman->check(channel);
-        //checkStream(channel,false);
-        return true;
-	}
-    return false;
-}
-
 void ChannelManager::setAlert(const char* name, const char* val){
     Channel *channel = find(name);
     if (channel){
         channel->setAlert(val);
 	}
-}
-
-void ChannelManager::check(Channel *channel, std::string data){
-	if (data.empty()){
-		std::cout << "Error: empty data. Skipping update..\n";
-		return;
-	}
-
-	rapidjson::Document doc;
-    doc.Parse<0>(data.c_str());
-
-    if (!doc.IsObject()){
-        std::cout << "Error: " << data << "\n";
-		return;
-    }
-	
-    //std::string logopath = "./logos/" + channel->getUriName();
-    //if (channel->getName().empty() || channel->getInfo().empty() || !util::fileExists(logopath.c_str())){
-      //  if (!update(channel)) return;
-    //}
-
-	if (channel->hasAlert()){
-
-		if (!doc.HasMember("error")){
-			if (doc["stream"].IsNull()){
-                if (channel->isOnline()){
-                    //std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" off";
-                    //system(cmdstr.c_str());
-					channel->setOnline(false);
-                    emit channelStateChanged(channel);
-                }
-			}
-			else {
-				if (!channel->isOnline()){
-                    //std::string cmdstr = "./dialog.sh \"" + channel->getUriName() + "\" \"" + channel->getName() + "\" \"" + channel->getInfo() + "\" on";
-                    //system(cmdstr.c_str());
-					channel->setOnline(true);
-                    emit channelStateChanged(channel);
-
-				}
-                if (!doc["stream"]["viewers"].IsNull()){
-                    channel->setViewers(doc["stream"]["viewers"].GetInt());
-                }
-                if (!doc["stream"]["preview"].IsNull()){
-                    if (!doc["stream"]["preview"]["medium"].IsNull()){
-                        std::cout << "Fetching preview image...";
-                        std::string previewuri = doc["stream"]["preview"]["medium"].GetString();
-                        std::string extension = previewuri.substr(previewuri.find_last_of("."));
-                        std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
-                        channel->setPreviewPath(previewpath.c_str());
-                        channel->setPreviewurl(previewuri.c_str());
-                        conn::GetFile(previewuri,previewpath);
-                        std::cout << "Done.\n";
-                    }
-                }
-			}
-            channel->updated();
-		}
-    }
-
 }
 
 void ChannelManager::checkStream(Channel *channel, bool sync){
@@ -386,50 +294,7 @@ void ChannelManager::parseOnlineStreams(std::string data)
 
     // PARSE ONLINE CHANNELS
     for (rapidjson::SizeType i=0; i < streams.Size(); i++){
-        const rapidjson::Value& item = streams[i];
-        Channel *channel = find(item["channel"]["name"].GetString());
-        //std::cout << item["channel"]["name"].GetString() << std::endl;
-        if (channel){
-
-            if (!item["display_name"].IsNull()){
-                channel->setName(item["display_name"].GetString());
-            }
-
-            if (!item["channel"]["logo"].IsNull()){
-                std::string logouri = item["channel"]["logo"].GetString();
-                std::string extension = logouri.substr(logouri.find_last_of("."));
-                std::string logopath = "resources/logos/" + channel->getUriName() + extension;
-
-                channel->setLogourl(logouri.c_str());
-                channel->setLogoPath(logopath.c_str());
-
-                if (!util::fileExists(logopath.c_str())){
-                    tman->getfile(logouri,logopath,channel);
-                }
-            }
-
-            if (!item["viewers"].IsNull()){
-                channel->setViewers(item["viewers"].GetInt());
-            }
-
-            if (channel->getPreviewurl().empty() && !item["preview"].IsNull()){
-                if (!item["preview"]["medium"].IsNull()){
-                    //std::cout << "Fetching preview image...";
-                    std::string previewuri = item["preview"]["medium"].GetString();
-                    std::string extension = previewuri.substr(previewuri.find_last_of("."));
-                    std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
-                    channel->setPreviewPath(previewpath.c_str());
-                    channel->setPreviewurl(previewuri.c_str());
-                    tman->getfile(previewuri,previewpath);
-                }
-            }
-
-            if (!channel->isOnline()){
-                channel->setOnline(true);
-                emit channelStateChanged(channel);
-            }
-            channel->setChanged(true);
-        }
+        parseStream(streams[i]);
     }
 
     //PARSE OFFLINE CHANNELS
@@ -446,5 +311,146 @@ void ChannelManager::parseOnlineStreams(std::string data)
                 emit channelStateChanged(channel);
             }
         }
+    }
+}
+
+int ChannelManager::parseStreamDataToJSON(std::string data){
+    if (data.empty()){
+        std::cout << "Error: empty data. Skipping update..\n";
+        return 0;
+    }
+
+    rapidjson::Document doc;
+    doc.Parse<0>(data.c_str());
+
+    if (doc.HasParseError()){
+        std::cout << "Error: " << data << "\n";
+        return 0;
+    }
+
+    if (doc.HasMember("error") && doc.HasMember("status") && doc["status"].GetInt() == 404){ //Channel doesnt exist
+        return -1;
+    }
+
+    if (!doc["stream"].IsNull()){
+        parseStream(doc["stream"]);
+        return 1;
+    }
+    else return 0;
+
+}
+
+void ChannelManager::parseStream(const rapidjson::Value& item){
+
+    if (item["channel"].IsNull()){
+        return;
+    }
+    Channel *channel = find(item["channel"]["name"].GetString());
+    //std::cout << item["channel"]["name"].GetString() << std::endl;
+    if (channel){
+
+        if (!item["channel"]["display_name"].IsNull()){
+            channel->setName(item["channel"]["display_name"].GetString());
+        }
+
+        if (!item["channel"]["logo"].IsNull()){
+            std::string logouri = item["channel"]["logo"].GetString();
+            std::string extension = logouri.substr(logouri.find_last_of("."));
+            std::string logopath = "resources/logos/" + channel->getUriName() + extension;
+
+            channel->setLogourl(logouri.c_str());
+            channel->setLogoPath(logopath.c_str());
+
+            if (!util::fileExists(logopath.c_str())){
+                tman->getfile(logouri,logopath,channel);
+            }
+        }
+        else {
+            channel->setLogoPath("resources/logos/default.png");
+        }
+
+        if (!item["viewers"].IsNull()){
+            channel->setViewers(item["viewers"].GetInt());
+        }
+
+        if (!item["channel"]["status"].IsNull()){
+            channel->setInfo(item["channel"]["status"].GetString());
+        }
+
+        if (channel->getPreviewurl().empty() && !item["preview"].IsNull()){
+            if (!item["preview"]["medium"].IsNull()){
+                //std::cout << "Fetching preview image...";
+                std::string previewuri = item["preview"]["medium"].GetString();
+                std::string extension = previewuri.substr(previewuri.find_last_of("."));
+                std::string previewpath = "resources/preview/" + channel->getUriName() + extension;
+                channel->setPreviewPath(previewpath.c_str());
+                channel->setPreviewurl(previewuri.c_str());
+                tman->getfile(previewuri,previewpath);
+            }
+        }
+
+        if (!channel->isOnline()){
+            channel->setOnline(true);
+            emit channelStateChanged(channel);
+        }
+        else {
+            channel->updated();
+        }
+        channel->setChanged(true);
+    }
+}
+
+bool ChannelManager::parseChannelDataToJSON(std::string data){
+    if (data.empty()){
+        std::cout << "Error: empty data. Skipping update..\n";
+        return false;
+    }
+
+    rapidjson::Document doc;
+    doc.Parse<0>(data.c_str());
+
+    if (!doc.IsObject()){
+        std::cout << "Error: " << data << "\n";
+        return false;
+    }
+
+    if (!doc.HasMember("error")){
+        parseChannel(doc);
+        return true;
+    }
+    return false;
+}
+
+void ChannelManager::parseChannel(const rapidjson::Document& item){
+    if (item["name"].IsNull()){
+        return;
+    }
+    Channel* channel = find(item["name"].GetString());
+
+    if (channel){
+        if (!item["display_name"].IsNull()){
+            channel->setName(item["display_name"].GetString());
+        }
+
+        if (!item["status"].IsNull()){
+            channel->setInfo(item["status"].GetString());
+        }
+
+        if (!item["logo"].IsNull()){
+            std::string logouri = item["logo"].GetString();
+            std::string extension = logouri.substr(logouri.find_last_of("."));
+            std::string logopath = "resources/logos/" + channel->getUriName() + extension;
+
+
+            channel->setLogourl(logouri.c_str());
+            channel->setLogoPath(logopath.c_str());
+
+            if (!util::fileExists(logopath.c_str())){
+                tman->getfile(logouri,logopath,channel);
+            }
+        } else {
+            channel->setLogoPath("resources/logos/default.png");
+        }
+        channel->updated();
     }
 }

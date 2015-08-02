@@ -14,6 +14,7 @@
 
 #define TWITCH_URI "https://api.twitch.tv/kraken"
 #define DATAURI "./data.json"
+#define DEFAULT_LOGO_URL "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 
 class ThreadManager;
 class MainWindow;
@@ -24,6 +25,10 @@ class ChannelManager: public QObject{
 		unsigned int update_counter, check_counter;
         std::vector<Channel*> channels;
         ThreadManager* tman;
+
+        void parseStream(const rapidjson::Value&);
+        void parseChannel(const rapidjson::Document&);
+
 	
 	public:
 		ChannelManager();
@@ -34,10 +39,9 @@ class ChannelManager: public QObject{
 		bool readJSON(const char*);
 		bool writeJSON(const char*);
 		void checkStream(Channel*,bool);
-		void check(Channel*,std::string);
+
         void checkStreams(bool sync);
-        bool update(Channel*);
-        bool update(Channel*,std::string);
+
         void updateChannels(bool sync);
         void add(Channel *channel);
 		void add(const char*,const char*,const char*,const char*);
@@ -55,6 +59,11 @@ class ChannelManager: public QObject{
         bool channelExists(const char*);
         void checkAllStreams();
         void parseOnlineStreams(std::string);
+
+        bool parseChannelDataToJSON(std::string);
+        int parseStreamDataToJSON(std::string);
+
+        void checkResources();
 
     signals:
         void channelExists(Channel*);

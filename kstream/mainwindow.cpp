@@ -8,6 +8,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    cman = new ChannelManager();
+    cman->checkResources();
+
     this->setWindowIcon(QIcon("resources/icon.svg"));
 
     this->setStyleSheet("QToolTip {max-width:336px;}");
@@ -18,7 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listWidget->setSortingEnabled(true);
     connect(ui->listWidget,SIGNAL(customContextMenuRequested(const QPoint&)),this,SLOT(showContextMenu(const QPoint&)));
 
-    cman = new ChannelManager();
     connect(cman,SIGNAL(channelExists(Channel*)),this,SLOT(showAlreadyAdded(Channel*)));
     connect(cman,SIGNAL(channelNotFound(Channel*)),this,SLOT(showNotFound(Channel*)));
     connect(cman,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
@@ -241,4 +243,5 @@ void MainWindow::notify(Channel *channel){
     QProcess::startDetached(cmd.c_str());
 #endif
 }
+
 
