@@ -1,4 +1,6 @@
 #include "channelmanager.h"
+#include <QDir>
+#include <QProcess>
 
 ChannelManager::ChannelManager(){
     tman = new ThreadManager(this);
@@ -8,7 +10,7 @@ void ChannelManager::checkResources()
 {
     if (!util::folderExists("resources")){
         std::cout << "dir \"resources\" not found, making...\n";
-        system("mkdir resources");
+        QDir().mkdir("resources");
     }
     if (!util::fileExists("resources/icon.svg")){
         std::cout << "logo file not found, fetching...\n";
@@ -16,7 +18,7 @@ void ChannelManager::checkResources()
     }
     if (!util::folderExists("resources/preview")){
         std::cout << "dir \"preview\" not found, making..\n";
-        system("mkdir resources/preview");
+        QDir().mkdir("resources/preview");
     }
     if (!util::fileExists("resources/preview/offline.png")){
         std::cout << "offline.png not found, fetching...\n";
@@ -24,17 +26,23 @@ void ChannelManager::checkResources()
     }
     if (!util::folderExists("resources/logos")){
         std::cout << "dir \"logos\" not found, making..\n";
-        system("mkdir resources/logos");
+        QDir().mkdir("resources/logos");
     }
     if (!util::folderExists("resources/scripts")){
         std::cout << "dir \"scripts\" not found, making..\n";
-        system("mkdir resources/scripts");
+        QDir().mkdir("resources/scripts");
     }
     if (!util::fileExists("resources/scripts/play.sh")){
-        tman->getfile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh","resources/scripts/play.sh");
+        conn::GetFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh","resources/scripts/play.sh");
+#ifndef Q_OS_WIN
+        QProcess::startDetached("chmod +x resources/scripts/play.sh");
+#endif
     }
     if (!util::fileExists("resources/scripts/dialog.sh")){
-        tman->getfile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh","resources/scripts/dialog.sh");
+        conn::GetFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh","resources/scripts/dialog.sh");
+#ifndef Q_OS_WIN
+        QProcess::startDetached("chmod +x resources/scripts/dialog.sh");
+#endif
     }
     if (!util::fileExists("resources/logos/default.png")){
         std::cout << "default channel logo not found, fetching..." << std::endl;
@@ -264,9 +272,8 @@ void ChannelManager::clearData(){
 
 void ChannelManager::play(Channel* channel){
     if (util::fileExists("resources/scripts/play.sh")){
-        std::string cmd = "resources/scripts/play.sh "+channel->getFullUri()+" &";
-        std::cout << cmd << "\n";
-        system(cmd.c_str());
+        std::string cmd = "resources/scripts/play.sh "+channel->getFullUri();
+        QProcess::startDetached(cmd.c_str());
     }
     else std::cout << "Couldn't locate 'play.sh'\n";
 }
