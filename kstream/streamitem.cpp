@@ -19,7 +19,7 @@ void StreamItem::update(){
         QString image = "<img src=\"";
         image += channel->getPreviewPath().c_str();
         image += "\"></img>";
-        QString tooltip = "<table><tr><td>"+getInfo()+"</td></tr>";
+        QString tooltip = "<table><tr><td><b>Playing: "+getGame()+"</b></td></tr><tr><td>"+getInfo()+"</td></tr>";
         tooltip += "<tr><td>"+image+"</td></tr>";
 
         if (!online()){
@@ -69,6 +69,11 @@ const QString StreamItem::getUriName(){
 
 const QString StreamItem::getInfo(){
     return channel->getInfo().c_str();
+}
+
+const QString StreamItem::getGame()
+{
+    return channel->getGame().c_str();
 }
 
 bool StreamItem::operator< (const QListWidgetItem& other) const{

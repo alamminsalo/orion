@@ -380,6 +380,10 @@ void ChannelManager::parseStream(const rapidjson::Value& item){
             channel->setViewers(item["viewers"].GetInt());
         }
 
+        if (!item["game"].IsNull()){
+            channel->setGame(item["game"].GetString());
+        }
+
         if (!item["channel"]["status"].IsNull()){
             channel->setInfo(item["channel"]["status"].GetString());
         }

@@ -27,6 +27,8 @@ public:
 
     const QString getInfo();
 
+    const QString getGame();
+
     virtual bool operator< (const QListWidgetItem& other) const;
 
     Channel* getChannel() const;

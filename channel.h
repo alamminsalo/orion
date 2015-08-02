@@ -17,6 +17,7 @@ class Channel: public QObject{
 	std::string uri;
 	std::string info;
 	std::string alert;
+    std::string game;
     unsigned int viewers;
 	bool online;
     bool changed;
@@ -69,6 +70,9 @@ class Channel: public QObject{
 
         unsigned int getViewers() const;
         void setViewers(unsigned int value);
+
+        std::string getGame() const;
+        void setGame(const std::string &value);
 
 signals:
         void updated();

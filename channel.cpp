@@ -14,6 +14,16 @@ void Channel::setViewers(unsigned int value)
 {
     viewers = value;
 }
+
+std::string Channel::getGame() const
+{
+    return game;
+}
+
+void Channel::setGame(const std::string &value)
+{
+    game = value;
+}
 Channel::Channel(){
     alert = "on";
     timestamp = time(0);
