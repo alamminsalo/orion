@@ -17,7 +17,8 @@ void StreamItem::update(){
         QString image = "<img src=\"";
         image += channel->isOnline() ? channel->getPreviewPath() : "resources/preview/offline.png";
         image += "\"></img>";
-        QString tooltip = "<table><tr><td><b>Playing: "+getGame()+"</b></td></tr><tr><td>"+getInfo()+"</td></tr>";
+        QString tooltip = "<table>";
+        tooltip += online() ? "<tr><td><b>Playing: "+getGame()+"</b></td></tr><tr><td>"+getInfo()+"</td></tr>" : "";
         tooltip += "<tr><td>"+image+"</td></tr>";
 
         if (!online()){
