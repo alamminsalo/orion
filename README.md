@@ -7,26 +7,7 @@ Includes Qt-written GUI and a cli-version
 
 ##Building
 
-Needs libcurl installed
-
-###kstream-core:
-
-~~Just run 'make' in the root folder~~
-
-~~(builds the cli-version)~~
-
-Not tested currently
-
-
-###qt-gui
-
-Open up .pro file in kstream-folder.
-
-Adjust the build configurations
-
-Build
-
-See if it works
+Use QtCreator, with the .pro file included
 
 
 ##Notifications
