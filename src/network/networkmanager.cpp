@@ -19,7 +19,12 @@ NetworkManager::NetworkManager(ChannelManager *cman)
 
 NetworkManager::~NetworkManager()
 {
-
+    qDebug() << "Destroyer: NetworkManager";
+    delete channelOperation;
+    delete streamOperation;
+    delete logoOperation;
+    delete allStreamsOperation;
+    delete genericFileOperation;
 }
 
 void NetworkManager::getChannelData(Channel* channel)

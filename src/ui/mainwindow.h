@@ -12,7 +12,7 @@
 #include <QSystemTrayIcon>
 #include <QSettings>
 #include <QProcess>
-#include <stdlib.h>
+#include <QDebug>
 
 namespace Ui {
 class MainWindow;

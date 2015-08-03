@@ -3,7 +3,6 @@
 
 #include <QListWidgetItem>
 #include <QObject>
-#include <QEvent>
 #include <QDebug>
 #include "../model/channel.h"
 

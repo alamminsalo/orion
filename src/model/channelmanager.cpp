@@ -1,37 +1,34 @@
 #include "channelmanager.h"
-#include <QDir>
-#include <QProcess>
-#include <QJsonObject>
+
 
 ChannelManager::ChannelManager(){
-    //tman = new ThreadManager(this);
     netman = new NetworkManager(this);
 }
 
 void ChannelManager::checkResources()
 {
     if (!util::folderExists("resources")){
-        std::cout << "dir \"resources\" not found, making...\n";
+        qDebug() << "dir \"resources\" not found, making...";
         QDir().mkdir("resources");
     }
     if (!util::fileExists("resources/icon.svg")){
-        std::cout << "logo file not found, fetching...\n";
+        qDebug() << "logo file not found, fetching...";
         netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/icon.svg","resources/icon.svg");
     }
     if (!util::folderExists("resources/preview")){
-        std::cout << "dir \"preview\" not found, making..\n";
+        qDebug() << "dir \"preview\" not found, making...";
         QDir().mkdir("resources/preview");
     }
     if (!util::fileExists("resources/preview/offline.png")){
-        std::cout << "offline.png not found, fetching...\n";
+        qDebug() << "offline.png not found, fetching...";
         netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/preview/offline.png","resources/preview/offline.png");
     }
     if (!util::folderExists("resources/logos")){
-        std::cout << "dir \"logos\" not found, making..\n";
+        qDebug() << "dir \"logos\" not found, making...";
         QDir().mkdir("resources/logos");
     }
     if (!util::folderExists("resources/scripts")){
-        std::cout << "dir \"scripts\" not found, making..\n";
+        qDebug() << "dir \"scripts\" not found, making...";
         QDir().mkdir("resources/scripts");
     }
     if (!util::fileExists("resources/scripts/play.sh")){
@@ -47,14 +44,14 @@ void ChannelManager::checkResources()
 #endif
     }
     if (!util::fileExists("resources/logos/default.png")){
-        std::cout << "default channel logo not found, fetching..." << std::endl;
+        qDebug() << "default channel logo not found, fetching...";
         netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
     }
 }
 
 ChannelManager::~ChannelManager(){
-    std::cout << "Destroyer: ChannelManager\n";
-    //delete tman;
+    qDebug() << "Destroyer: ChannelManager";
+    delete netman;
     save();
     clearData();
 }

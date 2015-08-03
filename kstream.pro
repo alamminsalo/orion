@@ -8,10 +8,10 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = kstream
+TARGET = Twatch
 TEMPLATE = app
 
-LIBS += -lcurl -pthread
+LIBS +=
 
 SOURCES += src/ui/mainwindow.cpp\
     src/main.cpp\

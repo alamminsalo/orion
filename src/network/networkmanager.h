@@ -8,7 +8,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include <vector>
 #include "../model/channel.h"
 #include "../model/channelmanager.h"
 #include "../util/fileutils.h"

@@ -1,15 +1,12 @@
 #ifndef CHANNEL_H
 #define CHANNEL_H
 
-#include <ctime>
-#include <string>
-#include <stdlib.h>
-#include <iostream>
 #include "../util/fileutils.h"
 #include <QObject>
 #include <QJsonObject>
 #include <QVariantMap>
 #include <QDateTime>
+#include <QDebug>
 
 class Channel: public QObject{
 

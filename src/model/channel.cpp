@@ -1,7 +1,7 @@
 #include "channel.h"
 
 Channel::~Channel(){
-    std::cout << "Destroyer: Channel\n";
+    qDebug() << "Destroyer: Channel";
 }
 
 

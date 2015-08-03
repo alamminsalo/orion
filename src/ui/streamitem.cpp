@@ -1,6 +1,4 @@
 #include "streamitem.h"
-#include <QTimer>
-#include <QApplication>
 
 StreamItem::StreamItem(Channel* channel)
 {

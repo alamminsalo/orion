@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -29,10 +28,9 @@ MainWindow::MainWindow(QWidget *parent) :
     loadList();
 
     updatetimer = new QTimer(this);
-    //connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
+    connect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
     updatetimer->start(60000);
     checkStreams();
-    //cman->updateChannels();
 }
 
 MainWindow::~MainWindow()
@@ -104,16 +102,11 @@ void MainWindow::addItem(Channel* channel){
     QString logopath = "logos/";
     logopath.append(channel->getUriName());
 
-    //if (channel->isEmpty())
-        //cman->checkStream(channel,false);
-
     StreamItem* item = new StreamItem(channel);
 
     connect(channel,SIGNAL(updated()),item,SLOT(update()));
     connect(channel,SIGNAL(iconUpdated()),item,SLOT(updateIcon()));
     ui->listWidget->addItem(item);
-
-    //cman->checkStream(channel,false);
 }
 
 void MainWindow::updateList(){

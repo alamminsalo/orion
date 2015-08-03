@@ -3,24 +3,21 @@
 
 #include "channel.h"
 #include "../util/fileutils.h"
-//#include "../util/connector.h"
-//#include "../util/threadman.h"
 #include "../network/networkmanager.h"
-//#include "../rapidjson/include/rapidjson/document.h"
 #include <vector>
-#include <iostream>
-#include <stdlib.h>
 #include <QStringRef>
 #include <QObject>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDir>
+#include <QProcess>
+#include <QJsonObject>
 
 #define TWITCH_URI "https://api.twitch.tv/kraken"
 #define DATAURI "./data.json"
 #define DEFAULT_LOGO_URL "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 
-//class ThreadManager;
 class NetworkManager;
 
 class ChannelManager: public QObject{
@@ -28,7 +25,6 @@ class ChannelManager: public QObject{
 	protected:
 		unsigned int update_counter, check_counter;
         std::vector<Channel*> channels;
-        //ThreadManager* tman;
         NetworkManager* netman;
 
 	
