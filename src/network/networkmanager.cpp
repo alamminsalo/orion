@@ -10,6 +10,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     allStreamsOperation = new QNetworkAccessManager();
     genericFileOperation = new QNetworkAccessManager();
 
+
     connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
     connect(streamOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(streamReply(QNetworkReply*)));
     connect(logoOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(logoReply(QNetworkReply*)));

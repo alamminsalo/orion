@@ -15,7 +15,7 @@ StreamItem::~StreamItem(){
 void StreamItem::update(){
         QString title = getName();
         QString image = "<img src=\"";
-        image += channel->getPreviewPath();
+        image += channel->isOnline() ? channel->getPreviewPath() : "resources/preview/offline.png";
         image += "\"></img>";
         QString tooltip = "<table><tr><td><b>Playing: "+getGame()+"</b></td></tr><tr><td>"+getInfo()+"</td></tr>";
         tooltip += "<tr><td>"+image+"</td></tr>";

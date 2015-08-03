@@ -7,43 +7,43 @@ ChannelManager::ChannelManager(){
 
 void ChannelManager::checkResources()
 {
-    if (!util::folderExists("resources")){
+    if (!QDir().exists("resources")){
         qDebug() << "dir \"resources\" not found, making...";
         QDir().mkdir("resources");
     }
-    if (!util::fileExists("resources/icon.svg")){
+    if (!QFile::exists("resources/icon.svg")){
         qDebug() << "logo file not found, fetching...";
         netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/icon.svg","resources/icon.svg");
     }
-    if (!util::folderExists("resources/preview")){
+    if (!QDir().exists("resources/preview")){
         qDebug() << "dir \"preview\" not found, making...";
         QDir().mkdir("resources/preview");
     }
-    if (!util::fileExists("resources/preview/offline.png")){
+    if (!QFile::exists("resources/preview/offline.png")){
         qDebug() << "offline.png not found, fetching...";
         netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/preview/offline.png","resources/preview/offline.png");
     }
-    if (!util::folderExists("resources/logos")){
+    if (!QDir().exists("resources/logos")){
         qDebug() << "dir \"logos\" not found, making...";
         QDir().mkdir("resources/logos");
     }
-    if (!util::folderExists("resources/scripts")){
+    if (!QDir().exists("resources/scripts")){
         qDebug() << "dir \"scripts\" not found, making...";
         QDir().mkdir("resources/scripts");
     }
-    if (!util::fileExists("resources/scripts/play.sh")){
+    if (!QFile::exists("resources/scripts/play.sh")){
         netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh","resources/scripts/play.sh");
 #ifndef Q_OS_WIN
         QProcess::startDetached("chmod +x resources/scripts/play.sh");
 #endif
     }
-    if (!util::fileExists("resources/scripts/dialog.sh")){
+    if (!QFile::exists("resources/scripts/dialog.sh")){
         netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh","resources/scripts/dialog.sh");
 #ifndef Q_OS_WIN
         QProcess::startDetached("chmod +x resources/scripts/dialog.sh");
 #endif
     }
-    if (!util::fileExists("resources/logos/default.png")){
+    if (!QFile::exists("resources/logos/default.png")){
         qDebug() << "default channel logo not found, fetching...";
         netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
     }
