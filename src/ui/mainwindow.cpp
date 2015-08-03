@@ -130,10 +130,9 @@ void MainWindow::on_addButton_clicked()
     input.setLabelText("Channel name");
 
     if (input.exec()){
-        std::string val = input.textValue().trimmed().toStdString();
-        if (!val.empty()){
-            cman->add(val.c_str());
-            //cman->save();
+        QString val = input.textValue().trimmed();
+        if (!val.isEmpty()){
+            cman->add(val);
         }
         else QMessageBox::information(this,"Error", "Bad input",QMessageBox::Ok);
     }

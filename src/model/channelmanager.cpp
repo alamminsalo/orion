@@ -21,7 +21,7 @@ void ChannelManager::checkResources()
     }
     if (!QFile::exists("resources/preview/offline.png")){
         qDebug() << "offline.png not found, fetching...";
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/preview/offline.png","resources/preview/offline.png");
+        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/dev/resources/preview/offline.png","resources/preview/offline.png");
     }
     if (!QDir().exists("resources/logos")){
         qDebug() << "dir \"logos\" not found, making...";
@@ -128,42 +128,6 @@ bool ChannelManager::readJSON(const QString &filename){
                     );
     }
 
-/*
-	for (rapidjson::SizeType i=0; i < arr.Size(); ++i){
-
-        if (!arr[i].HasMember("title"))
-            std::cout << "title missing\n";
-        if (!arr[i].HasMember("uri"))
-            std::cout << "uri missing\n";
-        if (!arr[i].HasMember("info"))
-            std::cout << "info missing\n";
-        if (!arr[i].HasMember("alert"))
-            std::cout << "alert missing\n";
-        if (!arr[i].HasMember("lastSeen"))
-            std::cout << "lastSeen missing\n";
-        if (!arr[i].HasMember("logo"))
-            std::cout << "logo missing\n";
-        if (!arr[i].HasMember("preview"))
-            std::cout << "preview missing\n";
-
-        std::cout << arr[i]["title"].GetString() << std::endl;//Check that these fields exist
-        std::cout << arr[i]["uri"].GetString() << std::endl;
-        std::cout << arr[i]["info"].GetString() << std::endl;
-        std::cout <<  arr[i]["alert"].GetString() << std::endl;
-        std::cout << arr[i]["lastSeen"].GetInt() << std::endl;
-        std::cout << arr[i]["logo"].GetString() << std::endl;
-
-        channels.push_back(new Channel(
-            arr[i]["title"].GetString(),
-            arr[i]["uri"].GetString(),
-            arr[i]["info"].GetString(),
-            arr[i]["alert"].GetString(),
-            arr[i]["lastSeen"].GetInt(),
-            arr[i]["logo"].GetString(),
-            arr[i]["preview"].GetString()
-        ));
-	}
-    */
 	return true;
 }
 
@@ -190,7 +154,7 @@ void ChannelManager::add(const char* title, const char* uri, const char *info, c
     add(new Channel(title,uri,info,alert));
 }
 
-void ChannelManager::add(const char* uriName){
+void ChannelManager::add(const QString &uriName){
     Channel *channel = find(uriName);
     if (channel){
         emit channelExists(channel);
@@ -199,8 +163,6 @@ void ChannelManager::add(const char* uriName){
         channel = new Channel(uriName);
         add(channel);
         netman->getStream(channel);
-        //tman->add(channel);
-        //tman->check(channel);
     }
 }
 
@@ -226,28 +188,6 @@ void ChannelManager::updateChannels(){
 	}
 }
 
-void ChannelManager::setAlert(const char* name, const char* val){
-    Channel *channel = find(name);
-    if (channel){
-        channel->setAlert(val);
-	}
-}
-
-void ChannelManager::printList(){
-	std::cout<<"\n";
-	for (unsigned int i=0; i<channels.size(); i++){
-        Channel *channel = channels.at(i);
-        std::cout << "Name: " << channel->getName().toStdString() << std::endl;
-        std::cout << "Info: " << channel->getInfo().toStdString() << std::endl;
-        std::cout << "URL: " << channel->getFullUri().toStdString() << std::endl;
-        std::cout << "Id: " << channel->getUriName().toStdString() << std::endl;
-		std::cout << "Notification: " << (channel->hasAlert() ? "On" : "Off") << std::endl;
-        std::cout << "Last online: " << channel->lastOnline().toStdString() << std::endl;
-        std::cout << "Logo: " << channel->getLogoPath().toStdString() << std::endl;
-		std::cout << std::endl;
-	}
-}
-
 void ChannelManager::remove(const char *channelName){	
 	int i = findPos(channelName);
     if (i != -1){
@@ -257,7 +197,6 @@ void ChannelManager::remove(const char *channelName){
 }
 
 void ChannelManager::remove(Channel* channel){
-    //tman->wait_for_threads();
     for (unsigned int i=0; i < channels.size(); i++){
         if (channels[i] == channel){
             delete channel;
@@ -274,7 +213,7 @@ void ChannelManager::clearData(){
 }
 
 void ChannelManager::play(Channel* channel){
-    if (util::fileExists("resources/scripts/play.sh")){
+    if (QFile::exists("resources/scripts/play.sh")){
         QString cmd = "resources/scripts/play.sh "+channel->getFullUri();
         QProcess::startDetached(cmd);
     }
@@ -348,9 +287,6 @@ void ChannelManager::parseStream(const QJsonObject item, Channel* channel){
 
             logopath += channel->getUriName();
             logopath += extension;
-
-
-            //qDebug() << logouri << ", " << extension.toString() << ", " << logopath;
 
             channel->setLogourl(logouri);
             channel->setLogoPath(logopath);
@@ -428,9 +364,6 @@ void ChannelManager::parseChannel(const QJsonObject item, Channel *channel){
 
             logopath += channel->getUriName();
             logopath += extension;
-
-
-            //qDebug() << logouri << ", " << extension.toString() << ", " << logopath;
 
             channel->setLogourl(logouri);
             channel->setLogoPath(logopath);

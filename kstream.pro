@@ -36,7 +36,7 @@ FORMS    += src/ui/mainwindow.ui
 OTHER_FILES += \
     resources/logo.svg
 
-QMAKE_CXXFLAGS += -std=c++11 -O2
+QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
 unix{
     copydata.commands = $(COPY_DIR) $$PWD/resources $$OUT_PWD

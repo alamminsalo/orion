@@ -36,34 +36,25 @@ class ChannelManager: public QObject{
         void save();
         bool readJSON(const QString&);
         bool writeJSON(const QString&);
-		void checkStream(Channel*,bool);
 
         void updateChannels();
         void add(Channel *channel);
-		void add(const char*,const char*,const char*,const char*);
+        void add(const char*,const char*,const char*,const char*);
 		void remove(const char*);
         void remove(Channel*);
-		void add(const char*);
-		void printList();
-        void setAlert(const char*,const char*);
+        void add(const QString&);
         Channel *find(const QString&);
         int findPos(const QString&);
         std::vector<Channel*> *getChannels(){ return &channels; }
 		void clearData();
         void play(Channel*);
-        Channel* getLastAdded();
-        bool channelExists(const char*);
         void checkStreams();
         void parseStreams(const QJsonObject&);
-
-        bool parseChannelDataToJSON(std::string);
-        int parseStreamDataToJSON(std::string);
 
         void parseStream(const QJsonObject, Channel* channel = 0);
         void parseChannel(const QJsonObject, Channel*);
 
         void checkResources();
-        void getPreviewForChannel(Channel*);
 
     signals:
         void channelExists(Channel*);
