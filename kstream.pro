@@ -8,8 +8,11 @@ QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = Twatch
+TARGET = TwitchWatch
+
 TEMPLATE = app
+
+DEFINES += APP_NAME=\\\"TwitchWatch\\\"
 
 LIBS +=
 
@@ -35,10 +38,12 @@ OTHER_FILES += \
 
 QMAKE_CXXFLAGS += -std=c++11 -O2
 
-copydata.commands = $(COPY_DIR) $$PWD/resources $$OUT_PWD
-first.depends = $(first) copydata
-export(first.depends)
-export(copydata.commands)
-QMAKE_EXTRA_TARGETS += first copydata
+unix{
+    copydata.commands = $(COPY_DIR) $$PWD/resources $$OUT_PWD
+    first.depends = $(first) copydata
+    export(first.depends)
+    export(copydata.commands)
+    QMAKE_EXTRA_TARGETS += first copydata
+}
 
 DISTFILES +=

@@ -26,7 +26,7 @@ void Channel::setGame(const QString &value)
 }
 Channel::Channel(){
     alert = true;
-    timestamp = time(0);
+    timestamp = 0;
     online = false;
 }
 

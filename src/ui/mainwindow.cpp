@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     cman = new ChannelManager();
     cman->checkResources();
 
+    this->setWindowTitle(APP_NAME);
     this->setWindowIcon(QIcon("resources/icon.svg"));
 
     this->setStyleSheet("QToolTip {max-width:336px;}");
