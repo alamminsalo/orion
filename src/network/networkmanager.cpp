@@ -95,7 +95,7 @@ void NetworkManager::channelReply(QNetworkReply* reply)
             return;
         }
         QByteArray data = reply->readAll();
-        qDebug() << data;
+        //qDebug() << data;
 
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(data, &error);
@@ -123,7 +123,7 @@ void NetworkManager::streamReply(QNetworkReply *reply)
         }
 
         QByteArray data = reply->readAll();
-        qDebug() << data;
+        //qDebug() << data;
 
         QJsonParseError error;
         QJsonDocument doc = QJsonDocument::fromJson(data, &error);
@@ -148,7 +148,7 @@ void NetworkManager::allStreamsReply(QNetworkReply *reply)
         return;
     }
     QByteArray data = reply->readAll();
-    qDebug() << data;
+    //qDebug() << data;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
