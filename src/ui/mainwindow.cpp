@@ -124,6 +124,10 @@ void MainWindow::checkStreams(){
 
 void MainWindow::on_addButton_clicked()
 {
+    if (cman->getChannels()->size() >= 99){ //Sorry my laziness, twitch api supports maximum limit of 100..
+        QMessageBox::information(this,"Error", "Maximum number of channels reached",QMessageBox::Ok);
+        return;
+    }
     QInputDialog input(this);
     input.resize(300,120);
     input.setWindowTitle("Add channel");
