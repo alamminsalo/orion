@@ -1,21 +1,6 @@
 # KStream
 
-Service for checking streams on twitch
-
-Includes Qt-written GUI and a cli-version
-
-
-##Building
-
-Needs libcurl installed
-
-###kstream-core:
-
-~~Just run 'make' in the root folder~~
-
-~~(builds the cli-version)~~
-
-Not tested currently
+Qt-application for checking and watching twitch streams
 
 
 ###qt-gui
