@@ -175,9 +175,14 @@ void MainWindow::remove(StreamItem* item){
 void MainWindow::setupTray(){
     tray = new QSystemTrayIcon();
     traymenu = new QMenu();
+
     traymenuaction = new QAction("Show list",tray);
     traymenu->addAction(traymenuaction);
     connect(traymenuaction,SIGNAL(triggered()),this,SLOT(toggleShow()));
+
+    traymenuquit = new QAction("Exit",tray);
+    traymenu->addAction(traymenuquit);
+    connect(traymenuquit,SIGNAL(triggered()),QApplication::instance(),SLOT(quit()));
 
     tray->setContextMenu(traymenu);
     tray->setIcon(QIcon("resources/icon.svg"));

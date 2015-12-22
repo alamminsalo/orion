@@ -29,6 +29,7 @@ class MainWindow : public QMainWindow
     QSystemTrayIcon *tray;
     QMenu *traymenu;
     QAction *traymenuaction;
+    QAction *traymenuquit;
 
     void remove(StreamItem*);
     void setupTray();
