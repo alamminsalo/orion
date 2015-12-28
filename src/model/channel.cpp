@@ -48,11 +48,11 @@ Channel::Channel(const QString &uri, const QString &name, const QString &info, b
 }
 
 Channel::Channel(const QString &uri, const QString &name, const QString &info, bool alert, time_t time, const QString &logo) : Channel(name,uri,info,alert,time){
-    this->logopath = logo;
+    this->logouri = logo;
 }
 
 Channel::Channel(const QString &uri, const QString &name, const QString &info, bool alert, time_t time, const QString &logo, const QString &preview) : Channel(name,uri,info,alert,time,logo){
-    this->previewpath = preview;
+    this->previewuri = preview;
 }
 
 Channel::Channel(const Channel &channel){
@@ -81,8 +81,8 @@ const QJsonObject Channel::getJSON() const{
     map["title"]    = QVariant(name);
     map["uri"]      = QVariant(uri);
     map["info"]     = QVariant(info);
-    map["logo"]     = QVariant(logopath);
-    map["preview"]  = QVariant(previewpath);
+    map["logo"]     = QVariant(logouri);
+    map["preview"]  = QVariant(previewuri);
     map["alert"]    = QVariant(alert);
     map["lastSeen"] = QVariant(timestamp);
     return QJsonObject::fromVariantMap(map);
@@ -201,4 +201,16 @@ const QString Channel::getPreviewurl(){
 
 void Channel::setLastSeen(time_t time){
     this->timestamp = time;
+}
+
+bool Channel::greaterThan (Channel* a, Channel* b) {
+    if (a->isOnline() == b->isOnline()){ //BOTH ONLINE OR BOTH OFFLINE
+        if (a->isOnline()){  //BOTH ONLINE, COMPARISON BY VIEWER COUNT
+            return (a->getViewers() >= b->getViewers());
+        }
+        else{ //BOTH OFFLINE, COMPARISON BY DEFAULT QSTRING METHOD
+            return (QString::compare(a->getName(),b->getName()) < 0);
+        }
+    }
+    return a->isOnline();    //OTHER IS ONLINE AND OTHER IS NOT
 }

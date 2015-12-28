@@ -13,6 +13,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QJsonObject>
+#include <qqmllist.h>
 
 #define TWITCH_URI "https://api.twitch.tv/kraken"
 #define DATAURI "./data.json"
@@ -22,9 +23,11 @@ class NetworkManager;
 
 class ChannelManager: public QObject{
     Q_OBJECT
-	protected:
+    Q_PROPERTY(QVariant channels READ channelsList NOTIFY channelStateChanged)
+
+    protected:
 		unsigned int update_counter, check_counter;
-        std::vector<Channel*> channels;
+        QList<Channel*> channels;
         NetworkManager* netman;
 
 	
@@ -33,6 +36,7 @@ class ChannelManager: public QObject{
 
 		~ChannelManager();	
         void load();
+        void load(const QString&);
         void save();
         bool readJSON(const QString&);
         bool writeJSON(const QString&);
@@ -45,22 +49,38 @@ class ChannelManager: public QObject{
         void add(const QString&);
         Channel *find(const QString&);
         int findPos(const QString&);
-        std::vector<Channel*> *getChannels(){ return &channels; }
+        QList<Channel*>& getChannels(){ return channels; }
 		void clearData();
         void play(Channel*);
-        void checkStreams();
         void parseStreams(const QJsonObject&);
 
         void parseStream(const QJsonObject, Channel* channel = 0);
         void parseChannel(const QJsonObject, Channel*);
-
         void checkResources();
+
 
     signals:
         void channelExists(Channel*);
         void channelNotFound(Channel*);
         void channelStateChanged(Channel*);
         void newChannel(Channel*);
+
+    public slots:
+        void checkStreams();
+        void notify(Channel*);
+        QVariantList channelsList(){
+            qDebug() << "get channels called";
+            QVariantList list;
+
+            qSort(this->channels.begin(), this->channels.end(), Channel::greaterThan);
+
+            foreach (Channel* channel, channels){
+                list.append(QVariant::fromValue(channel));
+            }
+
+            return list;
+        }
+
 };
 
 #endif //CHANNEL_MANAGER_H

@@ -11,6 +11,11 @@
 class Channel: public QObject{
 
     Q_OBJECT
+    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY updated)
+    Q_PROPERTY(QString logo READ getLogourl WRITE setLogourl NOTIFY updated)
+    Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY updated)
+    Q_PROPERTY(QString preview READ getPreviewurl WRITE setPreviewurl NOTIFY updated)
+    Q_PROPERTY(bool online READ isOnline WRITE setOnline NOTIFY updated)
 
 	private:
     QString name;
@@ -72,10 +77,14 @@ class Channel: public QObject{
         const QString getGame() const;
         void setGame(const QString&);
 
+        static bool greaterThan(Channel*, Channel*);
+
 signals:
         void updated();
         void iconUpdated();
         void status404();
+
 };
+Q_DECLARE_METATYPE(Channel)
 
 #endif //CHANNEL_H

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network
+QT       += qml quick network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -22,19 +22,20 @@ SOURCES += src/ui/mainwindow.cpp\
     src/model/channel.cpp \
     src/util/fileutils.cpp \
     src/ui/streamitem.cpp \
-    src/network/networkmanager.cpp
+    src/network/networkmanager.cpp \
 
 HEADERS  += src/ui/mainwindow.h\
     src/model/channel.h \
     src/model/channelmanager.h \
     src/util/fileutils.h \
     src/ui/streamitem.h \
-    src/network/networkmanager.h
+    src/network/networkmanager.h \
 
 FORMS    += src/ui/mainwindow.ui
 
 OTHER_FILES += \
-    resources/logo.svg
+    resources/logo.svg \
+    resources/db/db.sql
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
@@ -47,3 +48,6 @@ unix{
 }
 
 DISTFILES +=
+
+RESOURCES += \
+    src/qml/qml.qrc

@@ -46,15 +46,9 @@ MainWindow::~MainWindow()
     ui->listWidget->clear();
 
     qDebug() << "Stopping timers..";
-    //uitimer->stop();
     updatetimer->stop();
 
-    //disconnect(uitimer, SIGNAL(timeout()), this, SLOT(updateList()));
-    //disconnect(updatetimer, SIGNAL(timeout()), this, SLOT(checkStreams()));
-
     qDebug() << "Deleting timers..";
-    //7if (uitimer)
-       //delete uitimer;
     if (updatetimer)
         delete updatetimer;
 
@@ -124,7 +118,7 @@ void MainWindow::checkStreams(){
 
 void MainWindow::on_addButton_clicked()
 {
-    if (cman->getChannels()->size() >= 99){ //Sorry my laziness, twitch api supports maximum limit of 100..
+    if (cman->getChannels().size() >= 99){ //Sorry my laziness, twitch api supports maximum limit of 100..
         QMessageBox::information(this,"Error", "Maximum number of channels reached",QMessageBox::Ok);
         return;
     }
@@ -143,24 +137,26 @@ void MainWindow::on_addButton_clicked()
 }
 
 void MainWindow::showContextMenu(const QPoint& pos){
-    StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->currentItem());
+    if (ui->listWidget->currentItem()){
+        StreamItem *item = dynamic_cast<StreamItem*>(ui->listWidget->currentItem());
 
-    QMenu menu;
-    menu.addAction(QIcon::fromTheme("mpv"),"Watch");
-    if (!item->online())
-        menu.actions().first()->setEnabled(false);
-    menu.addAction(QIcon::fromTheme("list-remove"),"Remove");
+        QMenu menu;
+        menu.addAction(QIcon::fromTheme("mpv"),"Watch");
+        if (!item->online())
+            menu.actions().first()->setEnabled(false);
+        menu.addAction(QIcon::fromTheme("list-remove"),"Remove");
 
-    QAction* action = menu.exec(mapToGlobal(pos));
-    if (action){
-        QString act = action->text();
+        QAction* action = menu.exec(mapToGlobal(pos));
+        if (action){
+            QString act = action->text();
 
-        if (act == "Remove"){
-            if (QMessageBox::question(this,"Remove channel","Remove this channel?",QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
-                remove(item);
-        }
-        else if (act == "Watch"){
-            cman->play(item->getChannel());
+            if (act == "Remove"){
+                if (QMessageBox::question(this,"Remove channel","Remove this channel?",QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+                    remove(item);
+            }
+            else if (act == "Watch"){
+                cman->play(item->getChannel());
+            }
         }
     }
 }
@@ -192,8 +188,8 @@ void MainWindow::setupTray(){
 void MainWindow::loadList()
 {
     cman->load();
-    for (unsigned int i=0; i < cman->getChannels()->size(); i++){
-        addItem(cman->getChannels()->at(i));
+    for (unsigned int i=0; i < cman->getChannels().size(); i++){
+        addItem(cman->getChannels().at(i));
     }
 }
 

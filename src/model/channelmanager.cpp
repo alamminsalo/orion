@@ -3,6 +3,7 @@
 
 ChannelManager::ChannelManager(){
     netman = new NetworkManager(this);
+    connect(this,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
 }
 
 void ChannelManager::checkResources()
@@ -49,11 +50,25 @@ void ChannelManager::checkResources()
     }
 }
 
+void ChannelManager::notify(Channel *channel)
+{
+    qDebug() << "Notify event sent";
+#ifdef Q_OS_LINUX
+    QString title = channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline");
+    QString cmd = "resources/scripts/dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
+    QProcess::startDetached(cmd);
+#endif
+}
+
 ChannelManager::~ChannelManager(){
     qDebug() << "Destroyer: ChannelManager";
     delete netman;
     save();
     clearData();
+}
+
+void ChannelManager::load(const QString &path){
+    readJSON(path);
 }
 
 void ChannelManager::load(){
@@ -66,6 +81,9 @@ void ChannelManager::save()
 }
 
 bool ChannelManager::readJSON(const QString &filename){
+
+    qDebug() << "Opening JSON...";
+
     QJsonParseError error;
     if (!QFile::exists(filename)){
         qDebug() << "File doesn't exist";
@@ -89,6 +107,8 @@ bool ChannelManager::readJSON(const QString &filename){
     }
 
     const QJsonArray &arr = json["channels"].toArray();
+
+    qDebug() << arr.size();
 
     foreach(const QJsonValue &value, arr){
         QJsonObject obj = value.toObject();
@@ -126,6 +146,7 @@ bool ChannelManager::readJSON(const QString &filename){
                         obj["preview"].toString()
                                )
                     );
+        qDebug() << "Added channel " << obj["title"].toString();
     }
 
 	return true;
