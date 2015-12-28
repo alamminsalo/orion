@@ -9,6 +9,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     logoOperation = new QNetworkAccessManager();
     allStreamsOperation = new QNetworkAccessManager();
     genericFileOperation = new QNetworkAccessManager();
+    gamesOperation = new QNetworkAccessManager();
 
 
     connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
@@ -16,6 +17,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     connect(logoOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(logoReply(QNetworkReply*)));
     connect(genericFileOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(fileReply(QNetworkReply*)));
     connect(allStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(allStreamsReply(QNetworkReply*)));
+    connect(gamesOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gamesReply(QNetworkReply*)));
 }
 
 NetworkManager::~NetworkManager()
@@ -82,6 +84,16 @@ void NetworkManager::getFile(const QString &url, const QString &filename)
     request.setAttribute(QNetworkRequest::CustomVerbAttribute,filename);
 
     genericFileOperation->get(request);
+}
+
+void NetworkManager::getGames()
+{
+    QNetworkRequest request;
+    QString url = TWITCH_URI;
+    url += "/games/top?limit=50";
+    request.setUrl(QUrl(url));
+
+    gamesOperation->get(request);
 }
 
 void NetworkManager::channelReply(QNetworkReply* reply)
@@ -180,4 +192,20 @@ void NetworkManager::fileReply(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     QString filename = reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString();
     util::writeBinaryFile(filename,data);
+}
+
+void NetworkManager::gamesReply(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+    QByteArray data = reply->readAll();
+    //qDebug() << data;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        cman->parseGames(doc.object());
+    }
 }

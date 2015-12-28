@@ -9,6 +9,7 @@ Rectangle {
     property string info
     property string preview
     property bool online
+    property int viewers
 
     property int transitionDuration: 100
     property int imgSize: 148
@@ -71,10 +72,6 @@ Rectangle {
         clip: true
 
         function setFocus(bool){
-//            img_shade_animation.stop()
-//            img_shade_animation.from = imageShade.opacity
-//            img_shade_animation.to = bool? 0 : .3
-//            img_shade_animation.start()
 
             imageShade.opacity = bool ? 0 : .2
 
@@ -130,7 +127,7 @@ Rectangle {
         Rectangle {
             id: infoRect
             color: Style.shadeColor
-            opacity: .5
+            opacity: .66
             height: Math.floor(parent.height * 0.25)
 
             anchors{
@@ -144,7 +141,9 @@ Rectangle {
             id: channelTitle
             text: root.title
             color: Style.textColor
-            anchors.centerIn: infoRect
+            anchors.fill: infoRect
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
 
             font.pixelSize: Style.titleFont.pixelSize
             wrapMode: Text.WordWrap
@@ -153,8 +152,6 @@ Rectangle {
 
 
     function setHighlight(isActive){
-        //highlight.setFocus(isActive)
-        //imageShade.setFocus(isActive)
         container.setFocus(isActive)
         root.color = isActive ? Style.twitch.highlight : "transparent"
         root.border.color = isActive ? Style.twitch.border : "transparent"

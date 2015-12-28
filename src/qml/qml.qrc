@@ -2,9 +2,13 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>components/Channel.qml</file>
-        <file>components/ChannelList.qml</file>
+        <file>components/ChannelGrid.qml</file>
         <file>components/Tooltip.qml</file>
         <file>components/ToolBox.qml</file>
         <file>styles.js</file>
+        <file>components/PurpleButton.qml</file>
+        <file>components/Ribbon.qml</file>
+        <file>components/RibbonList.qml</file>
+        <file>ViewBox.qml</file>
     </qresource>
 </RCC>

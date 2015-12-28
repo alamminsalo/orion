@@ -2,6 +2,7 @@
 #define CHANNEL_MANAGER_H
 
 #include "channel.h"
+#include "game.h"
 #include "../util/fileutils.h"
 #include "../network/networkmanager.h"
 #include <vector>
@@ -23,11 +24,12 @@ class NetworkManager;
 
 class ChannelManager: public QObject{
     Q_OBJECT
-    Q_PROPERTY(QVariant channels READ channelsList NOTIFY channelStateChanged)
+    Q_PROPERTY(QVariantList channels READ getChannelsList NOTIFY channelStateChanged)
+    Q_PROPERTY(QVariantList games READ getGamesList NOTIFY gamesUpdated)
 
     protected:
-		unsigned int update_counter, check_counter;
         QList<Channel*> channels;
+        QList<Game*> games;
         NetworkManager* netman;
 
 	
@@ -54,9 +56,14 @@ class ChannelManager: public QObject{
         void play(Channel*);
         void parseStreams(const QJsonObject&);
 
+        void parseGames(const QJsonObject&);
+
         void parseStream(const QJsonObject, Channel* channel = 0);
         void parseChannel(const QJsonObject, Channel*);
         void checkResources();
+
+        QVariantList getChannelsList();
+        QVariantList getGamesList();
 
 
     signals:
@@ -64,22 +71,12 @@ class ChannelManager: public QObject{
         void channelNotFound(Channel*);
         void channelStateChanged(Channel*);
         void newChannel(Channel*);
+        void gamesUpdated();
 
     public slots:
         void checkStreams();
+        void getGames();
         void notify(Channel*);
-        QVariantList channelsList(){
-            qDebug() << "get channels called";
-            QVariantList list;
-
-            qSort(this->channels.begin(), this->channels.end(), Channel::greaterThan);
-
-            foreach (Channel* channel, channels){
-                list.append(QVariant::fromValue(channel));
-            }
-
-            return list;
-        }
 
 };
 

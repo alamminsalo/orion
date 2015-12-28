@@ -11,11 +11,12 @@
 class Channel: public QObject{
 
     Q_OBJECT
-    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY updated)
-    Q_PROPERTY(QString logo READ getLogourl WRITE setLogourl NOTIFY updated)
-    Q_PROPERTY(QString info READ getInfo WRITE setInfo NOTIFY updated)
-    Q_PROPERTY(QString preview READ getPreviewurl WRITE setPreviewurl NOTIFY updated)
-    Q_PROPERTY(bool online READ isOnline WRITE setOnline NOTIFY updated)
+    Q_PROPERTY(QString name READ getName NOTIFY updated)
+    Q_PROPERTY(QString logo READ getLogourl NOTIFY updated)
+    Q_PROPERTY(QString info READ getInfo NOTIFY updated)
+    Q_PROPERTY(QString preview READ getPreviewurl NOTIFY updated)
+    Q_PROPERTY(bool online READ isOnline NOTIFY updated)
+    Q_PROPERTY(quint32 viewers READ getViewers NOTIFY updated())
 
 	private:
     QString name;

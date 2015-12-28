@@ -7,8 +7,8 @@ import "styles.js" as Style
 Window {
     id: root
     visible: true
-    width: 800
-    height: 600
+    width: 1200
+    height: 768
 
     property variant g_rootWindow: root
     property variant g_tooltip
@@ -18,11 +18,14 @@ Window {
 
         ToolBox {
             id: tools
-            width: 200
             anchors {
                 left: parent.left
                 top: parent.top
                 bottom: parent.bottom
+            }
+
+            onSelectedViewChanged: {
+                view.setView(tools.selectedView)
             }
         }
 
@@ -36,39 +39,29 @@ Window {
                 bottom: parent.bottom
             }
 
-            Item {
-                id: spacer_l
+            Rectangle {
+                id: border
+                width: 1
+                color: Style.twitch.border
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
                     left: parent.left
                 }
-                width: 10
             }
 
-            Item {
-                id: spacer_t
+            ViewBox {
+                id: view
+
                 anchors {
                     top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-                height: 10
-            }
-
-            ChannelList {
-                id: channels
-                anchors {
-                    top: spacer_t.bottom
                     bottom: parent.bottom
-                    left: spacer_l.right
+                    left: border.right
                     right: parent.right
                 }
             }
         }
     }
-
-
 
     Component.onCompleted: {
         var component = Qt.createComponent("components/Tooltip.qml")
@@ -76,11 +69,13 @@ Window {
 
         g_cman.checkStreams()
         pollTimer.start()
+
+        view.setView(0)
     }
 
     Timer {
         id: pollTimer
-        interval: 10000
+        interval: 15000
         running: false
         repeat: true
         onTriggered: {

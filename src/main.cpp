@@ -1,6 +1,4 @@
 
-#define _QML
-
 #ifdef _QML
 
 #include <QGuiApplication>

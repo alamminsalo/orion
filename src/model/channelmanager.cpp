@@ -6,8 +6,16 @@ ChannelManager::ChannelManager(){
     connect(this,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
 }
 
+ChannelManager::~ChannelManager(){
+    qDebug() << "Destroyer: ChannelManager";
+    delete netman;
+    save();
+    clearData();
+}
+
 void ChannelManager::checkResources()
 {
+#ifndef _QML
     if (!QDir().exists("resources")){
         qDebug() << "dir \"resources\" not found, making...";
         QDir().mkdir("resources");
@@ -48,6 +56,32 @@ void ChannelManager::checkResources()
         qDebug() << "default channel logo not found, fetching...";
         netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
     }
+
+#endif
+}
+
+QVariantList ChannelManager::getChannelsList()
+{
+    QVariantList list;
+
+    qSort(this->channels.begin(), this->channels.end(), Channel::greaterThan);
+
+    foreach (Channel* channel, channels){
+        list.append(QVariant::fromValue(channel));
+    }
+
+    return list;
+}
+
+QVariantList ChannelManager::getGamesList()
+{
+    QVariantList list;
+
+    foreach (Game* game, games){
+        list.append(QVariant::fromValue(game));
+    }
+
+    return list;
 }
 
 void ChannelManager::notify(Channel *channel)
@@ -58,13 +92,6 @@ void ChannelManager::notify(Channel *channel)
     QString cmd = "resources/scripts/dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
     QProcess::startDetached(cmd);
 #endif
-}
-
-ChannelManager::~ChannelManager(){
-    qDebug() << "Destroyer: ChannelManager";
-    delete netman;
-    save();
-    clearData();
 }
 
 void ChannelManager::load(const QString &path){
@@ -227,10 +254,8 @@ void ChannelManager::remove(Channel* channel){
 }
 
 void ChannelManager::clearData(){
-    for (unsigned int i = 0; i < channels.size(); i++){
-        delete channels.at(i);
-	}
     channels.clear();
+    games.clear();
 }
 
 void ChannelManager::play(Channel* channel){
@@ -259,6 +284,11 @@ void ChannelManager::checkStreams()
     netman->getAllStreams(url);
 }
 
+void ChannelManager::getGames()
+{
+    netman->getGames();
+}
+
 void ChannelManager::parseStreams(const QJsonObject &json)
 {
     // PARSE ONLINE CHANNELS
@@ -282,6 +312,26 @@ void ChannelManager::parseStreams(const QJsonObject &json)
             }
         }
     }
+}
+
+void ChannelManager::parseGames(const QJsonObject &json)
+{
+    games.clear();
+
+    QJsonArray arr = json["top"].toArray();
+    foreach (const QJsonValue &item, arr){
+        const QJsonObject obj = item.toObject();
+        Game *game = new Game();
+
+        game->setName(obj["game"].toObject()["name"].toString());
+        game->setLogo(obj["game"].toObject()["box"].toObject()["large"].toString());
+        game->setViewers(obj["viewers"].toInt());
+        game->setPreview(obj["game"].toObject()["logo"].toObject()["large"].toString());
+
+        games.append(game);
+    }
+
+    emit gamesUpdated();
 }
 
 void ChannelManager::parseStream(const QJsonObject item, Channel* channel){
@@ -312,9 +362,11 @@ void ChannelManager::parseStream(const QJsonObject item, Channel* channel){
             channel->setLogourl(logouri);
             channel->setLogoPath(logopath);
 
+#ifndef _QML
             if (!QFile::exists(logopath)){
                 netman->getLogo(channel);
             }
+#endif
         } else {
             channel->setLogoPath("resources/logos/default.png");
             channel->iconUpdated();
@@ -336,8 +388,8 @@ void ChannelManager::parseStream(const QJsonObject item, Channel* channel){
 
             QJsonObject previewValue = item["preview"].toObject();
 
-            if (!previewValue["medium"].isNull()){
-                QString previewuri = previewValue["medium"].toString();
+            if (!previewValue["large"].isNull()){
+                QString previewuri = previewValue["large"].toString();
                 QStringRef extension(&previewuri,previewuri.lastIndexOf("."),(previewuri.length() - previewuri.lastIndexOf(".")));
                 QString previewpath = "resources/preview/";
                 previewpath += channel->getUriName();
@@ -345,8 +397,9 @@ void ChannelManager::parseStream(const QJsonObject item, Channel* channel){
 
                 channel->setPreviewurl(previewuri);
                 channel->setPreviewPath(previewpath);
-
+#ifndef _QML
                 netman->getFile(channel->getPreviewurl(),channel->getPreviewPath());
+#endif
             }
         }
 
@@ -388,10 +441,11 @@ void ChannelManager::parseChannel(const QJsonObject item, Channel *channel){
 
             channel->setLogourl(logouri);
             channel->setLogoPath(logopath);
-
+#ifndef _QML
             if (!QFile::exists(logopath)){
                 netman->getLogo(channel);
             }
+#endif
         } else {
             channel->setLogoPath("resources/logos/default.png");
             channel->iconUpdated();

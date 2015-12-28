@@ -23,6 +23,7 @@ protected:
     QNetworkAccessManager* allStreamsOperation;
     QNetworkAccessManager* logoOperation;
     QNetworkAccessManager* genericFileOperation;
+    QNetworkAccessManager* gamesOperation;
 
     ChannelManager* cman;
 
@@ -35,6 +36,7 @@ public:
     void getAllStreams(const QString&);
     void getLogo(Channel*);
     void getFile(const QString&, const QString&);
+    void getGames();
 
 public slots:
     void channelReply(QNetworkReply*);
@@ -42,6 +44,7 @@ public slots:
     void allStreamsReply(QNetworkReply*);
     void logoReply(QNetworkReply*);
     void fileReply(QNetworkReply*);
+    void gamesReply(QNetworkReply*);
 };
 
 #endif // NETWORKMANAGER_H

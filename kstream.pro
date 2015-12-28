@@ -12,7 +12,8 @@ TARGET = kstream
 
 TEMPLATE = app
 
-DEFINES += APP_NAME=\\\"kstream\\\"
+DEFINES += APP_NAME=\\\"kstream\\\"\
+    _QML
 
 LIBS +=
 
@@ -23,6 +24,7 @@ SOURCES += src/ui/mainwindow.cpp\
     src/util/fileutils.cpp \
     src/ui/streamitem.cpp \
     src/network/networkmanager.cpp \
+    src/model/game.cpp
 
 HEADERS  += src/ui/mainwindow.h\
     src/model/channel.h \
@@ -30,6 +32,7 @@ HEADERS  += src/ui/mainwindow.h\
     src/util/fileutils.h \
     src/ui/streamitem.h \
     src/network/networkmanager.h \
+    src/model/game.h
 
 FORMS    += src/ui/mainwindow.ui
 

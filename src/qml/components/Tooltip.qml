@@ -1,26 +1,18 @@
 
 import QtQuick 2.0
 import QtQuick.Window 2.0
+import "../styles.js" as Style
 
 Window {
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus
+    height: 200
+    width: 333
 
-    property string title: "Channel title"
-    property string description: "Description goes here."
-    property string img: "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
-
-    property variant currentChannel
-
-    Component.onCompleted: {
-        if (img.height > 320){
-            root.height = img.height
-            root.width = img.width
-        } else {
-            root.height = 320
-            root.width = 480
-        }
-    }
+    property string title
+    property string description
+    property string img
+    property int viewers: 0
 
     Rectangle {
         id: rootRect
@@ -30,59 +22,65 @@ Window {
             id: img
             source: root.img
             anchors.fill: parent
+        }
 
-            Rectangle {
-                id: header
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    bottom: parent.bottom
-                }
-
-                color: "#000000"
-                opacity: 0.5
-                height: 64
+        Rectangle {
+            id: header
+            anchors {
+                left: parent.left
+                right: parent.right
+                bottom: parent.bottom
             }
 
-            Text {
-                id: title
-                opacity: 1
-                color: "white"
-                text: root.title
-                width: parent.width
-                anchors{
-                    top: header.top
-                    left: header.left
-                }
-                wrapMode: Text.WordWrap
-            }
+            color: Style.shadeColor
+            opacity: 0.5
+            height: 60
+        }
 
-            Text {
-                id: description
-                opacity: 1
-                color: "white"
-                width: parent.width
-                text: root.description
-                anchors {
-                    top: title.bottom
-                    left: parent.left
-                }
-                wrapMode: Text.WordWrap
+        Text {
+            id: title
+            opacity: 1
+            color: Style.textColor
+            text: "<b>" + root.title + ":</b> " + (root.viewers ? root.viewers + " viewers" : "")
+            width: parent.width
+            font.pixelSize: Style.titleFont.pixelSize
+            anchors{
+                top: header.top
+                left: header.left
             }
+            wrapMode: Text.WordWrap
+        }
+
+        Text {
+            id: description
+            opacity: 1
+            color: Style.textColor
+            width: parent.width
+            text: root.description
+            font.pixelSize: Style.titleFont.pixelSize
+            anchors {
+                top: title.bottom
+                left: parent.left
+            }
+            wrapMode: Text.WordWrap
         }
 
 
     }
 
     function displayChannel(mX, mY, channel){
-        if (channel && channel !== currentChannel){
-            currentChannel = channel
-            root.img = channel.online ? channel.preview : "https://raw.githubusercontent.com/alamminsalo/kstream/dev/resources/preview/offline.png"
-            //root.img = channel.preview
+        if (channel){
+
+            root.img = channel.preview
             root.title = channel.title
             root.description = channel.info
+            root.viewers = channel.viewers
+
             root.x = mX
             root.y = mY
+
+            header.height = root.description ? 60 : 40
+
             root.show()
         }
     }
