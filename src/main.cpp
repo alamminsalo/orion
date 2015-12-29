@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     ChannelManager *cman = new ChannelManager();
-    //cman->checkResources();
+    cman->checkResources();
     cman->load();
 
     QQmlApplicationEngine engine;

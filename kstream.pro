@@ -24,7 +24,8 @@ SOURCES += src/ui/mainwindow.cpp\
     src/util/fileutils.cpp \
     src/ui/streamitem.cpp \
     src/network/networkmanager.cpp \
-    src/model/game.cpp
+    src/model/game.cpp \
+    src/util/jsonparser.cpp
 
 HEADERS  += src/ui/mainwindow.h\
     src/model/channel.h \
@@ -32,7 +33,8 @@ HEADERS  += src/ui/mainwindow.h\
     src/util/fileutils.h \
     src/ui/streamitem.h \
     src/network/networkmanager.h \
-    src/model/game.h
+    src/model/game.h \
+    src/util/jsonparser.h
 
 FORMS    += src/ui/mainwindow.ui
 
@@ -42,15 +44,7 @@ OTHER_FILES += \
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
-unix{
-    copydata.commands = $(COPY_DIR) $$PWD/resources $$OUT_PWD
-    first.depends = $(first) copydata
-    export(first.depends)
-    export(copydata.commands)
-    QMAKE_EXTRA_TARGETS += first copydata
-}
-
 DISTFILES +=
 
 RESOURCES += \
-    src/qml/qml.qrc
+    src/qml/qml.qrc\

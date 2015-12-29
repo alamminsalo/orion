@@ -1,6 +1,5 @@
 #include "channelmanager.h"
 
-
 ChannelManager::ChannelManager(){
     netman = new NetworkManager(this);
     connect(this,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
@@ -15,7 +14,6 @@ ChannelManager::~ChannelManager(){
 
 void ChannelManager::checkResources()
 {
-#ifndef _QML
     if (!QDir().exists("resources")){
         qDebug() << "dir \"resources\" not found, making...";
         QDir().mkdir("resources");
@@ -40,24 +38,16 @@ void ChannelManager::checkResources()
         qDebug() << "dir \"scripts\" not found, making...";
         QDir().mkdir("resources/scripts");
     }
-    if (!QFile::exists("resources/scripts/play.sh")){
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh","resources/scripts/play.sh");
-#ifndef Q_OS_WIN
-        QProcess::startDetached("chmod +x resources/scripts/play.sh");
-#endif
+    if (!QFile::exists(PLAY_FILE)){
+        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh",PLAY_FILE);
     }
-    if (!QFile::exists("resources/scripts/dialog.sh")){
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh","resources/scripts/dialog.sh");
-#ifndef Q_OS_WIN
-        QProcess::startDetached("chmod +x resources/scripts/dialog.sh");
-#endif
+    if (!QFile::exists(DIALOG_FILE)){
+        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh",DIALOG_FILE);
     }
     if (!QFile::exists("resources/logos/default.png")){
         qDebug() << "default channel logo not found, fetching...";
         netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
     }
-
-#endif
 }
 
 QVariantList ChannelManager::getChannelsList()
@@ -86,12 +76,20 @@ QVariantList ChannelManager::getGamesList()
 
 void ChannelManager::notify(Channel *channel)
 {
-    qDebug() << "Notify event sent";
 #ifdef Q_OS_LINUX
-    QString title = channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline");
-    QString cmd = "resources/scripts/dialog.sh \"" + title + "\" \"" + channel->getInfo() + "\" \"/" + channel->getLogoPath() + "\"";
-    QProcess::startDetached(cmd);
+    if (QFile::exists(DIALOG_FILE)){
+        if (!QFileInfo(DIALOG_FILE).isExecutable())
+            QProcess::execute("chmod +x " + QString(DIALOG_FILE));
+
+        QStringList args;
+        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline")
+             << channel->getInfo()
+             << "/" + channel->getLogoPath();
+
+        QProcess::startDetached(DIALOG_FILE, args);
+    }
 #endif
+    channelsChanged = true;
 }
 
 void ChannelManager::load(const QString &path){
@@ -210,7 +208,7 @@ void ChannelManager::add(const QString &uriName){
     else{
         channel = new Channel(uriName);
         add(channel);
-        netman->getStream(channel);
+        netman->getStream(channel->getUriName());
     }
 }
 
@@ -230,9 +228,9 @@ int ChannelManager::findPos(const QString &uriName){
 	return -1;
 }
 
-void ChannelManager::updateChannels(){
+void ChannelManager::checkChannels(){
 	for (unsigned int i=0; i<channels.size(); i++){
-        netman->getChannelData(channels.at(i));
+        netman->getChannel(channels.at(i)->getUriName());
 	}
 }
 
@@ -254,8 +252,8 @@ void ChannelManager::remove(Channel* channel){
 }
 
 void ChannelManager::clearData(){
-    channels.clear();
-    games.clear();
+    qDeleteAll(channels);
+    //qDeleteAll(games);
 }
 
 void ChannelManager::play(Channel* channel){
@@ -271,186 +269,111 @@ void ChannelManager::checkStreams()
     if (channels.size() == 0)
         return;
 
-    QString url = TWITCH_URI;
-    url += "/streams?limit=100&channel=";
+    int c_index = 0;
+    QString channelsUrl = "";
+
     for(size_t i = 0; i < channels.size(); i++){
         Channel* channel = channels.at(i);
-        if (i > 0)
-            url += ",";
-        url += channel->getUriName();
-        channel->setChanged(false);
-    }
+        if (c_index++ > 0)
+            channelsUrl += ",";
+        channelsUrl += channel->getUriName();
 
-    netman->getAllStreams(url);
+        if (c_index >= channels.size() || c_index >= 50){
+            QString url = TWITCH_URI
+                    + QString("/streams?limit=%1&channel=").arg(c_index)
+                    + channelsUrl;
+
+            qDebug() << url;
+
+            netman->getAllStreams(url);
+
+            channelsUrl = "";
+            c_index = 0;
+        }
+    }
 }
 
 void ChannelManager::getGames()
 {
-    netman->getGames();
+    netman->getGames(25,games.size());
 }
 
-void ChannelManager::parseStreams(const QJsonObject &json)
+void ChannelManager::updateChannels(const QList<Channel*> &list)
 {
-    // PARSE ONLINE CHANNELS
-    QJsonArray arr = json["streams"].toArray();
-    foreach (const QJsonValue &item, arr){
-        parseStream(item.toObject());
+    foreach(Channel *channel, list){
+        updateChannel(channel);
     }
+    qDeleteAll(list);
 
-    //PARSE OFFLINE CHANNELS
-    foreach (Channel *channel, channels){
-        if (!channel->isChanged()){
+    emit channelsUpdated();
+}
 
-            //If missing display name or channel logo data, update channel data
-            if (channel->getName().isEmpty() || !QFile::exists(channel->getLogoPath())){
-                netman->getChannelData(channel);
+void ChannelManager::updateChannel(Channel *item)
+{
+    if (!item->getUriName().isEmpty()){
+
+        Channel *channel = find(item->getUriName());
+
+        if (channel){
+            channel->setName(item->getName());
+
+            if (!item->getLogourl().isEmpty()){
+                channel->setLogourl(item->getLogourl());
             }
-
-            if (channel->isOnline()){
-                channel->setOnline(false);
-                emit channelStateChanged(channel);
-            }
+            channel->setLogoPath(item->getLogoPath());
+            channel->setInfo(item->getInfo());
+            channel->updated();
         }
     }
 }
 
-void ChannelManager::parseGames(const QJsonObject &json)
+void ChannelManager::updateStreams(const QList<Channel*> &list)
 {
-    games.clear();
-
-    QJsonArray arr = json["top"].toArray();
-    foreach (const QJsonValue &item, arr){
-        const QJsonObject obj = item.toObject();
-        Game *game = new Game();
-
-        game->setName(obj["game"].toObject()["name"].toString());
-        game->setLogo(obj["game"].toObject()["box"].toObject()["large"].toString());
-        game->setViewers(obj["viewers"].toInt());
-        game->setPreview(obj["game"].toObject()["logo"].toObject()["large"].toString());
-
-        games.append(game);
+    //Online channels
+    foreach(Channel *channel, list){
+        updateStream(channel);
     }
+    qDeleteAll(list);
+
+    emit channelsUpdated();
+}
+
+void ChannelManager::updateStream(Channel *item)
+{
+    if (!item->getUriName().isEmpty()){
+
+        Channel *channel = find(item->getUriName());
+
+        if (channel){
+                if (item->isOnline()){
+                    channel->setViewers(item->getViewers());
+                    channel->setGame(item->getGame());
+                    channel->setPreviewurl(item->getPreviewurl());
+                    channel->setPreviewPath(item->getPreviewPath());
+
+                    if (!item->getName().isEmpty()){
+                        updateChannel(item);
+                    }
+                } else if (channel->getName().isEmpty()){
+                    netman->getChannel(channel->getUriName());
+                }
+
+                if (channel->isOnline() != item->isOnline()){
+                    channel->setOnline(item->isOnline());
+                    emit channelStateChanged(channel);
+                    channel->updated();
+                }
+        }
+    }
+}
+
+void ChannelManager::updateGames(const QList<Game*> &list)
+{
+    foreach(Game* game, list){
+        games.append(new Game(*game));
+    }
+
+    qDeleteAll(list);
 
     emit gamesUpdated();
 }
-
-void ChannelManager::parseStream(const QJsonObject item, Channel* channel){
-
-    if (item["channel"].isNull()){
-        return;
-    }
-    QJsonObject channelValue = item["channel"].toObject();
-
-    if (!channel){
-        channel = find(channelValue["name"].toString());
-    }
-
-    if (channel){
-
-        if (!channelValue["display_name"].isNull()){
-            channel->setName(channelValue["display_name"].toString());
-        }
-
-        if (!channelValue["logo"].isNull()){
-            QString logouri = channelValue["logo"].toString();
-            QStringRef extension(&logouri,logouri.lastIndexOf("."),(logouri.length() - logouri.lastIndexOf(".")));
-            QString logopath = "resources/logos/";
-
-            logopath += channel->getUriName();
-            logopath += extension;
-
-            channel->setLogourl(logouri);
-            channel->setLogoPath(logopath);
-
-#ifndef _QML
-            if (!QFile::exists(logopath)){
-                netman->getLogo(channel);
-            }
-#endif
-        } else {
-            channel->setLogoPath("resources/logos/default.png");
-            channel->iconUpdated();
-        }
-
-        if (!item["viewers"].isNull()){
-            channel->setViewers(item["viewers"].toInt());
-        }
-
-        if (!item["game"].isNull()){
-            channel->setGame(item["game"].toString());
-        }
-
-        if (!channelValue["status"].isNull()){
-            channel->setInfo(channelValue["status"].toString());
-        }
-
-        if (!item["preview"].isNull()){
-
-            QJsonObject previewValue = item["preview"].toObject();
-
-            if (!previewValue["large"].isNull()){
-                QString previewuri = previewValue["large"].toString();
-                QStringRef extension(&previewuri,previewuri.lastIndexOf("."),(previewuri.length() - previewuri.lastIndexOf(".")));
-                QString previewpath = "resources/preview/";
-                previewpath += channel->getUriName();
-                previewpath += extension;
-
-                channel->setPreviewurl(previewuri);
-                channel->setPreviewPath(previewpath);
-#ifndef _QML
-                netman->getFile(channel->getPreviewurl(),channel->getPreviewPath());
-#endif
-            }
-        }
-
-        if (!channel->isOnline()){
-            channel->setOnline(true);
-            emit channelStateChanged(channel);
-        }
-        else {
-            channel->updated();
-        }
-        channel->setChanged(true);
-    }
-}
-
-void ChannelManager::parseChannel(const QJsonObject item, Channel *channel){
-    if (item["name"].isNull()){
-        return;
-    }
-
-    if (channel){
-
-        qDebug() << "Parsing channel data for " <<  channel->getUriName();
-
-        if (!item["display_name"].isNull()){
-            channel->setName(item["display_name"].toString());
-        }
-
-        if (!item["status"].isNull()){
-            channel->setInfo(item["status"].toString());
-        }
-
-        if (!item["logo"].isNull()){
-            QString logouri = item["logo"].toString();
-            QStringRef extension(&logouri,logouri.lastIndexOf("."),(logouri.length() - logouri.lastIndexOf(".")));
-            QString logopath = "resources/logos/";
-
-            logopath += channel->getUriName();
-            logopath += extension;
-
-            channel->setLogourl(logouri);
-            channel->setLogoPath(logopath);
-#ifndef _QML
-            if (!QFile::exists(logopath)){
-                netman->getLogo(channel);
-            }
-#endif
-        } else {
-            channel->setLogoPath("resources/logos/default.png");
-            channel->iconUpdated();
-        }
-        channel->updated();
-    }
-}
-

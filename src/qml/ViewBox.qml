@@ -8,19 +8,34 @@ Rectangle {
     color: Style.twitch.bg
 
     function setView(index){
+        search.visible = false
+        favourites.visible = false
+        games.visible = false
+
         switch (index){
+            //Search
             case 0:
+                search.visible = true
+                break;
+
+            //Fav
+            case 1:
                 favourites.visible = true
-                games.visible = false
                 break
 
-            case 1:
-                favourites.visible = false
+            //Games
+            case 2:
                 games.visible = true
-                g_cman.getGames()
+                if (games.count === 0)
+                    games.getGames()
                 break
         }
         selection = index
+    }
+
+    SearchView {
+        id: search
+        visible: false
     }
 
     ChannelGrid {
@@ -48,9 +63,12 @@ Rectangle {
 
     ChannelGrid {
         id: games
+        property int gamesCount: 0
+
         cellSize: 200
         visible: false
         tooltipEnabled: true
+        highlightFollowsCurrentItem: false
 
         anchors {
             fill: parent
@@ -65,6 +83,19 @@ Rectangle {
             viewers: modelData.viewers
             online: true
             containerSize: favourites.cellHeight
+        }
+
+        function getGames(){
+            if (games.count === games.gamesCount){
+                g_cman.getGames();
+                games.gamesCount += 25
+            }
+        }
+
+        onContentYChanged: {
+            if (contentHeight - contentY - height <= 0){
+                games.getGames();
+            }
         }
     }
 

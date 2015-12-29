@@ -20,6 +20,7 @@ class Game : public QObject
 public:
     Game();
     Game(const Game&);
+    ~Game(){}
 
     QString getName() const;
     void setName(const QString &value);
@@ -35,9 +36,6 @@ public:
 
 signals:
     void updated();
-
-public slots:
-
 };
 Q_DECLARE_METATYPE(Game)
 

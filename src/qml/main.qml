@@ -12,6 +12,7 @@ Window {
 
     property variant g_rootWindow: root
     property variant g_tooltip
+    property variant g_toolBox: tools
 
     Rectangle {
         anchors.fill: parent

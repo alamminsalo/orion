@@ -8,7 +8,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include "../model/channel.h"
+#include "../util/jsonparser.h"
+//#include "../model/channel.h"
 #include "../model/channelmanager.h"
 #include "../util/fileutils.h"
 
@@ -24,6 +25,7 @@ protected:
     QNetworkAccessManager* logoOperation;
     QNetworkAccessManager* genericFileOperation;
     QNetworkAccessManager* gamesOperation;
+    QNetworkAccessManager* searchOperation;
 
     ChannelManager* cman;
 
@@ -31,12 +33,13 @@ public:
     NetworkManager(ChannelManager*);
     ~NetworkManager();
 
-    void getChannelData(Channel*);
-    void getStream(Channel*);
+    void getChannel(const QString&);
+    void getStream(const QString&);
     void getAllStreams(const QString&);
     void getLogo(Channel*);
     void getFile(const QString&, const QString&);
-    void getGames();
+    void getGames(quint32,quint32);
+    void searchChannels(const QString&);
 
 public slots:
     void channelReply(QNetworkReply*);
@@ -45,6 +48,7 @@ public slots:
     void logoReply(QNetworkReply*);
     void fileReply(QNetworkReply*);
     void gamesReply(QNetworkReply*);
+    void searchChannelsReply(QNetworkReply*);
 };
 
 #endif // NETWORKMANAGER_H

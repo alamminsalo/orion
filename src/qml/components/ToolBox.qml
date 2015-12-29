@@ -8,25 +8,13 @@ Rectangle {
     color: Style.twitch.sidebarBg
     width: 200
 
-    property bool isOpen: false
+    property bool isOpen: true
     property int selectedView: 0
-
-    Component.onCompleted: {
-        toggle()
-    }
 
     NumberAnimation on width {
         id: toolbox_drawer_anim
         duration: 200
         easing.type: Easing.OutCubic
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        onClicked: {
-           toggle()
-        }
     }
 
     function toggle(){
@@ -35,41 +23,50 @@ Rectangle {
         toolbox_drawer_anim.to = isOpen ? 50 : 200
         toolbox_drawer_anim.start()
         isOpen = !isOpen
+        toggleButton.iconStr = isOpen ? 'chevron_l' : 'chevron_r'
     }
 
-
-    Item {
-        id: searchContainer
-        anchors {
-            left: parent.left
-            right: parent.right
+    Ribbon {
+        id: toggleButton
+        iconStr: 'chevron_l'
+        iconSize: 24
+        MouseArea {
+            anchors.fill: parent
+            onClicked: toggle()
         }
-        height: 200
     }
 
     RibbonList {
         id: ribbonList
 
-        onSelectionChanged: {
-            root.selectedView = selection.id
-            console.log(root.selectedView)
+        onCurrentIndexChanged: {
+            selectedView = currentIndex
         }
 
         anchors {
-            top: searchContainer.bottom
+            top: toggleButton.bottom
             left: parent.left
             right: parent.right
         }
 
         model: ListModel {
             ListElement {
-                index: 0
-                label: "Favourites"
+                label: "Search"
+                icon: "search"
             }
             ListElement {
-                index: 1
-                label: "Games"
+                label: "Favourites"
+                icon: "fav"
             }
+            ListElement {
+                label: "Games"
+                icon: "game"
+            }
+        }
+
+        delegate: Ribbon {
+            text: label
+            iconStr: icon
         }
     }
 }

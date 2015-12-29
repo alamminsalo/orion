@@ -8,6 +8,8 @@
 #include <QDateTime>
 #include <QDebug>
 
+//#define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
+
 class Channel: public QObject{
 
     Q_OBJECT
@@ -26,7 +28,6 @@ class Channel: public QObject{
     QString game;
     quint32 viewers;
 	bool online;
-    bool changed;
     qint64 timestamp;
     QString logopath;
     QString previewpath;
@@ -63,8 +64,6 @@ class Channel: public QObject{
         const QString getLogoPath();
         void setPreviewPath(const QString&);
         const QString getPreviewPath();
-        bool isChanged();
-        void setChanged(bool b);
 
         const QString getLogourl();
         void setLogourl(const QString&);

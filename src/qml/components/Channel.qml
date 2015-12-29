@@ -37,33 +37,6 @@ Rectangle {
         colorOverlay.setOverlay(online)
     }
 
-//    Rectangle {
-//        id: highlight
-//        anchors.fill: parent
-//        color: "#ffffff"
-//        opacity: 0
-//        border.width: 2
-//        border.color: "black"
-
-//        NumberAnimation on opacity {
-//            id: animateOpacity
-//            duration: root.transitionDuration
-//            easing.type: Easing.InCubic
-//        }
-
-//        function setFocus(bool){
-//            animateOpacity.stop()
-//            if (bool === true){
-//                animateOpacity.to = .1
-//                animateOpacity.from = 0
-//            } else {
-//                animateOpacity.from = .1
-//                animateOpacity.to = 0
-//            }
-//            animateOpacity.start()
-//        }
-//    }
-
     Rectangle {
         id: container
         height: imgSize
@@ -99,14 +72,6 @@ Rectangle {
                 anchors.fill: parent
                 color: "#000000"
                 opacity: .2
-
-//                NumberAnimation on opacity {
-//                    id: img_shade_animation
-//                    duration: 0
-//                    easing.type: Easing.InCubic
-//                }
-
-
             }
 
             ColorOverlay {

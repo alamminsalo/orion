@@ -10,5 +10,9 @@
         <file>components/Ribbon.qml</file>
         <file>components/RibbonList.qml</file>
         <file>ViewBox.qml</file>
+        <file>components/Icon.qml</file>
+        <file>components/fontAwesome.js</file>
+        <file>fonts/fontawesome-webfont.ttf</file>
+        <file>SearchView.qml</file>
     </qresource>
 </RCC>

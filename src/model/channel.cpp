@@ -1,7 +1,7 @@
 #include "channel.h"
 
 Channel::~Channel(){
-    qDebug() << "Destroyer: Channel";
+    //qDebug() << "Destroyer: Channel";
 }
 
 
@@ -164,15 +164,6 @@ const QString Channel::getLogoPath(){
 
 const QString Channel::getPreviewPath(){
     return previewpath;
-}
-
-bool Channel::isChanged()
-{
-    return changed;
-}
-
-void Channel::setChanged(bool b){
-    changed = b;
 }
 
 void Channel::setLogoPath(const QString &path){

@@ -30,28 +30,24 @@ NetworkManager::~NetworkManager()
     delete genericFileOperation;
 }
 
-void NetworkManager::getChannelData(Channel* channel)
+void NetworkManager::getChannel(const QString &uriName)
 {
-    qDebug() << "GET channel: " << channel->getUriName();
-    QString url = TWITCH_URI;
-    url += "/channels/";
-    url += channel->getUriName();
+    qDebug() << "GET channel: " << uriName;
+    QString url = QString(TWITCH_URI) + "/channels/" + uriName;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
+    //request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
 
     channelOperation->get(request);
 }
 
-void NetworkManager::getStream(Channel *channel)
+void NetworkManager::getStream(const QString &uriName)
 {
-    qDebug() << "GET stream: " << channel->getUriName();
-    QString url = TWITCH_URI;
-    url += "/streams/";
-    url += channel->getUriName();
+    qDebug() << "GET stream: " << uriName;
+    QString url = QString(TWITCH_URI) + "/streams/" + uriName;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
+    //request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
 
     streamOperation->get(request);
 }
@@ -86,39 +82,42 @@ void NetworkManager::getFile(const QString &url, const QString &filename)
     genericFileOperation->get(request);
 }
 
-void NetworkManager::getGames()
+void NetworkManager::getGames(quint32 limit, quint32 offset)
 {
     QNetworkRequest request;
     QString url = TWITCH_URI;
-    url += "/games/top?limit=50";
+    url += QString("/games/top?limit=%1").arg(limit)
+            + QString("&offset=%2").arg(offset);
     request.setUrl(QUrl(url));
 
     gamesOperation->get(request);
 }
 
+void NetworkManager::searchChannels(const QString &query)
+{
+    QNetworkRequest request;
+    QString url = QString(TWITCH_URI) + QString("/search/channels?q=%1").arg(QString(QUrl::toPercentEncoding(query)));
+}
+
 void NetworkManager::channelReply(QNetworkReply* reply)
 {
-    Channel* channel = cman->find(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
-    if (channel){
-        if (reply->error() != QNetworkReply::NoError){
-            qDebug() << reply->errorString();
-            if (reply->error() == QNetworkReply::ContentNotFoundError)
-                cman->channelNotFound(channel);
-            return;
-        }
-        QByteArray data = reply->readAll();
-        //qDebug() << data;
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+//        if (reply->error() == QNetworkReply::ContentNotFoundError)
+//            cman->channelNotFound(channel);
+        return;
+    }
 
-        QJsonParseError error;
-        QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-        if (error.error != QJsonParseError::NoError){
-            qDebug() << "Error while parsing data: " << error.errorString();
-            return;
-        }
-        if (doc.isObject()){
-            QJsonObject object = doc.object();
-            cman->parseChannel(object,channel);
-        }
+    QByteArray data = reply->readAll();
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if (error.error != QJsonParseError::NoError){
+        qDebug() << "Error while parsing data: " << error.errorString();
+        return;
+    }
+    if (doc.isObject()){
+        cman->updateChannel(JsonParser::parseChannel(doc.object()));
     }
 }
 
@@ -144,11 +143,7 @@ void NetworkManager::streamReply(QNetworkReply *reply)
             return;
         }
         if (doc.isObject()){
-            QJsonObject object = doc.object();
-            if (!object["stream"].isNull())
-                cman->parseStream(object["stream"].toObject(),channel);
-            else
-                getChannelData(channel);
+            cman->updateStream(JsonParser::parseStream(doc.object()));
         }
     }
 }
@@ -165,7 +160,7 @@ void NetworkManager::allStreamsReply(QNetworkReply *reply)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        cman->parseStreams(doc.object());
+        cman->updateStreams(JsonParser::parseStreams(doc.object()));
     }
 }
 
@@ -206,6 +201,21 @@ void NetworkManager::gamesReply(QNetworkReply *reply)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        cman->parseGames(doc.object());
+        cman->updateGames(JsonParser::parseGames(doc.object()));
+    }
+}
+
+void NetworkManager::searchChannelsReply(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        //cman->parseSearchResults(doc.object());
     }
 }

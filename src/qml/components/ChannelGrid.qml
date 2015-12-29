@@ -7,39 +7,40 @@ GridView{
     property bool tooltipEnabled: false
 
     id: root
-    focus: true
+    //focus: true
+
     cellHeight: cellSize
     maximumFlickVelocity: 800
     cellWidth: cellHeight
 
-    Component.onCompleted: {
+    function setFocus(){
+        var mX = mArea.mouseX
+        var mY = mArea.mouseY
+        var index = indexAt(contentX + mX, contentY + mY)
 
+        g_tooltip.hide()
+
+        if (mArea.containsMouse) {
+            root.currentIndex = index
+            if (tooltipEnabled)
+                tooltipTimer.restart()
+        }
+//        else {
+//            if (tooltipEnabled)
+//                g_tooltip.hide()
+//        }
     }
+
+    onContentYChanged: setFocus()
+    onContentXChanged: setFocus()
 
     MouseArea{
         id: mArea
         anchors.fill: parent
         hoverEnabled: true
-        onMouseXChanged:; onMouseYChanged: {
-            var mX = mouseX
-            var mY = mouseY
-            var index = indexAt(contentX + mX, contentY + mY)
-            //var rows = Math.floor(root.count / (Math.floor(root.width / root.cellWidth)))
 
-            //console.log("Grid rows: ", rows)
-
-            if (containsMouse) {
-                //if (index > -1) {
-                    root.currentIndex = index
-                //}
-                if (tooltipEnabled)
-                    tooltipTimer.restart()
-            } else {
-                if (tooltipEnabled)
-                    g_tooltip.hide()
-            }
-
-        }
+        onMouseXChanged: setFocus()
+        onMouseYChanged: setFocus()
 
         Timer {
             id: tooltipTimer

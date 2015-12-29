@@ -2,7 +2,7 @@ import QtQuick 2.0
 
 ListView {
     id: rList
-    height: 200
+    height: model.count * 50
 
     property variant selection
 
@@ -26,6 +26,4 @@ ListView {
                 rList.currentIndex = index
         }
     }
-
-    delegate: Ribbon {}
 }
