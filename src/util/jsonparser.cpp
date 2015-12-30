@@ -172,3 +172,16 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
 
     return channel;
 }
+
+QList<Channel*> JsonParser::parseChannels(const QJsonObject &json)
+{
+    QList<Channel*> channels;
+
+    //Online streams
+    QJsonArray arr = json["channels"].toArray();
+    foreach (const QJsonValue &item, arr){
+        channels.append(JsonParser::parseChannel(item.toObject()));
+    }
+
+    return channels;
+}

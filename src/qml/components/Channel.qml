@@ -118,7 +118,7 @@ Rectangle {
 
     function setHighlight(isActive){
         container.setFocus(isActive)
-        root.color = isActive ? Style.twitch.highlight : "transparent"
-        root.border.color = isActive ? Style.twitch.border : "transparent"
+        root.color = isActive ? Style.highlight : "transparent"
+        root.border.color = isActive ? Style.border : "transparent"
     }
 }

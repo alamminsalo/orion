@@ -8,7 +8,7 @@ Rectangle {
     id: root
     width: 70
     height: 30
-    color: Style.twitch.purple
+    color: Style.purple
 
     Component.onCompleted: {
         if (!label.text){
@@ -34,6 +34,7 @@ Rectangle {
     Icon {
         id: iconLabel
         icon: iconStr
+        iconSize: 20
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -46,9 +47,12 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
 
-        onPressedChanged:; onHoveredChanged: {
-            hoverRect.opacity = pressed ? .1 : 0
+        onHoveredChanged: {
             hoverRect.opacity = containsMouse ? .1 : 0
+        }
+
+        onPressedChanged: {
+            hoverRect.opacity = pressed ? .2 : containsMouse ? .1 : 0
         }
     }
 }

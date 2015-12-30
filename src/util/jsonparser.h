@@ -20,6 +20,7 @@ class JsonParser
 public:
     static QList<Channel*> parseStreams(const QJsonObject&);
     static QList<Game*> parseGames(const QJsonObject&);
+    static QList<Channel*> parseChannels(const QJsonObject&);
     static Game* parseGame(const QJsonObject&);
     static Channel* parseStream(const QJsonObject&);
     static Channel* parseChannel(const QJsonObject&);

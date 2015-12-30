@@ -10,7 +10,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     allStreamsOperation = new QNetworkAccessManager();
     genericFileOperation = new QNetworkAccessManager();
     gamesOperation = new QNetworkAccessManager();
-
+    searchOperation = new QNetworkAccessManager();
 
     connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
     connect(streamOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(streamReply(QNetworkReply*)));
@@ -18,6 +18,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     connect(genericFileOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(fileReply(QNetworkReply*)));
     connect(allStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(allStreamsReply(QNetworkReply*)));
     connect(gamesOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gamesReply(QNetworkReply*)));
+    connect(searchOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(searchChannelsReply(QNetworkReply*)));
 }
 
 NetworkManager::~NetworkManager()
@@ -93,10 +94,16 @@ void NetworkManager::getGames(quint32 limit, quint32 offset)
     gamesOperation->get(request);
 }
 
-void NetworkManager::searchChannels(const QString &query)
+void NetworkManager::searchChannels(const QString &query, const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
-    QString url = QString(TWITCH_URI) + QString("/search/channels?q=%1").arg(QString(QUrl::toPercentEncoding(query)));
+    QString url = QString(TWITCH_URI)
+            + QString("/search/channels?q=%1").arg(query)
+            + QString("&offset=%1").arg(offset)
+            + QString("&limit=%1").arg(limit);
+    request.setUrl(QUrl(url));
+
+    searchOperation->get(request);
 }
 
 void NetworkManager::channelReply(QNetworkReply* reply)
@@ -213,9 +220,11 @@ void NetworkManager::searchChannelsReply(QNetworkReply *reply)
     }
     QByteArray data = reply->readAll();
 
+    //qDebug() << data;
+
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        //cman->parseSearchResults(doc.object());
+        cman->setResults(JsonParser::parseChannels(doc.object()));
     }
 }

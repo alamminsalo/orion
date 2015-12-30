@@ -3,7 +3,7 @@ import QtQuick 2.0
 //ChannelList.qml
 GridView{
     property variant selectedChannel
-    property int cellSize
+    property int cellSize: 200
     property bool tooltipEnabled: false
 
     id: root

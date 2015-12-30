@@ -5,7 +5,7 @@ import "../styles.js" as Style
 //ToolBox.qml
 Rectangle {
     id: root
-    color: Style.twitch.sidebarBg
+    color: Style.sidebarBg
     width: 200
 
     property bool isOpen: true
@@ -26,10 +26,14 @@ Rectangle {
         toggleButton.iconStr = isOpen ? 'chevron_l' : 'chevron_r'
     }
 
+    function setView(index){
+        if (index > -1 && index <= ribbonList.count)
+            ribbonList.currentIndex = index
+    }
+
     Ribbon {
         id: toggleButton
         iconStr: 'chevron_l'
-        iconSize: 24
         MouseArea {
             anchors.fill: parent
             onClicked: toggle()

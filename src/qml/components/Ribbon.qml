@@ -23,7 +23,7 @@ Rectangle {
         border_anim.start()
         borderTop.height = isActive ? 1 : 0
         borderBottom.height = isActive ? 1 : 0
-        color = isActive ? Style.twitch.ribbonHighlight : "transparent"
+        color = isActive ? Style.ribbonHighlight : "transparent"
         isSelected = isActive
         iconLabel.anchors.centerIn = g_toolBox.isOpen ? null : root
     }
@@ -37,12 +37,12 @@ Rectangle {
 
     function setHighlight(isActive){
         if (!isSelected)
-            color = isActive ? Style.twitch.ribbonHighlight : "transparent"
+            color = isActive ? Style.ribbonHighlight : "transparent"
     }
 
     Rectangle {
         id: border
-        color: Style.twitch.purple
+        color: Style.purple
         width: 0
         anchors {
             left: parent.left
@@ -69,7 +69,7 @@ Rectangle {
     Rectangle {
         id: borderTop
         height: 0
-        color: Style.twitch.border
+        color: Style.border
         anchors {
             top: parent.top
             left: parent.left
@@ -80,7 +80,7 @@ Rectangle {
     Rectangle {
         id: borderBottom
         height: 0
-        color: Style.twitch.border
+        color: Style.border
         anchors {
             left: parent.left
             right: parent.right

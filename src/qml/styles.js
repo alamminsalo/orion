@@ -1,15 +1,11 @@
 .pragma library
 
-//Colors for application
-var twitch = {
-    bg: "#19191f",
-    border: "#32323e",
-    highlight: "#101014",
-    sidebarBg: "#101014",
-    purple: "#7550ba",
-    ribbonHighlight: "#26262d"
-}
-
+var ribbonHighlight= "#26262d"
+var purple= "#7550ba"
+var sidebarBg= "#101014"
+var highlight= "#101014"
+var border= "#32323e"
+var bg = "#19191f"
 var textColor = "#ffffff"
 var shadeColor = "#000000"
 var grayScaleColor = "#aa262626"

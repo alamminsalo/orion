@@ -74,6 +74,17 @@ QVariantList ChannelManager::getGamesList()
     return list;
 }
 
+QVariantList ChannelManager::getResultsList()
+{
+    QVariantList list;
+
+    foreach (Channel* channel, results){
+        list.append(QVariant::fromValue(channel));
+    }
+
+    return list;
+}
+
 void ChannelManager::notify(Channel *channel)
 {
 #ifdef Q_OS_LINUX
@@ -298,17 +309,37 @@ void ChannelManager::getGames()
     netman->getGames(25,games.size());
 }
 
-void ChannelManager::updateChannels(const QList<Channel*> &list)
+void ChannelManager::searchChannels(const QString &q, const quint32 &offset, const quint32 &limit, bool clear)
+{
+    if (clear)
+        qDeleteAll(results);
+
+    netman->searchChannels(q, offset, limit);
+}
+
+QList<Channel *> ChannelManager::getResults() const
+{
+    return results;
+}
+
+void ChannelManager::setResults(const QList<Channel *> &value)
+{
+    results = value;
+
+    emit resultsUpdated();
+}
+
+void ChannelManager::updateChannels(const QList<Channel*> &list, const QList<Channels*> channels)
 {
     foreach(Channel *channel, list){
-        updateChannel(channel);
+        updateChannel(channel, channels);
     }
     qDeleteAll(list);
 
     emit channelsUpdated();
 }
 
-void ChannelManager::updateChannel(Channel *item)
+void ChannelManager::updateChannel(Channel *item, const QList<Channels*> channels)
 {
     if (!item->getUriName().isEmpty()){
 
@@ -319,6 +350,8 @@ void ChannelManager::updateChannel(Channel *item)
 
             if (!item->getLogourl().isEmpty()){
                 channel->setLogourl(item->getLogourl());
+            } else {
+                channel->setLogourl(DEFAULT_LOGO_URL);
             }
             channel->setLogoPath(item->getLogoPath());
             channel->setInfo(item->getInfo());

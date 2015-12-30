@@ -24,14 +24,10 @@ Window {
                 top: parent.top
                 bottom: parent.bottom
             }
-
-            onSelectedViewChanged: {
-                view.setView(tools.selectedView)
-            }
         }
 
         Rectangle {
-            color: Style.twitch.bg
+            color: Style.bg
 
             anchors {
                 left: tools.right
@@ -43,7 +39,7 @@ Window {
             Rectangle {
                 id: border
                 width: 1
-                color: Style.twitch.border
+                color: Style.border
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -53,7 +49,7 @@ Window {
 
             ViewBox {
                 id: view
-
+                selection: tools.selectedView
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -71,7 +67,8 @@ Window {
         g_cman.checkStreams()
         pollTimer.start()
 
-        view.setView(0)
+        //Show favourites view
+        g_toolBox.setView(1)
     }
 
     Timer {

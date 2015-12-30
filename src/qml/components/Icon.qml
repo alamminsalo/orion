@@ -1,15 +1,15 @@
 import QtQuick 2.0
 import "fontAwesome.js" as FontAwesome
-import "../styles.js" as Styles
+import "../styles.js" as Style
 
-Rectangle {
+Item {
     property string icon
     property int iconSize
+    property color iconColor: Style.iconColor
 
     id: root
     height: 24
     width: height
-    color: "transparent"
 
     FontLoader {
         source: "../fonts/fontawesome-webfont.ttf"
@@ -18,7 +18,7 @@ Rectangle {
     Text {
         anchors.centerIn: root
         font.pixelSize: iconSize || Math.floor(root.height * 0.8)
-        color: Styles.iconColor
+        color: iconColor
         font.family: "FontAwesome"
         text: FontAwesome.fromText(icon)
     }

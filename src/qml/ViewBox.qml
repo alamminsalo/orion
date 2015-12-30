@@ -3,16 +3,16 @@ import "components"
 import "styles.js" as Style
 
 Rectangle {
-    property int selection: 0
+    property int selection
 
-    color: Style.twitch.bg
+    color: Style.bg
 
-    function setView(index){
+    onSelectionChanged: {
         search.visible = false
         favourites.visible = false
         games.visible = false
 
-        switch (index){
+        switch (selection){
             //Search
             case 0:
                 search.visible = true
@@ -30,7 +30,6 @@ Rectangle {
                     games.getGames()
                 break
         }
-        selection = index
     }
 
     SearchView {
@@ -40,7 +39,6 @@ Rectangle {
 
     ChannelGrid {
         id: favourites
-        cellSize: 200
         tooltipEnabled: true
         visible: false
 
@@ -65,10 +63,8 @@ Rectangle {
         id: games
         property int gamesCount: 0
 
-        cellSize: 200
         visible: false
         tooltipEnabled: true
-        highlightFollowsCurrentItem: false
 
         anchors {
             fill: parent

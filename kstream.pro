@@ -25,7 +25,8 @@ SOURCES += src/ui/mainwindow.cpp\
     src/ui/streamitem.cpp \
     src/network/networkmanager.cpp \
     src/model/game.cpp \
-    src/util/jsonparser.cpp
+    src/util/jsonparser.cpp \
+    src/model/channelcollection.cpp
 
 HEADERS  += src/ui/mainwindow.h\
     src/model/channel.h \
@@ -34,7 +35,8 @@ HEADERS  += src/ui/mainwindow.h\
     src/ui/streamitem.h \
     src/network/networkmanager.h \
     src/model/game.h \
-    src/util/jsonparser.h
+    src/util/jsonparser.h \
+    src/model/channelcollection.h
 
 FORMS    += src/ui/mainwindow.ui
 

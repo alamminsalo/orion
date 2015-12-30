@@ -39,7 +39,7 @@ public:
     void getLogo(Channel*);
     void getFile(const QString&, const QString&);
     void getGames(quint32,quint32);
-    void searchChannels(const QString&);
+    void searchChannels(const QString&, const quint32&, const quint32&);
 
 public slots:
     void channelReply(QNetworkReply*);

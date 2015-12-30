@@ -24,11 +24,13 @@ class NetworkManager;
 class ChannelManager: public QObject{
     Q_OBJECT
     Q_PROPERTY(QVariantList channels READ getChannelsList NOTIFY channelsUpdated)
+    Q_PROPERTY(QVariantList results READ getResultsList NOTIFY resultsUpdated)
     Q_PROPERTY(QVariantList games READ getGamesList NOTIFY gamesUpdated)
 
     protected:
         QList<Channel*> channels;
         QList<Game*> games;
+        QList<Channel*> results;
         NetworkManager* netman;
         bool channelsChanged;
 
@@ -57,25 +59,31 @@ class ChannelManager: public QObject{
         void checkResources();
 
         void updateChannel(Channel*);
-        void updateChannels(const QList<Channel*>&);
+        void updateChannels(const QList<Channel*>&, const QList<Channel*> &channels = channels);
         void updateStreams(const QList<Channel*>&);
         void updateStream(Channel*);
         void updateGames(const QList<Game*>&);
 
         QVariantList getChannelsList();
         QVariantList getGamesList();
+        QVariantList getResultsList();
 
-    signals:
+        QList<Channel *> getResults() const;
+        void setResults(const QList<Channel *> &value);
+
+signals:
         void channelExists(Channel*);
         void channelNotFound(Channel*);
         void channelStateChanged(Channel*);
         void newChannel(Channel*);
         void gamesUpdated();
         void channelsUpdated();
+        void resultsUpdated();
 
     public slots:
         void checkStreams();
         void getGames();
+        void searchChannels(const QString&, const quint32&, const quint32&, bool);
         void notify(Channel*);
 
 };

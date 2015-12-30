@@ -8,7 +8,7 @@ Item {
 
     anchors.fill: parent
 
-    Item {
+    Rectangle {
         id: searchContainer
         anchors {
             top: parent.top
@@ -16,49 +16,95 @@ Item {
             right: parent.right
         }
         height: 100
+        color: Styles.bg
+        z: channels.z + 1
 
-        Item {
-            anchors {
-                centerIn: parent
+        Rectangle {
+            property string text: _input.text
+
+            id: searchBox
+            height: 60
+            width: _input.width + _spacer.width + _button.width
+            color: Styles.sidebarBg
+            radius: 5
+            anchors.centerIn: parent
+            anchors.margins: 10
+            border.color: Styles.border
+            border.width: 1
+            clip: true
+
+            TextInput{
+                id: _input
+                font.pixelSize: Styles.titleFont.pixelSize
+                color: Styles.iconColor
+                width: 280
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: parent.left
+                }
+
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
             }
 
-            height: 70
-            width: 300
-
-
             Rectangle {
-                id: searchBox
-                property string text: _input.text
-                color: Styles.twitch.sidebarBg
-                radius: 5
-                anchors.fill: parent
-                anchors.margins: 10
-                border.color: Styles.twitch.border
-                border.width: 1
+                id: _spacer
+                width: 1
+                color: Styles.border
+                anchors {
+                    left: _input.right
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+            }
 
-                TextInput{
-                    font.pixelSize: Styles.titleFont.pixelSize
-                    color: Styles.iconColor
-                    id: _input
+            Icon {
+                id: _button
+                icon: "search"
+                iconSize: 20
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: _spacer.right
+                }
+
+                MouseArea {
                     anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
+                    hoverEnabled: true
+
+                    onClicked: {
+                        g_cman.searchChannels(searchBox.text, channels.count, 25, true)
+                    }
+
+                    onPressedChanged: {
+                        parent.iconColor = pressed ? Styles.textColor : Styles.iconColor
+                    }
                 }
             }
         }
-
-//        Rectangle {
-//            anchors {
-//                left: parent.left
-//                right: parent.right
-//                bottom: parent.bottom
-//            }
-//            height: 1
-//            color: Styles.twitch.border
-//        }
     }
 
     ChannelGrid {
         id: channels
+        tooltipEnabled: true
+
+        anchors {
+            top: searchContainer.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+
+        model: g_cman.results
+        delegate: Channel {
+            title: modelData.name
+            logo: modelData.logo
+            info: modelData.info
+            viewers: modelData.viewers
+            preview: modelData.preview
+            online: modelData.online
+            containerSize: favourites.cellHeight
+        }
     }
 }
