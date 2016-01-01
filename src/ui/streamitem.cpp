@@ -59,11 +59,11 @@ bool StreamItem::online() const{
 const QString StreamItem::getName(){
     if (!channel->getName().isEmpty())
         return channel->getName();
-    return channel->getUriName();
+    return channel->getServiceName();
 }
 
 const QString StreamItem::getUriName(){
-    return channel->getUriName();
+    return channel->getServiceName();
 }
 
 const QString StreamItem::getInfo(){

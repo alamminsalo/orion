@@ -64,7 +64,7 @@ Window {
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root);
 
-        g_cman.checkStreams()
+        g_cman.pollFavourites()
         pollTimer.start()
 
         //Show favourites view
@@ -77,7 +77,7 @@ Window {
         running: false
         repeat: true
         onTriggered: {
-            g_cman.checkStreams()
+            g_cman.pollFavourites()
         }
     }
 }

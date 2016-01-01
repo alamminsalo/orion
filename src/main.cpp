@@ -19,6 +19,9 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty("g_cman", cman);
 
+    engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
+    engine.rootContext()->setContextProperty("g_results", cman->getResultsProxy());
+
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 
     app.exec();

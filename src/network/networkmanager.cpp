@@ -29,6 +29,8 @@ NetworkManager::~NetworkManager()
     delete logoOperation;
     delete allStreamsOperation;
     delete genericFileOperation;
+    delete gamesOperation;
+    delete searchOperation;
 }
 
 void NetworkManager::getChannel(const QString &uriName)
@@ -48,7 +50,7 @@ void NetworkManager::getStream(const QString &uriName)
     QString url = QString(TWITCH_URI) + "/streams/" + uriName;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    //request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
+    request.setAttribute(QNetworkRequest::CustomVerbAttribute,uriName);
 
     streamOperation->get(request);
 }
@@ -65,11 +67,11 @@ void NetworkManager::getAllStreams(const QString &url)
 void NetworkManager::getLogo(Channel *channel)
 {
     QString url = channel->getLogourl();
-    qDebug() << "GET LOGO for: " << channel->getUriName() << " from: " << url;
+    qDebug() << "GET LOGO for: " << channel->getServiceName() << " from: " << url;
 
     QNetworkRequest request;
     request.setUrl(QUrl(url));
-    request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
+    request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getServiceName());
 
     logoOperation->get(request);
 }
@@ -111,7 +113,7 @@ void NetworkManager::channelReply(QNetworkReply* reply)
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
 //        if (reply->error() == QNetworkReply::ContentNotFoundError)
-//            cman->channelNotFound(channel);
+//            model->channelNotFound(channel);
         return;
     }
 
@@ -124,18 +126,20 @@ void NetworkManager::channelReply(QNetworkReply* reply)
         return;
     }
     if (doc.isObject()){
-        cman->updateChannel(JsonParser::parseChannel(doc.object()));
+        QList<Channel*> list;
+        list.append(JsonParser::parseChannel(doc.object()));
+        cman->updateFavourites(list);
     }
 }
 
 void NetworkManager::streamReply(QNetworkReply *reply)
 {
-    Channel* channel = cman->find(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
-    if (channel){
+    //Channel* channel = cman->find(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
+    //if (channel){
         if (reply->error() != QNetworkReply::NoError){
             qDebug() << reply->errorString();
             if (reply->error() == QNetworkReply::ContentNotFoundError){
-                cman->channelNotFound(channel);
+                //model->channelNotFound(channel);
             }
             return;
         }
@@ -150,9 +154,11 @@ void NetworkManager::streamReply(QNetworkReply *reply)
             return;
         }
         if (doc.isObject()){
-            cman->updateStream(JsonParser::parseStream(doc.object()));
+            QList<Channel*> list;
+            list.append(JsonParser::parseStream(doc.object()));
+            cman->updateStreams(list);
         }
-    }
+    //}
 }
 
 void NetworkManager::allStreamsReply(QNetworkReply *reply)
@@ -225,6 +231,6 @@ void NetworkManager::searchChannelsReply(QNetworkReply *reply)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        cman->setResults(JsonParser::parseChannels(doc.object()));
+        cman->addSearchResults(JsonParser::parseChannels(doc.object()));
     }
 }

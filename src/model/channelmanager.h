@@ -2,19 +2,17 @@
 #define CHANNEL_MANAGER_H
 
 #include "channel.h"
+#include "channellistmodel.h"
 #include "game.h"
 #include "../util/fileutils.h"
 #include "../network/networkmanager.h"
-#include <vector>
 #include <QStringRef>
 #include <QObject>
 #include <QDir>
 #include <QProcess>
+#include <QSortFilterProxyModel>
 
-//#include <qqmllist.h>
-
-#define TWITCH_URI          "https://api.twitch.tv/kraken"
-#define DATAURI             "./data.json"
+#define DATA_FILE           "data.json"
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 #define DIALOG_FILE         "resources/scripts/dialog.sh"
 #define PLAY_FILE           "resources/scripts/play.sh"
@@ -23,68 +21,70 @@ class NetworkManager;
 
 class ChannelManager: public QObject{
     Q_OBJECT
-    Q_PROPERTY(QVariantList channels READ getChannelsList NOTIFY channelsUpdated)
-    Q_PROPERTY(QVariantList results READ getResultsList NOTIFY resultsUpdated)
-    Q_PROPERTY(QVariantList games READ getGamesList NOTIFY gamesUpdated)
+    //Q_PROPERTY(QVariantList channels READ getChannelsList NOTIFY channelsUpdated)
+    //Q_PROPERTY(QVariantList results READ getResultsList NOTIFY resultsUpdated)
+    //Q_PROPERTY(QVariantList games READ getGamesList NOTIFY gamesUpdated)
 
-    protected:
-        QList<Channel*> channels;
-        QList<Game*> games;
-        QList<Channel*> results;
-        NetworkManager* netman;
-        bool channelsChanged;
+protected:
+    NetworkManager* netman;
 
-	
-	public:
-		ChannelManager();
+    ChannelListModel* favouritesModel;
+    QSortFilterProxyModel* favouritesProxy;
 
-		~ChannelManager();	
-        void load();
-        void load(const QString&);
-        void save();
-        bool readJSON(const QString&);
-        bool writeJSON(const QString&);
+    ChannelListModel* resultsModel;
+    QSortFilterProxyModel* resultsProxy;
 
-        void checkChannels();
-        void add(Channel *channel);
-        void add(const char*,const char*,const char*,const char*);
-		void remove(const char*);
-        void remove(Channel*);
-        void add(const QString&);
-        Channel *find(const QString&);
-        int findPos(const QString&);
-        QList<Channel*>& getChannels(){ return channels; }
-		void clearData();
-        void play(Channel*);
-        void checkResources();
+    QList<Game*> games;
 
-        void updateChannel(Channel*);
-        void updateChannels(const QList<Channel*>&, const QList<Channel*> &channels = channels);
-        void updateStreams(const QList<Channel*>&);
-        void updateStream(Channel*);
-        void updateGames(const QList<Game*>&);
+public:
+    ChannelManager();
+    ~ChannelManager();
 
-        QVariantList getChannelsList();
-        QVariantList getGamesList();
-        QVariantList getResultsList();
+    bool load();
+    bool save() const;
+    bool writeJSON(const QString&);
 
-        QList<Channel *> getResults() const;
-        void setResults(const QList<Channel *> &value);
+    //void checkChannels();
+
+    //Favourites section
+    Channel *find(const QString&);
+    void addToFavourites(Channel *channel);
+    void removeFromFavourites(const QString&);
+    void updateFavourites(const QList<Channel*>&);
+
+    //Search section
+    void addSearchResults(const QList<Channel*>&);
+
+    void play(const QString&);
+    void checkResources();
+
+    void checkStreams(const QList<Channel*>&);
+
+    void updateStreams(const QList<Channel*>&);
+    void updateGames(const QList<Game*>&);
+
+    ChannelListModel *getFavouritesModel() const;
+
+    QSortFilterProxyModel *getFavouritesProxy() const;
+
+    ChannelListModel *getResultsModel() const;
+
+    QSortFilterProxyModel *getResultsProxy() const;
 
 signals:
-        void channelExists(Channel*);
-        void channelNotFound(Channel*);
-        void channelStateChanged(Channel*);
-        void newChannel(Channel*);
-        void gamesUpdated();
-        void channelsUpdated();
-        void resultsUpdated();
+    void channelExists(Channel*);
+    void channelNotFound(Channel*);
+    void channelStateChanged(Channel*);
+    void newChannel(Channel*);
+    void gamesUpdated();
+    void channelsUpdated();
+    void resultsUpdated();
 
-    public slots:
-        void checkStreams();
-        void getGames();
-        void searchChannels(const QString&, const quint32&, const quint32&, bool);
-        void notify(Channel*);
+public slots:
+    void pollFavourites();
+    void getGames();
+    void searchChannels(const QString&, const quint32&, const quint32&, bool);
+    void notify(Channel*);
 
 };
 

@@ -4,30 +4,11 @@ Channel::~Channel(){
     //qDebug() << "Destroyer: Channel";
 }
 
-
-unsigned int Channel::getViewers() const
-{
-    return viewers;
-}
-
-void Channel::setViewers(unsigned int value)
-{
-    viewers = value;
-}
-
-const QString Channel::getGame() const
-{
-    return game;
-}
-
-void Channel::setGame(const QString &value)
-{
-    game = value;
-}
 Channel::Channel(){
     alert = true;
     timestamp = 0;
     online = false;
+    viewers = 0;
 }
 
 Channel::Channel(const QString &uri) : Channel(){
@@ -64,7 +45,8 @@ Channel::Channel(const Channel &channel){
 	this->online = channel.online;
     this->logopath = channel.logopath;
     this->previewpath = channel.previewpath;
-    emit updated();
+    this->viewers = 0;
+    //emit updated();
 }
 
 const QString Channel::lastOnline(){
@@ -130,7 +112,7 @@ const QString Channel::getName(){
 	return name;
 }
 
-const QString Channel::getUriName(){
+const QString Channel::getServiceName(){
 	return uri;
 }
 
@@ -179,7 +161,7 @@ void Channel::setPreviewPath(const QString &path){
 }
 
 const QString Channel::getLogourl(){
-    return logouri;
+    return !logouri.isEmpty() ? logouri : DEFAULT_LOGO_URL;
 }
 
 void Channel::setPreviewurl(const QString &uri){
@@ -204,4 +186,24 @@ bool Channel::greaterThan (Channel* a, Channel* b) {
         }
     }
     return a->isOnline();    //OTHER IS ONLINE AND OTHER IS NOT
+}
+
+qint32 Channel::getViewers() const
+{
+    return online ? viewers : -1;
+}
+
+void Channel::setViewers(qint32 value)
+{
+    viewers = value;
+}
+
+const QString Channel::getGame() const
+{
+    return game;
+}
+
+void Channel::setGame(const QString &value)
+{
+    game = value;
 }

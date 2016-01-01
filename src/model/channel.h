@@ -8,17 +8,17 @@
 #include <QDateTime>
 #include <QDebug>
 
-//#define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
+#define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 
 class Channel: public QObject{
 
     Q_OBJECT
-    Q_PROPERTY(QString name READ getName NOTIFY updated)
-    Q_PROPERTY(QString logo READ getLogourl NOTIFY updated)
-    Q_PROPERTY(QString info READ getInfo NOTIFY updated)
-    Q_PROPERTY(QString preview READ getPreviewurl NOTIFY updated)
-    Q_PROPERTY(bool online READ isOnline NOTIFY updated)
-    Q_PROPERTY(quint32 viewers READ getViewers NOTIFY updated())
+//    Q_PROPERTY(QString name READ getName NOTIFY updated)
+//    Q_PROPERTY(QString logo READ getLogourl NOTIFY updated)
+//    Q_PROPERTY(QString info READ getInfo NOTIFY updated)
+//    Q_PROPERTY(QString preview READ getPreviewurl NOTIFY updated)
+//    Q_PROPERTY(bool online READ isOnline NOTIFY updated)
+//    Q_PROPERTY(quint32 viewers READ getViewers NOTIFY updated())
 
 	private:
     QString name;
@@ -26,7 +26,7 @@ class Channel: public QObject{
     QString info;
     bool alert;
     QString game;
-    quint32 viewers;
+    qint32 viewers;
 	bool online;
     qint64 timestamp;
     QString logopath;
@@ -54,7 +54,7 @@ class Channel: public QObject{
 		void updateTime();
         qint64 getTime();
         const QString getName();
-        const QString getUriName();
+        const QString getServiceName();
         const QString getFullUri();
         const QString getInfo();
 		bool hasAlert();
@@ -71,8 +71,8 @@ class Channel: public QObject{
         const QString getPreviewurl();
         void setPreviewurl(const QString&);
 
-        quint32 getViewers() const;
-        void setViewers(quint32 value);
+        qint32 getViewers() const;
+        void setViewers(qint32 value);
 
         const QString getGame() const;
         void setGame(const QString&);

@@ -47,14 +47,14 @@ Rectangle {
             margins: 10
         }
 
-        model: g_cman.channels
+        model: g_favourites
         delegate: Channel {
-            title: modelData.name
-            logo: modelData.logo
-            info: modelData.info
-            viewers: modelData.viewers
-            preview: modelData.preview
-            online: modelData.online
+            title: model.name
+            logo: model.logo
+            info: model.info
+            viewers: model.viewers
+            preview: model.preview
+            online: model.online
             containerSize: favourites.cellHeight
         }
     }

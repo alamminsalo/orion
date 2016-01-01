@@ -13,12 +13,10 @@ TARGET = kstream
 TEMPLATE = app
 
 DEFINES += APP_NAME=\\\"kstream\\\"\
-    _QML
-
+        _QML
 LIBS +=
 
-SOURCES += src/ui/mainwindow.cpp\
-    src/main.cpp\
+SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
     src/model/channel.cpp \
     src/util/fileutils.cpp \
@@ -26,17 +24,16 @@ SOURCES += src/ui/mainwindow.cpp\
     src/network/networkmanager.cpp \
     src/model/game.cpp \
     src/util/jsonparser.cpp \
-    src/model/channelcollection.cpp
+    src/model/channellistmodel.cpp
 
-HEADERS  += src/ui/mainwindow.h\
-    src/model/channel.h \
+HEADERS  += src/model/channel.h \
     src/model/channelmanager.h \
     src/util/fileutils.h \
     src/ui/streamitem.h \
     src/network/networkmanager.h \
     src/model/game.h \
     src/util/jsonparser.h \
-    src/model/channelcollection.h
+    src/model/channellistmodel.h
 
 FORMS    += src/ui/mainwindow.ui
 

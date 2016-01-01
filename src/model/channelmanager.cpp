@@ -2,14 +2,53 @@
 
 ChannelManager::ChannelManager(){
     netman = new NetworkManager(this);
-    connect(this,SIGNAL(channelStateChanged(Channel*)),this,SLOT(notify(Channel*)));
+
+    favouritesModel = new ChannelListModel();
+
+    resultsModel = new ChannelListModel();
+
+    //connect(this, SIGNAL(channelStateChanged(Channel*)), favouritesModel, SLOT(channelUpdated(Channel*)));
+    connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
+
+    favouritesProxy = new QSortFilterProxyModel();
+    favouritesProxy->setSourceModel(favouritesModel);
+    favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
+    favouritesProxy->sort(0, Qt::DescendingOrder);
+
+    resultsProxy = new QSortFilterProxyModel();
+    resultsProxy->setSourceModel(resultsModel);
+    resultsProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
+    resultsProxy->sort(0, Qt::DescendingOrder);
 }
 
 ChannelManager::~ChannelManager(){
     qDebug() << "Destroyer: ChannelManager";
-    delete netman;
+
     save();
-    clearData();
+
+    delete netman;
+    delete favouritesModel;
+    delete resultsModel;
+}
+
+ChannelListModel *ChannelManager::getFavouritesModel() const
+{
+    return favouritesModel;
+}
+
+QSortFilterProxyModel *ChannelManager::getFavouritesProxy() const
+{
+    return favouritesProxy;
+}
+
+QSortFilterProxyModel *ChannelManager::getResultsProxy() const
+{
+    return resultsProxy;
+}
+
+ChannelListModel *ChannelManager::getResultsModel() const
+{
+    return resultsModel;
 }
 
 void ChannelManager::checkResources()
@@ -50,41 +89,6 @@ void ChannelManager::checkResources()
     }
 }
 
-QVariantList ChannelManager::getChannelsList()
-{
-    QVariantList list;
-
-    qSort(this->channels.begin(), this->channels.end(), Channel::greaterThan);
-
-    foreach (Channel* channel, channels){
-        list.append(QVariant::fromValue(channel));
-    }
-
-    return list;
-}
-
-QVariantList ChannelManager::getGamesList()
-{
-    QVariantList list;
-
-    foreach (Game* game, games){
-        list.append(QVariant::fromValue(game));
-    }
-
-    return list;
-}
-
-QVariantList ChannelManager::getResultsList()
-{
-    QVariantList list;
-
-    foreach (Channel* channel, results){
-        list.append(QVariant::fromValue(channel));
-    }
-
-    return list;
-}
-
 void ChannelManager::notify(Channel *channel)
 {
 #ifdef Q_OS_LINUX
@@ -100,32 +104,18 @@ void ChannelManager::notify(Channel *channel)
         QProcess::startDetached(DIALOG_FILE, args);
     }
 #endif
-    channelsChanged = true;
 }
 
-void ChannelManager::load(const QString &path){
-    readJSON(path);
-}
-
-void ChannelManager::load(){
-    readJSON(DATAURI);
-}
-
-void ChannelManager::save()
-{
-    writeJSON(DATAURI);
-}
-
-bool ChannelManager::readJSON(const QString &filename){
+bool ChannelManager::load(){
 
     qDebug() << "Opening JSON...";
 
     QJsonParseError error;
-    if (!QFile::exists(filename)){
+    if (!QFile::exists(DATA_FILE)){
         qDebug() << "File doesn't exist";
         return false;
     }
-    QJsonObject json = QJsonDocument::fromJson(util::readFile(filename).toLocal8Bit(),&error).object();
+    QJsonObject json = QJsonDocument::fromJson(util::readFile(DATA_FILE).toLocal8Bit(),&error).object();
 
     if (error.error != QJsonParseError::NoError){
         qDebug() << "Parsing error!";
@@ -171,27 +161,27 @@ bool ChannelManager::readJSON(const QString &filename){
             qDebug() << "preview is missing";
         }
 
-        channels.push_back(
-                    new Channel(
-                        obj["uri"].toString(),
-                        obj["title"].toString(),
-                        obj["info"].toString(),
-                        obj["alert"].toBool(),
-                        obj["lastSeen"].toInt(),
-                        obj["logo"].toString(),
-                        obj["preview"].toString()
-                               )
-                    );
+        favouritesModel->addChannel(
+                new Channel(
+                    obj["uri"].toString(),
+                    obj["title"].toString(),
+                    obj["info"].toString(),
+                    obj["alert"].toBool(),
+                    obj["lastSeen"].toInt(),
+                    obj["logo"].toString(),
+                    obj["preview"].toString()
+                ));
         qDebug() << "Added channel " << obj["title"].toString();
     }
 
 	return true;
 }
 
-bool ChannelManager::writeJSON(const QString& path){
+bool ChannelManager::save() const
+{
     QJsonArray arr;
 
-    foreach (Channel* channel, channels){
+    foreach (Channel* channel, favouritesModel->getChannels()){
         arr.append(QJsonValue(channel->getJSON()));
     }
 
@@ -199,97 +189,44 @@ bool ChannelManager::writeJSON(const QString& path){
     QJsonObject obj;
     obj["channels"] = val;
 
-    return util::writeFile(path,QJsonDocument(obj).toJson());
+    return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
 }
 
-void ChannelManager::add(Channel *channel){
-    channels.push_back(channel);
-    emit newChannel(channel);
+void ChannelManager::addToFavourites(Channel *channel){
+    favouritesModel->addChannel(new Channel(*channel));
 }
 
-void ChannelManager::add(const char* title, const char* uri, const char *info, const char *alert){
-    add(new Channel(title,uri,info,alert));
+Channel* ChannelManager::find(const QString &q){
+    return favouritesModel->find(q);
 }
 
-void ChannelManager::add(const QString &uriName){
-    Channel *channel = find(uriName);
-    if (channel){
-        emit channelExists(channel);
-    }
-    else{
-        channel = new Channel(uriName);
-        add(channel);
-        netman->getStream(channel->getUriName());
-    }
+void ChannelManager::removeFromFavourites(const QString &name){
+    favouritesModel->removeChannel(favouritesModel->find(name));
 }
 
-Channel *ChannelManager::find(const QString &uriName){
-    foreach (Channel *channel, channels){
-        if (channel->getUriName() == uriName)
-            return channel;
-	}
-	return 0;
-}
-
-int ChannelManager::findPos(const QString &uriName){
-	for (unsigned int i=0; i<channels.size(); i++){
-        if (channels.at(i)->getUriName() == uriName)
-			return i;
-	}
-	return -1;
-}
-
-void ChannelManager::checkChannels(){
-	for (unsigned int i=0; i<channels.size(); i++){
-        netman->getChannel(channels.at(i)->getUriName());
-	}
-}
-
-void ChannelManager::remove(const char *channelName){	
-	int i = findPos(channelName);
-    if (i != -1){
-        delete channels.at(i);
-		channels.erase(channels.begin() + i);
-    }
-}
-
-void ChannelManager::remove(Channel* channel){
-    for (unsigned int i=0; i < channels.size(); i++){
-        if (channels[i] == channel){
-            delete channel;
-            channels.erase(channels.begin() + i);
-        }
-    }
-}
-
-void ChannelManager::clearData(){
-    qDeleteAll(channels);
-    //qDeleteAll(games);
-}
-
-void ChannelManager::play(Channel* channel){
+void ChannelManager::play(const QString &url){
     if (QFile::exists("resources/scripts/play.sh")){
-        QString cmd = "resources/scripts/play.sh "+channel->getFullUri();
+        QString cmd = "resources/scripts/play.sh "+url;
         QProcess::startDetached(cmd);
     }
     else qDebug() << "Couldn't locate 'play.sh'";
 }
 
-void ChannelManager::checkStreams()
+void ChannelManager::checkStreams(const QList<Channel *> &list)
 {
-    if (channels.size() == 0)
+    if (list.size() == 0)
         return;
 
     int c_index = 0;
     QString channelsUrl = "";
 
-    for(size_t i = 0; i < channels.size(); i++){
-        Channel* channel = channels.at(i);
+    for(size_t i = 0; i < list.size(); i++){
+        Channel* channel = list.at(i);
         if (c_index++ > 0)
             channelsUrl += ",";
-        channelsUrl += channel->getUriName();
+        channelsUrl += channel->getServiceName();
 
-        if (c_index >= channels.size() || c_index >= 50){
+        if (c_index >= list.size() || c_index >= 50){
             QString url = TWITCH_URI
                     + QString("/streams?limit=%1&channel=").arg(c_index)
                     + channelsUrl;
@@ -304,6 +241,11 @@ void ChannelManager::checkStreams()
     }
 }
 
+void ChannelManager::pollFavourites()
+{
+    checkStreams(favouritesModel->getChannels());
+}
+
 void ChannelManager::getGames()
 {
     netman->getGames(25,games.size());
@@ -312,92 +254,34 @@ void ChannelManager::getGames()
 void ChannelManager::searchChannels(const QString &q, const quint32 &offset, const quint32 &limit, bool clear)
 {
     if (clear)
-        qDeleteAll(results);
+        resultsModel->clear();
 
     netman->searchChannels(q, offset, limit);
 }
 
-QList<Channel *> ChannelManager::getResults() const
+void ChannelManager::addSearchResults(const QList<Channel*> &list)
 {
-    return results;
-}
-
-void ChannelManager::setResults(const QList<Channel *> &value)
-{
-    results = value;
-
-    emit resultsUpdated();
-}
-
-void ChannelManager::updateChannels(const QList<Channel*> &list, const QList<Channels*> channels)
-{
-    foreach(Channel *channel, list){
-        updateChannel(channel, channels);
+    foreach (Channel *channel, list){
+        resultsModel->addChannel(new Channel(*channel));
     }
+
+    checkStreams(list);
+
     qDeleteAll(list);
-
-    emit channelsUpdated();
 }
 
-void ChannelManager::updateChannel(Channel *item, const QList<Channels*> channels)
+void ChannelManager::updateFavourites(const QList<Channel*> &list)
 {
-    if (!item->getUriName().isEmpty()){
-
-        Channel *channel = find(item->getUriName());
-
-        if (channel){
-            channel->setName(item->getName());
-
-            if (!item->getLogourl().isEmpty()){
-                channel->setLogourl(item->getLogourl());
-            } else {
-                channel->setLogourl(DEFAULT_LOGO_URL);
-            }
-            channel->setLogoPath(item->getLogoPath());
-            channel->setInfo(item->getInfo());
-            channel->updated();
-        }
-    }
+    favouritesModel->updateChannels(list);
+    qDeleteAll(list);
 }
 
+//Updates channel streams in all models
 void ChannelManager::updateStreams(const QList<Channel*> &list)
 {
-    //Online channels
-    foreach(Channel *channel, list){
-        updateStream(channel);
-    }
+    favouritesModel->updateStreams(list);
+    resultsModel->updateStreams(list);
     qDeleteAll(list);
-
-    emit channelsUpdated();
-}
-
-void ChannelManager::updateStream(Channel *item)
-{
-    if (!item->getUriName().isEmpty()){
-
-        Channel *channel = find(item->getUriName());
-
-        if (channel){
-                if (item->isOnline()){
-                    channel->setViewers(item->getViewers());
-                    channel->setGame(item->getGame());
-                    channel->setPreviewurl(item->getPreviewurl());
-                    channel->setPreviewPath(item->getPreviewPath());
-
-                    if (!item->getName().isEmpty()){
-                        updateChannel(item);
-                    }
-                } else if (channel->getName().isEmpty()){
-                    netman->getChannel(channel->getUriName());
-                }
-
-                if (channel->isOnline() != item->isOnline()){
-                    channel->setOnline(item->isOnline());
-                    emit channelStateChanged(channel);
-                    channel->updated();
-                }
-        }
-    }
 }
 
 void ChannelManager::updateGames(const QList<Game*> &list)

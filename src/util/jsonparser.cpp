@@ -22,7 +22,7 @@ QList<Channel*> JsonParser::parseStreams(const QJsonObject &json)
     }
     if (channels.count() < cnames.count()){
         foreach (Channel* channel, channels){
-            cnames.removeOne(channel->getUriName());
+            cnames.removeOne(channel->getServiceName());
         }
         foreach(QString name, cnames){
             channels.append(new Channel(name));
@@ -56,7 +56,7 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
             QStringRef extension(&logouri,logouri.lastIndexOf("."),(logouri.length() - logouri.lastIndexOf(".")));
             QString logopath = "resources/logos/";
 
-            logopath += channel->getUriName();
+            logopath += channel->getServiceName();
             logopath += extension;
 
             channel->setLogourl(logouri);
@@ -83,7 +83,7 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
                 QString previewuri = preview["large"].toString();
                 QStringRef extension(&previewuri,previewuri.lastIndexOf("."),(previewuri.length() - previewuri.lastIndexOf(".")));
                 QString previewpath = "resources/preview/";
-                previewpath += channel->getUriName();
+                previewpath += channel->getServiceName();
                 previewpath += extension;
 
                 channel->setPreviewurl(previewuri);
@@ -161,7 +161,7 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
             QStringRef extension(&logouri,logouri.lastIndexOf("."),(logouri.length() - logouri.lastIndexOf(".")));
             QString logopath = "resources/logos/";
 
-            logopath += channel->getUriName();
+            logopath += channel->getServiceName();
             logopath += extension;
 
             channel->setLogourl(logouri);
@@ -177,7 +177,6 @@ QList<Channel*> JsonParser::parseChannels(const QJsonObject &json)
 {
     QList<Channel*> channels;
 
-    //Online streams
     QJsonArray arr = json["channels"].toArray();
     foreach (const QJsonValue &item, arr){
         channels.append(JsonParser::parseChannel(item.toObject()));

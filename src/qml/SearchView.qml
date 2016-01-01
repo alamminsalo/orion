@@ -74,7 +74,8 @@ Item {
                     hoverEnabled: true
 
                     onClicked: {
-                        g_cman.searchChannels(searchBox.text, channels.count, 25, true)
+                        if (searchBox.text.length > 0)
+                            g_cman.searchChannels(searchBox.text, channels.count, 25, true)
                     }
 
                     onPressedChanged: {
@@ -96,14 +97,14 @@ Item {
             bottom: parent.bottom
         }
 
-        model: g_cman.results
+        model: g_results
         delegate: Channel {
-            title: modelData.name
-            logo: modelData.logo
-            info: modelData.info
-            viewers: modelData.viewers
-            preview: modelData.preview
-            online: modelData.online
+            title: model.name
+            logo: model.logo
+            info: model.info
+            viewers: model.viewers
+            preview: model.preview
+            online: model.online
             containerSize: favourites.cellHeight
         }
     }

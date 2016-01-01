@@ -9,15 +9,17 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include "../util/jsonparser.h"
-//#include "../model/channel.h"
 #include "../model/channelmanager.h"
 #include "../util/fileutils.h"
+
+#define TWITCH_URI "https://api.twitch.tv/kraken"
 
 class ChannelManager;
 
 class NetworkManager: public QObject
 {
     Q_OBJECT
+
 protected:
     QNetworkAccessManager* channelOperation;
     QNetworkAccessManager* streamOperation;

@@ -95,7 +95,7 @@ void MainWindow::showAlreadyAdded(Channel *channel)
 
 void MainWindow::addItem(Channel* channel){
     QString logopath = "logos/";
-    logopath.append(channel->getUriName());
+    logopath.append(channel->getServiceName());
 
     StreamItem* item = new StreamItem(channel);
 
@@ -130,7 +130,7 @@ void MainWindow::on_addButton_clicked()
     if (input.exec()){
         QString val = input.textValue().trimmed();
         if (!val.isEmpty()){
-            cman->add(val);
+            cman->addToFavourites(val);
         }
         else QMessageBox::information(this,"Error", "Bad input",QMessageBox::Ok);
     }
@@ -162,7 +162,7 @@ void MainWindow::showContextMenu(const QPoint& pos){
 }
 
 void MainWindow::remove(StreamItem* item){
-    cman->remove(item->getChannel());
+    cman->removeFromFavourites(item->getChannel());
     qDebug() << "Removed from channelmanager";
     delete item;
     qDebug() << "Removed from list";
