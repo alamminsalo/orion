@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 
     app.exec();
-    cman->deleteLater();
+    delete cman;
 }
 
 #else

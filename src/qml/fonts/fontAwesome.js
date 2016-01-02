@@ -11,4 +11,7 @@ var icons = {
     'chevron_r':    "\uf054",
     'chevron_l':    "\uf053",
     'spinner':      "\uf1ce",
+    'play':         "\uf04b",
+    'remove':       "\uf00d",
+    'info':         "\uf129",
 }

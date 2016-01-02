@@ -1,11 +1,11 @@
-import QtQuick 2.0
-import QtQuick.Controls 1.1
-import "../styles.js" as Style
+import QtQuick 2.5
+import QtQuick.Controls 1.4
+import "../styles.js" as Styles
 
 //ToolBox.qml
 Rectangle {
     id: root
-    color: Style.sidebarBg
+    color: Styles.sidebarBg
     width: 200
 
     property bool isOpen: true

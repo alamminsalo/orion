@@ -1,8 +1,8 @@
-import QtQuick 2.2
-import QtQuick.Window 2.1
+import QtQuick 2.5
+import QtQuick.Window 2.0
 import QtQuick.Layouts 1.1
 import "components"
-import "styles.js" as Style
+import "styles.js" as Styles
 
 Window {
     id: root
@@ -12,8 +12,8 @@ Window {
 
     property variant g_rootWindow: root
     property variant g_tooltip
-    property variant g_menu
     property variant g_toolBox: tools
+    property bool g_contextMenuVisible: false
 
     Rectangle {
         anchors.fill: parent
@@ -28,7 +28,7 @@ Window {
         }
 
         Rectangle {
-            color: Style.bg
+            color: Styles.bg
 
             anchors {
                 left: tools.right
@@ -40,7 +40,7 @@ Window {
             Rectangle {
                 id: border
                 width: 1
-                color: Style.border
+                color: Styles.border
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -48,7 +48,7 @@ Window {
                 }
             }
 
-            PageView {
+            Views {
                 id: view
                 selection: tools.selectedView
                 anchors {
@@ -67,9 +67,6 @@ Window {
     Component.onCompleted: {
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root)
-
-        var menu = Qt.createComponent("components/ContextMenu.qml")
-        g_menu = menu.createObject(root)
 
         g_cman.checkFavourites()
         pollTimer.start()

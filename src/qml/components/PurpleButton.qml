@@ -1,5 +1,5 @@
-import QtQuick 2.0
-import "../styles.js" as Style
+import QtQuick 2.5
+import "../styles.js" as Styles
 
 Rectangle {
     property string text
@@ -8,7 +8,7 @@ Rectangle {
     id: root
     width: 70
     height: 30
-    color: Style.purple
+    color: Styles.purple
 
     Component.onCompleted: {
         if (!label.text){
@@ -19,9 +19,9 @@ Rectangle {
     Text {
         id: label
         anchors.centerIn: parent
-        color: Style.textColor
+        color: Styles.textColor
         text: root.text
-        font.pixelSize: Style.button.pixelSize
+        font.pixelSize: Styles.button.pixelSize
     }
 
     Rectangle {

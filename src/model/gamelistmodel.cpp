@@ -6,6 +6,7 @@ GameListModel::GameListModel()
 
 GameListModel::~GameListModel()
 {
+    qDebug() << "Destroyer: GamesModel";
     clear();
 }
 

@@ -1,7 +1,7 @@
 
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Window 2.0
-import "../styles.js" as Style
+import "../styles.js" as Styles
 
 Window {
     id: root
@@ -15,27 +15,42 @@ Window {
     Rectangle {
         id: rootRect
         anchors.fill: parent
+        color: "#000000"
+
+        SpinnerIcon {
+            id:_spinner
+            anchors.fill: parent
+            iconSize: 64
+        }
 
         Image {
             id: img
             source: root.img
             anchors.fill: parent
+            onProgressChanged: {
+                if (progress >= 1.0)
+                    _spinner.visible = false
+            }
+
+            onSourceChanged: {
+                _spinner.visible = true
+            }
         }
 
         //Container for text
         Rectangle {
             id: header
             anchors.fill: text
-            color: Style.shadeColor
+            color: Styles.shadeColor
             opacity: 0.5
             height: text.height
         }
 
         Text {
             id: text
-            color: Style.textColor
+            color: Styles.textColor
             text: root.text
-            font.pixelSize: Style.titleFont.pixelSize
+            font.pixelSize: Styles.titleFont.pixelSize
             anchors{
                 bottom: parent.bottom
                 left: parent.left
@@ -46,6 +61,11 @@ Window {
     }
 
     function display(mX, mY){
+
+        if (g_contextMenuVisible){
+            return
+        }
+
         root.x = mX + 20
 
         if (root.x + root.width > Screen.width)

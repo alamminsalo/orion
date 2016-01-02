@@ -1,5 +1,5 @@
-import QtQuick 2.0
-import "../styles.js" as Style
+import QtQuick 2.5
+import "../styles.js" as Styles
 
 Rectangle {
     property string text
@@ -21,7 +21,7 @@ Rectangle {
         border.width = isActive ? (g_toolBox.isOpen ? 14 : 50) : 0
         //borderTop.height = isActive ? 1 : 0
         //borderBottom.height = isActive ? 1 : 0
-        color = isActive ? Style.ribbonSelected : "transparent"
+        color = isActive ? Styles.ribbonSelected : "transparent"
         isSelected = isActive
         iconLabel.anchors.centerIn = g_toolBox.isOpen ? null : root
     }
@@ -36,15 +36,15 @@ Rectangle {
     function setHighlight(isActive){
         if (highlightOn){
             if (!isSelected)
-                color = isActive ? Style.ribbonHighlight : "transparent"
+                color = isActive ? Styles.ribbonHighlight : "transparent"
         } else {
-            iconLabel.iconColor = isActive ? Style.iconHighlight : Style.iconColor
+            iconLabel.iconColor = isActive ? Styles.iconHighlight : Styles.iconColor
         }
     }
 
     Rectangle {
         id: border
-        color: Style.purple
+        color: Styles.purple
         width: 0
         anchors {
             left: parent.left
@@ -72,7 +72,7 @@ Rectangle {
     Rectangle {
         id: borderTop
         height: 0
-        color: Style.border
+        color: Styles.border
         anchors {
             top: parent.top
             left: parent.left
@@ -83,7 +83,7 @@ Rectangle {
     Rectangle {
         id: borderBottom
         height: 0
-        color: Style.border
+        color: Styles.border
         anchors {
             left: parent.left
             right: parent.right
@@ -96,8 +96,8 @@ Rectangle {
         visible: g_toolBox.isOpen
         anchors.centerIn: parent
         text: root.text
-        color: Style.textColor
-        font.pixelSize: Style.button.pixelSize
+        color: Styles.textColor
+        font.pixelSize: Styles.button.pixelSize
     }
 
     Icon {

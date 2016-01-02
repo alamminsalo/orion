@@ -40,8 +40,7 @@ HEADERS  += src/model/channel.h \
 FORMS    += src/ui/mainwindow.ui
 
 OTHER_FILES += \
-    resources/logo.svg \
-    resources/db/db.sql
+    resources/logo.svg
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 

@@ -9,12 +9,14 @@
         <file>components/PurpleButton.qml</file>
         <file>components/Ribbon.qml</file>
         <file>components/RibbonList.qml</file>
-        <file>PageView.qml</file>
         <file>components/Icon.qml</file>
-        <file>components/fontAwesome.js</file>
         <file>fonts/fontawesome-webfont.ttf</file>
         <file>SearchView.qml</file>
         <file>components/SpinnerIcon.qml</file>
         <file>components/ContextMenu.qml</file>
+        <file>fonts/fontAwesome.js</file>
+        <file>FavouritesView.qml</file>
+        <file>GamesView.qml</file>
+        <file>Views.qml</file>
     </qresource>
 </RCC>

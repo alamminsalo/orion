@@ -1,6 +1,6 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtGraphicalEffects 1.0
-import "../styles.js" as Style
+import "../styles.js" as Styles
 
 //Channel.qml
 Rectangle {
@@ -84,7 +84,7 @@ Rectangle {
                     if (isOnline){
                         colorOverlay.color = "transparent"
                     } else {
-                        colorOverlay.color = Style.grayScaleColor
+                        colorOverlay.color = Styles.grayScaleColor
                     }
                 }
             }
@@ -92,7 +92,7 @@ Rectangle {
 
         Rectangle {
             id: infoRect
-            color: Style.shadeColor
+            color: Styles.shadeColor
             opacity: .66
             height: Math.floor(parent.height * 0.25)
 
@@ -106,12 +106,12 @@ Rectangle {
         Text {
             id: channelTitle
             text: root.title
-            color: Style.textColor
+            color: Styles.textColor
             anchors.fill: infoRect
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
 
-            font.pixelSize: Style.titleFont.pixelSize
+            font.pixelSize: Styles.titleFont.pixelSize
             wrapMode: Text.WordWrap
         }
     }
@@ -120,7 +120,7 @@ Rectangle {
     function setHighlight(isActive){
         imageShade.opacity = isActive ? 0 : .2
         channelImage.height = isActive ? Math.floor(imgSize * 1.16) : imgSize
-        root.color = isActive ? Style.highlight : "transparent"
-        root.border.color = isActive ? Style.border : "transparent"
+        root.color = isActive ? Styles.highlight : "transparent"
+        root.border.color = isActive ? Styles.border : "transparent"
     }
 }

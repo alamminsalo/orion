@@ -1,11 +1,11 @@
-import QtQuick 2.0
-import "fontAwesome.js" as FontAwesome
-import "../styles.js" as Style
+import QtQuick 2.5
+import "../fonts/fontAwesome.js" as FontAwesome
+import "../styles.js" as Styles
 
 Item {
     property string icon
     property int iconSize
-    property color iconColor: Style.iconColor
+    property color iconColor: Styles.iconColor
 
     id: root
     height: 24

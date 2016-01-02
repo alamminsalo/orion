@@ -25,9 +25,9 @@ ChannelManager::ChannelManager(){
 ChannelManager::~ChannelManager(){
     qDebug() << "Destroyer: ChannelManager";
 
-    save();
-
     delete netman;
+
+    save();
     delete favouritesModel;
     delete resultsModel;
     delete gamesModel;
@@ -93,6 +93,11 @@ void ChannelManager::checkResources()
     if (!QFile::exists("resources/logos/default.png")){
         qDebug() << "default channel logo not found, fetching...";
         netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
+    }
+    if (!QFile::exists(DATA_FILE)){
+        QFile file(DATA_FILE);
+        file.open(QIODevice::ReadWrite);
+        file.write("{}");
     }
 }
 

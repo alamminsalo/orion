@@ -4,6 +4,7 @@
 #include <QAbstractListModel>
 #include <QHashData>
 #include <QList>
+#include <QDebug>
 #include "game.h"
 
 class GameListModel: public QAbstractListModel
