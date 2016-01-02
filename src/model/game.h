@@ -7,10 +7,6 @@
 class Game : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QString name READ getName WRITE setName NOTIFY updated)
-    Q_PROPERTY(QString logo READ getLogo WRITE setLogo NOTIFY updated)
-    Q_PROPERTY(QString preview READ getPreview WRITE setPreview NOTIFY updated)
-    Q_PROPERTY(quint32 viewers READ getViewers WRITE setViewers NOTIFY updated)
 
     QString name;
     QString logo;

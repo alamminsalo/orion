@@ -1,35 +1,51 @@
 #include "jsonparser.h"
 
-QList<Channel*> JsonParser::parseStreams(const QJsonObject &json)
+QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
 {
     QList<Channel*> channels;
 
-    //Online streams
-    QJsonArray arr = json["streams"].toArray();
-    foreach (const QJsonValue &item, arr){
-        channels.append(JsonParser::parseStream(item.toObject()));
-    }
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
 
-    //Offline streams
-    QStringList cnames;
-    if (!json["_links"].isNull() && !json["_links"].toObject()["self"].isNull()){
-        QString query = QUrl::fromPercentEncoding(QUrl(json["_links"].toObject()["self"].toString()).query().toUtf8());
-        if (!query.isEmpty()){
-            query.remove(0, query.indexOf("channel=") + 8);
-            query.truncate(query.indexOf('&'));
-            cnames = query.split(",");
+        //Online streams
+        QJsonArray arr = json["streams"].toArray();
+        foreach (const QJsonValue &item, arr){
+            channels.append(JsonParser::parseStream(item.toObject()));
         }
-    }
-    if (channels.count() < cnames.count()){
-        foreach (Channel* channel, channels){
-            cnames.removeOne(channel->getServiceName());
+
+        //Offline streams
+        QStringList cnames;
+        if (!json["_links"].isNull() && !json["_links"].toObject()["self"].isNull()){
+            QString query = QUrl::fromPercentEncoding(QUrl(json["_links"].toObject()["self"].toString()).query().toUtf8());
+            if (!query.isEmpty()){
+                query.remove(0, query.indexOf("channel=") + 8);
+                query.truncate(query.indexOf('&'));
+                cnames = query.split(",");
+            }
         }
-        foreach(QString name, cnames){
-            channels.append(new Channel(name));
+        if (channels.count() < cnames.count()){
+            foreach (Channel* channel, channels){
+                cnames.removeOne(channel->getServiceName());
+            }
+            foreach(QString name, cnames){
+                channels.append(new Channel(name));
+            }
         }
     }
 
     return channels;
+}
+
+Channel *JsonParser::parseStream(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        return parseStream(doc.object());
+    }
+    return new Channel();
 }
 
 Channel* JsonParser::parseStream(const QJsonObject &json)
@@ -91,21 +107,27 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
             }
         }
     }
-
     channel->setOnline(true);
 
     return channel;
 }
 
-QList<Game*> JsonParser::parseGames(const QJsonObject &json)
+QList<Game*> JsonParser::parseGames(const QByteArray &data)
 {
     QList<Game*> games;
-    if (!json["top"].isNull()){
-        QJsonArray arr = json["top"].toArray();
-        foreach (const QJsonValue &item, arr){
-            Game* game = parseGame(item.toObject());
-            if (!game->getName().isEmpty()){
-                games.append(game);
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        if (!json["top"].isNull()){
+            QJsonArray arr = json["top"].toArray();
+            foreach (const QJsonValue &item, arr){
+                Game* game = parseGame(item.toObject());
+                if (!game->getName().isEmpty()){
+                    games.append(game);
+                }
             }
         }
     }
@@ -137,6 +159,14 @@ Game* JsonParser::parseGame(const QJsonObject &json)
     return game;
 }
 
+Channel* JsonParser::parseChannel(const QByteArray &data){
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        return parseChannel(doc.object());
+    }
+    return new Channel();
+}
 
 Channel* JsonParser::parseChannel(const QJsonObject &json)
 {
@@ -173,13 +203,20 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
     return channel;
 }
 
-QList<Channel*> JsonParser::parseChannels(const QJsonObject &json)
+QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
 {
     QList<Channel*> channels;
 
-    QJsonArray arr = json["channels"].toArray();
-    foreach (const QJsonValue &item, arr){
-        channels.append(JsonParser::parseChannel(item.toObject()));
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        QJsonArray arr = json["channels"].toArray();
+        foreach (const QJsonValue &item, arr){
+            channels.append(JsonParser::parseChannel(item.toObject()));
+        }
     }
 
     return channels;

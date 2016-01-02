@@ -10,6 +10,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     allStreamsOperation = new QNetworkAccessManager();
     genericFileOperation = new QNetworkAccessManager();
     gamesOperation = new QNetworkAccessManager();
+    gameStreamsOperation = new QNetworkAccessManager();
     searchOperation = new QNetworkAccessManager();
 
     connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
@@ -19,6 +20,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     connect(allStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(allStreamsReply(QNetworkReply*)));
     connect(gamesOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gamesReply(QNetworkReply*)));
     connect(searchOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(searchChannelsReply(QNetworkReply*)));
+    connect(gameStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gameStreamsReply(QNetworkReply*)));
 }
 
 NetworkManager::~NetworkManager()
@@ -31,6 +33,7 @@ NetworkManager::~NetworkManager()
     delete genericFileOperation;
     delete gamesOperation;
     delete searchOperation;
+    delete gameStreamsOperation;
 }
 
 void NetworkManager::getChannel(const QString &uriName)
@@ -55,7 +58,7 @@ void NetworkManager::getStream(const QString &uriName)
     streamOperation->get(request);
 }
 
-void NetworkManager::getAllStreams(const QString &url)
+void NetworkManager::getStreams(const QString &url)
 {
     qDebug() << "GET: " << url;
     QNetworkRequest request;
@@ -85,12 +88,12 @@ void NetworkManager::getFile(const QString &url, const QString &filename)
     genericFileOperation->get(request);
 }
 
-void NetworkManager::getGames(quint32 limit, quint32 offset)
+void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
     QString url = TWITCH_URI;
     url += QString("/games/top?limit=%1").arg(limit)
-            + QString("&offset=%2").arg(offset);
+            + QString("&offset=%1").arg(offset);
     request.setUrl(QUrl(url));
 
     gamesOperation->get(request);
@@ -108,6 +111,18 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
     searchOperation->get(request);
 }
 
+void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offset, const quint32 &limit)
+{
+    QNetworkRequest request;
+    QString url = QString(TWITCH_URI)
+            + QString("/streams?game=%1").arg(game)
+            + QString("&offset=%1").arg(offset)
+            + QString("&limit=%1").arg(limit);
+    request.setUrl(QUrl(url));
+
+    gameStreamsOperation->get(request);
+}
+
 void NetworkManager::channelReply(QNetworkReply* reply)
 {
     if (reply->error() != QNetworkReply::NoError){
@@ -119,46 +134,27 @@ void NetworkManager::channelReply(QNetworkReply* reply)
 
     QByteArray data = reply->readAll();
 
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-    if (error.error != QJsonParseError::NoError){
-        qDebug() << "Error while parsing data: " << error.errorString();
-        return;
-    }
-    if (doc.isObject()){
-        QList<Channel*> list;
-        list.append(JsonParser::parseChannel(doc.object()));
-        cman->updateFavourites(list);
-    }
+    QList<Channel*> list;
+    list.append(JsonParser::parseChannel(data));
+    cman->updateFavourites(list);
 }
 
 void NetworkManager::streamReply(QNetworkReply *reply)
 {
-    //Channel* channel = cman->find(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
-    //if (channel){
-        if (reply->error() != QNetworkReply::NoError){
-            qDebug() << reply->errorString();
-            if (reply->error() == QNetworkReply::ContentNotFoundError){
-                //model->channelNotFound(channel);
-            }
-            return;
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        if (reply->error() == QNetworkReply::ContentNotFoundError){
+            //model->channelNotFound(channel);
         }
+        return;
+    }
 
-        QByteArray data = reply->readAll();
-        //qDebug() << data;
+    QByteArray data = reply->readAll();
+    //qDebug() << data;
 
-        QJsonParseError error;
-        QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-        if (error.error != QJsonParseError::NoError){
-            qDebug() << "Error while parsing data: " << error.errorString();
-            return;
-        }
-        if (doc.isObject()){
-            QList<Channel*> list;
-            list.append(JsonParser::parseStream(doc.object()));
-            cman->updateStreams(list);
-        }
-    //}
+    QList<Channel*> list;
+    list.append(JsonParser::parseStream(data));
+    cman->updateStreams(list);
 }
 
 void NetworkManager::allStreamsReply(QNetworkReply *reply)
@@ -170,11 +166,7 @@ void NetworkManager::allStreamsReply(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     //qDebug() << data;
 
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
-    if (error.error == QJsonParseError::NoError){
-        cman->updateStreams(JsonParser::parseStreams(doc.object()));
-    }
+    cman->updateStreams(JsonParser::parseStreams(data));
 }
 
 void NetworkManager::logoReply(QNetworkReply *reply)
@@ -211,11 +203,20 @@ void NetworkManager::gamesReply(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     //qDebug() << data;
 
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
-    if (error.error == QJsonParseError::NoError){
-        cman->updateGames(JsonParser::parseGames(doc.object()));
+    cman->updateGames(JsonParser::parseGames(data));
+}
+
+void NetworkManager::gameStreamsReply(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
     }
+    QByteArray data = reply->readAll();
+
+    //qDebug() << data;
+
+    cman->addSearchResults(JsonParser::parseStreams(data));
 }
 
 void NetworkManager::searchChannelsReply(QNetworkReply *reply)
@@ -228,9 +229,5 @@ void NetworkManager::searchChannelsReply(QNetworkReply *reply)
 
     //qDebug() << data;
 
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
-    if (error.error == QJsonParseError::NoError){
-        cman->addSearchResults(JsonParser::parseChannels(doc.object()));
-    }
+    cman->addSearchResults(JsonParser::parseChannels(data));
 }

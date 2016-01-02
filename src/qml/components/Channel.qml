@@ -4,6 +4,7 @@ import "../styles.js" as Style
 
 //Channel.qml
 Rectangle {
+    property string name
     property string title
     property string logo
     property string info

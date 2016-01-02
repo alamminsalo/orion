@@ -20,7 +20,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("g_cman", cman);
 
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
-    engine.rootContext()->setContextProperty("g_results", cman->getResultsProxy());
+    engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
+    engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
 
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 

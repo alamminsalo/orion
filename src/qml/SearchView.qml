@@ -3,10 +3,44 @@ import "components"
 import "styles.js" as Styles
 
 Item {
-    width: 100
-    height: 62
+    property int itemCount: 0
 
     anchors.fill: parent
+
+    function focusInput(){
+        _input.forceActiveFocus()
+    }
+
+    function search(str, offset, limit, clear){
+        str = str || _input.text
+        offset = offset || 0
+        limit = limit || 25
+
+        if (typeof clear === 'undefined'){
+            clear = true
+        }
+
+        if (str.length > 0){
+            _input.text = str
+            g_cman.searchChannels(str, offset, limit, clear)
+            if (clear){
+                itemCount = limit
+            }
+        }
+    }
+
+    Connections {
+        target: g_cman
+        onResultsUpdated: {
+            _spinner.visible = false
+            _button.visible = true
+        }
+
+        onSearchingStarted: {
+            _spinner.visible = true
+            _button.visible = false
+        }
+    }
 
     Rectangle {
         id: searchContainer
@@ -43,9 +77,10 @@ Item {
                     bottom: parent.bottom
                     left: parent.left
                 }
-
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
+
+                Keys.onReturnPressed: search()
             }
 
             Rectangle {
@@ -74,14 +109,24 @@ Item {
                     hoverEnabled: true
 
                     onClicked: {
-                        if (searchBox.text.length > 0)
-                            g_cman.searchChannels(searchBox.text, channels.count, 25, true)
+                        search()
                     }
 
-                    onPressedChanged: {
-                        parent.iconColor = pressed ? Styles.textColor : Styles.iconColor
+                    onHoveredChanged: {
+                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
                     }
                 }
+            }
+
+            SpinnerIcon {
+                id: _spinner
+                iconSize: 20
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: _spacer.right
+                }
+                visible: false
             }
         }
     }
@@ -99,6 +144,7 @@ Item {
 
         model: g_results
         delegate: Channel {
+            name: model.serviceName
             title: model.name
             logo: model.logo
             info: model.info
@@ -106,6 +152,20 @@ Item {
             preview: model.preview
             online: model.online
             containerSize: favourites.cellHeight
+        }
+
+        onContentYChanged: {
+            if (contentHeight - contentY - height <= 0){
+                if (model.count() === itemCount){
+                    search(_input.text, itemCount, 25, false);
+                    itemCount += 25
+                }
+            }
+        }
+
+        onItemClicked: {
+            g_cman.addToFavourites(currentItem.name)
+            requestSelectionChange(1)
         }
     }
 }

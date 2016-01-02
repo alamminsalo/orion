@@ -7,7 +7,8 @@ ChannelManager::ChannelManager(){
 
     resultsModel = new ChannelListModel();
 
-    //connect(this, SIGNAL(channelStateChanged(Channel*)), favouritesModel, SLOT(channelUpdated(Channel*)));
+    gamesModel = new GameListModel();
+
     connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
 
     favouritesProxy = new QSortFilterProxyModel();
@@ -15,10 +16,10 @@ ChannelManager::ChannelManager(){
     favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
     favouritesProxy->sort(0, Qt::DescendingOrder);
 
-    resultsProxy = new QSortFilterProxyModel();
-    resultsProxy->setSourceModel(resultsModel);
-    resultsProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
-    resultsProxy->sort(0, Qt::DescendingOrder);
+//    resultsProxy = new QSortFilterProxyModel();
+//    resultsProxy->setSourceModel(resultsModel);
+//    resultsProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
+//    resultsProxy->sort(0, Qt::DescendingOrder);
 }
 
 ChannelManager::~ChannelManager(){
@@ -29,6 +30,7 @@ ChannelManager::~ChannelManager(){
     delete netman;
     delete favouritesModel;
     delete resultsModel;
+    delete gamesModel;
 }
 
 ChannelListModel *ChannelManager::getFavouritesModel() const
@@ -44,6 +46,11 @@ QSortFilterProxyModel *ChannelManager::getFavouritesProxy() const
 QSortFilterProxyModel *ChannelManager::getResultsProxy() const
 {
     return resultsProxy;
+}
+
+GameListModel *ChannelManager::getGamesModel() const
+{
+    return gamesModel;
 }
 
 ChannelListModel *ChannelManager::getResultsModel() const
@@ -192,8 +199,11 @@ bool ChannelManager::save() const
     return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
 }
 
-void ChannelManager::addToFavourites(Channel *channel){
-    favouritesModel->addChannel(new Channel(*channel));
+void ChannelManager::addToFavourites(const QString &serviceName){
+    Channel *channel = resultsModel->find(serviceName);
+    if (channel){
+        favouritesModel->addChannel(new Channel(*channel));
+    }
 }
 
 Channel* ChannelManager::find(const QString &q){
@@ -233,7 +243,7 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
 
             qDebug() << url;
 
-            netman->getAllStreams(url);
+            netman->getStreams(url);
 
             channelsUrl = "";
             c_index = 0;
@@ -241,22 +251,34 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
     }
 }
 
-void ChannelManager::pollFavourites()
+void ChannelManager::checkFavourites()
 {
     checkStreams(favouritesModel->getChannels());
 }
 
-void ChannelManager::getGames()
+void ChannelManager::getGames(const quint32 &offset, const quint32 &limit, bool clear)
 {
-    netman->getGames(25,games.size());
+    if (clear){
+        gamesModel->clear();
+    }
+
+    netman->getGames(offset,limit);
 }
 
-void ChannelManager::searchChannels(const QString &q, const quint32 &offset, const quint32 &limit, bool clear)
+void ChannelManager::searchChannels(QString q, const quint32 &offset, const quint32 &limit, bool clear)
 {
     if (clear)
         resultsModel->clear();
 
-    netman->searchChannels(q, offset, limit);
+    if (q.startsWith(":game ")){
+        q.replace(":game ", "");
+        netman->getStreamsForGame(q, offset, limit);
+
+    } else {
+        netman->searchChannels(q, offset, limit);
+    }
+
+    emit searchingStarted();
 }
 
 void ChannelManager::addSearchResults(const QList<Channel*> &list)
@@ -268,6 +290,8 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list)
     checkStreams(list);
 
     qDeleteAll(list);
+
+    emit resultsUpdated();
 }
 
 void ChannelManager::updateFavourites(const QList<Channel*> &list)
@@ -287,10 +311,8 @@ void ChannelManager::updateStreams(const QList<Channel*> &list)
 void ChannelManager::updateGames(const QList<Game*> &list)
 {
     foreach(Game* game, list){
-        games.append(new Game(*game));
+        gamesModel->addGame(new Game(*game));
     }
 
     qDeleteAll(list);
-
-    emit gamesUpdated();
 }

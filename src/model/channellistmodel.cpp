@@ -12,7 +12,7 @@ ChannelListModel::~ChannelListModel()
 
 Qt::ItemFlags ChannelListModel::flags(const QModelIndex &index) const
 {
-    int row = index.row();
+    //int row = index.row();
     //    Channel* channel = source.at(index);
     //    if (channel->online)
     return Qt::ItemIsEnabled;
@@ -77,7 +77,8 @@ void ChannelListModel::addChannel(Channel *channel)
 
 void ChannelListModel::removeChannel(Channel *channel)
 {
-    if (int index = channels.indexOf(channel) > -1){
+    int index = channels.indexOf(channel);
+    if (index > -1){
         emit beginRemoveRows(QModelIndex(), index, index);
         delete channels.takeAt(index);
         emit endRemoveRows();
@@ -96,21 +97,25 @@ Channel *ChannelListModel::find(const QString &q)
 
 void ChannelListModel::clear()
 {
-    emit beginRemoveRows(QModelIndex(), 0, channels.size());
     if (!channels.isEmpty()){
+        emit beginRemoveRows(QModelIndex(), 0, channels.size());
         qDeleteAll(channels);
         channels.clear();
+        emit endRemoveRows();
     }
-    emit endRemoveRows();
 }
 
 void ChannelListModel::updateChannelForView(Channel* channel)
 {
     int i = channels.indexOf(channel);
-
     if (i > -1){
         emit dataChanged(index(i), index(i));
     }
+}
+
+int ChannelListModel::count()
+{
+    return rowCount();
 }
 
 QList<Channel *> ChannelListModel::getChannels() const

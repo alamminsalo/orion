@@ -2,33 +2,25 @@ import QtQuick 2.0
 
 //ChannelList.qml
 GridView{
-    property variant selectedChannel
+    property variant selectedItem
     property int cellSize: 200
     property bool tooltipEnabled: false
+    signal itemClicked(int index)
 
     id: root
-    //focus: true
 
     cellHeight: cellSize
     maximumFlickVelocity: 800
     cellWidth: cellHeight
 
     function setFocus(){
-        var mX = mArea.mouseX
-        var mY = mArea.mouseY
-        var index = indexAt(contentX + mX, contentY + mY)
-
         g_tooltip.hide()
 
         if (mArea.containsMouse) {
-            root.currentIndex = index
+            root.currentIndex = indexAt(contentX + mArea.mouseX, contentY + mArea.mouseY)
             if (tooltipEnabled)
                 tooltipTimer.restart()
         }
-//        else {
-//            if (tooltipEnabled)
-//                g_tooltip.hide()
-//        }
     }
 
     onContentYChanged: setFocus()
@@ -53,24 +45,37 @@ GridView{
 
                     var mX = mArea.mouseX
                     var mY = mArea.mouseY
-                    var index = indexAt(contentX + mX, contentY + mY)
+                    var p = mArea.parent
 
-                    if (mArea.containsMouse && index > -1 && selectedChannel && selectedChannel.online)
-                        g_tooltip.displayChannel(g_rootWindow.x + root.parent.parent.x + parent.mouseX,
-                                                 g_rootWindow.y + root.parent.parent.y + parent.mouseY,
-                                                 selectedChannel)
+                    //Traverse dom tree to root, adding x,y-values from objects
+                    while (p){
+                        mX += p.x
+                        mY += p.y
+                        p = p.parent
+                    }
+
+                    if (mArea.containsMouse && indexAt(contentX + mX, contentY + mY) > -1 && selectedItem && selectedItem.online)
+                        g_tooltip.displayChannel(g_rootWindow.x + mX,
+                                                 g_rootWindow.y + mY,
+                                                 selectedItem)
                 }
+            }
+        }
+
+        onClicked: {
+            if (currentItem){
+                itemClicked(currentIndex)
             }
         }
     }
 
     onCurrentItemChanged: {
-        if (selectedChannel && typeof selectedChannel.setHighlight === 'function')
-            selectedChannel.setHighlight(false)
+        if (selectedItem && typeof selectedItem.setHighlight === 'function')
+            selectedItem.setHighlight(false)
 
         if (currentItem && typeof currentItem.setHighlight === 'function'){
-            selectedChannel = currentItem
-            selectedChannel.setHighlight(true)
+            selectedItem = currentItem
+            selectedItem.setHighlight(true)
         }
     }
 }

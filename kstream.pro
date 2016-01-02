@@ -24,7 +24,8 @@ SOURCES += src/main.cpp\
     src/network/networkmanager.cpp \
     src/model/game.cpp \
     src/util/jsonparser.cpp \
-    src/model/channellistmodel.cpp
+    src/model/channellistmodel.cpp \
+    src/model/gamelistmodel.cpp
 
 HEADERS  += src/model/channel.h \
     src/model/channelmanager.h \
@@ -33,7 +34,8 @@ HEADERS  += src/model/channel.h \
     src/network/networkmanager.h \
     src/model/game.h \
     src/util/jsonparser.h \
-    src/model/channellistmodel.h
+    src/model/channellistmodel.h \
+    src/model/gamelistmodel.h
 
 FORMS    += src/ui/mainwindow.ui
 

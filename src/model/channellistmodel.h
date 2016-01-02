@@ -44,6 +44,7 @@ public:
 
 public slots:
     void updateChannelForView(Channel*);
+    int count();
 
 signals:
     void channelOnlineStateChanged(Channel*);

@@ -3,6 +3,7 @@
 
 #include "channel.h"
 #include "channellistmodel.h"
+#include "gamelistmodel.h"
 #include "game.h"
 #include "../util/fileutils.h"
 #include "../network/networkmanager.h"
@@ -34,7 +35,7 @@ protected:
     ChannelListModel* resultsModel;
     QSortFilterProxyModel* resultsProxy;
 
-    QList<Game*> games;
+    GameListModel* gamesModel;
 
 public:
     ChannelManager();
@@ -48,8 +49,6 @@ public:
 
     //Favourites section
     Channel *find(const QString&);
-    void addToFavourites(Channel *channel);
-    void removeFromFavourites(const QString&);
     void updateFavourites(const QList<Channel*>&);
 
     //Search section
@@ -71,6 +70,8 @@ public:
 
     QSortFilterProxyModel *getResultsProxy() const;
 
+    GameListModel *getGamesModel() const;
+
 signals:
     void channelExists(Channel*);
     void channelNotFound(Channel*);
@@ -79,11 +80,15 @@ signals:
     void gamesUpdated();
     void channelsUpdated();
     void resultsUpdated();
+    void searchingStarted();
 
 public slots:
-    void pollFavourites();
-    void getGames();
-    void searchChannels(const QString&, const quint32&, const quint32&, bool);
+    void checkFavourites();
+    void addToFavourites(const QString&);
+    void removeFromFavourites(const QString&);
+    void getGames(const quint32&, const quint32&, bool);
+    void searchChannels(QString, const quint32&, const quint32&, bool);
+    //void searchStreamsForGame(const QString&, const quint32&, const quint32&, bool);
     void notify(Channel*);
 
 };

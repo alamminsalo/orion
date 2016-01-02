@@ -5,6 +5,8 @@ import "styles.js" as Style
 Rectangle {
     property int selection
 
+    signal requestSelectionChange(int index)
+
     color: Style.bg
 
     onSelectionChanged: {
@@ -16,6 +18,7 @@ Rectangle {
             //Search
             case 0:
                 search.visible = true
+                search.focusInput()
                 break;
 
             //Fav
@@ -26,9 +29,8 @@ Rectangle {
             //Games
             case 2:
                 games.visible = true
-                if (games.count === 0)
-                    games.getGames()
-                break
+                g_cman.getGames(0, 25, true)
+                games.gamesCount = 25
         }
     }
 
@@ -49,6 +51,7 @@ Rectangle {
 
         model: g_favourites
         delegate: Channel {
+            name: model.serviceName
             title: model.name
             logo: model.logo
             info: model.info
@@ -56,6 +59,10 @@ Rectangle {
             preview: model.preview
             online: model.online
             containerSize: favourites.cellHeight
+        }
+
+        onItemClicked: {
+            g_cman.removeFromFavourites(currentItem.name)
         }
     }
 
@@ -71,26 +78,32 @@ Rectangle {
             margins: 10
         }
 
-        model: g_cman.games
+        model: g_games
         delegate: Channel {
-            title: modelData.name
-            logo: modelData.logo
-            preview: modelData.preview
-            viewers: modelData.viewers
+            title: model.name
+            logo: model.logo
+            preview: model.preview
+            viewers: model.viewers
             online: true
             containerSize: favourites.cellHeight
         }
 
         function getGames(){
-            if (games.count === games.gamesCount){
-                g_cman.getGames();
-                games.gamesCount += 25
+            if (model.count() === gamesCount){
+                console.log("Fetching more games")
+                g_cman.getGames(gamesCount, 25, false);
+                gamesCount += 25
             }
+        }
+
+        onItemClicked: {
+            search.search(":game " + currentItem.title)
+            requestSelectionChange(0)
         }
 
         onContentYChanged: {
             if (contentHeight - contentY - height <= 0){
-                games.getGames();
+                getGames();
             }
         }
     }

@@ -43,6 +43,8 @@ Channel::Channel(const Channel &channel){
 	this->alert = channel.alert;
 	this->timestamp = channel.timestamp;
 	this->online = channel.online;
+    this->logouri = channel.logouri;
+    this->previewuri = channel.previewuri;
     this->logopath = channel.logopath;
     this->previewpath = channel.previewpath;
     this->viewers = 0;
