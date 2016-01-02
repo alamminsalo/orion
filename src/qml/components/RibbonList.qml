@@ -19,6 +19,7 @@ ListView {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
 
         onClicked: {
             var index = parent.indexAt(mouseX, mouseY)

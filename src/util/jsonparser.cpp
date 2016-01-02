@@ -79,17 +79,10 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
             channel->setLogoPath(logopath);
         }
 
-        if (!json["viewers"].isNull()){
-            channel->setViewers(json["viewers"].toInt());
-        }
-
-        if (!json["game"].isNull()){
-            channel->setGame(json["game"].toString());
-        }
-
         if (!channelValue["status"].isNull()){
             channel->setInfo(channelValue["status"].toString());
         }
+
 
         if (!json["preview"].isNull()){
 
@@ -106,7 +99,16 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
                 channel->setPreviewPath(previewpath);
             }
         }
+
+        if (!json["viewers"].isNull()){
+            channel->setViewers(json["viewers"].toInt());
+        }
+
+        if (!json["game"].isNull()){
+            channel->setGame(json["game"].toString());
+        }
     }
+
     channel->setOnline(true);
 
     return channel;

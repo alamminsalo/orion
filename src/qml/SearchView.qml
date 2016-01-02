@@ -58,6 +58,7 @@ Item {
         height: 100
         color: Styles.bg
         z: channels.z + 1
+        clip: true
 
         Rectangle {
             property string text: _input.text
@@ -75,9 +76,13 @@ Item {
 
             TextInput{
                 id: _input
-                font.pixelSize: Styles.titleFont.pixelSize
                 color: Styles.iconColor
-                width: 280
+                width: 300
+                clip:true
+                selectionColor: Styles.purple
+                focus: true
+                selectByMouse: true
+
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -87,6 +92,10 @@ Item {
                 horizontalAlignment: Text.AlignHCenter
 
                 Keys.onReturnPressed: search()
+
+                MouseArea {
+                    onDoubleClicked: _input.selectAll()
+                }
             }
 
             Rectangle {
@@ -119,7 +128,7 @@ Item {
                     }
 
                     onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                        parent.iconColor = containsMouse ? Styles.iconHighlight : Styles.iconColor
                     }
                 }
             }
@@ -157,6 +166,7 @@ Item {
             viewers: model.viewers
             preview: model.preview
             online: model.online
+            game: model.game
             containerSize: favourites.cellHeight
         }
 

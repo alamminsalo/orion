@@ -11,17 +11,15 @@ Rectangle {
     property bool isOpen: true
     property int selectedView: 0
 
-    NumberAnimation on width {
-        id: toolbox_drawer_anim
-        duration: 200
-        easing.type: Easing.OutCubic
+    Behavior on width {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
     }
 
     function toggle(){
-        toolbox_drawer_anim.stop()
-        toolbox_drawer_anim.from = width
-        toolbox_drawer_anim.to = isOpen ? 50 : 200
-        toolbox_drawer_anim.start()
+        root.width = isOpen ? 50 : 200
         isOpen = !isOpen
         toggleButton.iconStr = isOpen ? 'chevron_l' : 'chevron_r'
     }

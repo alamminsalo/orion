@@ -12,6 +12,7 @@ Window {
 
     property variant g_rootWindow: root
     property variant g_tooltip
+    property variant g_menu
     property variant g_toolBox: tools
 
     Rectangle {
@@ -47,7 +48,7 @@ Window {
                 }
             }
 
-            ViewBox {
+            PageView {
                 id: view
                 selection: tools.selectedView
                 anchors {
@@ -65,12 +66,15 @@ Window {
 
     Component.onCompleted: {
         var component = Qt.createComponent("components/Tooltip.qml")
-        g_tooltip = component.createObject(root);
+        g_tooltip = component.createObject(root)
+
+        var menu = Qt.createComponent("components/ContextMenu.qml")
+        g_menu = menu.createObject(root)
 
         g_cman.checkFavourites()
         pollTimer.start()
 
-        //Show favourites view
+        //Initial view
         g_toolBox.setView(1)
     }
 

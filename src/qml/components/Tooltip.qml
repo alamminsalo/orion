@@ -6,13 +6,11 @@ import "../styles.js" as Style
 Window {
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus
-    height: 200
-    width: 333
+    height: 240
+    width: 384
 
-    property string title
-    property string description
+    property string text
     property string img
-    property int viewers: 0
 
     Rectangle {
         id: rootRect
@@ -24,64 +22,37 @@ Window {
             anchors.fill: parent
         }
 
+        //Container for text
         Rectangle {
             id: header
-            anchors {
-                left: parent.left
-                right: parent.right
-                bottom: parent.bottom
-            }
-
+            anchors.fill: text
             color: Style.shadeColor
             opacity: 0.5
-            height: 60
+            height: text.height
         }
 
         Text {
-            id: title
-            opacity: 1
+            id: text
             color: Style.textColor
-            text: "<b>" + root.title + ":</b> " + (root.viewers ? root.viewers + " viewers" : "")
-            width: parent.width
+            text: root.text
             font.pixelSize: Style.titleFont.pixelSize
             anchors{
-                top: header.top
-                left: header.left
-            }
-            wrapMode: Text.WordWrap
-        }
-
-        Text {
-            id: description
-            opacity: 1
-            color: Style.textColor
-            width: parent.width
-            text: root.description
-            font.pixelSize: Style.titleFont.pixelSize
-            anchors {
-                top: title.bottom
+                bottom: parent.bottom
                 left: parent.left
+                right: parent.right
             }
             wrapMode: Text.WordWrap
         }
-
-
     }
 
-    function displayChannel(mX, mY, channel){
-        if (channel){
+    function display(mX, mY){
+        root.x = mX + 20
 
-            root.img = channel.preview
-            root.title = channel.title
-            root.description = channel.info
-            root.viewers = channel.viewers
+        if (root.x + root.width > Screen.width)
+            root.x -= root.width + 40
 
-            root.x = mX
-            root.y = mY
+        root.y = mY
 
-            header.height = root.description ? 60 : 40
-
-            root.show()
-        }
+        root.show()
     }
 }

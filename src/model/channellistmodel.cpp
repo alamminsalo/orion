@@ -57,6 +57,10 @@ QVariant ChannelListModel::data(const QModelIndex &index, int role) const
             case ServiceNameRole:
                 var.setValue(channel->getServiceName());
                 break;
+
+            case GameRole:
+                var.setValue(channel->getGame());
+                break;
         }
     }
 
@@ -134,6 +138,7 @@ QHash<int, QByteArray> ChannelListModel::roleNames() const
     roles[OnlineRole] = "online";
     roles[ViewersRole] = "viewers";
     roles[ServiceNameRole] = "serviceName";
+    roles[GameRole] = "game";
 
     return roles;
 }

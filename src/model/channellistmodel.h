@@ -37,7 +37,8 @@ public:
         PreviewRole =       Qt::UserRole + 4,
         OnlineRole =        Qt::UserRole + 5,
         ViewersRole =       Qt::UserRole + 6,
-        ServiceNameRole =   Qt::UserRole + 7
+        ServiceNameRole =   Qt::UserRole + 7,
+        GameRole =          Qt::UserRole + 8
     };
 
     QList<Channel *> getChannels() const;

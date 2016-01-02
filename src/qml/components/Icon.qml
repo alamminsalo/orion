@@ -17,7 +17,7 @@ Item {
 
     Text {
         anchors.centerIn: root
-        font.pixelSize: iconSize || Math.floor(root.height * 0.8)
+        font.pixelSize: iconSize || root.height
         color: iconColor
         font.family: "FontAwesome"
         text: FontAwesome.fromText(icon)

@@ -33,6 +33,7 @@ Rectangle {
                     g_cman.getGames(0, 25, true)
                     games.gamesCount = 25
                 }
+                break;
         }
     }
 
@@ -65,11 +66,18 @@ Rectangle {
             viewers: model.viewers
             preview: model.preview
             online: model.online
+            game: model.game
             containerSize: favourites.cellHeight
         }
 
         onItemClicked: {
             g_cman.removeFromFavourites(currentItem.name)
+        }
+
+        onItemRightClicked: {
+            var coords = getMouseCoords()
+            console.log(coords.x, coords.y)
+            g_menu.display(g_rootWindow.x + coords.x, g_rootWindow.y + coords.y)
         }
     }
 

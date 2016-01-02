@@ -18,13 +18,10 @@ Rectangle {
     color: "transparent"
 
     function setFocus(isActive){
-        border_anim.stop()
-        border_anim.from = border.width
-        border_anim.to = isActive ? (g_toolBox.isOpen ? 14 : 50) : 0
-        border_anim.start()
-        borderTop.height = isActive ? 1 : 0
-        borderBottom.height = isActive ? 1 : 0
-        color = isActive ? Style.ribbonHighlight : "transparent"
+        border.width = isActive ? (g_toolBox.isOpen ? 14 : 50) : 0
+        //borderTop.height = isActive ? 1 : 0
+        //borderBottom.height = isActive ? 1 : 0
+        color = isActive ? Style.ribbonSelected : "transparent"
         isSelected = isActive
         iconLabel.anchors.centerIn = g_toolBox.isOpen ? null : root
     }
@@ -40,7 +37,9 @@ Rectangle {
         if (highlightOn){
             if (!isSelected)
                 color = isActive ? Style.ribbonHighlight : "transparent"
-        } else iconLabel.iconColor = isActive ? Style.textColor : Style.iconColor
+        } else {
+            iconLabel.iconColor = isActive ? Style.iconHighlight : Style.iconColor
+        }
     }
 
     Rectangle {
@@ -52,10 +51,11 @@ Rectangle {
             top: parent.top
             bottom: parent.bottom
         }
-        NumberAnimation on width {
-            id: border_anim
-            duration: 150
-            easing.type: Easing.OutCubic
+        Behavior on width {
+            NumberAnimation {
+                duration: 150
+                easing.type: Easing.OutCubic
+            }
         }
     }
 

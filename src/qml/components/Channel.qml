@@ -11,8 +11,8 @@ Rectangle {
     property string preview
     property bool online
     property int viewers
+    property string game
 
-    property int transitionDuration: 100
     property int imgSize: 148
     property int containerSize
 
@@ -27,9 +27,6 @@ Rectangle {
     color: "transparent"
     radius: 5
 
-
-    //color: "transparent"
-
     Component.onCompleted: {
         colorOverlay.setOverlay(online)
     }
@@ -38,21 +35,17 @@ Rectangle {
         colorOverlay.setOverlay(online)
     }
 
-    Rectangle {
+    Item {
         id: container
         height: imgSize
         width: height
         anchors.centerIn: parent
         clip: true
 
-        function setFocus(bool){
-
-            imageShade.opacity = bool ? 0 : .2
-
-            img_depth_anim.stop();
-            img_depth_anim.from = channelImage.height
-            img_depth_anim.to = bool ? imgSize * 1.1 : imgSize
-            img_depth_anim.start()
+        SpinnerIcon {
+            id:_spinner
+            iconSize: 38
+            anchors.fill: parent
         }
 
         Image {
@@ -62,10 +55,17 @@ Rectangle {
             width: height
             anchors.centerIn: container
 
-            NumberAnimation on height {
-                id: img_depth_anim
-                duration: root.transitionDuration
-                easing.type: Easing.Linear
+            onProgressChanged: {
+                if (progress >= 1.0)
+                    _spinner.visible = false
+            }
+
+            Behavior on height {
+                id: _heightTransition
+                NumberAnimation {
+                    duration: 100
+                    easing.type: Easing.InCubic
+                }
             }
 
             Rectangle {
@@ -118,7 +118,8 @@ Rectangle {
 
 
     function setHighlight(isActive){
-        container.setFocus(isActive)
+        imageShade.opacity = isActive ? 0 : .2
+        channelImage.height = isActive ? Math.floor(imgSize * 1.16) : imgSize
         root.color = isActive ? Style.highlight : "transparent"
         root.border.color = isActive ? Style.border : "transparent"
     }

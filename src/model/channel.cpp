@@ -47,8 +47,8 @@ Channel::Channel(const Channel &channel){
     this->previewuri = channel.previewuri;
     this->logopath = channel.logopath;
     this->previewpath = channel.previewpath;
-    this->viewers = 0;
-    //emit updated();
+    this->game = channel.game;
+    this->viewers = channel.viewers;
 }
 
 const QString Channel::lastOnline(){

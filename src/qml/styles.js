@@ -1,6 +1,7 @@
 .pragma library
 
-var ribbonHighlight= "#26262d"
+var ribbonHighlight= "#161619"
+var ribbonSelected= "#212125"
 var purple= "#7550ba"
 var sidebarBg= "#101014"
 var highlight= "#101014"
@@ -10,6 +11,8 @@ var textColor = "#ffffff"
 var shadeColor = "#000000"
 var grayScaleColor = "#aa262626"
 var iconColor = "#aaaaaa"
+var iconHighlight= "#dddddd"
+var selectedTextBg= "#212125"
 
 
 var titleFont = {
