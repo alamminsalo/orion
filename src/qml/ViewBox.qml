@@ -29,9 +29,16 @@ Rectangle {
             //Games
             case 2:
                 games.visible = true
-                g_cman.getGames(0, 25, true)
-                games.gamesCount = 25
+                if (games.gamesCount === 0){
+                    g_cman.getGames(0, 25, true)
+                    games.gamesCount = 25
+                }
         }
+    }
+
+    onVisibleChanged: {
+        if (visible)
+            games.checkScroll()
     }
 
     SearchView {
@@ -88,9 +95,8 @@ Rectangle {
             containerSize: favourites.cellHeight
         }
 
-        function getGames(){
-            if (model.count() === gamesCount){
-                console.log("Fetching more games")
+        function checkScroll(){
+            if (atYEnd && model.count() === gamesCount && gamesCount > 0){
                 g_cman.getGames(gamesCount, 25, false);
                 gamesCount += 25
             }
@@ -101,9 +107,12 @@ Rectangle {
             requestSelectionChange(0)
         }
 
-        onContentYChanged: {
-            if (contentHeight - contentY - height <= 0){
-                getGames();
+        onAtYEndChanged: checkScroll()
+
+        Connections {
+            target: g_cman
+            onGamesUpdated: {
+                games.checkScroll()
             }
         }
     }

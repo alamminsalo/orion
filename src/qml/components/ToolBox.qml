@@ -38,6 +38,7 @@ Rectangle {
             anchors.fill: parent
             onClicked: toggle()
         }
+        highlightOn: false
     }
 
     RibbonList {

@@ -283,11 +283,17 @@ void ChannelManager::searchChannels(QString q, const quint32 &offset, const quin
 
 void ChannelManager::addSearchResults(const QList<Channel*> &list)
 {
+    bool needsStreamCheck = false;
+
     foreach (Channel *channel, list){
         resultsModel->addChannel(new Channel(*channel));
+
+        if (!channel->isOnline())
+            needsStreamCheck = true;
     }
 
-    checkStreams(list);
+    if (needsStreamCheck)
+        checkStreams(list);
 
     qDeleteAll(list);
 
@@ -315,4 +321,6 @@ void ChannelManager::updateGames(const QList<Game*> &list)
     }
 
     qDeleteAll(list);
+
+    emit gamesUpdated();
 }

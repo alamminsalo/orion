@@ -7,6 +7,7 @@ Rectangle {
     property string iconStr
     property int borderWidth: 6
     property int iconSize: 20
+    property bool highlightOn: true
 
     id: root
     height: 50
@@ -36,8 +37,10 @@ Rectangle {
     }
 
     function setHighlight(isActive){
-        if (!isSelected)
-            color = isActive ? Style.ribbonHighlight : "transparent"
+        if (highlightOn){
+            if (!isSelected)
+                color = isActive ? Style.ribbonHighlight : "transparent"
+        } else iconLabel.iconColor = isActive ? Style.textColor : Style.iconColor
     }
 
     Rectangle {

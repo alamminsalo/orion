@@ -29,11 +29,17 @@ Item {
         }
     }
 
+    onVisibleChanged: {
+        if (visible)
+            channels.checkScrolled()
+    }
+
     Connections {
         target: g_cman
         onResultsUpdated: {
             _spinner.visible = false
             _button.visible = true
+            channels.checkScrolled()
         }
 
         onSearchingStarted: {
@@ -154,14 +160,14 @@ Item {
             containerSize: favourites.cellHeight
         }
 
-        onContentYChanged: {
-            if (contentHeight - contentY - height <= 0){
-                if (model.count() === itemCount){
-                    search(_input.text, itemCount, 25, false);
-                    itemCount += 25
-                }
+        function checkScrolled(){
+            if (atYEnd && model.count() === itemCount && itemCount > 0){
+                search(_input.text, itemCount, 25, false);
+                itemCount += 25
             }
         }
+
+        onAtYEndChanged: checkScrolled()
 
         onItemClicked: {
             g_cman.addToFavourites(currentItem.name)
