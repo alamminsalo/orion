@@ -21,7 +21,6 @@ ChannelGrid {
         preview: model.preview
         viewers: model.viewers
         online: true
-        containerSize: favourites.cellHeight
     }
 
     function checkScroll(){

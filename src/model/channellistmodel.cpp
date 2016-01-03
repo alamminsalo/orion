@@ -30,37 +30,45 @@ QVariant ChannelListModel::data(const QModelIndex &index, int role) const
 
     if (channel){
         switch(role){
-            case NameRole:
-                var.setValue(channel->getName());
-                break;
+        case NameRole:
+            var.setValue(channel->getName());
+            break;
 
-            case InfoRole:
-                var.setValue(channel->getInfo());
-                break;
+        case InfoRole:
+            var.setValue(channel->getInfo());
+            break;
 
-            case LogoRole:
-                var.setValue(channel->getLogourl());
-                break;
+        case LogoRole:
+            var.setValue(channel->getLogourl());
+            break;
 
-            case PreviewRole:
-                var.setValue(channel->getPreviewurl());
-                break;
+        case PreviewRole:
+            var.setValue(channel->getPreviewurl());
+            break;
 
-            case OnlineRole:
-                var.setValue(channel->isOnline());
-                break;
+        case OnlineRole:
+            var.setValue(channel->isOnline());
+            break;
 
-            case ViewersRole:
-                var.setValue(channel->getViewers());
-                break;
+        case ViewersRole:
+            var.setValue(channel->getViewers());
+            break;
 
-            case ServiceNameRole:
-                var.setValue(channel->getServiceName());
-                break;
+        case ServiceNameRole:
+            var.setValue(channel->getServiceName());
+            break;
 
-            case GameRole:
-                var.setValue(channel->getGame());
-                break;
+        case GameRole:
+            var.setValue(channel->getGame());
+            break;
+
+        case IdRole:
+            var.setValue(channel->getId());
+            break;
+
+        case FavouriteRole:
+            var.setValue(channel->isFavourite());
+            break;
         }
     }
 
@@ -93,6 +101,16 @@ Channel *ChannelListModel::find(const QString &q)
 {
     foreach(Channel *channel, channels){
         if (channel->getServiceName() == q){
+            return channel;
+        }
+    }
+    return 0;
+}
+
+Channel *ChannelListModel::find(const quint32 &id)
+{
+    foreach(Channel *channel, channels){
+        if (channel->getId() == id){
             return channel;
         }
     }
@@ -139,6 +157,8 @@ QHash<int, QByteArray> ChannelListModel::roleNames() const
     roles[ViewersRole] = "viewers";
     roles[ServiceNameRole] = "serviceName";
     roles[GameRole] = "game";
+    roles[IdRole] = "id";
+    roles[FavouriteRole] = "favourite";
 
     return roles;
 }

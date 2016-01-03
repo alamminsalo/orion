@@ -5,6 +5,7 @@ import "../styles.js" as Styles
 
 Menu {
     property variant item
+    property int state
 
     id: root
     visible: false

@@ -28,6 +28,7 @@ public:
     void addChannel(Channel*);
     void removeChannel(Channel*);
     Channel* find(const QString&);
+    Channel* find(const quint32&);
     void clear();
 
     enum Roles {
@@ -38,7 +39,9 @@ public:
         OnlineRole =        Qt::UserRole + 5,
         ViewersRole =       Qt::UserRole + 6,
         ServiceNameRole =   Qt::UserRole + 7,
-        GameRole =          Qt::UserRole + 8
+        GameRole =          Qt::UserRole + 8,
+        IdRole =            Qt::UserRole + 9,
+        FavouriteRole =     Qt::UserRole + 10
     };
 
     QList<Channel *> getChannels() const;

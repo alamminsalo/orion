@@ -57,56 +57,42 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
     if (!links["self"].isNull()){
         QString channelName = links["self"].toString();
         channelName.remove(0, channelName.lastIndexOf('/') + 1);
-        channel->setURIName(channelName);
+        channel->setServiceName(channelName);
+    }
+
+    if (!json["preview"].isNull()){
+
+        QJsonObject preview = json["preview"].toObject();
+
+        if (!preview["large"].isNull()){
+            QString previewuri = preview["large"].toString();
+            QStringRef extension(&previewuri,previewuri.lastIndexOf("."),(previewuri.length() - previewuri.lastIndexOf(".")));
+            QString previewpath = "resources/preview/";
+            previewpath += channel->getServiceName();
+            previewpath += extension;
+
+            channel->setPreviewurl(previewuri);
+            channel->setPreviewPath(previewpath);
+        }
+    }
+
+    if (!json["viewers"].isNull()){
+        channel->setViewers(json["viewers"].toInt());
+    }
+
+    if (!json["game"].isNull()){
+        channel->setGame(json["game"].toString());
     }
 
     if (!json["channel"].isNull()){
-        QJsonObject channelValue = json["channel"].toObject();
 
-        if (!channelValue["display_name"].isNull()){
-            channel->setName(channelValue["display_name"].toString());
-        }
+        Channel *c = parseChannel(json["channel"].toObject());
+        channel->setId(c->getId());
+        channel->setName(c->getName());
+        channel->setLogourl(c->getLogourl());
+        channel->setInfo(c->getInfo());
 
-        if (!channelValue["logo"].isNull()){
-            QString logouri = channelValue["logo"].toString();
-            QStringRef extension(&logouri,logouri.lastIndexOf("."),(logouri.length() - logouri.lastIndexOf(".")));
-            QString logopath = "resources/logos/";
-
-            logopath += channel->getServiceName();
-            logopath += extension;
-
-            channel->setLogourl(logouri);
-            channel->setLogoPath(logopath);
-        }
-
-        if (!channelValue["status"].isNull()){
-            channel->setInfo(channelValue["status"].toString());
-        }
-
-
-        if (!json["preview"].isNull()){
-
-            QJsonObject preview = json["preview"].toObject();
-
-            if (!preview["large"].isNull()){
-                QString previewuri = preview["large"].toString();
-                QStringRef extension(&previewuri,previewuri.lastIndexOf("."),(previewuri.length() - previewuri.lastIndexOf(".")));
-                QString previewpath = "resources/preview/";
-                previewpath += channel->getServiceName();
-                previewpath += extension;
-
-                channel->setPreviewurl(previewuri);
-                channel->setPreviewPath(previewpath);
-            }
-        }
-
-        if (!json["viewers"].isNull()){
-            channel->setViewers(json["viewers"].toInt());
-        }
-
-        if (!json["game"].isNull()){
-            channel->setGame(json["game"].toString());
-        }
+        delete c;
     }
 
     channel->setOnline(true);
@@ -176,7 +162,7 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
 
     if (!json["name"].isNull()){
 
-        channel->setURIName(json["name"].toString());
+        channel->setServiceName(json["name"].toString());
 
        // qDebug() << "Parsing channel data for " <<  channel.getUriName();
 
@@ -199,6 +185,10 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
             channel->setLogourl(logouri);
             channel->setLogoPath(logopath);
 
+        }
+
+        if (!json["_id"].isNull()){
+            channel->setId(json["_id"].toInt());
         }
     }
 

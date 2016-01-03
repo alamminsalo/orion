@@ -84,8 +84,8 @@ signals:
 
 public slots:
     void checkFavourites();
-    void addToFavourites(const QString&);
-    void removeFromFavourites(const QString&);
+    void addToFavourites(const quint32&);
+    void removeFromFavourites(const quint32&);
     void getGames(const quint32&, const quint32&, bool);
     void searchChannels(QString, const quint32&, const quint32&, bool);
     //void searchStreamsForGame(const QString&, const quint32&, const quint32&, bool);

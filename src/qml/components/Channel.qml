@@ -4,17 +4,18 @@ import "../styles.js" as Styles
 
 //Channel.qml
 Rectangle {
+    property int _id
     property string name
     property string title
     property string logo
     property string info
     property string preview
     property bool online
+    property bool favourite: false
     property int viewers
     property string game
-
     property int imgSize: 148
-    property int containerSize
+    property int containerSize: 200
 
     id: root
 
@@ -61,7 +62,6 @@ Rectangle {
             }
 
             Behavior on height {
-                id: _heightTransition
                 NumberAnimation {
                     duration: 100
                     easing.type: Easing.InCubic
@@ -90,13 +90,26 @@ Rectangle {
             }
         }
 
+        Icon {
+            id: favIcon
+            icon: "fav"
+            visible: favourite
+            iconSize: 24
+            iconColor: Styles.purple
+            anchors {
+                top: container.top
+                right: container.right
+                margins: 10
+            }
+        }
+
         Rectangle {
             id: infoRect
-            color: Styles.shadeColor
+            color: favourite ? Styles.purple : Styles.shadeColor
             opacity: .66
             height: Math.floor(parent.height * 0.25)
 
-            anchors{
+            anchors {
                 left: container.left
                 right: container.right
                 bottom: container.bottom

@@ -1,4 +1,5 @@
 import QtQuick 2.5
+import QtQuick.Controls 1.4
 import "components"
 import "styles.js" as Styles
 
@@ -159,6 +160,7 @@ Item {
 
         model: g_results
         delegate: Channel {
+            _id: model.id
             name: model.serviceName
             title: model.name
             logo: model.logo
@@ -167,7 +169,7 @@ Item {
             preview: model.preview
             online: model.online
             game: model.game
-            containerSize: favourites.cellHeight
+            favourite: model.favourite
         }
 
         function checkScrolled(){
@@ -180,8 +182,41 @@ Item {
         onAtYEndChanged: checkScrolled()
 
         onItemClicked: {
-            g_cman.addToFavourites(currentItem.name)
-            requestSelectionChange(1)
+            //Play
+        }
+
+        onItemRightClicked: {
+            console.log("item rclick")
+            _menu.item = currentItem
+
+            var item = _menu.items[1]
+            item.text = !_menu.item.favourite ? "Add favourite;fav" : "Remove favourite;remove"
+            _menu.state = !_menu.item.favourite ? 1 : 2
+
+            _menu.popup()
+        }
+
+        ContextMenu {
+            id: _menu
+
+            function addRemoveFavourite(){
+                if (state === 1){
+                    g_cman.addToFavourites(_menu.item._id)
+                } else if (state === 2){
+                    g_cman.removeFromFavourites(_menu.item._id)
+                }
+            }
+
+            MenuItem {
+                text: "Watch;play"
+            }
+
+            MenuItem {
+                id: _fav
+                onTriggered: {
+                    _menu.addRemoveFavourite()
+                }
+            }
         }
     }
 }

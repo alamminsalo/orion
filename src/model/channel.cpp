@@ -4,15 +4,37 @@ Channel::~Channel(){
     //qDebug() << "Destroyer: Channel";
 }
 
+quint32 Channel::getId() const
+{
+    return id;
+}
+
+void Channel::setId(const quint32 &value)
+{
+    id = value;
+}
+
+bool Channel::isFavourite() const
+{
+    return favourite;
+}
+
+void Channel::setFavourite(bool value)
+{
+    favourite = value;
+}
+
 Channel::Channel(){
     alert = true;
     timestamp = 0;
     online = false;
     viewers = 0;
+    id = 0;
+    favourite = false;
 }
 
 Channel::Channel(const QString &uri) : Channel(){
-    this->uri = uri;
+    this->serviceName = uri;
 }
 
 Channel::Channel(const QString &uri, const QString &name, const QString &info) : Channel(uri){
@@ -37,8 +59,9 @@ Channel::Channel(const QString &uri, const QString &name, const QString &info, b
 }
 
 Channel::Channel(const Channel &channel){
+    this->id = channel.id;
 	this->name = channel.name;
-	this->uri = channel.uri;
+    this->serviceName = channel.serviceName;
 	this->info = channel.info;
 	this->alert = channel.alert;
 	this->timestamp = channel.timestamp;
@@ -49,6 +72,7 @@ Channel::Channel(const Channel &channel){
     this->previewpath = channel.previewpath;
     this->game = channel.game;
     this->viewers = channel.viewers;
+    this->favourite = channel.favourite;
 }
 
 const QString Channel::lastOnline(){
@@ -63,26 +87,14 @@ const QString Channel::lastOnline(){
 const QJsonObject Channel::getJSON() const{
     QVariantMap map;
     map["title"]    = QVariant(name);
-    map["uri"]      = QVariant(uri);
+    map["uri"]      = QVariant(serviceName);
     map["info"]     = QVariant(info);
     map["logo"]     = QVariant(logouri);
     map["preview"]  = QVariant(previewuri);
     map["alert"]    = QVariant(alert);
     map["lastSeen"] = QVariant(timestamp);
+    map["id"]       = QVariant(id);
     return QJsonObject::fromVariantMap(map);
-    /*
-    QString JSON_str = "{";
-    JSON_str += "\"title\":\""+name+"\",";
-    JSON_str += "\"uri\":\""+uri+"\",";
-    JSON_str += "\"info\":\""+info+"\",";
-    JSON_str += "\"alert\":\""+alert+"\",";
-    JSON_str += "\"logo\":\""+logopath+"\",";
-    JSON_str += "\"preview\":\""+previewpath+"\",";
-    JSON_str += "\"lastSeen\":"+((quint32)timestamp);
-	JSON_str += "}";
-
-	return JSON_str;
-    */
 }
 
 void Channel::setName(const QString &newName){
@@ -90,8 +102,8 @@ void Channel::setName(const QString &newName){
 
 }
 
-void Channel::setURIName(const QString &newUri){
-	uri = newUri;
+void Channel::setServiceName(const QString &newUri){
+    serviceName = newUri;
 }
 
 void Channel::setInfo(const QString &newInfo){
@@ -115,11 +127,11 @@ const QString Channel::getName(){
 }
 
 const QString Channel::getServiceName(){
-	return uri;
+    return serviceName;
 }
 
 const QString Channel::getFullUri(){
-    return "http://twitch.tv/" + uri;
+    return "http://twitch.tv/" + serviceName;
 }
 
 const QString Channel::getInfo(){

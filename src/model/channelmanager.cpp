@@ -173,16 +173,18 @@ bool ChannelManager::load(){
             qDebug() << "preview is missing";
         }
 
-        favouritesModel->addChannel(
-                new Channel(
+        Channel* channel = new Channel(
                     obj["uri"].toString(),
                     obj["title"].toString(),
                     obj["info"].toString(),
                     obj["alert"].toBool(),
                     obj["lastSeen"].toInt(),
                     obj["logo"].toString(),
-                    obj["preview"].toString()
-                ));
+                    obj["preview"].toString());
+        channel->setId(obj["id"].toInt());
+
+        favouritesModel->addChannel(channel);
+
         qDebug() << "Added channel " << obj["title"].toString();
     }
 
@@ -204,10 +206,13 @@ bool ChannelManager::save() const
     return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
 }
 
-void ChannelManager::addToFavourites(const QString &serviceName){
-    Channel *channel = resultsModel->find(serviceName);
+void ChannelManager::addToFavourites(const quint32 &id){
+    Channel *channel = resultsModel->find(id);
+
     if (channel){
         favouritesModel->addChannel(new Channel(*channel));
+        channel->setFavourite(true);
+        resultsModel->updateChannelForView(channel);
     }
 }
 
@@ -215,8 +220,15 @@ Channel* ChannelManager::find(const QString &q){
     return favouritesModel->find(q);
 }
 
-void ChannelManager::removeFromFavourites(const QString &name){
-    favouritesModel->removeChannel(favouritesModel->find(name));
+void ChannelManager::removeFromFavourites(const quint32 &id){
+    favouritesModel->removeChannel(favouritesModel->find(id));
+
+    //Update results
+    Channel* channel = resultsModel->find(id);
+    if (channel){
+        channel->setFavourite(false);
+        resultsModel->updateChannelForView(channel);
+    }
 }
 
 void ChannelManager::play(const QString &url){
@@ -291,6 +303,9 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list)
     bool needsStreamCheck = false;
 
     foreach (Channel *channel, list){
+        if (favouritesModel->find(channel->getId()))
+            channel->setFavourite(true);
+
         resultsModel->addChannel(new Channel(*channel));
 
         if (!channel->isOnline())

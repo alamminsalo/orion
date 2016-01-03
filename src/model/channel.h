@@ -13,21 +13,17 @@
 class Channel: public QObject{
 
     Q_OBJECT
-//    Q_PROPERTY(QString name READ getName NOTIFY updated)
-//    Q_PROPERTY(QString logo READ getLogourl NOTIFY updated)
-//    Q_PROPERTY(QString info READ getInfo NOTIFY updated)
-//    Q_PROPERTY(QString preview READ getPreviewurl NOTIFY updated)
-//    Q_PROPERTY(bool online READ isOnline NOTIFY updated)
-//    Q_PROPERTY(quint32 viewers READ getViewers NOTIFY updated())
 
 	private:
+    quint32 id;
     QString name;
-    QString uri;
+    QString serviceName;
     QString info;
     bool alert;
     QString game;
     qint32 viewers;
 	bool online;
+    bool favourite;
     qint64 timestamp;
     QString logopath;
     QString previewpath;
@@ -46,7 +42,7 @@ class Channel: public QObject{
         ~Channel();
         const QJsonObject getJSON() const;
         void setName(const QString&);
-        void setURIName(const QString&);
+        void setServiceName(const QString&);
         void setInfo(const QString&);
         void setAlert(bool);
         void setLastSeen(time_t);
@@ -79,12 +75,18 @@ class Channel: public QObject{
 
         static bool greaterThan(Channel*, Channel*);
 
+        quint32 getId() const;
+        void setId(const quint32 &value);
+
+        bool isFavourite() const;
+        void setFavourite(bool value);
+
 signals:
         void updated();
         void iconUpdated();
         void status404();
 
 };
-Q_DECLARE_METATYPE(Channel)
+//Q_DECLARE_METATYPE(Channel)
 
 #endif //CHANNEL_H

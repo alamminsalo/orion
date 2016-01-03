@@ -13,6 +13,7 @@ ChannelGrid {
 
     model: g_favourites
     delegate: Channel {
+        _id: model.id
         name: model.serviceName
         title: model.name
         logo: model.logo
@@ -21,7 +22,6 @@ ChannelGrid {
         preview: model.preview
         online: model.online
         game: model.game
-        containerSize: favourites.cellHeight
     }
 
     onItemRightClicked: {
@@ -32,7 +32,7 @@ ChannelGrid {
     ContextMenu {
         id: _menu
         MenuItem {
-            text: "Play;play"
+            text: "Watch;play"
         }
         MenuItem {
             text: "Info;info"
@@ -40,7 +40,7 @@ ChannelGrid {
         MenuItem {
             text: "Remove;remove"
             onTriggered: {
-                g_cman.removeFromFavourites(_menu.item.name)
+                g_cman.removeFromFavourites(_menu.item._id)
             }
         }
     }

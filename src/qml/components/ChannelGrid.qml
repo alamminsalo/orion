@@ -15,6 +15,24 @@ GridView{
     maximumFlickVelocity: 800
     cellWidth: cellHeight
 
+    add: Transition {
+        NumberAnimation {
+            properties: "y"
+            from: -200
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    remove: Transition {
+        NumberAnimation {
+            property: "opacity"
+            to: 0
+            duration: 200
+            easing.type: Easing.OutCubic
+        }
+    }
+
     function setFocus(){
         g_tooltip.hide()
 
@@ -68,10 +86,19 @@ GridView{
 
                     if (mArea.containsMouse && index && selectedItem && selectedItem.online){
 
-                        g_tooltip.text = ""//(selectedItem.title ? "<p><b>"+selectedItem.title+"</b></p>" : "")
-                                + (selectedItem.game ? "<p>Playing " + selectedItem.game + "</p>" : "")
-                                + (selectedItem.viewers ? "<p>" + selectedItem.viewers + " viewers</p>" : "")
-                                + (selectedItem.info ? "<p>" + selectedItem.info + "</p>" : "")
+                        if (selectedItem.game){
+                            g_tooltip.text = "Playing " + selectedItem.game
+                        }
+
+                        if (selectedItem.viewers){
+                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
+                            g_tooltip.text += selectedItem.viewers + " viewers"
+                        }
+
+                        if (selectedItem.info){
+                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
+                            g_tooltip.text += selectedItem.info
+                        }
 
                         g_tooltip.img = selectedItem.preview
                         g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
