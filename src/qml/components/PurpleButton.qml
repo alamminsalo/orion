@@ -6,8 +6,8 @@ Rectangle {
     property string iconStr
 
     id: root
-    width: 70
-    height: 30
+    width: dp(70)
+    height: dp(30)
     color: Styles.purple
 
     Component.onCompleted: {
@@ -21,7 +21,7 @@ Rectangle {
         anchors.centerIn: parent
         color: Styles.textColor
         text: root.text
-        font.pixelSize: Styles.button.pixelSize
+        font.pointSize: dp(Styles.button.size)
     }
 
     Rectangle {
@@ -34,7 +34,7 @@ Rectangle {
     Icon {
         id: iconLabel
         icon: iconStr
-        iconSize: 20
+        iconSize: dp(20)
         anchors {
             top: parent.top
             bottom: parent.bottom

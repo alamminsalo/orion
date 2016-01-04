@@ -8,7 +8,7 @@ Item {
     property color iconColor: Styles.iconColor
 
     id: root
-    height: 24
+    height: dp(24)
     width: height
 
     FontLoader {
@@ -17,7 +17,7 @@ Item {
 
     Text {
         anchors.centerIn: root
-        font.pixelSize: iconSize || root.height
+        font.pointSize: iconSize || root.height
         color: iconColor
         font.family: "FontAwesome"
         text: FontAwesome.fromText(icon)

@@ -5,12 +5,9 @@
 #include "channellistmodel.h"
 #include "gamelistmodel.h"
 #include "game.h"
-#include "../util/fileutils.h"
 #include "../network/networkmanager.h"
-#include <QStringRef>
-#include <QObject>
-#include <QDir>
-#include <QProcess>
+#include "../ui/notification.h"
+
 #include <QSortFilterProxyModel>
 
 #define DATA_FILE           "data.json"
@@ -22,9 +19,6 @@ class NetworkManager;
 
 class ChannelManager: public QObject{
     Q_OBJECT
-    //Q_PROPERTY(QVariantList channels READ getChannelsList NOTIFY channelsUpdated)
-    //Q_PROPERTY(QVariantList results READ getResultsList NOTIFY resultsUpdated)
-    //Q_PROPERTY(QVariantList games READ getGamesList NOTIFY gamesUpdated)
 
 protected:
     NetworkManager* netman;
@@ -33,9 +27,13 @@ protected:
     QSortFilterProxyModel* favouritesProxy;
 
     ChannelListModel* resultsModel;
-    QSortFilterProxyModel* resultsProxy;
+
+    ChannelListModel* featuredModel;
+    QSortFilterProxyModel* featuredProxy;
 
     GameListModel* gamesModel;
+
+    SnoreNotif notif;
 
 public:
     ChannelManager();
@@ -54,6 +52,8 @@ public:
     //Search section
     void addSearchResults(const QList<Channel*>&);
 
+    void addFeaturedResults(const QList<Channel*>&);
+
     void play(const QString&);
     void checkResources();
 
@@ -68,9 +68,9 @@ public:
 
     ChannelListModel *getResultsModel() const;
 
-    QSortFilterProxyModel *getResultsProxy() const;
-
     GameListModel *getGamesModel() const;
+
+    QSortFilterProxyModel *getFeaturedProxy() const;
 
 signals:
     void channelExists(Channel*);
@@ -80,6 +80,7 @@ signals:
     void gamesUpdated();
     void channelsUpdated();
     void resultsUpdated();
+    void featuredUpdated();
     void searchingStarted();
 
 public slots:
@@ -88,9 +89,9 @@ public slots:
     void removeFromFavourites(const quint32&);
     void getGames(const quint32&, const quint32&, bool);
     void searchChannels(QString, const quint32&, const quint32&, bool);
-    //void searchStreamsForGame(const QString&, const quint32&, const quint32&, bool);
     void notify(Channel*);
-
+    void getFeatured();
+    void openStream(const QString&);
 };
 
 #endif //CHANNEL_MANAGER_H

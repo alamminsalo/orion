@@ -6,7 +6,7 @@ import "../styles.js" as Styles
 Rectangle {
     id: root
     color: Styles.sidebarBg
-    width: 200
+    width: dp(230)
 
     property bool isOpen: true
     property int selectedView: 0
@@ -19,7 +19,7 @@ Rectangle {
     }
 
     function toggle(){
-        root.width = isOpen ? 50 : 200
+        root.width = isOpen ? dp(60) : dp(230)
         isOpen = !isOpen
         toggleButton.iconStr = isOpen ? 'chevron_l' : 'chevron_r'
     }
@@ -35,12 +35,18 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             onClicked: toggle()
+
+            hoverEnabled: true
+            onHoveredChanged: {
+                toggleButton.setHighlight(containsMouse)
+            }
         }
         highlightOn: false
     }
 
     RibbonList {
         id: ribbonList
+        height: model.count * dp(60)
 
         onCurrentIndexChanged: {
             selectedView = currentIndex
@@ -56,6 +62,10 @@ Rectangle {
             ListElement {
                 label: "Search"
                 icon: "search"
+            }
+            ListElement {
+                label: "Featured"
+                icon: "featured"
             }
             ListElement {
                 label: "Favourites"

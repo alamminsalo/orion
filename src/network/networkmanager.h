@@ -29,6 +29,7 @@ protected:
     QNetworkAccessManager* searchOperation;
     QNetworkAccessManager* gamesOperation;
     QNetworkAccessManager* gameStreamsOperation;
+    QNetworkAccessManager* featuredStreamsOperation;
 
     ChannelManager* cman;
 
@@ -43,6 +44,7 @@ public:
     void getFile(const QString&, const QString&);
     void getGames(const quint32&, const quint32&);
     void searchChannels(const QString&, const quint32&, const quint32&);
+    void getFeaturedStreams();
     void getStreamsForGame(const QString&, const quint32&, const quint32&);
 
 public slots:
@@ -53,6 +55,7 @@ public slots:
     void fileReply(QNetworkReply*);
     void gamesReply(QNetworkReply*);
     void gameStreamsReply(QNetworkReply*);
+    void featuredStreamsReply(QNetworkReply*);
     void searchChannelsReply(QNetworkReply*);
 };
 

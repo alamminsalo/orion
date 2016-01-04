@@ -8,7 +8,7 @@ ChannelGrid {
 
     anchors {
         fill: parent
-        margins: 10
+        margins: dp(10)
     }
 
     model: g_favourites
@@ -33,6 +33,9 @@ ChannelGrid {
         id: _menu
         MenuItem {
             text: "Watch;play"
+            onTriggered: {
+                g_cman.openStream(_menu.item.name)
+            }
         }
         MenuItem {
             text: "Info;info"

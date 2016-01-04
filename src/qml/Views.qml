@@ -4,6 +4,7 @@ import "styles.js" as Styles
 
 Rectangle {
     property int selection
+    id: root
 
     signal requestSelectionChange(int index)
 
@@ -13,27 +14,33 @@ Rectangle {
         search.visible = false
         favourites.visible = false
         games.visible = false
+        featured.visible = false
 
         switch (selection){
             //Search
-            case 0:
-                search.visible = true
-                search.focusInput()
-                break;
+        case 0:
+            search.visible = true
+            search.focusInput()
+            break;
+
+            //Featured
+        case 1:
+            featured.visible = true
+            break;
 
             //Fav
-            case 1:
-                favourites.visible = true
-                break
+        case 2:
+            favourites.visible = true
+            break
 
             //Games
-            case 2:
-                games.visible = true
-                if (games.gamesCount === 0){
-                    g_cman.getGames(0, 25, true)
-                    games.gamesCount = 25
-                }
-                break;
+        case 3:
+            games.visible = true
+            if (games.gamesCount === 0){
+                g_cman.getGames(0, 25, true)
+                games.gamesCount = 25
+            }
+            break;
         }
     }
 
@@ -47,6 +54,11 @@ Rectangle {
         visible: false
     }
 
+    FeaturedView{
+        id: featured
+        visible: false
+    }
+
     FavouritesView{
         id: favourites
         visible: false
@@ -56,5 +68,22 @@ Rectangle {
         id: games
         visible: false
     }
+
+    Rectangle {
+        id: _gradient
+        height: root.height * .33
+        gradient: Gradient {
+            GradientStop { position: 0.0; color: "transparent" }
+            GradientStop { position: 1.0; color: "#111111" }
+        }
+
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+    }
+
+    onHeightChanged: _gradient.height = height * .33
 
 }

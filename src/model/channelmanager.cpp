@@ -1,4 +1,14 @@
 #include "channelmanager.h"
+#include <QStringRef>
+#include <QDir>
+#include <QProcess>
+#include "../util/fileutils.h"
+#include <QThread>
+
+QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
+{
+    return featuredProxy;
+}
 
 ChannelManager::ChannelManager(){
     netman = new NetworkManager(this);
@@ -6,6 +16,8 @@ ChannelManager::ChannelManager(){
     favouritesModel = new ChannelListModel();
 
     resultsModel = new ChannelListModel();
+
+    featuredModel = new ChannelListModel();
 
     gamesModel = new GameListModel();
 
@@ -16,10 +28,10 @@ ChannelManager::ChannelManager(){
     favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
     favouritesProxy->sort(0, Qt::DescendingOrder);
 
-//    resultsProxy = new QSortFilterProxyModel();
-//    resultsProxy->setSourceModel(resultsModel);
-//    resultsProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
-//    resultsProxy->sort(0, Qt::DescendingOrder);
+    featuredProxy = new QSortFilterProxyModel();
+    featuredProxy->setSourceModel(featuredModel);
+    featuredProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
+    featuredProxy->sort(0, Qt::DescendingOrder);
 }
 
 ChannelManager::~ChannelManager(){
@@ -30,7 +42,10 @@ ChannelManager::~ChannelManager(){
     save();
     delete favouritesModel;
     delete resultsModel;
+    delete featuredModel;
     delete gamesModel;
+    delete favouritesProxy;
+    delete featuredProxy;
 }
 
 ChannelListModel *ChannelManager::getFavouritesModel() const
@@ -41,11 +56,6 @@ ChannelListModel *ChannelManager::getFavouritesModel() const
 QSortFilterProxyModel *ChannelManager::getFavouritesProxy() const
 {
     return favouritesProxy;
-}
-
-QSortFilterProxyModel *ChannelManager::getResultsProxy() const
-{
-    return resultsProxy;
 }
 
 GameListModel *ChannelManager::getGamesModel() const
@@ -99,23 +109,6 @@ void ChannelManager::checkResources()
         file.open(QIODevice::ReadWrite);
         file.write("{}");
     }
-}
-
-void ChannelManager::notify(Channel *channel)
-{
-#ifdef Q_OS_LINUX
-    if (QFile::exists(DIALOG_FILE)){
-        if (!QFileInfo(DIALOG_FILE).isExecutable())
-            QProcess::execute("chmod +x " + QString(DIALOG_FILE));
-
-        QStringList args;
-        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline")
-             << channel->getInfo()
-             << "/" + channel->getLogoPath();
-
-        QProcess::startDetached(DIALOG_FILE, args);
-    }
-#endif
 }
 
 bool ChannelManager::load(){
@@ -209,10 +202,17 @@ bool ChannelManager::save() const
 void ChannelManager::addToFavourites(const quint32 &id){
     Channel *channel = resultsModel->find(id);
 
+    if (!channel){
+        channel = featuredModel->find(id);
+    }
+
     if (channel){
         favouritesModel->addChannel(new Channel(*channel));
         channel->setFavourite(true);
         resultsModel->updateChannelForView(channel);
+
+        //Update featured also
+        featuredModel->updateChannelForView(channel);
     }
 }
 
@@ -229,12 +229,25 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
         channel->setFavourite(false);
         resultsModel->updateChannelForView(channel);
     }
+
+    //Update featured
+    channel = featuredModel->find(id);
+    if (channel){
+        channel->setFavourite(false);
+        featuredModel->updateChannelForView(channel);
+    }
 }
 
 void ChannelManager::play(const QString &url){
-    if (QFile::exists("resources/scripts/play.sh")){
-        QString cmd = "resources/scripts/play.sh "+url;
-        QProcess::startDetached(cmd);
+    if (QFile::exists(PLAY_FILE)){
+
+        if (!QFileInfo(PLAY_FILE).isExecutable())
+            QProcess::execute("chmod +x " + QString(PLAY_FILE));
+
+        QStringList args;
+        args << url;
+
+        QProcess::startDetached(PLAY_FILE, args);
     }
     else qDebug() << "Couldn't locate 'play.sh'";
 }
@@ -247,8 +260,7 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
     int c_index = 0;
     QString channelsUrl = "";
 
-    for(size_t i = 0; i < list.size(); i++){
-        Channel* channel = list.at(i);
+    foreach(Channel* channel, list){
         if (c_index++ > 0)
             channelsUrl += ",";
         channelsUrl += channel->getServiceName();
@@ -320,6 +332,32 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list)
     emit resultsUpdated();
 }
 
+void ChannelManager::getFeatured()
+{
+    featuredModel->clear();
+
+    netman->getFeaturedStreams();
+}
+
+void ChannelManager::openStream(const QString &serviceName)
+{
+    play("http://twitch.tv/" + serviceName);
+}
+
+void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
+{
+    foreach (Channel *channel, list){
+        if (favouritesModel->find(channel->getId()))
+            channel->setFavourite(true);
+
+        featuredModel->addChannel(new Channel(*channel));
+    }
+
+    qDeleteAll(list);
+
+    emit featuredUpdated();
+}
+
 void ChannelManager::updateFavourites(const QList<Channel*> &list)
 {
     favouritesModel->updateChannels(list);
@@ -343,4 +381,32 @@ void ChannelManager::updateGames(const QList<Game*> &list)
     qDeleteAll(list);
 
     emit gamesUpdated();
+}
+
+void ChannelManager::notify(Channel *channel)
+{
+    /*
+#ifdef Q_OS_LINUX
+    if (QFile::exists(DIALOG_FILE)){
+        if (!QFileInfo(DIALOG_FILE).isExecutable())
+            QProcess::execute("chmod +x " + QString(DIALOG_FILE));
+
+        QStringList args;
+        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline")
+             << channel->getInfo()
+             << "/" + channel->getLogoPath();
+
+        QProcess::startDetached(DIALOG_FILE, args);
+    }
+
+
+    if (channel){
+        showNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
+                         channel->getInfo(),
+                         QImage(channel->getLogoPath()));
+    }
+*/
+    notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
+                  channel->getInfo(),
+                  channel->getLogourl());
 }

@@ -29,13 +29,13 @@ Menu {
         itemDelegate {
 
             label: Item {
-                height: 30
+                height: dp(33)
                 width: _icon.width + _label.width
 
                 Icon {
                     id: _icon
                     icon: styleData.text.split(";")[1]
-                    iconSize: 16
+                    iconSize: dp(16)
                     anchors {
                         top: parent.top
                         bottom: parent.bottom
@@ -47,11 +47,11 @@ Menu {
                     id:_label
                     text: styleData.text.split(";")[0]
                     color: Styles.textColor
-                    font.pixelSize: 16
+                    font.pointSize: dp(16)
                     verticalAlignment: Text.AlignVCenter
                     anchors {
-                        top: parent.top
-                        bottom: parent.bottom
+                        top: _icon.top
+                        bottom: _icon.bottom
                         left: _icon.right
                     }
                 }

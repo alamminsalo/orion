@@ -90,6 +90,7 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
         channel->setId(c->getId());
         channel->setName(c->getName());
         channel->setLogourl(c->getLogourl());
+        channel->setLogoPath(c->getLogoPath());
         channel->setInfo(c->getInfo());
 
         delete c;
@@ -208,6 +209,27 @@ QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
         QJsonArray arr = json["channels"].toArray();
         foreach (const QJsonValue &item, arr){
             channels.append(JsonParser::parseChannel(item.toObject()));
+        }
+    }
+
+    return channels;
+}
+
+QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
+{
+    QList<Channel*> channels;
+
+    qDebug() << "Parsing fea";
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        if (!json["featured"].isNull()){
+            foreach (const QJsonValue &item, json["featured"].toArray()){
+                channels.append(JsonParser::parseStream(item.toObject()["stream"].toObject()));
+            }
         }
     }
 

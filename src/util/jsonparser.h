@@ -21,6 +21,7 @@ public:
     static QList<Channel*> parseStreams(const QByteArray&);
     static QList<Game*> parseGames(const QByteArray&);
     static QList<Channel*> parseChannels(const QByteArray&);
+    static QList<Channel*> parseFeatured(const QByteArray&);
     static Game* parseGame(const QJsonObject&);
     static Channel* parseStream(const QByteArray&);
     static Channel* parseStream(const QJsonObject&);

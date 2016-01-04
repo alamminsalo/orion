@@ -12,6 +12,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     gamesOperation = new QNetworkAccessManager();
     gameStreamsOperation = new QNetworkAccessManager();
     searchOperation = new QNetworkAccessManager();
+    featuredStreamsOperation = new QNetworkAccessManager();
 
     connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
     connect(streamOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(streamReply(QNetworkReply*)));
@@ -21,6 +22,7 @@ NetworkManager::NetworkManager(ChannelManager *cman)
     connect(gamesOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gamesReply(QNetworkReply*)));
     connect(searchOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(searchChannelsReply(QNetworkReply*)));
     connect(gameStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gameStreamsReply(QNetworkReply*)));
+    connect(featuredStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(featuredStreamsReply(QNetworkReply*)));
 }
 
 NetworkManager::~NetworkManager()
@@ -111,6 +113,17 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
     searchOperation->get(request);
 }
 
+void NetworkManager::getFeaturedStreams()
+{
+    QNetworkRequest request;
+    QString url = QString(TWITCH_URI) + "/streams/featured?limit=25&offset=0";
+    request.setUrl(QUrl(url));
+
+    qDebug() << url;
+
+    featuredStreamsOperation->get(request);
+}
+
 void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
@@ -178,8 +191,7 @@ void NetworkManager::logoReply(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     Channel* channel = cman->find(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
     if (channel){
-        if (util::writeBinaryFile(channel->getLogoPath(),data))
-            channel->iconUpdated();
+        util::writeBinaryFile(channel->getLogoPath(),data);
     }
 }
 
@@ -217,6 +229,19 @@ void NetworkManager::gameStreamsReply(QNetworkReply *reply)
     //qDebug() << data;
 
     cman->addSearchResults(JsonParser::parseStreams(data));
+}
+
+void NetworkManager::featuredStreamsReply(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    //qDebug() << data;
+
+    cman->addFeaturedResults(JsonParser::parseFeatured(data));
 }
 
 void NetworkManager::searchChannelsReply(QNetworkReply *reply)

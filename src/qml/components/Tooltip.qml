@@ -5,9 +5,10 @@ import "../styles.js" as Styles
 
 Window {
     id: root
-    flags: Qt.SplashScreen | Qt.NoFocus
-    height: 240
-    width: 384
+    flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
+
+    height: dp(320)
+    width: dp(512)
 
     property string text
     property string img
@@ -20,7 +21,7 @@ Window {
         SpinnerIcon {
             id:_spinner
             anchors.fill: parent
-            iconSize: 64
+            iconSize: dp(64)
         }
 
         Image {
@@ -42,7 +43,7 @@ Window {
             id: header
             anchors.fill: text
             color: Styles.shadeColor
-            opacity: 0.5
+            opacity: 0.7
             height: text.height
         }
 
@@ -50,7 +51,7 @@ Window {
             id: text
             color: Styles.textColor
             text: root.text
-            font.pixelSize: Styles.titleFont.pixelSize
+            font.pointSize: dp(Styles.titleFont.smaller)
             anchors{
                 bottom: parent.bottom
                 left: parent.left
@@ -62,14 +63,16 @@ Window {
 
     function display(mX, mY){
 
+        console.log(mX, mY)
+
         if (g_contextMenuVisible){
             return
         }
 
-        root.x = mX + 20
+        root.x = mX + dp(20)
 
         if (root.x + root.width > Screen.width)
-            root.x -= root.width + 40
+            root.x -= root.width + dp(40)
 
         root.y = mY
 

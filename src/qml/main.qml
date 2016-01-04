@@ -4,6 +4,8 @@ import QtQuick.Layouts 1.1
 import "components"
 import "styles.js" as Styles
 
+
+
 Window {
     id: root
     visible: true
@@ -15,10 +17,14 @@ Window {
     property variant g_toolBox: tools
     property bool g_contextMenuVisible: false
 
+    function dp(number){
+        return Math.ceil(number * g_ppi / 157.29)
+    }
+
     Rectangle {
         anchors.fill: parent
 
-        ToolBox {
+        SideBar {
             id: tools
             anchors {
                 left: parent.left
@@ -39,7 +45,7 @@ Window {
 
             Rectangle {
                 id: border
-                width: 1
+                width: dp(1)
                 color: Styles.border
                 anchors {
                     top: parent.top

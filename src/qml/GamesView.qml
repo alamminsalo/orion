@@ -11,7 +11,7 @@ ChannelGrid {
 
     anchors {
         fill: parent
-        margins: 10
+        margins: dp(10)
     }
 
     model: g_games

@@ -155,7 +155,7 @@ bool Channel::isOnline(){
 }
 
 const QString Channel::getLogoPath(){
-    return logopath;
+    return logopath.isEmpty() ? DEFAULT_LOGO_PATH : logopath;
 }
 
 const QString Channel::getPreviewPath(){

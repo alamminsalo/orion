@@ -4,7 +4,6 @@
         <file>components/Channel.qml</file>
         <file>components/ChannelGrid.qml</file>
         <file>components/Tooltip.qml</file>
-        <file>components/ToolBox.qml</file>
         <file>styles.js</file>
         <file>components/PurpleButton.qml</file>
         <file>components/Ribbon.qml</file>
@@ -18,5 +17,7 @@
         <file>FavouritesView.qml</file>
         <file>GamesView.qml</file>
         <file>Views.qml</file>
+        <file>components/SideBar.qml</file>
+        <file>FeaturedView.qml</file>
     </qresource>
 </RCC>

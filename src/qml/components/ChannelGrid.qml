@@ -3,7 +3,7 @@ import QtQuick 2.5
 //ChannelList.qml
 GridView{
     property variant selectedItem
-    property int cellSize: 200
+    property int cellSize: dp(200)
     property bool tooltipEnabled: false
 
     signal itemClicked(int index)
@@ -86,8 +86,12 @@ GridView{
 
                     if (mArea.containsMouse && index && selectedItem && selectedItem.online){
 
+                        g_tooltip.text = ""
+
                         if (selectedItem.game){
-                            g_tooltip.text = "Playing " + selectedItem.game
+                            g_tooltip.text += "Playing " + selectedItem.game
+                        } else if (selectedItem.title){
+                            g_tooltip.text += selectedItem.title
                         }
 
                         if (selectedItem.viewers){

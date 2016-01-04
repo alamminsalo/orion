@@ -1,5 +1,4 @@
 import QtQuick 2.5
-import QtGraphicalEffects 1.0
 import "../styles.js" as Styles
 
 //Channel.qml
@@ -14,26 +13,26 @@ Rectangle {
     property bool favourite: false
     property int viewers
     property string game
-    property int imgSize: 148
-    property int containerSize: 200
+    property int imgSize: dp(148)
+    property int containerSize: dp(200)
 
     id: root
 
     width: containerSize
     height: width
     border.color: "transparent"
-    border.width: 1
+    border.width: dp(1)
     antialiasing: false
     clip:true
     color: "transparent"
-    radius: 5
+    radius: dp(5)
 
     Component.onCompleted: {
-        colorOverlay.setOverlay(online)
+        imageShade.refresh()
     }
 
     onOnlineChanged: {
-        colorOverlay.setOverlay(online)
+        imageShade.refresh()
     }
 
     Item {
@@ -45,7 +44,7 @@ Rectangle {
 
         SpinnerIcon {
             id:_spinner
-            iconSize: 38
+            iconSize: dp(38)
             anchors.fill: parent
         }
 
@@ -72,21 +71,12 @@ Rectangle {
                 id: imageShade
                 anchors.fill: parent
                 color: "#000000"
-                opacity: .2
-            }
+                opacity: 0
 
-            ColorOverlay {
-                id: colorOverlay
-                anchors.fill: channelImage
-                source: channelImage
-
-                function setOverlay(isOnline){
-                    if (isOnline){
-                        colorOverlay.color = "transparent"
-                    } else {
-                        colorOverlay.color = Styles.grayScaleColor
-                    }
+                function refresh(){
+                    opacity = root.online ? 0 : .8
                 }
+
             }
         }
 
@@ -94,13 +84,12 @@ Rectangle {
             id: favIcon
             icon: "fav"
             visible: favourite
-            iconSize: 24
+            iconSize: dp(24)
             iconColor: Styles.purple
             anchors {
                 top: container.top
                 right: container.right
-                margins: 10
-            }
+                margins: dp(10)            }
         }
 
         Rectangle {
@@ -124,14 +113,14 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
 
-            font.pixelSize: Styles.titleFont.pixelSize
+            font.pointSize: dp(Styles.titleFont.smaller)
             wrapMode: Text.WordWrap
         }
     }
 
 
     function setHighlight(isActive){
-        imageShade.opacity = isActive ? 0 : .2
+        //imageShade.visible = !isActive && !root.online
         channelImage.height = isActive ? Math.floor(imgSize * 1.16) : imgSize
         root.color = isActive ? Styles.highlight : "transparent"
         root.border.color = isActive ? Styles.border : "transparent"

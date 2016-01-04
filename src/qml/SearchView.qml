@@ -13,6 +13,7 @@ Item {
     }
 
     function search(str, offset, limit, clear){
+        _label.visible = false
         str = str || _input.text
         offset = offset || 0
         limit = limit || 25
@@ -56,7 +57,7 @@ Item {
             left: parent.left
             right: parent.right
         }
-        height: 100
+        height: dp(100)
         color: Styles.bg
         z: channels.z + 1
         clip: true
@@ -65,20 +66,20 @@ Item {
             property string text: _input.text
 
             id: searchBox
-            height: 60
+            height: dp(60)
             width: _input.width + _spacer.width + _button.width
             color: Styles.sidebarBg
             radius: 5
             anchors.centerIn: parent
-            anchors.margins: 10
+            anchors.margins: dp(10)
             border.color: Styles.border
-            border.width: 1
+            border.width: dp(1)
             clip: true
 
             TextInput{
                 id: _input
                 color: Styles.iconColor
-                width: 300
+                width: dp(300)
                 clip:true
                 selectionColor: Styles.purple
                 focus: true
@@ -101,7 +102,7 @@ Item {
 
             Rectangle {
                 id: _spacer
-                width: 1
+                width: dp(1)
                 color: Styles.border
                 anchors {
                     left: _input.right
@@ -113,7 +114,7 @@ Item {
             Icon {
                 id: _button
                 icon: "search"
-                iconSize: 20
+                iconSize: dp(20)
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -136,7 +137,7 @@ Item {
 
             SpinnerIcon {
                 id: _spinner
-                iconSize: 20
+                iconSize: dp(20)
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -186,7 +187,6 @@ Item {
         }
 
         onItemRightClicked: {
-            console.log("item rclick")
             _menu.item = currentItem
 
             var item = _menu.items[1]
@@ -209,6 +209,9 @@ Item {
 
             MenuItem {
                 text: "Watch;play"
+                onTriggered: {
+                    g_cman.openStream(_menu.item.name)
+                }
             }
 
             MenuItem {
@@ -217,6 +220,14 @@ Item {
                     _menu.addRemoveFavourite()
                 }
             }
+        }
+
+        Text {
+            id: _label
+            text: "Search for channels"
+            font.pointSize: dp(40)
+            color: Styles.iconColor
+            anchors.centerIn: parent
         }
     }
 }

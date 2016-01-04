@@ -14,4 +14,5 @@ var icons = {
     'play':         "\uf04b",
     'remove':       "\uf00d",
     'info':         "\uf129",
+    'featured':     "\uf0a1"
 }

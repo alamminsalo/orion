@@ -16,9 +16,10 @@ var selectedTextBg= "#212125"
 
 
 var titleFont = {
-    pixelSize: 14
+    smaller: 14,
+    bigger: 16
 }
 
 var button = {
-    pixelSize: 14
+    size: 16
 }
