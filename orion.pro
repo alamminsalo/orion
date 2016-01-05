@@ -6,14 +6,14 @@
 
 QT       += qml quick network
 
-TARGET = Orion
+TARGET = orion
 
 TEMPLATE = app
 
-DEFINES += APP_NAME=\\\"orion\\\"\
-        _QML
+DEFINES += APP_NAME=\\\"orion\\\" \
+        _QML \
 
-LIBS +=
+LIBS += -L"$$_PRO_FILE_PWD_/thirdparty/libsnore" -lsnore-qt5
 
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
@@ -26,6 +26,7 @@ SOURCES += src/main.cpp\
     src/model/gamelistmodel.cpp \
     src/ui/notification.cpp \
 
+
 HEADERS  += src/model/channel.h \
     src/model/channelmanager.h \
     src/util/fileutils.h \
@@ -37,7 +38,7 @@ HEADERS  += src/model/channel.h \
     src/ui/notification.h \
 
 
-FORMS    += src/ui/mainwindow.ui
+FORMS    +=
 
 OTHER_FILES += \
     resources/logo.svg
@@ -47,9 +48,6 @@ QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 DISTFILES +=
 
 RESOURCES += \
-    src/qml/qml.qrc\
+    src/qml/qml.qrc
 
-unix: LIBS += -L$$PWD/../../../../usr/local/lib64/ -lsnore-qt5
-
-INCLUDEPATH += $$PWD/../../../../usr/local/lib64
-DEPENDPATH += $$PWD/../../../../usr/local/lib64
+CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT

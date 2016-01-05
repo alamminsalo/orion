@@ -64,16 +64,20 @@ Rectangle {
                 icon: "search"
             }
             ListElement {
-                label: "Featured"
-                icon: "featured"
-            }
-            ListElement {
                 label: "Favourites"
                 icon: "fav"
             }
             ListElement {
-                label: "Games"
+                label: "Featured"
+                icon: "featured"
+            }
+            ListElement {
+                label: "All Games"
                 icon: "game"
+            }
+            ListElement {
+                label: "Watch"
+                icon: "play"
             }
         }
 

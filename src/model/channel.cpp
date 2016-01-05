@@ -59,6 +59,7 @@ Channel::Channel(const QString &uri, const QString &name, const QString &info, b
 }
 
 Channel::Channel(const Channel &channel){
+    Channel();
     this->id = channel.id;
 	this->name = channel.name;
     this->serviceName = channel.serviceName;

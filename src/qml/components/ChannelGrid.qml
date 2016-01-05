@@ -34,12 +34,14 @@ GridView{
     }
 
     function setFocus(){
-        g_tooltip.hide()
 
         if (mArea.containsMouse) {
             root.currentIndex = indexAt(contentX + mArea.mouseX, contentY + mArea.mouseY)
             if (tooltipEnabled)
                 tooltipTimer.restart()
+
+        } else {
+            g_tooltip.hide()
         }
     }
 
@@ -68,6 +70,12 @@ GridView{
 
         onMouseXChanged: setFocus()
         onMouseYChanged: setFocus()
+        onHoveredChanged: {
+            if (!containsMouse){
+                g_tooltip.hide()
+                tooltipTimer.stop()
+            }
+        }
 
         Timer {
             id: tooltipTimer
@@ -89,7 +97,7 @@ GridView{
                         g_tooltip.text = ""
 
                         if (selectedItem.game){
-                            g_tooltip.text += "Playing " + selectedItem.game
+                            g_tooltip.text += "Playing <b>" + selectedItem.game + "</b>"
                         } else if (selectedItem.title){
                             g_tooltip.text += selectedItem.title
                         }

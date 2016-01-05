@@ -19,5 +19,7 @@
         <file>Views.qml</file>
         <file>components/SideBar.qml</file>
         <file>FeaturedView.qml</file>
+        <file>fonts/font-awesome.css</file>
+        <file>fonts/droidsans/DroidSans.ttf</file>
     </qresource>
 </RCC>

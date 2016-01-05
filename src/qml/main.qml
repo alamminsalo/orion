@@ -21,6 +21,10 @@ Window {
         return Math.ceil(number * g_ppi / 157.29)
     }
 
+    FontLoader{
+        source: "qrc:/fonts/droidsans/DroidSans.ttf"
+    }
+
     Rectangle {
         anchors.fill: parent
 

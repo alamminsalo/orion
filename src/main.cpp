@@ -6,11 +6,13 @@
 #include <QQuickView>
 #include <QScreen>
 #include <QQmlContext>
-#include "libmpv/client.h"
+#include <QFont>
+#include <QFontDatabase>
 #include "model/channelmanager.h"
 
 int main(int argc, char *argv[])
 {
+
     QGuiApplication app(argc, argv);
 
     ChannelManager *cman = new ChannelManager();

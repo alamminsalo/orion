@@ -84,6 +84,7 @@ Item {
                 selectionColor: Styles.purple
                 focus: true
                 selectByMouse: true
+                font.pointSize: dp(Styles.titleFont.bigger)
 
                 anchors {
                     top: parent.top
@@ -226,6 +227,7 @@ Item {
             id: _label
             text: "Search for channels"
             font.pointSize: dp(40)
+            font.family: "Droid Sans"
             color: Styles.iconColor
             anchors.centerIn: parent
         }

@@ -83,13 +83,22 @@ Rectangle {
         Icon {
             id: favIcon
             icon: "fav"
-            visible: favourite
+            visible: true
+            opacity: favourite ? 1 : 0
             iconSize: dp(24)
             iconColor: Styles.purple
             anchors {
                 top: container.top
                 right: container.right
-                margins: dp(10)            }
+                margins: dp(10)
+            }
+
+            Behavior on opacity{
+                NumberAnimation{
+                    duration: 200
+                    easing.type: Easing.InCubic
+                }
+            }
         }
 
         Rectangle {
@@ -108,11 +117,13 @@ Rectangle {
         Text {
             id: channelTitle
             text: root.title
-            color: Styles.textColor
+            elide: Text.ElideRight
+            color: online ? Styles.textColor : Styles.iconColor
             anchors.fill: infoRect
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-
+            font.family: "Droid Sans"
+            font.bold: true
             font.pointSize: dp(Styles.titleFont.smaller)
             wrapMode: Text.WordWrap
         }

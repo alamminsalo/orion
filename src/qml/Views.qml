@@ -23,15 +23,15 @@ Rectangle {
             search.focusInput()
             break;
 
-            //Featured
-        case 1:
-            featured.visible = true
-            break;
-
             //Fav
-        case 2:
+        case 1:
             favourites.visible = true
             break
+
+            //Featured
+        case 2:
+            featured.visible = true
+            break;
 
             //Games
         case 3:

@@ -52,6 +52,7 @@ Window {
             color: Styles.textColor
             text: root.text
             font.pointSize: dp(Styles.titleFont.smaller)
+            font.family: "Roboto"
             anchors{
                 bottom: parent.bottom
                 left: parent.left
