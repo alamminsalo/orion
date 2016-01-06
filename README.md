@@ -1,24 +1,10 @@
-# KStream
+#Orion
 
-Service for checking streams on twitch
+QML/C++-written desktop client for Twitch.tv
+Features desktop notifications and integrated player
 
-Includes Qt-written GUI and a cli-version
+##Dependencies
 
-
-##Building
-
-Use QtCreator, with the .pro file included
-
-
-##Notifications
-
-Needs libnotify-bin installed (or equivalent)
-
-See dialog.sh
-
-##Watching streams
-
-Needs livestreamer installed
-
-See 'play.sh'
+libsnorenotify
+libmpv
 
