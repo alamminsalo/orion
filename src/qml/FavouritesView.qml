@@ -24,8 +24,16 @@ ChannelGrid {
         game: model.game
     }
 
+    onItemClicked: {
+        if (currentItem.online){
+            player.play(currentItem.name)
+            requestSelectionChange(4)
+        }
+    }
+
     onItemRightClicked: {
         _menu.item = currentItem
+        _menu.items[0].enabled = _menu.item.online
         _menu.popup()
     }
 
@@ -34,7 +42,10 @@ ChannelGrid {
         MenuItem {
             text: "Watch;play"
             onTriggered: {
-                g_cman.openStream(_menu.item.name)
+                if (_menu.item.online){
+                    player.play(_menu.item.name)
+                    requestSelectionChange(4)
+                }
             }
         }
         MenuItem {

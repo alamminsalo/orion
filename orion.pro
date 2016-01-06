@@ -8,12 +8,10 @@ QT       += qml quick network
 
 TARGET = orion
 
-TEMPLATE = app
+DEFINES += APP_NAME=\\\"Orion\\\"
 
-DEFINES += APP_NAME=\\\"orion\\\" \
-        _QML \
-
-LIBS += -L"$$_PRO_FILE_PWD_/thirdparty/libsnore" -lsnore-qt5
+LIBS += -lsnore-qt5 \
+        -lmpv
 
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
@@ -24,7 +22,8 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/ui/notification.cpp \
+    src/notifications/notification.cpp \
+    src/libmpv/mpvobject.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -35,7 +34,12 @@ HEADERS  += src/model/channel.h \
     src/util/jsonparser.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
-    src/ui/notification.h \
+    src/notifications/notification.h \
+    src/util/m3u8parser.h \
+    src/libmpv/client.h \
+    src/libmpv/qthelper.hpp \
+    src/libmpv/mpvobject.h \
+    src/libmpv/mpvrenderer.h
 
 
 FORMS    +=

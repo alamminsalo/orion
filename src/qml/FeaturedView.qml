@@ -35,12 +35,15 @@ ChannelGrid {
     }
 
     onItemClicked: {
-        //Play
+        if (currentItem.online){
+            player.play(currentItem.name)
+            requestSelectionChange(4)
+        }
     }
 
     onItemRightClicked: {
         _menu.item = currentItem
-
+        _menu.items[0].enabled = _menu.item.online
         var item = _menu.items[1]
         item.text = !_menu.item.favourite ? "Add favourite;fav" : "Remove favourite;remove"
         _menu.state = !_menu.item.favourite ? 1 : 2
@@ -62,7 +65,10 @@ ChannelGrid {
         MenuItem {
             text: "Watch;play"
             onTriggered: {
-                g_cman.openStream(_menu.item.name)
+                if (_menu.item.online){
+                    player.play(_menu.item.name)
+                    requestSelectionChange(4)
+                }
             }
         }
 

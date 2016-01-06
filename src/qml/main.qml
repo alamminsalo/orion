@@ -5,12 +5,12 @@ import "components"
 import "styles.js" as Styles
 
 
-
 Window {
     id: root
     visible: true
     width: 1200
     height: 768
+    title: "Orion"
 
     property variant g_rootWindow: root
     property variant g_tooltip
@@ -25,7 +25,7 @@ Window {
         source: "qrc:/fonts/droidsans/DroidSans.ttf"
     }
 
-    Rectangle {
+    Item {
         anchors.fill: parent
 
         SideBar {
@@ -37,8 +37,8 @@ Window {
             }
         }
 
-        Rectangle {
-            color: Styles.bg
+        Item {
+            //color: Styles.bg
 
             anchors {
                 left: tools.right

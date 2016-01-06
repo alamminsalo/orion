@@ -1,4 +1,5 @@
 #include "jsonparser.h"
+#include <QUrl>
 
 QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
 {
@@ -234,4 +235,38 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
     }
 
     return channels;
+}
+
+QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
+{
+    QString url;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        QString tokenData = json["token"].toString();
+
+        //Strip escape markings and spaces
+        tokenData = tokenData.trimmed().remove("\\");
+
+        QString channel;
+
+        QJsonDocument tokenDoc = QJsonDocument::fromJson(tokenData.toUtf8(), &error);
+        if (error.error == QJsonParseError::NoError){
+            QJsonObject tokenJson = tokenDoc.object();
+            channel = tokenJson["channel"].toString();
+        }
+
+        QString sig = json["sig"].toString();
+
+        url = QString("http://usher.twitch.tv/api/channel/hls/%1").arg(channel + QString(".m3u8"))
+                + QString("?player=twitchweb")
+                + QString("&token=%1").arg(tokenData)
+                + QString("&sig=%1").arg(sig)
+                + QString("&type=any&allow_source=true");
+    }
+
+    return url;
 }

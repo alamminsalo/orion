@@ -123,7 +123,6 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             font.family: "Droid Sans"
-            font.bold: true
             font.pointSize: dp(Styles.titleFont.smaller)
             wrapMode: Text.WordWrap
         }

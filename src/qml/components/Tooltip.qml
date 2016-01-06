@@ -64,7 +64,7 @@ Window {
 
     function display(mX, mY){
 
-        console.log(mX, mY)
+        //console.log(mX, mY)
 
         if (g_contextMenuVisible){
             return
