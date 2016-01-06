@@ -3,9 +3,9 @@
 
 #include <QtQuick/QQuickFramebufferObject>
 
-#include "client.h"
-#include "opengl_cb.h"
-#include "qthelper.hpp"
+#include <mpv/client.h>
+#include <mpv/opengl_cb.h>
+#include <mpv/qthelper.hpp>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtQuick/QQuickWindow>
 #include <QtQuick/QQuickView>

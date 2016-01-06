@@ -36,8 +36,6 @@ HEADERS  += src/model/channel.h \
     src/model/gamelistmodel.h \
     src/notifications/notification.h \
     src/util/m3u8parser.h \
-    src/libmpv/client.h \
-    src/libmpv/qthelper.hpp \
     src/libmpv/mpvobject.h \
     src/libmpv/mpvrenderer.h
 
