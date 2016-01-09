@@ -13,6 +13,7 @@ var grayScaleColor = "#aa262626"
 var iconColor = "#aaaaaa"
 var iconHighlight= "#dddddd"
 var selectedTextBg= "#212125"
+var disabled = "#444444"
 
 
 var titleFont = {

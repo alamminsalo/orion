@@ -1,4 +1,5 @@
 #include "jsonparser.h"
+#include <QUrl>
 
 QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
 {
@@ -87,6 +88,7 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
     if (!json["channel"].isNull()){
 
         Channel *c = parseChannel(json["channel"].toObject());
+        channel->setServiceName(c->getServiceName());
         channel->setId(c->getId());
         channel->setName(c->getName());
         channel->setLogourl(c->getLogourl());
@@ -138,11 +140,11 @@ Game* JsonParser::parseGame(const QJsonObject &json)
         if (!gameObj["name"].isNull())
             game->setName(gameObj["name"].toString());
 
-        if (!gameObj["box"].isNull() && !gameObj["box"].toObject()["large"].isNull())
-            game->setLogo(gameObj["box"].toObject()["large"].toString());
+        if (!gameObj["box"].isNull() && !gameObj["box"].toObject()["medium"].isNull())
+            game->setLogo(gameObj["box"].toObject()["medium"].toString());
 
-        if (!gameObj["logo"].isNull() && !gameObj["logo"].toObject()["large"].isNull())
-            game->setPreview(gameObj["logo"].toObject()["large"].toString());
+        if (!gameObj["logo"].isNull() && !gameObj["logo"].toObject()["medium"].isNull())
+            game->setPreview(gameObj["logo"].toObject()["medium"].toString());
     }
 
     return game;
@@ -166,6 +168,10 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
         channel->setServiceName(json["name"].toString());
 
        // qDebug() << "Parsing channel data for " <<  channel.getUriName();
+
+        if (!json["name"].isNull()){
+            channel->setServiceName(json["name"].toString());
+        }
 
         if (!json["display_name"].isNull()){
             channel->setName(json["display_name"].toString());
@@ -219,8 +225,6 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
 {
     QList<Channel*> channels;
 
-    qDebug() << "Parsing fea";
-
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
@@ -234,4 +238,38 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
     }
 
     return channels;
+}
+
+QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
+{
+    QString url;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        QString tokenData = json["token"].toString();
+
+        //Strip escape markings and spaces
+        //tokenData = tokenData.trimmed().remove("\\");
+
+        QString channel;
+
+        QJsonDocument tokenDoc = QJsonDocument::fromJson(tokenData.toUtf8(), &error);
+        if (error.error == QJsonParseError::NoError){
+            QJsonObject tokenJson = tokenDoc.object();
+            channel = tokenJson["channel"].toString();
+        }
+
+        QString sig = json["sig"].toString();
+
+        url = QString("http://usher.twitch.tv/api/channel/hls/%1").arg(channel + QString(".m3u8"))
+                + QString("?player=twitchweb")
+                + QString("&token=%1").arg(tokenData)
+                + QString("&sig=%1").arg(sig)
+                + QString("&type=any&allow_source=true");
+    }
+
+    return url;
 }

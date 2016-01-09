@@ -52,6 +52,7 @@ Window {
             color: Styles.textColor
             text: root.text
             font.pointSize: dp(Styles.titleFont.smaller)
+            font.family: "Roboto"
             anchors{
                 bottom: parent.bottom
                 left: parent.left
@@ -63,7 +64,7 @@ Window {
 
     function display(mX, mY){
 
-        console.log(mX, mY)
+        //console.log(mX, mY)
 
         if (g_contextMenuVisible){
             return

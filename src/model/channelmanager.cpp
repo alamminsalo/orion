@@ -4,6 +4,7 @@
 #include <QProcess>
 #include "../util/fileutils.h"
 #include <QThread>
+#include <QJsonArray>
 
 QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
 {
@@ -266,11 +267,9 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
         channelsUrl += channel->getServiceName();
 
         if (c_index >= list.size() || c_index >= 50){
-            QString url = TWITCH_URI
+            QString url = KRAKEN_API
                     + QString("/streams?limit=%1&channel=").arg(c_index)
                     + channelsUrl;
-
-            qDebug() << url;
 
             netman->getStreams(url);
 
@@ -339,9 +338,9 @@ void ChannelManager::getFeatured()
     netman->getFeaturedStreams();
 }
 
-void ChannelManager::openStream(const QString &serviceName)
+void ChannelManager::findPlaybackStream(const QString &serviceName, const quint32 &quality)
 {
-    play("http://twitch.tv/" + serviceName);
+    netman->getChannelPlaybackStream(serviceName, quality);
 }
 
 void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
@@ -385,27 +384,6 @@ void ChannelManager::updateGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-    /*
-#ifdef Q_OS_LINUX
-    if (QFile::exists(DIALOG_FILE)){
-        if (!QFileInfo(DIALOG_FILE).isExecutable())
-            QProcess::execute("chmod +x " + QString(DIALOG_FILE));
-
-        QStringList args;
-        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline")
-             << channel->getInfo()
-             << "/" + channel->getLogoPath();
-
-        QProcess::startDetached(DIALOG_FILE, args);
-    }
-
-
-    if (channel){
-        showNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
-                         channel->getInfo(),
-                         QImage(channel->getLogoPath()));
-    }
-*/
     notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                   channel->getInfo(),
                   channel->getLogourl());

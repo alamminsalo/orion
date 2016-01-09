@@ -27,6 +27,7 @@ public:
     static Channel* parseStream(const QJsonObject&);
     static Channel* parseChannel(const QByteArray&);
     static Channel* parseChannel(const QJsonObject&);
+    static QString parseChannelStreamExtractionInfo(const QByteArray&);
 };
 
 #endif // JSONPARSER_H

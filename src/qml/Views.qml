@@ -2,6 +2,9 @@ import QtQuick 2.5
 import "components"
 import "styles.js" as Styles
 
+import mpv 1.0
+
+
 Rectangle {
     property int selection
     id: root
@@ -15,39 +18,52 @@ Rectangle {
         favourites.visible = false
         games.visible = false
         featured.visible = false
+        player.visible = false
+        settings.visible = false
 
         switch (selection){
-            //Search
+
+        //Search
         case 0:
             search.visible = true
             search.focusInput()
-            break;
+            break
 
-            //Featured
+        //Featured
         case 1:
             featured.visible = true
-            break;
+            break
 
-            //Fav
+        //Fav
         case 2:
             favourites.visible = true
             break
 
-            //Games
+        //Games
         case 3:
             games.visible = true
             if (games.gamesCount === 0){
                 g_cman.getGames(0, 25, true)
                 games.gamesCount = 25
             }
-            break;
+            break
+
+        //Player
+        case 4:
+            player.visible = true
+            break
+
+        //Settings
+        case 5:
+            settings.visible = true
+            break
         }
     }
 
-    onVisibleChanged: {
-        if (visible)
-            games.checkScroll()
-    }
+//    onVisibleChanged: {
+//        if (visible)
+//            games.checkScroll()
+//    }
 
     SearchView {
         id: search
@@ -69,8 +85,21 @@ Rectangle {
         visible: false
     }
 
+    PlayerView{
+        id: player
+        visible: false
+    }
+
+    OptionsView{
+        id: settings
+        visible: false
+    }
+
+
+
     Rectangle {
         id: _gradient
+        visible: !player.visible
         height: root.height * .33
         gradient: Gradient {
             GradientStop { position: 0.0; color: "transparent" }

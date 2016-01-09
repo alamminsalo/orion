@@ -8,11 +8,10 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include "../util/jsonparser.h"
 #include "../model/channelmanager.h"
-#include "../util/fileutils.h"
 
-#define TWITCH_URI "https://api.twitch.tv/kraken"
+#define KRAKEN_API "https://api.twitch.tv/kraken"
+#define TWITCH_API "https://api.twitch.tv/api"
 
 class ChannelManager;
 
@@ -30,7 +29,8 @@ protected:
     QNetworkAccessManager* gamesOperation;
     QNetworkAccessManager* gameStreamsOperation;
     QNetworkAccessManager* featuredStreamsOperation;
-
+    QNetworkAccessManager* extractChannelStreamsOperation;
+    QNetworkAccessManager* m3u8StreamsOperation;
     ChannelManager* cman;
 
 public:
@@ -46,8 +46,10 @@ public:
     void searchChannels(const QString&, const quint32&, const quint32&);
     void getFeaturedStreams();
     void getStreamsForGame(const QString&, const quint32&, const quint32&);
+    void getChannelPlaybackStream(const QString&, const quint32&);
+    void getChannelm3u8(const QString&, const quint32&);
 
-public slots:
+private slots:
     void channelReply(QNetworkReply*);
     void streamReply(QNetworkReply*);
     void allStreamsReply(QNetworkReply*);
@@ -57,6 +59,8 @@ public slots:
     void gameStreamsReply(QNetworkReply*);
     void featuredStreamsReply(QNetworkReply*);
     void searchChannelsReply(QNetworkReply*);
+    void channelPlaybackStreamReply(QNetworkReply*);
+    void m3u8Reply(QNetworkReply*);
 };
 
 #endif // NETWORKMANAGER_H
