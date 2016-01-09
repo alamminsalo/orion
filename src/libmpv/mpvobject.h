@@ -6,6 +6,7 @@
 #include <mpv/client.h>
 #include <mpv/opengl_cb.h>
 #include <mpv/qthelper.hpp>
+#include <QEvent>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtQuick/QQuickWindow>
 #include <QtQuick/QQuickView>
@@ -23,15 +24,25 @@ public:
     MpvObject(QQuickItem * parent = 0);
     virtual ~MpvObject();
     virtual Renderer *createRenderer() const;
+
 public slots:
     void command(const QVariant& params);
     void setProperty(const QString& name, const QVariant& value);
+
 signals:
     void onUpdate();
+    void playingPaused();
+    void playingStopped();
+    void playingResumed();
+    void bufferingStarted();
+    //void bufferingEnded();
+
 private slots:
     void doUpdate();
+
 private:
     static void on_update(void *ctx);
+    bool event(QEvent *event);
 };
 
 

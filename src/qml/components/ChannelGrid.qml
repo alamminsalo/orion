@@ -1,24 +1,24 @@
 import QtQuick 2.5
 
 //ChannelList.qml
-GridView{
+GridView {
     property variant selectedItem
-    property int cellSize: dp(200)
     property bool tooltipEnabled: false
+    property string title
 
     signal itemClicked(int index)
     signal itemRightClicked(int index)
 
     id: root
 
-    cellHeight: cellSize
+    cellHeight: dp(200)
     maximumFlickVelocity: 800
     cellWidth: cellHeight
 
     add: Transition {
         NumberAnimation {
             properties: "y"
-            from: -200
+            from: contentY-200
             duration: 200
             easing.type: Easing.OutCubic
         }
@@ -62,14 +62,20 @@ GridView{
     onContentYChanged: setFocus()
     onContentXChanged: setFocus()
 
+    onSelectedItemChanged: {
+        if (g_tooltip)
+            g_tooltip.hide()
+        tooltipTimer.stop()
+    }
+
     MouseArea{
         id: mArea
         anchors.fill: parent
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        onMouseXChanged: setFocus()
-        onMouseYChanged: setFocus()
+        onPositionChanged: setFocus()
+
         onHoveredChanged: {
             if (!containsMouse){
                 g_tooltip.hide()

@@ -16,10 +16,12 @@ Item {
     }
 
     Text {
-        anchors.centerIn: root
+        anchors.centerIn: parent
         font.pointSize: iconSize || root.height
         color: iconColor
         font.family: "FontAwesome"
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignHCenter
         text: FontAwesome.fromText(icon)
     }
 }

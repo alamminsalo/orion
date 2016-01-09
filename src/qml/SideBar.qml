@@ -1,12 +1,15 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
-import "../styles.js" as Styles
+import "components"
+import "styles.js" as Styles
 
 //ToolBox.qml
 Rectangle {
     id: root
     color: Styles.sidebarBg
     width: dp(230)
+    clip: true
+    z: 99
 
     property bool isOpen: true
     property int selectedView: 0
@@ -64,20 +67,24 @@ Rectangle {
                 icon: "search"
             }
             ListElement {
-                label: "Favourites"
-                icon: "fav"
-            }
-            ListElement {
                 label: "Featured"
                 icon: "featured"
             }
             ListElement {
-                label: "All Games"
+                label: "Favourites"
+                icon: "fav"
+            }
+            ListElement {
+                label: "Games"
                 icon: "game"
             }
             ListElement {
                 label: "Watch"
                 icon: "play"
+            }
+            ListElement {
+                label: "Settings"
+                icon: "settings"
             }
         }
 

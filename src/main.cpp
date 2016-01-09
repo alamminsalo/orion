@@ -30,10 +30,9 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
     engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());
+    engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
 
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
-
-    engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
 
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 

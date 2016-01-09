@@ -17,10 +17,13 @@
         <file>FavouritesView.qml</file>
         <file>GamesView.qml</file>
         <file>Views.qml</file>
-        <file>components/SideBar.qml</file>
         <file>FeaturedView.qml</file>
         <file>fonts/font-awesome.css</file>
         <file>fonts/droidsans/DroidSans.ttf</file>
         <file>PlayerView.qml</file>
+        <file>components/ViewHeader.qml</file>
+        <file>components/PlayerHeader.qml</file>
+        <file>OptionsView.qml</file>
+        <file>SideBar.qml</file>
     </qresource>
 </RCC>

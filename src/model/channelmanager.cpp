@@ -271,8 +271,6 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
                     + QString("/streams?limit=%1&channel=").arg(c_index)
                     + channelsUrl;
 
-            qDebug() << url;
-
             netman->getStreams(url);
 
             channelsUrl = "";

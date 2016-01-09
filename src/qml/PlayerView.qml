@@ -15,37 +15,83 @@ Item {
     //  0 - mobile
     property int quality: 4
     property bool paused: false
+    property var currentChannel
 
-    function play(name){
+    function play(channel){
         renderer.command(["stop"])
-        g_cman.findPlaybackStream(name, quality)
+        g_cman.findPlaybackStream(channel.name, quality)
 
         paused = false
-        renderer.command(["set","pause", paused ? "yes" : "no"])
+        renderer.command(["set","pause", "no"])
+
+        currentChannel = channel
 
         _label.visible = false
         spinner.visible = true
+
+        header.text = "Currently watching: " + currentChannel.title
+                +   " playing " + currentChannel.game
     }
 
     Connections {
         target: g_cman
         onFoundPlaybackStream: {
+            header.text = "Currently watching: " + currentChannel.title
+                    +   " playing " + currentChannel.game
             renderer.command(["loadfile", stream])
             spinner.visible = false
         }
     }
 
+    PlayerHeader{
+        text: "Currently watching: N/A"
+        id: header
+        z: renderer.z + 1
+    }
+
+    onVisibleChanged: {
+        if (visible)
+            header.show()
+    }
+
     MpvObject {
         id: renderer
-        anchors.fill: parent
+        anchors {
+            fill: parent
+        }
+
         visible: parent.visible
 
         MouseArea{
             anchors.fill: parent
+            hoverEnabled: true
+
             onClicked: {
                 paused = !paused
                 renderer.command(["set","pause", paused ? "yes" : "no"])
             }
+
+            onPositionChanged: {
+                header.show()
+            }
+        }
+
+        onPlayingStopped: {
+            header.text = "Playback stopped"
+        }
+
+        onPlayingPaused: {
+            header.text = "Paused"
+        }
+
+        onPlayingResumed: {
+            header.text = "Currently watching: " + currentChannel.title
+                    +   " playing " + currentChannel.game
+            spinner.visible = false
+        }
+
+        onBufferingStarted: {
+            spinner.visible = true
         }
     }
 

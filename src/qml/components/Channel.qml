@@ -35,12 +35,13 @@ Rectangle {
         imageShade.refresh()
     }
 
-    Item {
+    Rectangle {
         id: container
         height: imgSize
         width: height
         anchors.centerIn: parent
         clip: true
+        color: "#000000"
 
         SpinnerIcon {
             id:_spinner
@@ -51,16 +52,22 @@ Rectangle {
         Image {
             id: channelImage
             source: root.logo
-            height: imgSize
-            width: height
+            fillMode: Image.PreserveAspectFit
+            width: imgSize
             anchors.centerIn: container
+
+            Component.onCompleted: {
+                if (root.scaleImage){
+                    width = height
+                }
+            }
 
             onProgressChanged: {
                 if (progress >= 1.0)
                     _spinner.visible = false
             }
 
-            Behavior on height {
+            Behavior on width {
                 NumberAnimation {
                     duration: 100
                     easing.type: Easing.InCubic
@@ -96,7 +103,7 @@ Rectangle {
             Behavior on opacity{
                 NumberAnimation{
                     duration: 200
-                    easing.type: Easing.InCubic
+                    easing.type: Easing.OutCubic
                 }
             }
         }
@@ -131,7 +138,7 @@ Rectangle {
 
     function setHighlight(isActive){
         //imageShade.visible = !isActive && !root.online
-        channelImage.height = isActive ? Math.floor(imgSize * 1.16) : imgSize
+        channelImage.width = isActive ? Math.floor(imgSize * 1.2) : imgSize
         root.color = isActive ? Styles.highlight : "transparent"
         root.border.color = isActive ? Styles.border : "transparent"
     }

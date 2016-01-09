@@ -1,7 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Layouts 1.1
-import "components"
 import "styles.js" as Styles
 
 
@@ -14,7 +13,7 @@ Window {
 
     property variant g_rootWindow: root
     property variant g_tooltip
-    property variant g_toolBox: tools
+    property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
 
     function dp(number){
@@ -29,7 +28,7 @@ Window {
         anchors.fill: parent
 
         SideBar {
-            id: tools
+            id: sidebar
             anchors {
                 left: parent.left
                 top: parent.top
@@ -38,10 +37,8 @@ Window {
         }
 
         Item {
-            //color: Styles.bg
-
             anchors {
-                left: tools.right
+                left: sidebar.right
                 top: parent.top
                 right: parent.right
                 bottom: parent.bottom
@@ -60,7 +57,7 @@ Window {
 
             Views {
                 id: view
-                selection: tools.selectedView
+                selection: sidebar.selectedView
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -82,7 +79,7 @@ Window {
         pollTimer.start()
 
         //Initial view
-        g_toolBox.setView(1)
+        g_toolBox.setView(5)
     }
 
     Timer {

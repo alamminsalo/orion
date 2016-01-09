@@ -19,6 +19,7 @@ Rectangle {
         games.visible = false
         featured.visible = false
         player.visible = false
+        settings.visible = false
 
         switch (selection){
 
@@ -26,17 +27,17 @@ Rectangle {
         case 0:
             search.visible = true
             search.focusInput()
-            break;
-
-        //Fav
-        case 1:
-            favourites.visible = true
             break
 
         //Featured
-        case 2:
+        case 1:
             featured.visible = true
-            break;
+            break
+
+        //Fav
+        case 2:
+            favourites.visible = true
+            break
 
         //Games
         case 3:
@@ -45,19 +46,24 @@ Rectangle {
                 g_cman.getGames(0, 25, true)
                 games.gamesCount = 25
             }
-            break;
+            break
 
         //Player
         case 4:
             player.visible = true
-            break;
+            break
+
+        //Settings
+        case 5:
+            settings.visible = true
+            break
         }
     }
 
-    onVisibleChanged: {
-        if (visible)
-            games.checkScroll()
-    }
+//    onVisibleChanged: {
+//        if (visible)
+//            games.checkScroll()
+//    }
 
     SearchView {
         id: search
@@ -81,6 +87,11 @@ Rectangle {
 
     PlayerView{
         id: player
+        visible: false
+    }
+
+    OptionsView{
+        id: settings
         visible: false
     }
 

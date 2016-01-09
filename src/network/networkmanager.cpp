@@ -38,18 +38,19 @@ NetworkManager::~NetworkManager()
     delete channelOperation;
     delete streamOperation;
     delete logoOperation;
-    delete allStreamsOperation;
     delete genericFileOperation;
+    delete allStreamsOperation;
     delete gamesOperation;
     delete searchOperation;
     delete gameStreamsOperation;
+    delete featuredStreamsOperation;
     delete extractChannelStreamsOperation;
     delete m3u8StreamsOperation;
 }
 
 void NetworkManager::getChannel(const QString &uriName)
 {
-    qDebug() << "GET channel: " << uriName;
+    //qDebug() << "GET channel: " << uriName;
     QString url = QString(KRAKEN_API) + "/channels/" + uriName;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
@@ -60,7 +61,7 @@ void NetworkManager::getChannel(const QString &uriName)
 
 void NetworkManager::getStream(const QString &uriName)
 {
-    qDebug() << "GET stream: " << uriName;
+    //qDebug() << "GET stream: " << uriName;
     QString url = QString(KRAKEN_API) + "/streams/" + uriName;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
@@ -71,7 +72,7 @@ void NetworkManager::getStream(const QString &uriName)
 
 void NetworkManager::getStreams(const QString &url)
 {
-    qDebug() << "GET: " << url;
+    //qDebug() << "GET: " << url;
     QNetworkRequest request;
     request.setUrl(QUrl(url));
 
@@ -81,7 +82,7 @@ void NetworkManager::getStreams(const QString &url)
 void NetworkManager::getLogo(Channel *channel)
 {
     QString url = channel->getLogourl();
-    qDebug() << "GET LOGO for: " << channel->getServiceName() << " from: " << url;
+    //qDebug() << "GET LOGO for: " << channel->getServiceName() << " from: " << url;
 
     QNetworkRequest request;
     request.setUrl(QUrl(url));
@@ -129,7 +130,7 @@ void NetworkManager::getFeaturedStreams()
             + "/streams/featured?limit=25&offset=0";
     request.setUrl(QUrl(url));
 
-    qDebug() << url;
+    //qDebug() << url;
 
     featuredStreamsOperation->get(request);
 }

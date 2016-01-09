@@ -13,8 +13,12 @@ Item {
     }
 
     function search(str, offset, limit, clear){
-        _label.visible = false
         str = str || _input.text
+
+        if (str.length === 0){
+            return
+        }
+
         offset = offset || 0
         limit = limit || 25
 
@@ -30,7 +34,7 @@ Item {
             }
         }
 
-        console.log("Searching:", str)
+        _label.visible = false
     }
 
     onVisibleChanged: {
@@ -52,7 +56,8 @@ Item {
         }
     }
 
-    Rectangle {
+    ViewHeader {
+        text: "Search channels"
         id: searchContainer
         anchors {
             top: parent.top
@@ -78,37 +83,41 @@ Item {
             border.width: dp(1)
             clip: true
 
-            TextInput{
-                id: _input
-                color: Styles.iconColor
+            MouseArea {
+                id: inputArea
+                cursorShape: Qt.IBeamCursor
                 width: dp(300)
-                clip:true
-                selectionColor: Styles.purple
-                focus: true
-                selectByMouse: true
-                font.pointSize: dp(Styles.titleFont.bigger)
-
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
                     left: parent.left
                 }
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
 
-                Keys.onReturnPressed: search()
+                TextInput{
+                    id: _input
+                    color: Styles.iconColor
+                    anchors.fill: parent
+                    clip:true
+                    selectionColor: Styles.purple
+                    focus: true
+                    selectByMouse: true
+                    font.pointSize: dp(Styles.titleFont.bigger)
 
-                MouseArea {
-                    onDoubleClicked: _input.selectAll()
+
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+
+                    Keys.onReturnPressed: search()
                 }
             }
+
 
             Rectangle {
                 id: _spacer
                 width: dp(1)
                 color: Styles.border
                 anchors {
-                    left: _input.right
+                    left: inputArea.right
                     top: parent.top
                     bottom: parent.bottom
                 }
@@ -160,6 +169,7 @@ Item {
             left: parent.left
             right: parent.right
             bottom: parent.bottom
+            margins: dp(10)
         }
 
         model: g_results
@@ -187,7 +197,7 @@ Item {
 
         onItemClicked: {
             if (currentItem.online){
-                player.play(currentItem.name)
+                player.play(currentItem)
                 requestSelectionChange(4)
             }
         }
@@ -211,7 +221,7 @@ Item {
                 if (state === 1){
                     g_cman.addToFavourites(_menu.item._id)
                 } else if (state === 2){
-                    g_cman.removeFromFavourites(_menu.item._id)
+                    g_cman.removeFromFavourites(_menu.item._id, _menu.item.title)
                 }
             }
 
@@ -219,7 +229,7 @@ Item {
                 text: "Watch;play"
                 onTriggered: {
                     if (_menu.item.online){
-                        player.play(_menu.item.name)
+                        player.play(_menu.item)
                         requestSelectionChange(4)
                     }
                 }

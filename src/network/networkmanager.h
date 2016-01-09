@@ -31,7 +31,6 @@ protected:
     QNetworkAccessManager* featuredStreamsOperation;
     QNetworkAccessManager* extractChannelStreamsOperation;
     QNetworkAccessManager* m3u8StreamsOperation;
-
     ChannelManager* cman;
 
 public:
@@ -50,7 +49,7 @@ public:
     void getChannelPlaybackStream(const QString&, const quint32&);
     void getChannelm3u8(const QString&, const quint32&);
 
-public slots:
+private slots:
     void channelReply(QNetworkReply*);
     void streamReply(QNetworkReply*);
     void allStreamsReply(QNetworkReply*);

@@ -88,6 +88,7 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
     if (!json["channel"].isNull()){
 
         Channel *c = parseChannel(json["channel"].toObject());
+        channel->setServiceName(c->getServiceName());
         channel->setId(c->getId());
         channel->setName(c->getName());
         channel->setLogourl(c->getLogourl());
@@ -139,11 +140,11 @@ Game* JsonParser::parseGame(const QJsonObject &json)
         if (!gameObj["name"].isNull())
             game->setName(gameObj["name"].toString());
 
-        if (!gameObj["box"].isNull() && !gameObj["box"].toObject()["large"].isNull())
-            game->setLogo(gameObj["box"].toObject()["large"].toString());
+        if (!gameObj["box"].isNull() && !gameObj["box"].toObject()["medium"].isNull())
+            game->setLogo(gameObj["box"].toObject()["medium"].toString());
 
-        if (!gameObj["logo"].isNull() && !gameObj["logo"].toObject()["large"].isNull())
-            game->setPreview(gameObj["logo"].toObject()["large"].toString());
+        if (!gameObj["logo"].isNull() && !gameObj["logo"].toObject()["medium"].isNull())
+            game->setPreview(gameObj["logo"].toObject()["medium"].toString());
     }
 
     return game;
@@ -167,6 +168,10 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
         channel->setServiceName(json["name"].toString());
 
        // qDebug() << "Parsing channel data for " <<  channel.getUriName();
+
+        if (!json["name"].isNull()){
+            channel->setServiceName(json["name"].toString());
+        }
 
         if (!json["display_name"].isNull()){
             channel->setName(json["display_name"].toString());
@@ -220,8 +225,6 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
 {
     QList<Channel*> channels;
 
-    qDebug() << "Parsing fea";
-
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
@@ -249,7 +252,7 @@ QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
         QString tokenData = json["token"].toString();
 
         //Strip escape markings and spaces
-        tokenData = tokenData.trimmed().remove("\\");
+        //tokenData = tokenData.trimmed().remove("\\");
 
         QString channel;
 

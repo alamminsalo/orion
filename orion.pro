@@ -52,4 +52,4 @@ DISTFILES +=
 RESOURCES += \
     src/qml/qml.qrc
 
-CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
+#CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
