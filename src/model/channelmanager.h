@@ -89,7 +89,7 @@ public slots:
     void searchChannels(QString, const quint32&, const quint32&, bool);
     void notify(Channel*);
     void getFeatured();
-    void findPlaybackStream(const QString&, const quint32&);
+    void findPlaybackStream(const QString&, const qint32&);
 };
 
 #endif //CHANNEL_MANAGER_H

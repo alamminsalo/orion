@@ -7,8 +7,8 @@ import "styles.js" as Styles
 Window {
     id: root
     visible: true
-    width: 1200
-    height: 768
+    width: dp(1366)
+    height: dp(768)
     title: "Orion"
 
     property variant g_rootWindow: root

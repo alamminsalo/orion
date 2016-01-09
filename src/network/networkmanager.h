@@ -46,7 +46,7 @@ public:
     void searchChannels(const QString&, const quint32&, const quint32&);
     void getFeaturedStreams();
     void getStreamsForGame(const QString&, const quint32&, const quint32&);
-    void getChannelPlaybackStream(const QString&, const quint32&);
+    void getChannelPlaybackStream(const QString&, const qint32&);
     void getChannelm3u8(const QString&, const quint32&);
 
 private slots:

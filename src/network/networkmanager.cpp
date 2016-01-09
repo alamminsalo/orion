@@ -147,7 +147,7 @@ void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offse
     gameStreamsOperation->get(request);
 }
 
-void NetworkManager::getChannelPlaybackStream(const QString &channelName, const quint32 &quality)
+void NetworkManager::getChannelPlaybackStream(const QString &channelName, const qint32 &quality)
 {
     QString url = QString(TWITCH_API)
             + QString("/channels/%1").arg(channelName)
@@ -293,7 +293,7 @@ void NetworkManager::channelPlaybackStreamReply(QNetworkReply *reply)
         qDebug() << reply->errorString();
         return;
     }
-    quint32 quality = reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toInt();
+    qint32 quality = reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toInt();
 
     QByteArray data = reply->readAll();
 
@@ -309,11 +309,11 @@ void NetworkManager::m3u8Reply(QNetworkReply *reply)
         return;
     }
 
-    quint32 quality = reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toInt();
+    qint32 quality = reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toInt();
 
     QByteArray data = reply->readAll();
 
-    qDebug() << data;
+    //qDebug() << data;
 
     cman->foundPlaybackStream(m3u8::getUrl(data, quality));
 }

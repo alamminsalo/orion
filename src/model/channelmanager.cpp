@@ -338,7 +338,7 @@ void ChannelManager::getFeatured()
     netman->getFeaturedStreams();
 }
 
-void ChannelManager::findPlaybackStream(const QString &serviceName, const quint32 &quality)
+void ChannelManager::findPlaybackStream(const QString &serviceName, const qint32 &quality)
 {
     netman->getChannelPlaybackStream(serviceName, quality);
 }
