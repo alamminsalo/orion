@@ -42,9 +42,9 @@ Item {
             spinner.visible = false
         }
 
-        onCacheUpdated: {
-            renderer.setProperty("cache-secs", g_cman.getCache())
-        }
+//        onCacheUpdated: {
+//            renderer.setProperty("cache-secs", g_cman.getCache())
+//        }
     }
 
     PlayerHeader{
@@ -66,9 +66,9 @@ Item {
 
         visible: parent.visible
 
-        Component.onCompleted: {
-            renderer.setProperty("cache-secs", g_cman.getCache())
-        }
+//        Component.onCompleted: {
+//            renderer.setProperty("cache-secs", g_cman.getCache())
+//        }
 
         MouseArea{
             anchors.fill: parent

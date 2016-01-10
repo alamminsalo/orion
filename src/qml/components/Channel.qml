@@ -111,7 +111,7 @@ Rectangle {
         Rectangle {
             id: infoRect
             color: favourite ? Styles.purple : Styles.shadeColor
-            opacity: .66
+            opacity: .85
             height: Math.floor(parent.height * 0.25)
 
             anchors {

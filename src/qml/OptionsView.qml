@@ -26,13 +26,15 @@ Item{
             height: parent.height / 1.5
 
             anchors {
-                left: parent.left
-                right: parent.right
+                //left: parent.left
+                //right: parent.right
                 centerIn: parent
             }
 
             OptionTextInput {
                 id: cacheOption
+                enabled: false
+                visible: false
                 anchors {
                     top: parent.top
                     left: parent.left
@@ -47,6 +49,7 @@ Item{
             OptionCheckbox {
                 id: alertOption
                 anchors {
+                    //top: cacheOption.bottom
                     top: cacheOption.bottom
                     left: parent.left
                     right: parent.right

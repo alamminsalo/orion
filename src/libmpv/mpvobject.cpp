@@ -25,7 +25,10 @@ MpvObject::MpvObject(QQuickItem * parent)
     // Make use of the MPV_SUB_API_OPENGL_CB API.
     mpv::qt::set_option_variant(mpv, "vo", "opengl-cb");
     mpv::qt::set_option_variant(mpv, "input-cursor", "no");
-    //mpv::qt::set_option_variant(mpv, "osd-level", 1);
+
+
+    mpv::qt::set_option_variant(mpv, "cache", "auto");
+    //mpv::qt::set_option_variant(mpv, "demuxer-readahead-secs", "1");
 
     // Request hw decoding, just for testing.
     //mpv::qt::set_option_variant(mpv, "hwdec", "auto");
@@ -33,7 +36,7 @@ MpvObject::MpvObject(QQuickItem * parent)
     //Cache settings
     //mpv::qt::set_property_variant(mpv, "cache", "153600");
     //mpv::qt::set_property_variant(mpv, "cache-initial", "10000");
-    //mpv::qt::set_property_variant(mpv, "cache-secs", "10");
+    mpv::qt::set_property_variant(mpv, "cache-secs", "10");
 
     // Setup the callback that will make QtQuick update and redraw if there
     // is a new video frame. Use a queued connection: this makes sure the

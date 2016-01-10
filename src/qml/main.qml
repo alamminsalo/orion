@@ -7,8 +7,8 @@ import "styles.js" as Styles
 Window {
     id: root
     visible: true
-    width: dp(1366)
-    height: dp(768)
+    width: dp(1600)
+    height: dp(1200)
     title: "Orion"
 
     property variant g_rootWindow: root
@@ -72,6 +72,10 @@ Window {
     }
 
     Component.onCompleted: {
+
+        setX(Screen.width / 2 - width / 2);
+        setY(Screen.height / 2 - height / 2);
+
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root)
 
@@ -79,7 +83,7 @@ Window {
         pollTimer.start()
 
         //Initial view
-        g_toolBox.setView(5)
+        g_toolBox.setView(1)
     }
 
     Timer {
