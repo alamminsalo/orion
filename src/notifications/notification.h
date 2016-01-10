@@ -1,3 +1,5 @@
+#ifdef ENABLE_NOTIFY
+
 #ifndef SNORENOTIF_H
 #define SNORENOTIF_H
 
@@ -43,3 +45,5 @@ private:
 };
 
 #endif // SNORENOTIF_H
+
+#endif

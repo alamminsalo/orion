@@ -8,7 +8,8 @@ QT       += qml quick network
 
 TARGET = orion
 
-DEFINES += APP_NAME=\\\"Orion\\\"
+DEFINES += APP_NAME=\\\"Orion\\\" \
+        #ENABLE_NOTIFY
 
 LIBS += -lsnore-qt5 \
         -lmpv

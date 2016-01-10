@@ -6,7 +6,10 @@
 #include "gamelistmodel.h"
 #include "game.h"
 #include "../network/networkmanager.h"
+
+#ifdef ENABLE_NOTIFY
 #include "../notifications/notification.h"
+#endif
 
 #include <QSortFilterProxyModel>
 

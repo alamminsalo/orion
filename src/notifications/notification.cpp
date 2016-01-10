@@ -1,3 +1,4 @@
+#ifdef ENABLE_NOTIFY
 #include "notification.h"
 
 #define DEFAULT_LOGO "resources/logos/default.png"
@@ -22,3 +23,5 @@ NotificationRunner::NotificationRunner(const Application &app, const QString &ti
 {
 
 }
+
+#endif
