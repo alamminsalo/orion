@@ -3,12 +3,18 @@ import "../styles.js" as Styles
 
 Item {
     property string text
-    property string value
+    property var value
     property var mask
     property int inputWidth: dp(60)
 
+    function getValue(){
+        return _input.text
+    }
+
     id: root
     height: dp(60)
+
+    Component.onCompleted: _input.text = value
 
     Text {
         font.family: "Droid Sans"
@@ -35,7 +41,7 @@ Item {
 
         width: root.inputWidth
 
-        radius: dp(5)
+        //radius: dp(5)
         color: Styles.sidebarBg
 
         MouseArea{
@@ -44,7 +50,6 @@ Item {
 
             TextInput{
                 id: _input
-                text: root.value
                 color: Styles.iconColor
                 anchors.fill: parent
                 clip:true

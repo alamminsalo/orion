@@ -11,7 +11,21 @@ QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
     return featuredProxy;
 }
 
+quint16 ChannelManager::getCache() const
+{
+    return cache;
+}
+
+bool ChannelManager::isAlert() const
+{
+    return alert;
+}
+
 ChannelManager::ChannelManager(){
+    alert = true;
+
+    cache = 10;
+
     netman = new NetworkManager(this);
 
     favouritesModel = new ChannelListModel();
@@ -128,6 +142,14 @@ bool ChannelManager::load(){
         return false;
     }
 
+    if (!json["alert"].isNull()){
+        alert = json["alert"].toBool();
+    }
+
+    if (!json["cache"].isNull()){
+        cache = json["cache"].toInt();
+    }
+
     if (json["channels"].isUndefined()){
         qDebug() << "Error: Bad file format: Missing field \"channels\"";
         return false;
@@ -196,6 +218,10 @@ bool ChannelManager::save() const
     QJsonValue val(arr);
     QJsonObject obj;
     obj["channels"] = val;
+
+    obj["alert"] = QJsonValue(alert);
+
+    obj["cache"] = QJsonValue(cache);
 
     return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
 }
@@ -343,6 +369,17 @@ void ChannelManager::findPlaybackStream(const QString &serviceName, const qint32
     netman->getChannelPlaybackStream(serviceName, quality);
 }
 
+void ChannelManager::setCache(const quint16 &secs)
+{
+    cache = secs;
+    emit cacheUpdated();
+}
+
+void ChannelManager::setAlert(const bool &val)
+{
+    alert = val;
+}
+
 void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
 {
     foreach (Channel *channel, list){
@@ -384,7 +421,8 @@ void ChannelManager::updateGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-    notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
+    if (alert)
+        notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                   channel->getInfo(),
                   channel->getLogourl());
 }

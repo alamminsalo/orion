@@ -5,6 +5,8 @@ Item {
     property string text
     property bool checked: true
 
+    signal clicked()
+
     id: root
     height: dp(60)
 
@@ -33,11 +35,13 @@ Item {
 
         width: dp(36)
 
-        radius: dp(5)
+        //radius: dp(5)
         color: Styles.sidebarBg
 
         MouseArea{
             anchors.fill: parent
+
+            onClicked: root.checked = !root.checked
 
             Icon {
                 icon: "check"

@@ -41,6 +41,10 @@ Item {
             renderer.command(["loadfile", stream])
             spinner.visible = false
         }
+
+        onCacheUpdated: {
+            renderer.setProperty("cache-secs", g_cman.getCache())
+        }
     }
 
     PlayerHeader{
@@ -61,6 +65,10 @@ Item {
         }
 
         visible: parent.visible
+
+        Component.onCompleted: {
+            renderer.setProperty("cache-secs", g_cman.getCache())
+        }
 
         MouseArea{
             anchors.fill: parent

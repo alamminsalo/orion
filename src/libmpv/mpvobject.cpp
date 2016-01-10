@@ -16,8 +16,8 @@ MpvObject::MpvObject(QQuickItem * parent)
         throw std::runtime_error("could not create mpv context");
 
     //Enable for debugging
-    //mpv_set_option_string(mpv, "terminal", "yes");
-    //mpv_set_option_string(mpv, "msg-level", "all=v");
+    mpv_set_option_string(mpv, "terminal", "yes");
+    mpv_set_option_string(mpv, "msg-level", "all=v");
 
     if (mpv_initialize(mpv) < 0)
         throw std::runtime_error("could not initialize mpv context");
@@ -33,7 +33,7 @@ MpvObject::MpvObject(QQuickItem * parent)
     //Cache settings
     //mpv::qt::set_property_variant(mpv, "cache", "153600");
     //mpv::qt::set_property_variant(mpv, "cache-initial", "10000");
-    mpv::qt::set_property_variant(mpv, "cache-secs", "10");
+    //mpv::qt::set_property_variant(mpv, "cache-secs", "10");
 
     // Setup the callback that will make QtQuick update and redraw if there
     // is a new video frame. Use a queued connection: this makes sure the

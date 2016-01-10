@@ -35,6 +35,9 @@ protected:
 
     SnoreNotif notif;
 
+    bool alert;
+    quint16 cache;
+
 public:
     ChannelManager();
     ~ChannelManager();
@@ -69,6 +72,9 @@ public:
 
     QSortFilterProxyModel *getFeaturedProxy() const;
 
+    Q_INVOKABLE quint16 getCache() const;
+    Q_INVOKABLE bool isAlert() const;
+
 signals:
     void channelExists(Channel*);
     void channelNotFound(Channel*);
@@ -80,6 +86,7 @@ signals:
     void featuredUpdated();
     void searchingStarted();
     void foundPlaybackStream(const QString &stream);
+    void cacheUpdated();
 
 public slots:
     void checkFavourites();
@@ -90,6 +97,8 @@ public slots:
     void notify(Channel*);
     void getFeatured();
     void findPlaybackStream(const QString&, const qint32&);
+    void setCache(const quint16&);
+    void setAlert(const bool&);
 };
 
 #endif //CHANNEL_MANAGER_H
