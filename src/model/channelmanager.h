@@ -36,7 +36,9 @@ protected:
 
     GameListModel* gamesModel;
 
+#ifdef ENABLE_NOTIFY
     SnoreNotif notif;
+#endif
 
     bool alert;
     quint16 cache;
