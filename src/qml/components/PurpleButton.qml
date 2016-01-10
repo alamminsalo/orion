@@ -5,6 +5,8 @@ Rectangle {
     property string text
     property string iconStr
 
+    signal buttonPressed()
+
     id: root
     width: dp(70)
     height: dp(30)
@@ -54,6 +56,8 @@ Rectangle {
         onPressedChanged: {
             hoverRect.opacity = pressed ? .2 : containsMouse ? .1 : 0
         }
+
+        onClicked: buttonPressed()
     }
 }
 

@@ -22,6 +22,7 @@ Rectangle {
 //        borderTop.height = isActive ? dp(1) : 0
 //        borderBottom.height = isActive ? dp(1) : 0
         color = isActive ? Styles.ribbonSelected : "transparent"
+        textLabel.color = isActive ? Styles.textColor : Styles.iconColor
         isSelected = isActive
         iconLabel.anchors.centerIn = g_toolBox.isOpen ? null : root
     }
@@ -38,8 +39,10 @@ Rectangle {
             if (!isSelected)
                 color = isActive ? Styles.ribbonHighlight : "transparent"
         }
-        iconLabel.iconColor = isActive ? Styles.iconHighlight : Styles.iconColor
-        textLabel.color = isActive ? Styles.textColor : Styles.iconColor
+        if (!isSelected){
+            iconLabel.iconColor = isActive ? Styles.iconHighlight : Styles.iconColor
+            textLabel.color = isActive ? Styles.textColor : Styles.iconColor
+        }
     }
 
     Rectangle {
@@ -87,8 +90,10 @@ Rectangle {
         visible: g_toolBox.isOpen
         anchors.centerIn: parent
         text: root.text
+        font.bold: true
+        font.family: "Droid Sans"
         color: Styles.iconColor
-        font.pointSize: dp(Styles.titleFont.bigger)
+        font.pointSize: dp(Styles.titleFont.bigger + 2)
     }
 
     Icon {

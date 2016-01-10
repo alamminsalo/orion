@@ -1,31 +1,34 @@
 import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Layouts 1.1
-import "components"
 import "styles.js" as Styles
-
 
 
 Window {
     id: root
     visible: true
-    width: 1200
-    height: 768
+    width: dp(1600)
+    height: dp(1200)
+    title: "Orion"
 
     property variant g_rootWindow: root
     property variant g_tooltip
-    property variant g_toolBox: tools
+    property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
 
     function dp(number){
         return Math.ceil(number * g_ppi / 157.29)
     }
 
-    Rectangle {
+    FontLoader{
+        source: "qrc:/fonts/droidsans/DroidSans.ttf"
+    }
+
+    Item {
         anchors.fill: parent
 
         SideBar {
-            id: tools
+            id: sidebar
             anchors {
                 left: parent.left
                 top: parent.top
@@ -33,11 +36,9 @@ Window {
             }
         }
 
-        Rectangle {
-            color: Styles.bg
-
+        Item {
             anchors {
-                left: tools.right
+                left: sidebar.right
                 top: parent.top
                 right: parent.right
                 bottom: parent.bottom
@@ -56,7 +57,7 @@ Window {
 
             Views {
                 id: view
-                selection: tools.selectedView
+                selection: sidebar.selectedView
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -71,6 +72,10 @@ Window {
     }
 
     Component.onCompleted: {
+
+        setX(Screen.width / 2 - width / 2);
+        setY(Screen.height / 2 - height / 2);
+
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root)
 

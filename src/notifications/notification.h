@@ -1,6 +1,11 @@
+#ifdef ENABLE_NOTIFY
+
 #ifndef SNORENOTIF_H
 #define SNORENOTIF_H
 
+
+
+#include <libsnore/snore_exports.h>
 #include <libsnore/snore.h>
 
 #include <QString>
@@ -9,7 +14,7 @@
 
 using namespace Snore;
 
-class SnoreNotif: public QObject
+class Q_DECL_EXPORT SnoreNotif: public QObject
 {
     Q_OBJECT
 
@@ -40,3 +45,5 @@ private:
 };
 
 #endif // SNORENOTIF_H
+
+#endif

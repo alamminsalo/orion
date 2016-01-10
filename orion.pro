@@ -6,14 +6,13 @@
 
 QT       += qml quick network
 
-TARGET = Orion
+TARGET = orion
 
-TEMPLATE = app
+DEFINES += APP_NAME=\\\"Orion\\\" \
+        ENABLE_NOTIFY
 
-DEFINES += APP_NAME=\\\"orion\\\"\
-        _QML
-
-LIBS +=
+LIBS += -lsnore-qt5 \
+        -lmpv
 
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
@@ -24,7 +23,9 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/ui/notification.cpp \
+    src/notifications/notification.cpp \
+    src/libmpv/mpvobject.cpp
+
 
 HEADERS  += src/model/channel.h \
     src/model/channelmanager.h \
@@ -34,10 +35,13 @@ HEADERS  += src/model/channel.h \
     src/util/jsonparser.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
-    src/ui/notification.h \
+    src/notifications/notification.h \
+    src/util/m3u8parser.h \
+    src/libmpv/mpvobject.h \
+    src/libmpv/mpvrenderer.h
 
 
-FORMS    += src/ui/mainwindow.ui
+FORMS    +=
 
 OTHER_FILES += \
     resources/logo.svg
@@ -47,9 +51,6 @@ QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 DISTFILES +=
 
 RESOURCES += \
-    src/qml/qml.qrc\
+    src/qml/qml.qrc
 
-unix: LIBS += -L$$PWD/../../../../usr/local/lib64/ -lsnore-qt5
-
-INCLUDEPATH += $$PWD/../../../../usr/local/lib64
-DEPENDPATH += $$PWD/../../../../usr/local/lib64
+#CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT

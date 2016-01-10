@@ -4,13 +4,28 @@
 #include <QProcess>
 #include "../util/fileutils.h"
 #include <QThread>
+#include <QJsonArray>
 
 QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
 {
     return featuredProxy;
 }
 
+quint16 ChannelManager::getCache() const
+{
+    return cache;
+}
+
+bool ChannelManager::isAlert() const
+{
+    return alert;
+}
+
 ChannelManager::ChannelManager(){
+    alert = true;
+
+    cache = 10;
+
     netman = new NetworkManager(this);
 
     favouritesModel = new ChannelListModel();
@@ -127,6 +142,14 @@ bool ChannelManager::load(){
         return false;
     }
 
+    if (!json["alert"].isNull()){
+        alert = json["alert"].toBool();
+    }
+
+    if (!json["cache"].isNull()){
+        cache = json["cache"].toInt();
+    }
+
     if (json["channels"].isUndefined()){
         qDebug() << "Error: Bad file format: Missing field \"channels\"";
         return false;
@@ -195,6 +218,10 @@ bool ChannelManager::save() const
     QJsonValue val(arr);
     QJsonObject obj;
     obj["channels"] = val;
+
+    obj["alert"] = QJsonValue(alert);
+
+    obj["cache"] = QJsonValue(cache);
 
     return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
 }
@@ -266,11 +293,9 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
         channelsUrl += channel->getServiceName();
 
         if (c_index >= list.size() || c_index >= 50){
-            QString url = TWITCH_URI
+            QString url = KRAKEN_API
                     + QString("/streams?limit=%1&channel=").arg(c_index)
                     + channelsUrl;
-
-            qDebug() << url;
 
             netman->getStreams(url);
 
@@ -339,9 +364,20 @@ void ChannelManager::getFeatured()
     netman->getFeaturedStreams();
 }
 
-void ChannelManager::openStream(const QString &serviceName)
+void ChannelManager::findPlaybackStream(const QString &serviceName, const qint32 &quality)
 {
-    play("http://twitch.tv/" + serviceName);
+    netman->getChannelPlaybackStream(serviceName, quality);
+}
+
+void ChannelManager::setCache(const quint16 &secs)
+{
+    cache = secs;
+    emit cacheUpdated();
+}
+
+void ChannelManager::setAlert(const bool &val)
+{
+    alert = val;
 }
 
 void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
@@ -385,28 +421,10 @@ void ChannelManager::updateGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-    /*
-#ifdef Q_OS_LINUX
-    if (QFile::exists(DIALOG_FILE)){
-        if (!QFileInfo(DIALOG_FILE).isExecutable())
-            QProcess::execute("chmod +x " + QString(DIALOG_FILE));
-
-        QStringList args;
-        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline")
-             << channel->getInfo()
-             << "/" + channel->getLogoPath();
-
-        QProcess::startDetached(DIALOG_FILE, args);
-    }
-
-
-    if (channel){
-        showNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
-                         channel->getInfo(),
-                         QImage(channel->getLogoPath()));
-    }
-*/
-    notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
+#ifdef ENABLE_NOTIFY
+    if (alert)
+        notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                   channel->getInfo(),
                   channel->getLogourl());
+#endif
 }

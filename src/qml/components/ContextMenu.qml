@@ -36,6 +36,7 @@ Menu {
                     id: _icon
                     icon: styleData.text.split(";")[1]
                     iconSize: dp(16)
+                    iconColor: styleData.enabled ? Styles.iconColor : Styles.disabled
                     anchors {
                         top: parent.top
                         bottom: parent.bottom
@@ -46,7 +47,7 @@ Menu {
                 Text {
                     id:_label
                     text: styleData.text.split(";")[0]
-                    color: Styles.textColor
+                    color: styleData.enabled ? Styles.textColor : Styles.disabled
                     font.pointSize: dp(16)
                     verticalAlignment: Text.AlignVCenter
                     anchors {
@@ -60,7 +61,7 @@ Menu {
             background: Rectangle {
                 color: "#ffffff"
                 opacity: 0.1
-                visible: styleData.selected
+                visible: styleData.selected && styleData.enabled
             }
         }
 
