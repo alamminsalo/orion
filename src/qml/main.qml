@@ -88,7 +88,7 @@ Window {
 
     Timer {
         id: pollTimer
-        interval: 15000
+        interval: 30000
         running: false
         repeat: true
         onTriggered: {
