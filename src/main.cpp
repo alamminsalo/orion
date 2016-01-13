@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 {
 
     QGuiApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/icon/logo-256.ico"));
 
     std::setlocale(LC_NUMERIC, "C");
 

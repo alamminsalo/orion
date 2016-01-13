@@ -3,18 +3,15 @@ import "../styles.js" as Styles
 
 Item {
     property string text
+    property int thickness: 100
+    property string color: Styles.shadeColor
     id: root
 
-    anchors {
-        top: parent.top
-        left: parent.left
-        right: parent.right
-    }
-    height: dp(60)
+    height: dp(thickness)
 
     Rectangle {
         id: shade
-        color: Styles.shadeColor
+        color: root.color
         opacity: .8
         anchors.fill: parent
     }
@@ -47,12 +44,12 @@ Item {
     }
 
     function show(){
-        height = dp(60)
+        height = dp(thickness)
         headerTimer.restart()
     }
 
     function hide(){
-        height = -dp(60)
+        height = -dp(thickness)
     }
 
     Component.onCompleted: hide()

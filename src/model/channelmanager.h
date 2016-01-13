@@ -90,7 +90,7 @@ signals:
     void resultsUpdated();
     void featuredUpdated();
     void searchingStarted();
-    void foundPlaybackStream(const QString &stream);
+    void foundPlaybackStream(const QStringList &streams);
     void cacheUpdated();
 
 public slots:
@@ -101,7 +101,7 @@ public slots:
     void searchChannels(QString, const quint32&, const quint32&, bool);
     void notify(Channel*);
     void getFeatured();
-    void findPlaybackStream(const QString&, const qint32&);
+    void findPlaybackStream(const QString&);
     void setCache(const quint16&);
     void setAlert(const bool&);
 };

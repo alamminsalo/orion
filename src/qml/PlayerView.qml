@@ -16,10 +16,18 @@ Item {
     property int quality: 4
     property bool paused: false
     property var currentChannel
+    property var qualityMap
+
+    id: root
 
     function play(channel){
+
+        if (!channel){
+            return
+        }
+
         renderer.command(["stop"])
-        g_cman.findPlaybackStream(channel.name, quality)
+        g_cman.findPlaybackStream(channel.name)
 
         paused = false
         renderer.command(["set","pause", "no"])
@@ -36,26 +44,89 @@ Item {
     Connections {
         target: g_cman
         onFoundPlaybackStream: {
-            header.text = "Currently watching: " + currentChannel.title
-                    +   " playing " + currentChannel.game
-            renderer.command(["loadfile", stream])
-            spinner.visible = false
-        }
 
-//        onCacheUpdated: {
-//            renderer.setProperty("cache-secs", g_cman.getCache())
-//        }
+            qualityMap = streams
+
+//            console.log(streams)
+//            for(var i in streams){
+//                console.log(i)
+//            }
+
+            var desc = true
+            while (!qualityMap[quality] || qualityMap[quality].length <= 0){
+
+                if (quality <= 0)
+                    desc = false
+
+                if (quality == 4 && !desc)
+                    break;
+
+                quality += desc ? -1 : 1
+            }
+
+            console.log("resolved quality:", quality)
+            //streamLabel.update(quality)
+
+            sourcesBox.entries = qualityMap
+
+            if (qualityMap[quality]){
+                header.text = "Currently watching: " + currentChannel.title
+                        +   " playing " + currentChannel.game
+                renderer.command(["loadfile", qualityMap[quality]])
+                spinner.visible = false
+
+                sourcesBox.setIndex(quality)
+            }
+        }
     }
 
     PlayerHeader{
         text: "Currently watching: N/A"
         id: header
         z: renderer.z + 1
+
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+    }
+
+    PlayerHeader {
+        id: footer
+        //color: "white"
+        z: renderer.z + 1
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+        }
+
+        ComboBox {
+            id: sourcesBox
+            width: dp(100)
+            height: dp(50)
+
+            anchors {
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+                rightMargin: dp(20)
+            }
+
+            onIndexChanged: {
+                if (index != quality){
+                    quality = index
+                    play(currentChannel)
+                }
+            }
+        }
     }
 
     onVisibleChanged: {
-        if (visible)
+        if (visible){
             header.show()
+            footer.show()
+        }
     }
 
     MpvObject {
@@ -65,10 +136,6 @@ Item {
         }
 
         visible: parent.visible
-
-//        Component.onCompleted: {
-//            renderer.setProperty("cache-secs", g_cman.getCache())
-//        }
 
         MouseArea{
             anchors.fill: parent
@@ -81,6 +148,7 @@ Item {
 
             onPositionChanged: {
                 header.show()
+                footer.show()
             }
         }
 

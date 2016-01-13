@@ -46,9 +46,10 @@ FORMS    +=
 OTHER_FILES += \
     resources/logo.svg
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
+QMAKE_CXXFLAGS += -std=c++14 -Wall -O3 -static-libgcc -static-libstdc++
 
-DISTFILES +=
+DISTFILES += \
+    src/qml/icon/logo-256.ico
 
 RESOURCES += \
     src/qml/qml.qrc
