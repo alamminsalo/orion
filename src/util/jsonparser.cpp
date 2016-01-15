@@ -268,7 +268,7 @@ QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
                 + QString("?player=twitchweb")
                 + QString("&token=%1").arg(tokenData)
                 + QString("&sig=%1").arg(sig)
-                + QString("&type=any&allow_source=true");
+                + QString("&allow_source=true&$allow_audio_only=true");
     }
 
     return url;

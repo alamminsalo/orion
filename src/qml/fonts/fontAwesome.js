@@ -17,4 +17,7 @@ var icons = {
     'featured':     "\uf0a1",
     'settings':     "\uf013",
     'check':        "\uf00c",
+    'volume':       "\uf028",
+    'volume-off':   "\uf026",
+    'volume-med':   "\uf027",
 }

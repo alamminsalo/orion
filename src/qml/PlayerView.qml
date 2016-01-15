@@ -64,14 +64,14 @@ Item {
                 quality += desc ? -1 : 1
             }
 
-            console.log("resolved quality:", quality)
-            //streamLabel.update(quality)
+            //console.log("resolved quality:", quality)
 
             sourcesBox.entries = qualityMap
 
             if (qualityMap[quality]){
                 header.text = "Currently watching: " + currentChannel.title
                         +   " playing " + currentChannel.game
+                console.log("Opening stream: ", qualityMap[quality])
                 renderer.command(["loadfile", qualityMap[quality]])
                 spinner.visible = false
 
@@ -85,6 +85,13 @@ Item {
         id: header
         z: renderer.z + 1
 
+        MouseArea {
+            id: mAreaHeader
+            hoverEnabled: true
+            anchors.fill: parent
+            propagateComposedEvents: false
+        }
+
         anchors {
             top: parent.top
             left: parent.left
@@ -94,12 +101,33 @@ Item {
 
     PlayerHeader {
         id: footer
-        //color: "white"
         z: renderer.z + 1
         anchors {
             bottom: parent.bottom
             left: parent.left
             right: parent.right
+        }
+
+        MouseArea {
+            id: mAreaFooter
+            hoverEnabled: true
+            anchors.fill: parent
+            propagateComposedEvents: false
+        }
+
+
+        VolumeSlider {
+            id: vol
+            z: parent.z + 1
+            anchors {
+                right: sourcesBox.left
+                verticalCenter: parent.verticalCenter
+                rightMargin: dp(20)
+            }
+            onValueChanged: {
+                var val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
+                renderer.setProperty("volume", val)
+            }
         }
 
         ComboBox {
@@ -142,13 +170,18 @@ Item {
             hoverEnabled: true
 
             onClicked: {
-                paused = !paused
-                renderer.command(["set","pause", paused ? "yes" : "no"])
+                if (sourcesBox.open){
+                    sourcesBox.close()
+                } else {
+                    paused = !paused
+                    renderer.command(["set","pause", paused ? "yes" : "no"])
+                }
             }
 
             onPositionChanged: {
                 header.show()
                 footer.show()
+                headerTimer.restart()
             }
         }
 
@@ -185,5 +218,22 @@ Item {
         visible: false
         anchors.centerIn: parent
         iconSize: dp(100)
+    }
+
+
+    Timer {
+        id: headerTimer
+        interval: 5000
+        running: false
+        repeat: false
+        onTriggered: {
+            if (mAreaHeader.containsMouse || mAreaFooter.containsMouse || vol.open || sourcesBox.open){
+                restart()
+            }
+            else {
+                header.hide()
+                footer.hide()
+            }
+        }
     }
 }

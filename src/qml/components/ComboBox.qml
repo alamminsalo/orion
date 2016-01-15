@@ -5,7 +5,7 @@ Rectangle {
     property var entries //QStringList
     property var names: ["Mobile","Low","Medium","High","Source"]
     property var selectedItem
-    property bool open: false
+    property bool open: list.visible
 
     signal indexChanged(int index)
 
@@ -16,6 +16,10 @@ Rectangle {
 
             indexChanged(selectedItem.index)
         }
+    }
+
+    function close(){
+        list.visible = false
     }
 
     function setIndex(index){

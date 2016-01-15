@@ -3,11 +3,11 @@ import "../styles.js" as Styles
 
 Item {
     property string text
-    property int thickness: 100
+    property int thickness: dp(80)
     property string color: Styles.shadeColor
     id: root
 
-    height: dp(thickness)
+    height: thickness
 
     Rectangle {
         id: shade
@@ -44,23 +44,12 @@ Item {
     }
 
     function show(){
-        height = dp(thickness)
-        headerTimer.restart()
+        height = thickness
     }
 
     function hide(){
-        height = -dp(thickness)
+        height = -thickness
     }
 
     Component.onCompleted: hide()
-
-    Timer {
-        id: headerTimer
-        interval: 5000
-        running: false
-        repeat: false
-        onTriggered: {
-            hide()
-        }
-    }
 }

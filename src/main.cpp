@@ -11,11 +11,10 @@
 
 int main(int argc, char *argv[])
 {
-
     QGuiApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/icon/logo-256.ico"));
 
-    std::setlocale(LC_NUMERIC, "C");
+
 
     ChannelManager *cman = new ChannelManager();
     cman->checkResources();
@@ -33,9 +32,12 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());
     engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
 
+    std::setlocale(LC_NUMERIC, "C");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
 
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
+
+
 
     qDebug() << "Starting window...";
     app.exec();

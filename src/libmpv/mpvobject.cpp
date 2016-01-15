@@ -15,9 +15,12 @@ MpvObject::MpvObject(QQuickItem * parent)
     if (!mpv)
         throw std::runtime_error("could not create mpv context");
 
+    mpv_set_option_string(mpv, "config", "yes");
+    mpv_set_option_string(mpv, "config-dir", ".");
+
     //Enable for debugging
-//    mpv_set_option_string(mpv, "terminal", "yes");
-//    mpv_set_option_string(mpv, "msg-level", "all=v");
+    mpv_set_option_string(mpv, "terminal", "yes");
+    mpv_set_option_string(mpv, "msg-level", "all=v");
 
     if (mpv_initialize(mpv) < 0)
         throw std::runtime_error("could not initialize mpv context");
@@ -26,17 +29,15 @@ MpvObject::MpvObject(QQuickItem * parent)
     mpv::qt::set_option_variant(mpv, "vo", "opengl-cb");
     mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
-
-    mpv::qt::set_option_variant(mpv, "cache", "auto");
-    //mpv::qt::set_option_variant(mpv, "demuxer-readahead-secs", "1");
-
     // Request hw decoding, just for testing.
     //mpv::qt::set_option_variant(mpv, "hwdec", "auto");
 
-    //Cache settings
-    //mpv::qt::set_property_variant(mpv, "cache", "153600");
-    //mpv::qt::set_property_variant(mpv, "cache-initial", "10000");
-    mpv::qt::set_property_variant(mpv, "cache-secs", "10");
+    //Cache
+    //mpv::qt::set_option_variant(mpv, "cache", 8192 * 1024);
+    //mpv::qt::set_option_variant(mpv, "cache-pause", true);
+
+
+
 
     // Setup the callback that will make QtQuick update and redraw if there
     // is a new video frame. Use a queued connection: this makes sure the
@@ -53,6 +54,8 @@ MpvObject::MpvObject(QQuickItem * parent)
 
     //Set observe properties
     mpv_observe_property(mpv, 0, "core-idle", MPV_FORMAT_FLAG);
+    //mpv_observe_property(mpv, 0, "paused-for-cache", MPV_FORMAT_FLAG);
+    mpv_observe_property(mpv, 0, "cache-buffering-state", MPV_FORMAT_INT64);
 
     // setup callback event handling
     mpv_set_wakeup_callback(mpv, wakeup, this);
@@ -154,11 +157,11 @@ bool MpvObject::event(QEvent *event)
                             emit playingResumed();
                     }
                 }
-                else if(QString(prop->name) == "paused-for-cache")
+                else if(QString(prop->name) == "cache-buffering-state")
                 {
-                    if(prop->format == MPV_FORMAT_FLAG)
+                    if(prop->format == MPV_FORMAT_INT64)
                     {
-                        if((bool)*(unsigned*)prop->data)
+                        //if((unsigned*)prop->data)
                             emit bufferingStarted();
 //                        else
 //                            ShowText(QString(), 0);
@@ -174,6 +177,8 @@ bool MpvObject::event(QEvent *event)
                 break;
                 // these two look like they're reversed but they aren't. the names are misleading.
             case MPV_EVENT_START_FILE:
+                qDebug() << "AT FILE START";
+                mpv::qt::set_option_variant(mpv, "cache", 8192 * 1024);
 //                setPlayState(Mpv::Loaded);
                 break;
             case MPV_EVENT_FILE_LOADED:

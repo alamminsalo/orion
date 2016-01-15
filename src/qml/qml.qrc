@@ -30,5 +30,6 @@
         <file>icon/logo-256.ico</file>
         <file>icon/icon-245.png</file>
         <file>components/ComboBox.qml</file>
+        <file>components/VolumeSlider.qml</file>
     </qresource>
 </RCC>
