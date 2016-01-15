@@ -9,7 +9,8 @@ QT       += qml quick network
 TARGET = orion
 
 DEFINES += APP_NAME=\\\"Orion\\\" \
-        ENABLE_NOTIFY
+        ENABLE_NOTIFY \
+        #DEBUG_LIBMPV
 
 LIBS += -lsnore-qt5 \
         -lmpv
@@ -46,7 +47,7 @@ FORMS    +=
 OTHER_FILES += \
     resources/logo.svg
 
-QMAKE_CXXFLAGS += -std=c++14 -Wall -O3 -static-libgcc -static-libstdc++
+QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
 DISTFILES += \
     src/qml/icon/logo-256.ico

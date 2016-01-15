@@ -72,7 +72,9 @@ Item {
                 header.text = "Currently watching: " + currentChannel.title
                         +   " playing " + currentChannel.game
                 console.log("Opening stream: ", qualityMap[quality])
+
                 renderer.command(["loadfile", qualityMap[quality]])
+
                 spinner.visible = false
 
                 sourcesBox.setIndex(quality)

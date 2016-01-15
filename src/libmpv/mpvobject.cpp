@@ -15,19 +15,18 @@ MpvObject::MpvObject(QQuickItem * parent)
     if (!mpv)
         throw std::runtime_error("could not create mpv context");
 
-    mpv_set_option_string(mpv, "config", "yes");
-    mpv_set_option_string(mpv, "config-dir", ".");
-
+#ifdef DEBUG_LIBMPV
     //Enable for debugging
     mpv_set_option_string(mpv, "terminal", "yes");
     mpv_set_option_string(mpv, "msg-level", "all=v");
+#endif
 
-    if (mpv_initialize(mpv) < 0)
-        throw std::runtime_error("could not initialize mpv context");
+//    mpv_set_option_string(mpv, "config", "yes");
+//    mpv_set_option_string(mpv, "config-dir", ".");
 
     // Make use of the MPV_SUB_API_OPENGL_CB API.
     mpv::qt::set_option_variant(mpv, "vo", "opengl-cb");
-    mpv::qt::set_option_variant(mpv, "input-cursor", "no");
+    //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
     // Request hw decoding, just for testing.
     //mpv::qt::set_option_variant(mpv, "hwdec", "auto");
@@ -37,7 +36,8 @@ MpvObject::MpvObject(QQuickItem * parent)
     //mpv::qt::set_option_variant(mpv, "cache-pause", true);
 
 
-
+    if (mpv_initialize(mpv) < 0)
+        throw std::runtime_error("could not initialize mpv context");
 
     // Setup the callback that will make QtQuick update and redraw if there
     // is a new video frame. Use a queued connection: this makes sure the
@@ -54,7 +54,7 @@ MpvObject::MpvObject(QQuickItem * parent)
 
     //Set observe properties
     mpv_observe_property(mpv, 0, "core-idle", MPV_FORMAT_FLAG);
-    //mpv_observe_property(mpv, 0, "paused-for-cache", MPV_FORMAT_FLAG);
+    mpv_observe_property(mpv, 0, "paused-for-cache", MPV_FORMAT_FLAG);
     mpv_observe_property(mpv, 0, "cache-buffering-state", MPV_FORMAT_INT64);
 
     // setup callback event handling
