@@ -2,7 +2,6 @@
 #define MPVOBJECT_H
 
 #include <QtQuick/QQuickFramebufferObject>
-
 #include <mpv/client.h>
 #include <mpv/opengl_cb.h>
 #include <mpv/qthelper.hpp>
@@ -10,6 +9,7 @@
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtQuick/QQuickWindow>
 #include <QtQuick/QQuickView>
+#include "../power/power.h"
 
 class MpvObject : public QQuickFramebufferObject
 {
@@ -24,6 +24,9 @@ public:
     MpvObject(QQuickItem * parent = 0);
     virtual ~MpvObject();
     virtual Renderer *createRenderer() const;
+
+    Q_INVOKABLE void pause();
+    Q_INVOKABLE void play();
 
 public slots:
     void command(const QVariant& params);

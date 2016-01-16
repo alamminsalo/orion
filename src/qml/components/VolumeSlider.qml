@@ -19,6 +19,7 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         onHoveredChanged: {
+            icon.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
             refresh()
         }
 

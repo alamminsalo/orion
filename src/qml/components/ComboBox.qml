@@ -30,6 +30,7 @@ Rectangle {
     color: Styles.shadeColor
 
     Rectangle {
+        id: rect
         color: "transparent"
         width: dp(100)
         height: dp(50)
@@ -56,9 +57,14 @@ Rectangle {
 
     MouseArea {
         anchors.fill: parent
+        hoverEnabled: true
 
         onClicked: {
             list.visible = !list.visible
+        }
+
+        onHoveredChanged: {
+            rect.border.color = containsMouse ? Styles.textColor : Styles.border
         }
     }
 
@@ -111,9 +117,6 @@ Rectangle {
 
         model: ListModel {
             id: srcModel
-            ListElement {
-                itemIndex: 4
-            }
         }
         delegate: Rectangle {
             property int index: itemIndex

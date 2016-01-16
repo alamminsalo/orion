@@ -8,6 +8,11 @@ Rectangle {
     property int borderWidth: 6
     property int iconSize: 20
     property bool highlightOn: false
+    property bool iconRotated: false
+
+    function rotateIcon(){
+        iconRotated = !iconRotated
+    }
 
     id: root
     height: dp(60)
@@ -74,6 +79,7 @@ Rectangle {
 
     Icon {
         id: iconLabel
+        rotation: iconRotated ? -180 : 0
         icon: iconStr
         iconSize: dp(root.iconSize)
         anchors {
@@ -82,5 +88,4 @@ Rectangle {
             right: parent.right
         }
     }
-
 }

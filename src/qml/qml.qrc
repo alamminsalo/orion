@@ -30,5 +30,6 @@
         <file>icon/orion.ico</file>
         <file>components/ComboBox.qml</file>
         <file>components/VolumeSlider.qml</file>
+        <file>DrawerRibbon.qml</file>
     </qresource>
 </RCC>

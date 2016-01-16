@@ -17,6 +17,7 @@ Item {
     property bool paused: false
     property var currentChannel
     property var qualityMap
+    property bool fs: false
 
     id: root
 
@@ -30,15 +31,24 @@ Item {
         g_cman.findPlaybackStream(channel.name)
 
         paused = false
-        renderer.command(["set","pause", "no"])
+        renderer.play()
 
         currentChannel = channel
 
         _label.visible = false
         spinner.visible = true
 
-        header.text = "Currently watching: " + currentChannel.title
-                +   " playing " + currentChannel.game
+        header.text = "Currently watching: " + currentChannel.title + " playing " + currentChannel.game
+    }
+
+    function togglePause(){
+        paused = !paused
+
+        if (paused)
+            renderer.pause()
+
+        else
+            renderer.play()
     }
 
     Connections {
@@ -46,11 +56,6 @@ Item {
         onFoundPlaybackStream: {
 
             qualityMap = streams
-
-//            console.log(streams)
-//            for(var i in streams){
-//                console.log(i)
-//            }
 
             var desc = true
             while (!qualityMap[quality] || qualityMap[quality].length <= 0){
@@ -64,14 +69,11 @@ Item {
                 quality += desc ? -1 : 1
             }
 
-            //console.log("resolved quality:", quality)
-
             sourcesBox.entries = qualityMap
 
             if (qualityMap[quality]){
                 header.text = "Currently watching: " + currentChannel.title
                         +   " playing " + currentChannel.game
-                //console.log("Opening stream: ", qualityMap[quality])
 
                 renderer.command(["loadfile", qualityMap[quality]])
 
@@ -116,6 +118,35 @@ Item {
             anchors.fill: parent
             propagateComposedEvents: false
         }
+
+        Item {
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                left: parent.left
+                leftMargin: dp(20)
+            }
+
+            width: dp(50)
+
+            Icon {
+                id: fsToggle
+                anchors.centerIn: parent
+                icon: paused ? "play" : "pause"
+
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: togglePause()
+                hoverEnabled: true
+
+                onHoveredChanged: {
+                    fsToggle.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                }
+            }
+        }
+
 
 
         VolumeSlider {
@@ -174,10 +205,12 @@ Item {
             onClicked: {
                 if (sourcesBox.open){
                     sourcesBox.close()
-                } else {
-                    paused = !paused
-                    renderer.command(["set","pause", paused ? "yes" : "no"])
                 }
+            }
+
+            onDoubleClicked: {
+                g_fullscreen = !g_fullscreen
+                //renderer.command(["set","pause", "no"])
             }
 
             onPositionChanged: {
@@ -189,16 +222,20 @@ Item {
 
         onPlayingStopped: {
             header.text = "Playback stopped"
+            g_powerman.setScreensaver(true);
         }
 
         onPlayingPaused: {
             header.text = "Paused"
+            g_powerman.setScreensaver(true);
         }
 
         onPlayingResumed: {
             header.text = "Currently watching: " + currentChannel.title
                     +   " playing " + currentChannel.game
             spinner.visible = false
+
+            g_powerman.setScreensaver(false);
         }
 
         onBufferingStarted: {

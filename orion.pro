@@ -28,7 +28,8 @@ SOURCES += src/main.cpp\
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
     src/notifications/notification.cpp \
-    src/player/mpvobject.cpp
+    src/player/mpvobject.cpp \
+    src/power/power.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -42,7 +43,8 @@ HEADERS  += src/model/channel.h \
     src/notifications/notification.h \
     src/util/m3u8parser.h \
     src/player/mpvobject.h \
-    src/player/mpvrenderer.h
+    src/player/mpvrenderer.h \
+    src/power/power.h
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 

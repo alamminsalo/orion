@@ -7,7 +7,8 @@ import "styles.js" as Styles
 Rectangle {
     id: root
     color: Styles.sidebarBg
-    width: dp(230)
+    property int _width: dp(230)
+    width: visible ? _width : 0
     clip: true
     z: 99
 
@@ -22,9 +23,8 @@ Rectangle {
     }
 
     function toggle(){
-        root.width = isOpen ? dp(60) : dp(230)
+        root._width = isOpen ? dp(60) : dp(230)
         isOpen = !isOpen
-        toggleButton.iconStr = isOpen ? 'chevron_l' : 'chevron_r'
     }
 
     function setView(index){
@@ -32,18 +32,10 @@ Rectangle {
             ribbonList.currentIndex = index
     }
 
-    Ribbon {
+    DrawerRibbon {
         id: toggleButton
         iconStr: 'chevron_l'
-        MouseArea {
-            anchors.fill: parent
-            onClicked: toggle()
-
-            hoverEnabled: true
-            onHoveredChanged: {
-                toggleButton.setHighlight(containsMouse)
-            }
-        }
+        onClick: toggle()
         highlightOn: false
     }
 
@@ -95,6 +87,17 @@ Rectangle {
             if (g_notifications_enabled){
                 model.append({"label":"Settings", "icon":"settings"})
             }
+        }
+    }
+
+    Rectangle {
+        id: border
+        width: dp(1)
+        color: Styles.border
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            left: parent.left
         }
     }
 }

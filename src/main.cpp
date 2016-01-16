@@ -8,6 +8,7 @@
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
 #include "model/channelmanager.h"
+#include "power/power.h"
 #include "player/mpvrenderer.h"
 
 int main(int argc, char *argv[])
@@ -20,12 +21,15 @@ int main(int argc, char *argv[])
     cman->checkResources();
     cman->load();
 
+    Power *power = new Power();
+
     QQmlApplicationEngine engine;
 
     qDebug() << "DPI ratio: " << QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
 
     qDebug() << "Setting context variables...";
     engine.rootContext()->setContextProperty("g_cman", cman);
+    engine.rootContext()->setContextProperty("g_powerman", power);
     engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio()));
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
     engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
@@ -43,9 +47,11 @@ int main(int argc, char *argv[])
 
     engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
 
-
-
     qDebug() << "Starting window...";
+
+    power->setWid(app.allWindows().at(0)->winId());
+    qDebug() << "WindowId: " << app.allWindows().at(0)->winId();
+
     app.exec();
 
     qDebug() << "Closing application...";
