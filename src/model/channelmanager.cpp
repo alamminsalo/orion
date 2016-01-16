@@ -85,40 +85,40 @@ ChannelListModel *ChannelManager::getResultsModel() const
 
 void ChannelManager::checkResources()
 {
-    if (!QDir().exists("resources")){
-        qDebug() << "dir \"resources\" not found, making...";
-        QDir().mkdir("resources");
-    }
-    if (!QFile::exists("resources/icon.svg")){
-        qDebug() << "logo file not found, fetching...";
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/icon.svg","resources/icon.svg");
-    }
-    if (!QDir().exists("resources/preview")){
-        qDebug() << "dir \"preview\" not found, making...";
-        QDir().mkdir("resources/preview");
-    }
-    if (!QFile::exists("resources/preview/offline.png")){
-        qDebug() << "offline.png not found, fetching...";
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/dev/resources/preview/offline.png","resources/preview/offline.png");
-    }
-    if (!QDir().exists("resources/logos")){
-        qDebug() << "dir \"logos\" not found, making...";
-        QDir().mkdir("resources/logos");
-    }
-    if (!QDir().exists("resources/scripts")){
-        qDebug() << "dir \"scripts\" not found, making...";
-        QDir().mkdir("resources/scripts");
-    }
-    if (!QFile::exists(PLAY_FILE)){
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh",PLAY_FILE);
-    }
-    if (!QFile::exists(DIALOG_FILE)){
-        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh",DIALOG_FILE);
-    }
-    if (!QFile::exists("resources/logos/default.png")){
-        qDebug() << "default channel logo not found, fetching...";
-        netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
-    }
+//    if (!QDir().exists("resources")){
+//        qDebug() << "dir \"resources\" not found, making...";
+//        QDir().mkdir("resources");
+//    }
+//    if (!QFile::exists("resources/icon.svg")){
+//        qDebug() << "logo file not found, fetching...";
+//        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/icon.svg","resources/icon.svg");
+//    }
+//    if (!QDir().exists("resources/preview")){
+//        qDebug() << "dir \"preview\" not found, making...";
+//        QDir().mkdir("resources/preview");
+//    }
+//    if (!QFile::exists("resources/preview/offline.png")){
+//        qDebug() << "offline.png not found, fetching...";
+//        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/dev/resources/preview/offline.png","resources/preview/offline.png");
+//    }
+//    if (!QDir().exists("resources/logos")){
+//        qDebug() << "dir \"logos\" not found, making...";
+//        QDir().mkdir("resources/logos");
+//    }
+//    if (!QDir().exists("resources/scripts")){
+//        qDebug() << "dir \"scripts\" not found, making...";
+//        QDir().mkdir("resources/scripts");
+//    }
+//    if (!QFile::exists(PLAY_FILE)){
+//        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/play.sh",PLAY_FILE);
+//    }
+//    if (!QFile::exists(DIALOG_FILE)){
+//        netman->getFile("https://raw.githubusercontent.com/alamminsalo/kstream/master/kstream/resources/scripts/dialog.sh",DIALOG_FILE);
+//    }
+//    if (!QFile::exists("resources/logos/default.png")){
+//        qDebug() << "default channel logo not found, fetching...";
+//        netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
+//    }
     if (!QFile::exists(DATA_FILE)){
         QFile file(DATA_FILE);
         file.open(QIODevice::ReadWrite);
@@ -162,7 +162,7 @@ bool ChannelManager::load(){
 
     const QJsonArray &arr = json["channels"].toArray();
 
-    qDebug() << arr.size();
+    QList<Channel*> _channels;
 
     foreach(const QJsonValue &value, arr){
         QJsonObject obj = value.toObject();
@@ -199,10 +199,12 @@ bool ChannelManager::load(){
                     obj["preview"].toString());
         channel->setId(obj["id"].toInt());
 
-        favouritesModel->addChannel(channel);
-
-        qDebug() << "Added channel " << obj["title"].toString();
+        _channels.append(channel);
     }
+
+    favouritesModel->addAll(_channels);
+
+    qDeleteAll(_channels);
 
 	return true;
 }
@@ -343,11 +345,11 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list)
         if (favouritesModel->find(channel->getId()))
             channel->setFavourite(true);
 
-        resultsModel->addChannel(new Channel(*channel));
-
         if (!channel->isOnline())
             needsStreamCheck = true;
     }
+
+    resultsModel->addAll(list);
 
     if (needsStreamCheck)
         checkStreams(list);
@@ -385,9 +387,9 @@ void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
     foreach (Channel *channel, list){
         if (favouritesModel->find(channel->getId()))
             channel->setFavourite(true);
-
-        featuredModel->addChannel(new Channel(*channel));
     }
+
+    featuredModel->addAll(list);
 
     qDeleteAll(list);
 
@@ -404,15 +406,14 @@ void ChannelManager::updateFavourites(const QList<Channel*> &list)
 void ChannelManager::updateStreams(const QList<Channel*> &list)
 {
     favouritesModel->updateStreams(list);
+    featuredModel->updateStreams(list);
     resultsModel->updateStreams(list);
     qDeleteAll(list);
 }
 
-void ChannelManager::updateGames(const QList<Game*> &list)
+void ChannelManager::addGames(const QList<Game*> &list)
 {
-    foreach(Game* game, list){
-        gamesModel->addGame(new Game(*game));
-    }
+    gamesModel->addAll(list);
 
     qDeleteAll(list);
 

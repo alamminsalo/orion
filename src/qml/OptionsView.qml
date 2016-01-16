@@ -13,23 +13,13 @@ Item{
 
     Item {
         height: parent.height
+        width: dp(360)
 
         anchors {
             top: header.bottom
             bottom: parent.bottom
-            left: parent.left
-            right: parent.right
+            horizontalCenter: parent.horizontalCenter
         }
-
-        Item {
-            width: dp(360)
-            height: parent.height / 1.5
-
-            anchors {
-                //left: parent.left
-                //right: parent.right
-                centerIn: parent
-            }
 
             OptionTextInput {
                 id: cacheOption
@@ -48,43 +38,17 @@ Item{
 
             OptionCheckbox {
                 id: alertOption
+                visible: g_notifications_enabled
                 anchors {
-                    //top: cacheOption.bottom
                     top: cacheOption.bottom
                     left: parent.left
                     right: parent.right
                 }
                 checked: g_cman.isAlert()
-                text: "Enable alerts"
-            }
-
-            Item {
-                //Spacer and submit button
-                height: dp(120)
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: alertOption.bottom
+                onClicked: {
+                    g_cman.setAlert(checked)
                 }
-
-                PurpleButton {
-                    text: "Apply"
-                    width: dp(90)
-                    height: dp(40)
-                    anchors {
-                        bottom: parent.bottom
-                        right: parent.right
-                    }
-
-                    border.color: Styles.iconColor
-                    border.width: dp(1)
-
-                    onButtonPressed: {
-                        g_cman.setCache(cacheOption.getValue())
-                        g_cman.setAlert(alertOption.checked)
-                    }
-                }
+                text: "Enable notifications"
             }
         }
-    }
 }

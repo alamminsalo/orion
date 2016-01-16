@@ -60,9 +60,6 @@ Item{
                 }
             }
             MenuItem {
-                text: "Info;info"
-            }
-            MenuItem {
                 text: "Remove;remove"
                 onTriggered: {
                     g_cman.removeFromFavourites(_menu.item._id)

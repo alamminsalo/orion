@@ -63,6 +63,15 @@ QHash<int, QByteArray> GameListModel::roleNames() const
     return roles;
 }
 
+void GameListModel::addAll(const QList<Game *> &list)
+{
+    emit beginInsertRows(QModelIndex(), games.size(), games.size() + list.size() - 1);
+    foreach (Game *game, list) {
+        games.append(new Game(*game));
+    }
+    emit endInsertRows();
+}
+
 void GameListModel::addGame(Game *game)
 {
     emit beginInsertRows(QModelIndex(), games.size(), games.size());

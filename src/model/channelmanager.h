@@ -65,7 +65,7 @@ public:
     void checkStreams(const QList<Channel*>&);
 
     void updateStreams(const QList<Channel*>&);
-    void updateGames(const QList<Game*>&);
+    void addGames(const QList<Game*>&);
 
     ChannelListModel *getFavouritesModel() const;
 

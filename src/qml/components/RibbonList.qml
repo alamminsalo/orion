@@ -18,6 +18,7 @@ ListView {
     }
 
     MouseArea {
+        id: mArea
         anchors.fill: parent
         hoverEnabled: true
 
@@ -43,7 +44,6 @@ ListView {
         }
 
         onHoveredChanged: setHover()
-        onMouseXChanged: setHover()
-        onMouseYChanged: setHover()
+        onPositionChanged: setHover()
     }
 }

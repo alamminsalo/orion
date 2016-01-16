@@ -20,6 +20,7 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QHash<int,QByteArray> roleNames() const;
 
+    void addAll(const QList<Game*> &);
     void addGame(Game*);
     void removeGame(Game*);
     Game* find(const QString&);

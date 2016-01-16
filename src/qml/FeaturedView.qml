@@ -29,6 +29,7 @@ Item {
             if (visible && !checked){
                 g_cman.getFeatured()
                 checked = true
+                timer.restart()
             }
         }
 
@@ -89,6 +90,16 @@ Item {
                 onTriggered: {
                     _menu.addRemoveFavourite()
                 }
+            }
+        }
+
+        Timer {
+            id: timer
+            interval: 30000
+            running: false
+            repeat: false
+            onTriggered: {
+                featured.checked = false
             }
         }
     }

@@ -71,7 +71,7 @@ Item {
             if (qualityMap[quality]){
                 header.text = "Currently watching: " + currentChannel.title
                         +   " playing " + currentChannel.game
-                console.log("Opening stream: ", qualityMap[quality])
+                //console.log("Opening stream: ", qualityMap[quality])
 
                 renderer.command(["loadfile", qualityMap[quality]])
 

@@ -7,11 +7,21 @@ Item {
     id: root
     anchors.fill: parent
     property int gamesCount: 0
+    property bool checked: false
 
     ViewHeader{
         id: header
         text: "All games"
         z: games.z + 1
+    }
+
+    onVisibleChanged: {
+        if (visible && !checked){
+            g_cman.getGames(0, 25, true)
+            gamesCount = 25
+            checked = true
+            timer.start()
+        }
     }
 
     ChannelGrid {
@@ -69,6 +79,16 @@ Item {
                     search.search(":game " + _menu.item.title)
                     requestSelectionChange(0)
                 }
+            }
+        }
+
+        Timer {
+            id: timer
+            interval: 30000
+            running: false
+            repeat: false
+            onTriggered: {
+                root.checked = false
             }
         }
     }

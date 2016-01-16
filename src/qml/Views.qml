@@ -42,10 +42,6 @@ Rectangle {
         //Games
         case 3:
             games.visible = true
-            if (games.gamesCount === 0){
-                g_cman.getGames(0, 25, true)
-                games.gamesCount = 25
-            }
             break
 
         //Player
@@ -59,11 +55,6 @@ Rectangle {
             break
         }
     }
-
-//    onVisibleChanged: {
-//        if (visible)
-//            games.checkScroll()
-//    }
 
     SearchView {
         id: search

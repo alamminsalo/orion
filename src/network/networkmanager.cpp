@@ -243,7 +243,7 @@ void NetworkManager::gamesReply(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     //qDebug() << data;
 
-    cman->updateGames(JsonParser::parseGames(data));
+    cman->addGames(JsonParser::parseGames(data));
 }
 
 void NetworkManager::gameStreamsReply(QNetworkReply *reply)

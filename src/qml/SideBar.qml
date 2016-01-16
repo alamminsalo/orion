@@ -62,6 +62,7 @@ Rectangle {
         }
 
         model: ListModel {
+            id: model
             ListElement {
                 label: "Search"
                 icon: "search"
@@ -82,15 +83,18 @@ Rectangle {
                 label: "Watch"
                 icon: "play"
             }
-            ListElement {
-                label: "Settings"
-                icon: "settings"
-            }
         }
 
         delegate: Ribbon {
             text: label
             iconStr: icon
+        }
+
+        Component.onCompleted: {
+            //Add more components with OR as they are added
+            if (g_notifications_enabled){
+                model.append({"label":"Settings", "icon":"settings"})
+            }
         }
     }
 }

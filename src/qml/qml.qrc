@@ -19,7 +19,7 @@
         <file>Views.qml</file>
         <file>FeaturedView.qml</file>
         <file>fonts/font-awesome.css</file>
-        <file>fonts/droidsans/DroidSans.ttf</file>
+        <file>fonts/DroidSans.ttf</file>
         <file>PlayerView.qml</file>
         <file>components/ViewHeader.qml</file>
         <file>components/PlayerHeader.qml</file>
@@ -27,8 +27,7 @@
         <file>SideBar.qml</file>
         <file>components/OptionTextInput.qml</file>
         <file>components/OptionCheckbox.qml</file>
-        <file>icon/logo-256.ico</file>
-        <file>icon/icon-245.png</file>
+        <file>icon/orion.ico</file>
         <file>components/ComboBox.qml</file>
         <file>components/VolumeSlider.qml</file>
     </qresource>

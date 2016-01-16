@@ -177,8 +177,6 @@ bool MpvObject::event(QEvent *event)
                 break;
                 // these two look like they're reversed but they aren't. the names are misleading.
             case MPV_EVENT_START_FILE:
-                qDebug() << "AT FILE START";
-                mpv::qt::set_option_variant(mpv, "cache", 8192 * 1024);
 //                setPlayState(Mpv::Loaded);
                 break;
             case MPV_EVENT_FILE_LOADED:

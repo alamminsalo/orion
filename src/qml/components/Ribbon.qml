@@ -19,12 +19,11 @@ Rectangle {
 
     function setFocus(isActive){
         border.width = isActive ? (g_toolBox.isOpen ? dp(14) : dp(60)) : 0
-//        borderTop.height = isActive ? dp(1) : 0
-//        borderBottom.height = isActive ? dp(1) : 0
         color = isActive ? Styles.ribbonSelected : "transparent"
         textLabel.color = isActive ? Styles.textColor : Styles.iconColor
         isSelected = isActive
         iconLabel.anchors.centerIn = g_toolBox.isOpen ? null : root
+        iconLabel.iconColor = isActive ? Styles.iconHighlight : Styles.iconColor
     }
 
     Connections {
@@ -61,29 +60,6 @@ Rectangle {
             }
         }
     }
-
-
-//    Rectangle {
-//        id: borderTop
-//        height: 0
-//        color: Styles.border
-//        anchors {
-//            top: parent.top
-//            left: parent.left
-//            right: parent.right
-//        }
-//    }
-
-//    Rectangle {
-//        id: borderBottom
-//        height: 0
-//        color: Styles.border
-//        anchors {
-//            left: parent.left
-//            right: parent.right
-//            bottom: parent.bottom
-//        }
-//    }
 
     Text {
         id: textLabel

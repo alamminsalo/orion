@@ -21,7 +21,7 @@ Window {
     }
 
     FontLoader{
-        source: "qrc:/fonts/droidsans/DroidSans.ttf"
+        source: "qrc:/fonts/DroidSans.ttf"
     }
 
     Item {
@@ -83,7 +83,7 @@ Window {
         pollTimer.start()
 
         //Initial view
-        g_toolBox.setView(1)
+        g_toolBox.setView(2)
     }
 
     Timer {
