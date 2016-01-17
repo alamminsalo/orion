@@ -64,7 +64,7 @@ RESOURCES += \
     src/qml/qml.qrc
 
 win32: {
-    LIBS += LC:/libmpv/32 -lmpv.dll
+    LIBS += -LC:/libmpv/32 -lmpv.dll
     INCLUDEPATH += C:/libmpv/include
     RC_ICONS = distfiles/orion.ico
 }
