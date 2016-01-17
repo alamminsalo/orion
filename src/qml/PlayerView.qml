@@ -263,7 +263,7 @@ Item {
 
     Timer {
         id: headerTimer
-        interval: 5000
+        interval: 4000
         running: false
         repeat: false
         onTriggered: {

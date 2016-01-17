@@ -89,12 +89,14 @@ void ChannelListModel::addChannel(Channel *channel)
 
 void ChannelListModel::addAll(const QList<Channel *> &list)
 {
-    emit beginInsertRows(QModelIndex(), channels.size(), channels.size() + list.size() - 1);
-    foreach (Channel* channel, list){
-        channels.append(new Channel(*channel));
-    }
+    if (!list.isEmpty()){
+        emit beginInsertRows(QModelIndex(), channels.size(), channels.size() + list.size() - 1);
+        foreach (Channel* channel, list){
+            channels.append(new Channel(*channel));
+        }
 
-    emit endInsertRows();
+        emit endInsertRows();
+    }
 }
 
 void ChannelListModel::removeChannel(Channel *channel)

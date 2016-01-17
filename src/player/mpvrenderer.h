@@ -8,19 +8,32 @@
 
 #include <QObject>
 #include <QtGlobal>
-#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QGuiApplication>
+
+#ifdef Q_OS_WIN
+    #include <Windows.h>
+#endif
 
 #include <QtGui/QOpenGLFramebufferObject>
 
-class MpvRenderer : public QQuickFramebufferObject::Renderer
+class MpvRenderer : public QQuickFramebufferObject::Renderer, protected QOpenGLFunctions
 {
     static void *get_proc_address(void *ctx, const char *name) {
         (void)ctx;
         QOpenGLContext *glctx = QOpenGLContext::currentContext();
         if (!glctx)
-            return NULL;
-        return (void *)glctx->getProcAddress(QByteArray(name));
+        return NULL;
+
+        void *res = (void *)glctx->getProcAddress(QByteArray(name));
+#ifdef Q_OS_WIN
+        if (!res)
+        {
+            HMODULE oglmod = GetModuleHandleA("opengl32.dll");
+            return (void *) GetProcAddress(oglmod, name);
+        }
+#endif
+        return res;
     }
 
     mpv::qt::Handle mpv;

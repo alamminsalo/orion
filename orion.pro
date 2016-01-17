@@ -7,7 +7,7 @@
 #
 #-------------------------------------------------
 
-QT       += qml quick network
+QT     += opengl qml quick network
 
 TARGET = orion
 
@@ -26,7 +26,8 @@ SOURCES += src/main.cpp\
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
     src/player/mpvobject.cpp \
-    src/power/power.cpp
+    src/power/power.cpp \
+    src/notifications/notification.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -40,7 +41,8 @@ HEADERS  += src/model/channel.h \
     src/util/m3u8parser.h \
     src/player/mpvobject.h \
     src/player/mpvrenderer.h \
-    src/power/power.h
+    src/power/power.h \
+    src/notifications/notification.h
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
@@ -48,7 +50,7 @@ DISTFILES += src/qml/icon/orion.svg
 
 #Copy some files over to destination dir
 
-CONFIG(release): {
+unix: CONFIG(release): {
     copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
     first.depends = $(first) copydata
     export(first.depends)
@@ -59,5 +61,9 @@ CONFIG(release): {
 
 RESOURCES += \
     src/qml/qml.qrc
+
+win32: {
+    RC_ICONS = distfiles/orion.ico
+}
 
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT

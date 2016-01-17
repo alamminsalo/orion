@@ -31,7 +31,8 @@ ApplicationWindow {
 
         SideBar {
             id: sidebar
-            visible: !g_fullscreen
+            hidden: g_fullscreen
+            //visible: !g_fullscreen
             anchors {
                 left: parent.left
                 top: parent.top

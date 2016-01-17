@@ -8,7 +8,8 @@ Rectangle {
     id: root
     color: Styles.sidebarBg
     property int _width: dp(230)
-    width: visible ? _width : 0
+    property bool hidden: false
+    width: !hidden ? _width : 0
     clip: true
     z: 99
 
