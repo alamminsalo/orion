@@ -2,17 +2,17 @@
 #
 # Orion: Twitch Client written in C++/QML
 #
+# Deployment: create dir 'lib' to build dir and copy over the needed libraries
+# (libmpv, snorenotify)
+#
 #-------------------------------------------------
 
-QT       += qml quick network
+QT     += opengl qml quick network
 
 TARGET = orion
 
 DEFINES += APP_NAME=\\\"Orion\\\" \
-        ENABLE_NOTIFY
-
-LIBS += -lsnore-qt5 \
-        -lmpv
+        #DEBUG_LIBMPV
 
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
@@ -23,8 +23,9 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/notifications/notification.cpp \
-    src/libmpv/mpvobject.cpp
+    src/player/mpvobject.cpp \
+    src/power/power.cpp \
+    src/notifications/notification.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -35,22 +36,37 @@ HEADERS  += src/model/channel.h \
     src/util/jsonparser.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
-    src/notifications/notification.h \
     src/util/m3u8parser.h \
-    src/libmpv/mpvobject.h \
-    src/libmpv/mpvrenderer.h
-
-
-FORMS    +=
-
-OTHER_FILES += \
-    resources/logo.svg
+    src/player/mpvobject.h \
+    src/player/mpvrenderer.h \
+    src/power/power.h \
+    src/notifications/notification.h
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
-DISTFILES +=
+DISTFILES += src/qml/icon/orion.svg
+
+unix: {
+    LIBS += -lmpv
+
+    #Copy some files over to destination dir
+    CONFIG(release): {
+        copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
+        first.depends = $(first) copydata
+        export(first.depends)
+        export(copydata.commands)
+
+        QMAKE_EXTRA_TARGETS += first copydata
+    }
+}
 
 RESOURCES += \
     src/qml/qml.qrc
+
+win32: {
+    LIBS += -LC:/libmpv/32 -lmpv.dll
+    INCLUDEPATH += C:/libmpv/include
+    RC_ICONS = distfiles/orion.ico
+}
 
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT

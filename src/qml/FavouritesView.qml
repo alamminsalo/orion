@@ -1,6 +1,7 @@
 import QtQuick.Controls 1.4
 import QtQuick 2.0
 import "components"
+
 Item{
     anchors.fill: parent
 
@@ -58,9 +59,6 @@ Item{
                         requestSelectionChange(4)
                     }
                 }
-            }
-            MenuItem {
-                text: "Info;info"
             }
             MenuItem {
                 text: "Remove;remove"

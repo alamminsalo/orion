@@ -11,80 +11,51 @@ Item{
         text: "Settings"
     }
 
+    //NotificationMaker is easier to just put here because all the options are near
+    NotificationMaker{
+        id: notifMaker
+        position: alertPosition.selection
+    }
+
     Item {
         height: parent.height
+        width: dp(360)
 
         anchors {
             top: header.bottom
             bottom: parent.bottom
-            left: parent.left
-            right: parent.right
+            horizontalCenter: parent.horizontalCenter
         }
 
-        Item {
-            width: dp(360)
-            height: parent.height / 1.5
+        OptionCheckbox {
+            id: alertOption
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.isAlert()
+            onClicked: {
+                g_cman.setAlert(checked)
+            }
+            text: "Enable notifications"
+        }
+
+        OptionCombo {
+            id: alertPosition
+            selection: g_cman.getAlertPosition()
+
+            onSelectionChanged: {
+                g_cman.setAlertPosition(selection)
+            }
 
             anchors {
-                //left: parent.left
-                //right: parent.right
-                centerIn: parent
+                top: alertOption.bottom
+                left: parent.left
+                right: parent.right
             }
-
-            OptionTextInput {
-                id: cacheOption
-                enabled: false
-                visible: false
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-
-                text: "Buffer lenght (s)"
-                value: g_cman.getCache()
-                mask: "99"
-            }
-
-            OptionCheckbox {
-                id: alertOption
-                anchors {
-                    //top: cacheOption.bottom
-                    top: cacheOption.bottom
-                    left: parent.left
-                    right: parent.right
-                }
-                checked: g_cman.isAlert()
-                text: "Enable alerts"
-            }
-
-            Item {
-                //Spacer and submit button
-                height: dp(120)
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    top: alertOption.bottom
-                }
-
-                PurpleButton {
-                    text: "Apply"
-                    width: dp(90)
-                    height: dp(40)
-                    anchors {
-                        bottom: parent.bottom
-                        right: parent.right
-                    }
-
-                    border.color: Styles.iconColor
-                    border.width: dp(1)
-
-                    onButtonPressed: {
-                        g_cman.setCache(cacheOption.getValue())
-                        g_cman.setAlert(alertOption.checked)
-                    }
-                }
-            }
+            text: "Notification position"
         }
+
     }
 }

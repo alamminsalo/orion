@@ -26,6 +26,7 @@ public:
     void checkStreams();
 
     void addChannel(Channel*);
+    void addAll(const QList<Channel*> &);
     void removeChannel(Channel*);
     Channel* find(const QString&);
     Channel* find(const quint32&);

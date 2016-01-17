@@ -1,27 +1,29 @@
 import QtQuick 2.5
 import QtQuick.Window 2.0
-import QtQuick.Layouts 1.1
+import QtQuick.Controls 1.1
 import "styles.js" as Styles
 
 
-Window {
+ApplicationWindow {
     id: root
     visible: true
     width: dp(1600)
     height: dp(1200)
     title: "Orion"
+    visibility: g_fullscreen ? "FullScreen" : "Windowed"
 
     property variant g_rootWindow: root
     property variant g_tooltip
     property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
+    property bool g_fullscreen: false
 
     function dp(number){
         return Math.ceil(number * g_ppi / 157.29)
     }
 
     FontLoader{
-        source: "qrc:/fonts/droidsans/DroidSans.ttf"
+        source: "qrc:/fonts/DroidSans.ttf"
     }
 
     Item {
@@ -29,6 +31,8 @@ Window {
 
         SideBar {
             id: sidebar
+            hidden: g_fullscreen
+            //visible: !g_fullscreen
             anchors {
                 left: parent.left
                 top: parent.top
@@ -44,26 +48,10 @@ Window {
                 bottom: parent.bottom
             }
 
-            Rectangle {
-                id: border
-                width: dp(1)
-                color: Styles.border
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    left: parent.left
-                }
-            }
-
             Views {
                 id: view
                 selection: sidebar.selectedView
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    left: border.right
-                    right: parent.right
-                }
+                anchors.fill: parent
                 onRequestSelectionChange: {
                     g_toolBox.setView(index)
                 }
@@ -83,12 +71,12 @@ Window {
         pollTimer.start()
 
         //Initial view
-        g_toolBox.setView(1)
+        g_toolBox.setView(2)
     }
 
     Timer {
         id: pollTimer
-        interval: 15000
+        interval: 30000
         running: false
         repeat: true
         onTriggered: {

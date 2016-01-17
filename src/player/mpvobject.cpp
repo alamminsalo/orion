@@ -1,6 +1,11 @@
 #include "mpvobject.h"
 #include "mpvrenderer.h"
 
+#include <QtGlobal>
+
+#ifdef Q_OS_WIN
+    #include <Windows.h>
+#endif
 
 static void wakeup(void *ctx)
 {
@@ -15,28 +20,29 @@ MpvObject::MpvObject(QQuickItem * parent)
     if (!mpv)
         throw std::runtime_error("could not create mpv context");
 
+#ifdef DEBUG_LIBMPV
     //Enable for debugging
     mpv_set_option_string(mpv, "terminal", "yes");
     mpv_set_option_string(mpv, "msg-level", "all=v");
+#endif
 
-    if (mpv_initialize(mpv) < 0)
-        throw std::runtime_error("could not initialize mpv context");
+//    mpv_set_option_string(mpv, "config", "yes");
+//    mpv_set_option_string(mpv, "config-dir", ".");
 
     // Make use of the MPV_SUB_API_OPENGL_CB API.
     mpv::qt::set_option_variant(mpv, "vo", "opengl-cb");
-    mpv::qt::set_option_variant(mpv, "input-cursor", "no");
-
-
-    mpv::qt::set_option_variant(mpv, "cache", "auto");
-    //mpv::qt::set_option_variant(mpv, "demuxer-readahead-secs", "1");
+    //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
     // Request hw decoding, just for testing.
     //mpv::qt::set_option_variant(mpv, "hwdec", "auto");
 
-    //Cache settings
-    //mpv::qt::set_property_variant(mpv, "cache", "153600");
-    //mpv::qt::set_property_variant(mpv, "cache-initial", "10000");
-    mpv::qt::set_property_variant(mpv, "cache-secs", "10");
+    //Cache
+    //mpv::qt::set_option_variant(mpv, "cache", 8192 * 1024);
+
+    if (mpv_initialize(mpv) < 0)
+        throw std::runtime_error("could not initialize mpv context");
+
+
 
     // Setup the callback that will make QtQuick update and redraw if there
     // is a new video frame. Use a queued connection: this makes sure the
@@ -53,6 +59,8 @@ MpvObject::MpvObject(QQuickItem * parent)
 
     //Set observe properties
     mpv_observe_property(mpv, 0, "core-idle", MPV_FORMAT_FLAG);
+    //mpv_observe_property(mpv, 0, "paused-for-cache", MPV_FORMAT_FLAG);
+    mpv_observe_property(mpv, 0, "cache-buffering-state", MPV_FORMAT_INT64);
 
     // setup callback event handling
     mpv_set_wakeup_callback(mpv, wakeup, this);
@@ -90,7 +98,20 @@ QQuickFramebufferObject::Renderer *MpvObject::createRenderer() const
 {
     window()->setPersistentOpenGLContext(true);
     window()->setPersistentSceneGraph(true);
+
     return new MpvRenderer(this);
+}
+
+void MpvObject::pause()
+{
+    QStringList args = (QStringList() << "set" << "pause" << "yes");
+    mpv::qt::command_variant(mpv, args);
+}
+
+void MpvObject::play()
+{
+    QStringList args = (QStringList() << "set" << "pause" << "no");
+    mpv::qt::command_variant(mpv, args);
 }
 
 bool MpvObject::event(QEvent *event)
@@ -148,60 +169,41 @@ bool MpvObject::event(QEvent *event)
                 {
                     if(prop->format == MPV_FORMAT_FLAG)
                     {
-                        if((bool)*(unsigned*)prop->data)
+                        if((bool)*(unsigned*)prop->data){
                             emit playingPaused();
-                        else
+                        } else {
                             emit playingResumed();
+                        }
                     }
                 }
-                else if(QString(prop->name) == "paused-for-cache")
+                else if(QString(prop->name) == "cache-buffering-state")
                 {
-                    if(prop->format == MPV_FORMAT_FLAG)
+                    if(prop->format == MPV_FORMAT_INT64)
                     {
-                        if((bool)*(unsigned*)prop->data)
                             emit bufferingStarted();
-//                        else
-//                            ShowText(QString(), 0);
                     }
                 }
                 break;
             }
             case MPV_EVENT_IDLE:
                 emit playingStopped();
-//                fileInfo.length = 0;
-//                setTime(0);
-//                setPlayState(Mpv::Idle);
                 break;
                 // these two look like they're reversed but they aren't. the names are misleading.
             case MPV_EVENT_START_FILE:
-//                setPlayState(Mpv::Loaded);
                 break;
-            case MPV_EVENT_FILE_LOADED:
-//                setPlayState(Mpv::Started);
-//                LoadFileInfo();
-//                SetProperties();
+
             case MPV_EVENT_UNPAUSE:
-//                setPlayState(Mpv::Playing);
                 break;
             case MPV_EVENT_PAUSE:
-//                setPlayState(Mpv::Paused);
-//                ShowText(QString(), 0);
                 break;
             case MPV_EVENT_END_FILE:
-//                if(playState == Mpv::Loaded)
-//                    ShowText(tr("File couldn't be opened"));
-//                setPlayState(Mpv::Stopped);
                 break;
             case MPV_EVENT_SHUTDOWN:
                 QCoreApplication::quit();
                 break;
             case MPV_EVENT_LOG_MESSAGE:
-            {
-//                mpv_event_log_message *message = static_cast<mpv_event_log_message*>(event->data);
-//                if(message != nullptr)
-//                    emit messageSignal(message->text);
                 break;
-            }
+
             default: // unhandled events
                 break;
             }

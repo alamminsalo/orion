@@ -34,14 +34,16 @@ Item {
         }
 
         width: dp(36)
-
-        //radius: dp(5)
+        radius: dp(2)
         color: Styles.sidebarBg
 
         MouseArea{
             anchors.fill: parent
 
-            onClicked: root.checked = !root.checked
+            onClicked: {
+                root.checked = !root.checked
+                root.clicked()
+            }
 
             Icon {
                 icon: "check"

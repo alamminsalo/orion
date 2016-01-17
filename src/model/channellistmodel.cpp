@@ -87,6 +87,18 @@ void ChannelListModel::addChannel(Channel *channel)
     emit endInsertRows();
 }
 
+void ChannelListModel::addAll(const QList<Channel *> &list)
+{
+    if (!list.isEmpty()){
+        emit beginInsertRows(QModelIndex(), channels.size(), channels.size() + list.size() - 1);
+        foreach (Channel* channel, list){
+            channels.append(new Channel(*channel));
+        }
+
+        emit endInsertRows();
+    }
+}
+
 void ChannelListModel::removeChannel(Channel *channel)
 {
     int index = channels.indexOf(channel);

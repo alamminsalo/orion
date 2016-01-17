@@ -41,6 +41,7 @@ void Game::setPreview(const QString &value)
     preview = value;
 }
 Game::Game(){
+    viewers = 0;
 }
 
 //Copy constructor

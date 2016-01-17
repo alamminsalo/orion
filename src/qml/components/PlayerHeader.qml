@@ -3,18 +3,15 @@ import "../styles.js" as Styles
 
 Item {
     property string text
+    property int thickness: dp(80)
+    property string color: Styles.shadeColor
     id: root
 
-    anchors {
-        top: parent.top
-        left: parent.left
-        right: parent.right
-    }
-    height: dp(60)
+    height: thickness
 
     Rectangle {
         id: shade
-        color: Styles.shadeColor
+        color: root.color
         opacity: .8
         anchors.fill: parent
     }
@@ -47,23 +44,12 @@ Item {
     }
 
     function show(){
-        height = dp(60)
-        headerTimer.restart()
+        height = thickness
     }
 
     function hide(){
-        height = -dp(60)
+        height = -thickness
     }
 
     Component.onCompleted: hide()
-
-    Timer {
-        id: headerTimer
-        interval: 5000
-        running: false
-        repeat: false
-        onTriggered: {
-            hide()
-        }
-    }
 }
