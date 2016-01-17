@@ -14,8 +14,6 @@ TARGET = orion
 DEFINES += APP_NAME=\\\"Orion\\\" \
         #DEBUG_LIBMPV
 
-LIBS += -lmpv
-
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
     src/model/channel.cpp \
@@ -48,21 +46,26 @@ QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
 DISTFILES += src/qml/icon/orion.svg
 
-#Copy some files over to destination dir
+unix: {
+    LIBS += -lmpv
 
-unix: CONFIG(release): {
-    copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
-    first.depends = $(first) copydata
-    export(first.depends)
-    export(copydata.commands)
+    #Copy some files over to destination dir
+    CONFIG(release): {
+        copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
+        first.depends = $(first) copydata
+        export(first.depends)
+        export(copydata.commands)
 
-    QMAKE_EXTRA_TARGETS += first copydata
+        QMAKE_EXTRA_TARGETS += first copydata
+    }
 }
 
 RESOURCES += \
     src/qml/qml.qrc
 
 win32: {
+    LIBS += LC:/libmpv/32 -lmpv.dll
+    INCLUDES += C:/libmpv/include
     RC_ICONS = distfiles/orion.ico
 }
 
