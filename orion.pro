@@ -65,7 +65,7 @@ RESOURCES += \
 
 win32: {
     LIBS += LC:/libmpv/32 -lmpv.dll
-    INCLUDES += C:/libmpv/include
+    INCLUDEPATH += C:/libmpv/include
     RC_ICONS = distfiles/orion.ico
 }
 
