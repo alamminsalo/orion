@@ -3,7 +3,7 @@ import "../styles.js" as Styles
 
 Rectangle {
     property var entries //QStringList
-    property var names: ["Mobile","Low","Medium","High","Source"]
+    property var names: []
     property var selectedItem
     property bool open: list.visible
 
@@ -45,7 +45,7 @@ Rectangle {
 
         Text {
             id: label
-            text: "Source"
+            text: "-"
             anchors.centerIn: parent
             color: Styles.textColor
             font.family: "Droid Sans"
@@ -69,6 +69,7 @@ Rectangle {
     }
 
     onEntriesChanged: {
+        console.log("Setting new entries")
         srcModel.clear()
         for (var i = entries.length - 1; i > -1; i--){
             if (entries[i] && entries[i].length > 0){

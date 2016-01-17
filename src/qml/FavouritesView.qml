@@ -1,6 +1,7 @@
 import QtQuick.Controls 1.4
 import QtQuick 2.0
 import "components"
+
 Item{
     anchors.fill: parent
 

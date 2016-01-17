@@ -11,6 +11,12 @@ Item{
         text: "Settings"
     }
 
+    //NotificationMaker is easier to just put here because all the options are near
+    NotificationMaker{
+        id: notifMaker
+        position: alertPosition.selection
+    }
+
     Item {
         height: parent.height
         width: dp(360)
@@ -21,34 +27,35 @@ Item{
             horizontalCenter: parent.horizontalCenter
         }
 
-            OptionTextInput {
-                id: cacheOption
-                enabled: false
-                visible: false
-                anchors {
-                    top: parent.top
-                    left: parent.left
-                    right: parent.right
-                }
-
-                text: "Buffer lenght (s)"
-                value: g_cman.getCache()
-                mask: "99"
+        OptionCheckbox {
+            id: alertOption
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
             }
-
-            OptionCheckbox {
-                id: alertOption
-                visible: g_notifications_enabled
-                anchors {
-                    top: cacheOption.bottom
-                    left: parent.left
-                    right: parent.right
-                }
-                checked: g_cman.isAlert()
-                onClicked: {
-                    g_cman.setAlert(checked)
-                }
-                text: "Enable notifications"
+            checked: g_cman.isAlert()
+            onClicked: {
+                g_cman.setAlert(checked)
             }
+            text: "Enable notifications"
         }
+
+        OptionCombo {
+            id: alertPosition
+            selection: g_cman.getAlertPosition()
+
+            onSelectionChanged: {
+                g_cman.setAlertPosition(selection)
+            }
+
+            anchors {
+                top: alertOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            text: "Notification position"
+        }
+
+    }
 }

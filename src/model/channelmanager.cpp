@@ -11,20 +11,25 @@ QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
     return featuredProxy;
 }
 
-quint16 ChannelManager::getCache() const
-{
-    return cache;
-}
-
 bool ChannelManager::isAlert() const
 {
     return alert;
 }
 
+int ChannelManager::getAlertPosition() const
+{
+    return alertPosition;
+}
+
+void ChannelManager::setAlertPosition(const int &value)
+{
+    alertPosition = value;
+}
+
 ChannelManager::ChannelManager(){
     alert = true;
 
-    cache = 10;
+    alertPosition = 1;
 
     netman = new NetworkManager(this);
 
@@ -146,8 +151,8 @@ bool ChannelManager::load(){
         alert = json["alert"].toBool();
     }
 
-    if (!json["cache"].isNull()){
-        cache = json["cache"].toInt();
+    if (!json["alertPosition"].isNull()){
+        alertPosition = json["alertPosition"].toInt();
     }
 
     if (json["channels"].isUndefined()){
@@ -223,7 +228,7 @@ bool ChannelManager::save() const
 
     obj["alert"] = QJsonValue(alert);
 
-    obj["cache"] = QJsonValue(cache);
+    obj["alertPosition"] = QJsonValue(alertPosition);
 
     return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
 }
@@ -371,12 +376,6 @@ void ChannelManager::findPlaybackStream(const QString &serviceName)
     netman->getChannelPlaybackStream(serviceName);
 }
 
-void ChannelManager::setCache(const quint16 &secs)
-{
-    cache = secs;
-    emit cacheUpdated();
-}
-
 void ChannelManager::setAlert(const bool &val)
 {
     alert = val;
@@ -422,10 +421,11 @@ void ChannelManager::addGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-#ifdef ENABLE_NOTIFY
-    if (alert)
-        notif.notify(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
-                  channel->getInfo(),
-                  channel->getLogourl());
-#endif
+    if (alert){
+        QStringList args;
+        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline");
+        args << channel->getInfo() << channel->getLogourl();
+
+        emit pushNotification(args);
+    }
 }

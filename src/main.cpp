@@ -36,12 +36,6 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());
     engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
 
-#ifdef ENABLE_NOTIFY
-    engine.rootContext()->setContextProperty("g_notifications_enabled", QVariant::fromValue(true));
-#else
-    engine.rootContext()->setContextProperty("g_notifications_enabled", QVariant::fromValue(false));
-#endif
-
     std::setlocale(LC_NUMERIC, "C");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
 

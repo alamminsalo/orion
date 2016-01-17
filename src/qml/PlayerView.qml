@@ -167,6 +167,7 @@ Item {
             id: sourcesBox
             width: dp(100)
             height: dp(50)
+            names: ["Mobile","Low","Medium","High","Source"]
 
             anchors {
                 right: parent.right

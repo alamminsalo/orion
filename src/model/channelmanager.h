@@ -7,10 +7,6 @@
 #include "game.h"
 #include "../network/networkmanager.h"
 
-#ifdef ENABLE_NOTIFY
-#include "../notifications/notification.h"
-#endif
-
 #include <QSortFilterProxyModel>
 
 #define DATA_FILE           "data.json"
@@ -36,12 +32,8 @@ protected:
 
     GameListModel* gamesModel;
 
-#ifdef ENABLE_NOTIFY
-    SnoreNotif notif;
-#endif
-
     bool alert;
-    quint16 cache;
+    int alertPosition;
 
 public:
     ChannelManager();
@@ -77,13 +69,16 @@ public:
 
     QSortFilterProxyModel *getFeaturedProxy() const;
 
-    Q_INVOKABLE quint16 getCache() const;
     Q_INVOKABLE bool isAlert() const;
+
+    Q_INVOKABLE int getAlertPosition() const;
+    Q_INVOKABLE void setAlertPosition(const int &value);
 
 signals:
     void channelExists(Channel*);
     void channelNotFound(Channel*);
     void channelStateChanged(Channel*);
+    void pushNotification(const QStringList args);
     void newChannel(Channel*);
     void gamesUpdated();
     void channelsUpdated();
@@ -102,7 +97,6 @@ public slots:
     void notify(Channel*);
     void getFeatured();
     void findPlaybackStream(const QString&);
-    void setCache(const quint16&);
     void setAlert(const bool&);
 };
 

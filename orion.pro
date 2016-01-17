@@ -12,11 +12,9 @@ QT       += qml quick network
 TARGET = orion
 
 DEFINES += APP_NAME=\\\"Orion\\\" \
-        ENABLE_NOTIFY \
         #DEBUG_LIBMPV
 
-LIBS += -lsnore-qt5 \
-        -lmpv
+LIBS += -lmpv
 
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
@@ -27,7 +25,6 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/notifications/notification.cpp \
     src/player/mpvobject.cpp \
     src/power/power.cpp
 
@@ -40,7 +37,6 @@ HEADERS  += src/model/channel.h \
     src/util/jsonparser.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
-    src/notifications/notification.h \
     src/util/m3u8parser.h \
     src/player/mpvobject.h \
     src/player/mpvrenderer.h \
