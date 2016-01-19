@@ -10,6 +10,5 @@ Features desktop notifications and integrated player
 
 ##Dependencies
 
-libsnorenotify
 libmpv
 
