@@ -141,9 +141,11 @@ void ChannelListModel::clear()
 
 void ChannelListModel::updateChannelForView(Channel* channel)
 {
-    int i = channels.indexOf(channel);
-    if (i > -1){
-        emit dataChanged(index(i), index(i));
+    if (channel){
+        int i = channels.indexOf(channel);
+        if (i > -1){
+            emit dataChanged(index(i), index(i));
+        }
     }
 }
 

@@ -22,7 +22,6 @@ Item {
     id: root
 
     function play(channel){
-
         if (!channel){
             return
         }
@@ -33,15 +32,31 @@ Item {
         paused = false
         renderer.play()
 
-        currentChannel = channel
+        currentChannel = {
+            "_id": channel._id,
+            "name": channel.name,
+            "game": channel.game,
+            "title": channel.title,
+            "online": channel.online,
+            "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
+            "viewers": channel.viewers,
+            "logo": channel.logo,
+            "preview": channel.preview
+        }
+
+        _favIcon.update()
 
         _label.visible = false
         spinner.visible = true
 
+        setWatchingTitle()
+    }
+
+    function setWatchingTitle(){
         header.text = "Currently watching: " + currentChannel.title + " playing " + currentChannel.game
     }
 
-    function togglePause(){
+    function pause(){
         paused = !paused
 
         if (paused)
@@ -72,8 +87,7 @@ Item {
             sourcesBox.entries = qualityMap
 
             if (qualityMap[quality]){
-                header.text = "Currently watching: " + currentChannel.title
-                        +   " playing " + currentChannel.game
+                setWatchingTitle()
 
                 renderer.command(["loadfile", qualityMap[quality]])
 
@@ -101,6 +115,79 @@ Item {
             left: parent.left
             right: parent.right
         }
+
+        Item {
+            id: favourite
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                right: parent.right
+                rightMargin: dp(10)
+            }
+            width: dp(50)
+
+            Icon {
+                id: _favIcon
+                icon: "fav"
+
+                anchors.centerIn: parent
+
+                Connections {
+                    target: g_cman
+
+                    onAddedChannel: {
+                        console.log("Added channel")
+                        if (currentChannel && currentChannel._id == chanid){
+                            currentChannel.favourite = true
+                            _favIcon.update()
+                        }
+                    }
+
+                    onDeletedChannel: {
+                        console.log("Deleted channel")
+                        if (currentChannel && currentChannel._id == chanid){
+                            currentChannel.favourite = false
+                            _favIcon.update()
+                        }
+                    }
+                }
+
+                function update(){
+                    if (currentChannel)
+                        iconColor= currentChannel.favourite ? Styles.purple : Styles.iconColor
+                    else
+                        iconColor= Styles.iconColor
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                hoverEnabled: true
+                onHoveredChanged: {
+                    if (containsMouse){
+                        _favIcon.iconColor = Styles.white
+                    } else {
+                        _favIcon.update()
+                    }
+                }
+
+                onClicked: {
+                    if (currentChannel){
+                        if (currentChannel.favourite)
+                            g_cman.removeFromFavourites(currentChannel._id)
+                        else{
+                            console.log(currentChannel)
+                            g_cman.addToFavourites(currentChannel._id, currentChannel.name,
+                                                   currentChannel.title, currentChannel.info,
+                                                   currentChannel.logo, currentChannel.preview,
+                                                   currentChannel.game, currentChannel.viewers,
+                                                   currentChannel.online)
+                        }
+                    }
+                }
+            }
+        }
+
     }
 
     PlayerHeader {
@@ -124,30 +211,28 @@ Item {
                 top: parent.top
                 bottom: parent.bottom
                 left: parent.left
-                leftMargin: dp(20)
+                leftMargin: dp(10)
             }
 
             width: dp(50)
 
             Icon {
-                id: fsToggle
+                id: togglePause
                 anchors.centerIn: parent
                 icon: paused ? "play" : "pause"
-
             }
 
             MouseArea {
+                id: pauseArea
                 anchors.fill: parent
-                onClicked: togglePause()
+                onClicked: pause()
                 hoverEnabled: true
 
                 onHoveredChanged: {
-                    fsToggle.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                    togglePause.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
                 }
             }
         }
-
-
 
         VolumeSlider {
             id: vol
@@ -155,7 +240,7 @@ Item {
             anchors {
                 right: sourcesBox.left
                 verticalCenter: parent.verticalCenter
-                rightMargin: dp(20)
+                rightMargin: dp(10)
             }
             onValueChanged: {
                 var val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
@@ -172,7 +257,7 @@ Item {
             anchors {
                 right: parent.right
                 verticalCenter: parent.verticalCenter
-                rightMargin: dp(20)
+                rightMargin: dp(10)
             }
 
             onIndexChanged: {
@@ -267,7 +352,7 @@ Item {
         running: false
         repeat: false
         onTriggered: {
-            if (mAreaHeader.containsMouse || mAreaFooter.containsMouse || vol.open || sourcesBox.open){
+            if (mAreaHeader.containsMouse || mAreaFooter.containsMouse || vol.open || sourcesBox.open || pauseArea.containsMouse){
                 restart()
             }
             else {

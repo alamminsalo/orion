@@ -217,7 +217,7 @@ void NetworkManager::logoReply(QNetworkReply *reply)
         return;
     }
     QByteArray data = reply->readAll();
-    Channel* channel = cman->find(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
+    Channel* channel = cman->findFavourite(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
     if (channel){
         util::writeBinaryFile(channel->getLogoPath(),data);
     }
