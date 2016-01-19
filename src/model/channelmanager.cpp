@@ -26,6 +26,43 @@ void ChannelManager::setAlertPosition(const int &value)
     alertPosition = value;
 }
 
+void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
+                                     const QString &info, const QString &logo, const QString &preview,
+                                     const QString &game, const qint32 &viewers, bool online)
+{
+    if (!favouritesModel->find(id)){
+        Channel *channel = new Channel();
+        channel->setId(id);
+        channel->setServiceName(serviceName);
+        channel->setName(title);
+        channel->setInfo(info);
+        channel->setLogourl(logo);
+        channel->setPreviewurl(preview);
+        channel->setGame(game);
+        channel->setOnline(online);
+        channel->setViewers(viewers);
+
+        favouritesModel->addChannel(channel);
+
+        emit addedChannel(channel->getId());
+
+        Channel *chan = resultsModel->find(channel->getId());
+        if (chan){
+            chan->setFavourite(true);
+            resultsModel->updateChannelForView(chan);
+        }
+
+        //Update featured also
+        chan = featuredModel->find(channel->getId());
+        if (chan){
+            chan->setFavourite(true);
+            featuredModel->updateChannelForView(chan);
+        }
+
+        //netman->getStream(channel->getServiceName());
+    }
+}
+
 ChannelManager::ChannelManager(){
     alert = true;
 
@@ -242,7 +279,10 @@ void ChannelManager::addToFavourites(const quint32 &id){
 
     if (channel){
         favouritesModel->addChannel(new Channel(*channel));
+
         channel->setFavourite(true);
+        emit addedChannel(channel->getId());
+
         resultsModel->updateChannelForView(channel);
 
         //Update featured also
@@ -250,12 +290,18 @@ void ChannelManager::addToFavourites(const quint32 &id){
     }
 }
 
-Channel* ChannelManager::find(const QString &q){
+Channel* ChannelManager::findFavourite(const QString &q){
     return favouritesModel->find(q);
 }
 
 void ChannelManager::removeFromFavourites(const quint32 &id){
-    favouritesModel->removeChannel(favouritesModel->find(id));
+    Channel *chan = favouritesModel->find(id);
+
+    emit deletedChannel(chan->getId());
+
+    favouritesModel->removeChannel(chan);
+
+    chan = 0;
 
     //Update results
     Channel* channel = resultsModel->find(id);
@@ -399,6 +445,11 @@ void ChannelManager::updateFavourites(const QList<Channel*> &list)
 {
     favouritesModel->updateChannels(list);
     qDeleteAll(list);
+}
+
+bool ChannelManager::containsFavourite(const quint32 &q)
+{
+    return favouritesModel->find(q) > 0;
 }
 
 //Updates channel streams in all models

@@ -43,12 +43,12 @@ public:
     bool save() const;
     bool writeJSON(const QString&);
 
-    Channel *find(const QString&);
+    Channel *findFavourite(const QString&);
     void updateFavourites(const QList<Channel*>&);
+    Q_INVOKABLE bool containsFavourite(const quint32&);
 
     //Search section
     void addSearchResults(const QList<Channel*>&);
-
     void addFeaturedResults(const QList<Channel*>&);
 
     void play(const QString&);
@@ -74,6 +74,10 @@ public:
     Q_INVOKABLE int getAlertPosition() const;
     Q_INVOKABLE void setAlertPosition(const int &value);
 
+    Q_INVOKABLE void addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
+                                     const  QString &info, const QString &logo, const QString &preview,
+                                     const QString& game, const qint32 &viewers, bool online);
+
 signals:
     void channelExists(Channel*);
     void channelNotFound(Channel*);
@@ -86,7 +90,8 @@ signals:
     void featuredUpdated();
     void searchingStarted();
     void foundPlaybackStream(const QStringList &streams);
-    void cacheUpdated();
+    void deletedChannel(const quint32 &chanid);
+    void addedChannel(const quint32 &chanid);
 
 public slots:
     void checkFavourites();

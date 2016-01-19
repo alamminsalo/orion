@@ -90,7 +90,6 @@ Rectangle {
         Icon {
             id: favIcon
             icon: "fav"
-            visible: true
             opacity: favourite ? 1 : 0
             iconSize: dp(24)
             iconColor: Styles.purple
