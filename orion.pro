@@ -26,7 +26,8 @@ SOURCES += src/main.cpp\
     src/player/mpvobject.cpp \
     src/power/power.cpp \
     src/systray.cpp \
-    src/util/runguard.cpp
+    src/util/runguard.cpp \
+    src/customapp.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -42,7 +43,8 @@ HEADERS  += src/model/channel.h \
     src/player/mpvrenderer.h \
     src/power/power.h \
     src/systray.h \
-    src/util/runguard.h
+    src/util/runguard.h \
+    src/customapp.h
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 

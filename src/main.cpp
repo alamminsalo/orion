@@ -12,10 +12,11 @@
 #include "power/power.h"
 #include "player/mpvrenderer.h"
 #include "systray.h"
+#include "customapp.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication app(argc, argv);
+    CustomApp app(argc, argv);
 
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");

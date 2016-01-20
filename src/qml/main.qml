@@ -22,7 +22,6 @@ ApplicationWindow {
         return Math.ceil(number * g_ppi / 157.29)
     }
 
-
     Connections {
         target: g_tray
         onShowTriggered: {
