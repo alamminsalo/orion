@@ -22,6 +22,17 @@ ApplicationWindow {
         return Math.ceil(number * g_ppi / 157.29)
     }
 
+
+    Connections {
+        target: g_tray
+        onShowTriggered: {
+            if (root.visible)
+                root.hide()
+            else
+                root.show()
+        }
+    }
+
     FontLoader{
         source: "qrc:/fonts/DroidSans.ttf"
     }
