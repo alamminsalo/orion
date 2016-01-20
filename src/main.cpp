@@ -3,6 +3,7 @@
 #include <QQmlApplicationEngine>
 #include <QQuickView>
 #include <QScreen>
+#include <QMainWindow>
 #include <QQmlContext>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
