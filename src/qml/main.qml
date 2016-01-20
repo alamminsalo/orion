@@ -33,6 +33,14 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: g_guard
+        onAnotherProcessTriggered: {
+            root.show()
+            root.raise()
+        }
+    }
+
     FontLoader{
         source: "qrc:/fonts/DroidSans.ttf"
     }

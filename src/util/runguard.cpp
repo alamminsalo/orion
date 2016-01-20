@@ -1,7 +1,8 @@
 #include "runguard.h"
 
+#include <QDebug>
 #include <QCryptographicHash>
-
+#include <QObject>
 
 namespace
 {
@@ -37,18 +38,22 @@ RunGuard::RunGuard( const QString& key )
 
 RunGuard::~RunGuard()
 {
+    timer->stop();
+    timer->deleteLater();
     release();
 }
 
 bool RunGuard::isAnotherRunning()
 {
-    if ( sharedMem.isAttached() )
+    if ( sharedMem.isAttached() ){
         return false;
+    }
 
     memLock.acquire();
     const bool isRunning = sharedMem.attach();
-    if ( isRunning )
-        sharedMem.detach();
+    if ( isRunning ){
+        sharedMem.detach();   
+    }
     memLock.release();
 
     return isRunning;
@@ -56,8 +61,9 @@ bool RunGuard::isAnotherRunning()
 
 bool RunGuard::tryToRun()
 {
-    if ( isAnotherRunning() )   // Extra check
+    if ( isAnotherRunning() ){   // Extra check
         return false;
+    }
 
     memLock.acquire();
     const bool result = sharedMem.create( sizeof( quint64 ) );
@@ -67,6 +73,8 @@ bool RunGuard::tryToRun()
         release();
         return false;
     }
+
+    setTimer();
 
     return true;
 }
@@ -78,3 +86,44 @@ void RunGuard::release()
         sharedMem.detach();
     memLock.release();
 }
+
+void RunGuard::setTimer()
+{
+    timer = new QTimer();
+    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    timer->start(200);
+}
+
+void RunGuard::sendWakeup()
+{
+    sharedMem.attach();
+    sharedMem.lock();
+    *(quint64*)sharedMem.data() = 1;
+    sharedMem.unlock();
+    sharedMem.detach();
+}
+
+void RunGuard::update()
+{
+    if (*(quint64*)sharedMem.constData() == 1){
+        qDebug() << "Another process attempted to start!";
+
+        //Reset back the flag
+        sharedMem.lock();
+        *(quint64*)sharedMem.data() = 0;
+        sharedMem.unlock();
+
+        emit anotherProcessTriggered();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

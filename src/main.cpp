@@ -6,6 +6,7 @@
 #include <QQmlContext>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
+#include <QTimer>
 #include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "power/power.h"
@@ -14,12 +15,14 @@
 
 int main(int argc, char *argv[])
 {
+    QApplication app(argc, argv);
+
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
-        if ( !guard.tryToRun() )
-            return 0;
-
-    QApplication app(argc, argv);
+    if ( !guard.tryToRun() ){
+        guard.sendWakeup();
+        return 0;
+    }
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
 
@@ -41,6 +44,7 @@ int main(int argc, char *argv[])
 
     qDebug() << "Setting context variables...";
     engine.rootContext()->setContextProperty("g_cman", cman);
+    engine.rootContext()->setContextProperty("g_guard", &guard);
     engine.rootContext()->setContextProperty("g_powerman", power);
     engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio()));
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());

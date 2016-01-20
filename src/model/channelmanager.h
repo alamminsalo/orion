@@ -16,7 +16,8 @@
 
 class NetworkManager;
 
-class ChannelManager: public QObject{
+class ChannelManager: public QObject
+{
     Q_OBJECT
 
 protected:
