@@ -6,6 +6,7 @@
 #include <QQmlContext>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
+#include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "power/power.h"
 #include "player/mpvrenderer.h"
@@ -13,6 +14,11 @@
 
 int main(int argc, char *argv[])
 {
+    //Single application solution
+    RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
+        if ( !guard.tryToRun() )
+            return 0;
+
     QApplication app(argc, argv);
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
