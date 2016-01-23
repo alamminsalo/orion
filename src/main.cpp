@@ -42,13 +42,23 @@ int main(int argc, char *argv[])
     Power *power = new Power();
     QQmlApplicationEngine engine;
 
-    qDebug() << "DPI ratio: " << QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
+    float dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
+
+#ifdef Q_OS_WIN
+    dpi /= 96;
+
+#elif defined(Q_OS_LINUX)
+    dpi /= 100
+
+#endif
+
+    qDebug() << "DPI ratio: " << dpi;
 
     qDebug() << "Setting context variables...";
     engine.rootContext()->setContextProperty("g_cman", cman);
     engine.rootContext()->setContextProperty("g_guard", &guard);
     engine.rootContext()->setContextProperty("g_powerman", power);
-    engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio()));
+    engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(dpi));
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
     engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());

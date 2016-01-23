@@ -19,7 +19,7 @@ ApplicationWindow {
     property bool g_fullscreen: false
 
     function dp(number){
-        return Math.ceil(number * g_ppi / 157.29)
+        return Math.ceil(number / g_ppi)
     }
 
     Connections {
