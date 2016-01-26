@@ -42,18 +42,22 @@ int main(int argc, char *argv[])
     Power *power = new Power();
     QQmlApplicationEngine engine;
 
-    qDebug() << "DPI ratio: " << QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
+    float dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
+
+    //Original screen ppi ratio I started working with was 157.29. Scaling interface relative to this value.
+    dpi /= 157.29;
+
+    qDebug() << "DPI ratio: " << dpi;
 
     qDebug() << "Setting context variables...";
     engine.rootContext()->setContextProperty("g_cman", cman);
     engine.rootContext()->setContextProperty("g_guard", &guard);
     engine.rootContext()->setContextProperty("g_powerman", power);
-    engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio()));
+    engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(dpi));
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
     engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());
     engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
-
     engine.rootContext()->setContextProperty("g_tray", tray);
 
     std::setlocale(LC_NUMERIC, "C");

@@ -9,8 +9,7 @@ CustomApp::CustomApp(int &argc, char **argv): QApplication(argc, argv)
 bool CustomApp::event(QEvent *e)
 {
     if (e->type() == QEvent::Type::Quit){
-        //qDebug() << "Closing";
-        //Do something
+        //Do nothing
     } else {
         QApplication::event(e);
     }

@@ -32,10 +32,8 @@ void Power::setScreensaver(bool enabled)
     {
         qDebug() << "DISABLING screensaver";
         args << "suspend" << QString::number(wid);
-
-        QProcess::startDetached("xdg-screensaver reset");
-
-    } else
+    }
+    else
     {
         qDebug() << "ENABLING screensaver";
         args << "resume" << QString::number(wid);
