@@ -98,6 +98,14 @@ Item {
         }
     }
 
+    Connections {
+        target: g_win
+        onWindowClosed: {
+            if (!paused)
+                pause()
+        }
+    }
+
     PlayerHeader{
         text: "Currently watching: N/A"
         id: header

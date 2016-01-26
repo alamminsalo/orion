@@ -3,10 +3,6 @@
 
 #include <QtGlobal>
 
-#ifdef Q_OS_WIN
-    #include <Windows.h>
-#endif
-
 static void wakeup(void *ctx)
 {
     MpvObject *mpvhandler = (MpvObject*)ctx;

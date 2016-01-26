@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());
     engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
-
+    engine.rootContext()->setContextProperty("g_win", &app);
     engine.rootContext()->setContextProperty("g_tray", tray);
 
     std::setlocale(LC_NUMERIC, "C");
