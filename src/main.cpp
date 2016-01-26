@@ -44,13 +44,8 @@ int main(int argc, char *argv[])
 
     float dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
 
-#ifdef Q_OS_WIN
-    dpi /= 96;
-
-#elif defined(Q_OS_LINUX)
-    dpi /= 100
-
-#endif
+    //Original screen ppi ratio I started working with was 157.29. Scaling interface relative to this value.
+    dpi /= 157.29;
 
     qDebug() << "DPI ratio: " << dpi;
 
