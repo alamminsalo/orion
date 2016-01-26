@@ -61,7 +61,6 @@ Item {
 
         if (paused)
             renderer.pause()
-
         else
             renderer.play()
     }
@@ -91,10 +90,18 @@ Item {
 
                 renderer.command(["loadfile", qualityMap[quality]])
 
-                spinner.visible = false
+                //spinner.visible = false
 
                 sourcesBox.setIndex(quality)
             }
+        }
+    }
+
+    Connections {
+        target: g_rootWindow
+        onClosing: {
+            if (!paused)
+                pause()
         }
     }
 

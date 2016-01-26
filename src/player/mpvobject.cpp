@@ -2,6 +2,8 @@
 #include "mpvrenderer.h"
 
 #include <QtGlobal>
+#include <QDateTime>
+
 
 #ifdef Q_OS_WIN
     #include <Windows.h>
@@ -37,7 +39,7 @@ MpvObject::MpvObject(QQuickItem * parent)
     //mpv::qt::set_option_variant(mpv, "hwdec", "auto");
 
     //Cache
-    //mpv::qt::set_option_variant(mpv, "cache", 8192 * 1024);
+    mpv::qt::set_option_variant(mpv, "cache", 8192);
 
     if (mpv_initialize(mpv) < 0)
         throw std::runtime_error("could not initialize mpv context");
@@ -64,6 +66,8 @@ MpvObject::MpvObject(QQuickItem * parent)
 
     // setup callback event handling
     mpv_set_wakeup_callback(mpv, wakeup, this);
+
+    time = 0;
 }
 
 MpvObject::~MpvObject()
@@ -104,12 +108,17 @@ QQuickFramebufferObject::Renderer *MpvObject::createRenderer() const
 
 void MpvObject::pause()
 {
+    time = QDateTime::currentMSecsSinceEpoch();
     QStringList args = (QStringList() << "set" << "pause" << "yes");
     mpv::qt::command_variant(mpv, args);
 }
 
 void MpvObject::play()
 {
+    if (QDateTime::currentMSecsSinceEpoch() - time > 5000){
+        qDebug() << "Waited too long, resetting playback" << mpv::qt::get_property_variant(mpv, "path");
+        mpv::qt::command_variant(mpv, (QStringList() << "loadfile" << mpv::qt::get_property_variant(mpv, "path").toString()));
+    }
     QStringList args = (QStringList() << "set" << "pause" << "no");
     mpv::qt::command_variant(mpv, args);
 }

@@ -9,6 +9,7 @@
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtQuick/QQuickWindow>
 #include <QtQuick/QQuickView>
+#include <QTime>
 #include "../power/power.h"
 
 class MpvObject : public QQuickFramebufferObject
@@ -44,6 +45,7 @@ private slots:
     void doUpdate();
 
 private:
+    qint64 time;
     static void on_update(void *ctx);
     bool event(QEvent *event);
 };
