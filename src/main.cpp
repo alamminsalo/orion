@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
     if ( !guard.tryToRun() ){
         guard.sendWakeup();
-        return 0;
+        return -1;
     }
 
     QIcon appIcon = QIcon(":/icon/orion.ico");

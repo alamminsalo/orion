@@ -5,6 +5,11 @@
 #include "../util/fileutils.h"
 #include <QThread>
 #include <QJsonArray>
+#include <QApplication>
+
+QString appPath(){
+    return qApp->applicationDirPath() + "/" + DATA_FILE;
+}
 
 QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
 {
@@ -161,23 +166,25 @@ void ChannelManager::checkResources()
 //        qDebug() << "default channel logo not found, fetching...";
 //        netman->getFile(DEFAULT_LOGO_URL,"resources/logos/default.png");
 //    }
-    if (!QFile::exists(DATA_FILE)){
-        QFile file(DATA_FILE);
+    if (!QFile::exists(appPath())){
+        QFile file(appPath());
         file.open(QIODevice::ReadWrite);
         file.write("{}");
     }
 }
+
+
 
 bool ChannelManager::load(){
 
     qDebug() << "Opening JSON...";
 
     QJsonParseError error;
-    if (!QFile::exists(DATA_FILE)){
+    if (!QFile::exists(appPath())){
         qDebug() << "File doesn't exist";
         return false;
     }
-    QJsonObject json = QJsonDocument::fromJson(util::readFile(DATA_FILE).toLocal8Bit(),&error).object();
+    QJsonObject json = QJsonDocument::fromJson(util::readFile(appPath()).toUtf8(),&error).object();
 
     if (error.error != QJsonParseError::NoError){
         qDebug() << "Parsing error!";
@@ -267,7 +274,7 @@ bool ChannelManager::save() const
 
     obj["alertPosition"] = QJsonValue(alertPosition);
 
-    return util::writeFile(DATA_FILE,QJsonDocument(obj).toJson());
+    return util::writeFile(appPath(),QJsonDocument(obj).toJson());
 }
 
 void ChannelManager::addToFavourites(const quint32 &id){

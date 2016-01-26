@@ -16,6 +16,8 @@
 
 class NetworkManager;
 
+QString appPath();
+
 class ChannelManager: public QObject
 {
     Q_OBJECT
