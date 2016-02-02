@@ -42,10 +42,23 @@ int main(int argc, char *argv[])
     Power *power = new Power();
     QQmlApplicationEngine engine;
 
-    float dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio();
+    float dpi;
 
-    //Original screen ppi ratio I started working with was 157.29. Scaling interface relative to this value.
-    dpi /= 157.29;
+#ifdef Q_OS_LINUX
+    dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 96;
+
+#elif defined(Q_OS_WIN)
+    dpi = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 96;
+
+#else //Osx
+    dpi = 1;
+
+#endif
+
+
+
+//    //Original screen ppi ratio I started working with was 157.29. Scaling interface relative to this value.
+//    dpi /= 157.29;
 
     qDebug() << "DPI ratio: " << dpi;
 
@@ -53,7 +66,7 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("g_cman", cman);
     engine.rootContext()->setContextProperty("g_guard", &guard);
     engine.rootContext()->setContextProperty("g_powerman", power);
-    engine.rootContext()->setContextProperty("g_ppi", QVariant::fromValue(dpi));
+    engine.rootContext()->setContextProperty("g_dpi", QVariant::fromValue(dpi));
     engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
     engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
     engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());

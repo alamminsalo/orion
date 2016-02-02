@@ -18,8 +18,9 @@ ApplicationWindow {
     property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
 
+    //function for scaling UI
     function dp(number){
-        return Math.ceil(number * g_ppi)
+        return Math.ceil(number * g_dpi * .666)
     }
 
     Connections {
@@ -56,6 +57,8 @@ ApplicationWindow {
                 top: parent.top
                 bottom: parent.bottom
             }
+
+            Component.onCompleted: toggle()
         }
 
         Item {
