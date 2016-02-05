@@ -7,8 +7,8 @@ import "styles.js" as Styles
 ApplicationWindow {
     id: root
     visible: true
-    width: dp(1600)
-    height: dp(1200)
+    width: dp(1200)
+    height: dp(800)
     title: "Orion"
     visibility: g_fullscreen ? "FullScreen" : "Windowed"
 
@@ -17,10 +17,12 @@ ApplicationWindow {
     property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
+    property real dpiMultiplier: (Screen.pixelDensity / 6.192510402219141 * Screen.devicePixelRatio)
 
     //function for scaling UI
     function dp(number){
-        return Math.ceil(number * g_dpi * .666)
+        //Scale down to .8 of original size
+        return Math.ceil(number * dpiMultiplier * 0.8)
     }
 
     Connections {
@@ -93,6 +95,12 @@ ApplicationWindow {
 
         //Initial view
         g_toolBox.setView(2)
+
+
+        console.log("Pixel density", Screen.pixelDensity)
+        console.log("Pixel ratio", Screen.devicePixelRatio)
+        console.log("Logical pixel density", Screen.logicalPixelDensity)
+        console.log("Orientation", Screen.orientation)
     }
 
     Timer {
