@@ -7,8 +7,8 @@ import "styles.js" as Styles
 ApplicationWindow {
     id: root
     visible: true
-    width: dp(1200)
-    height: dp(800)
+    width: dp(1600)
+    height: dp(1200)
     title: "Orion"
     visibility: g_fullscreen ? "FullScreen" : "Windowed"
 
