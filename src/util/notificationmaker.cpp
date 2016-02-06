@@ -25,7 +25,7 @@ NotificationMaker::~NotificationMaker()
     queue.clear();
 }
 
-NotificationMaker::showNext()
+void NotificationMaker::showNext()
 {
     //Pops first in queue, and shows it
     if (currentObject){
@@ -56,7 +56,7 @@ NotificationMaker::showNext()
     }
 }
 
-NotificationMaker::pushNotification(const QString title, const QString message, const QString imgUrl)
+void NotificationMaker::pushNotification(const QString title, const QString message, const QString imgUrl)
 {
     qDebug() << "Notificator: Received notification: " << title << ", " << message << ", " << imgUrl;
     NotificationData *data = new NotificationData;
