@@ -1,0 +1,1 @@
+singleton Dpi 1.0 Dpi.qml

@@ -26,6 +26,7 @@ Rectangle {
     function toggle(){
         root._width = isOpen ? dp(60) : dp(230)
         isOpen = !isOpen
+        toggleButton.rotateIcon()
     }
 
     function setView(index){

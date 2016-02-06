@@ -129,8 +129,9 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             font.family: "Droid Sans"
-            font.pointSize: dp(Styles.titleFont.smaller)
+            font.pixelSize: dp(Styles.titleFont.smaller)
             wrapMode: Text.WordWrap
+            renderType: Text.NativeRendering
         }
     }
 

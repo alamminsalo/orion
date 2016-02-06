@@ -13,7 +13,7 @@ Item {
     Text {
         font.family: "Droid Sans"
         color: Styles.textColor
-        font.pixelSize: Styles.titleFont.bigger
+        font.pixelSize: dp(Styles.titleFont.bigger)
         text: root.text
         anchors {
             left: parent.left
@@ -23,6 +23,7 @@ Item {
         }
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
+        renderType: Text.NativeRendering
     }
 
     Rectangle {

@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Controls 1.1
 import "styles.js" as Styles
+import "style"
 
 
 ApplicationWindow {
@@ -10,6 +11,7 @@ ApplicationWindow {
     width: dp(1600)
     height: dp(1200)
     title: "Orion"
+    //flags: Qt.FramelessWindowHint | Qt.Window
     visibility: g_fullscreen ? "FullScreen" : "Windowed"
 
     property variant g_rootWindow: root
@@ -17,12 +19,9 @@ ApplicationWindow {
     property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
-    property real dpiMultiplier: (Screen.pixelDensity / 6.192510402219141 * Screen.devicePixelRatio)
 
-    //function for scaling UI
     function dp(number){
-        //Scale down to .8 of original size
-        return Math.ceil(number * dpiMultiplier * 0.8)
+        return Dpi.scale(number)
     }
 
     Connections {
@@ -53,7 +52,6 @@ ApplicationWindow {
         SideBar {
             id: sidebar
             hidden: g_fullscreen
-            //visible: !g_fullscreen
             anchors {
                 left: parent.left
                 top: parent.top
@@ -95,7 +93,6 @@ ApplicationWindow {
 
         //Initial view
         g_toolBox.setView(2)
-
 
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)

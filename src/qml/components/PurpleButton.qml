@@ -23,7 +23,8 @@ Rectangle {
         anchors.centerIn: parent
         color: Styles.textColor
         text: root.text
-        font.pointSize: dp(Styles.button.size)
+        font.pixelSize: dp(Styles.button.size)
+        renderType: Text.NativeRendering
     }
 
     Rectangle {

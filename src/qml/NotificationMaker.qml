@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import QtQuick.Window 2.0
+import "style"
 import "components"
 
 Item {
@@ -7,7 +8,9 @@ Item {
     property var notificationQueue: []
     property var activeNotification
 
-    visible: false
+    id: root
+
+
     //Positions:
     //          0 - topleft
     //          1 - topright
@@ -60,41 +63,41 @@ Item {
             return
         }
 
-        var width = dp(440)
-        var height = dp(140)
+        var width = Dpi.scale(440)
+        var height = Dpi.scale(140)
         var x = Screen.width / 2
         var y = Screen.height / 2
         var destY = 0
 
         switch (position){
         case 0:
-            x =  dp(50)
+            x =  Dpi.scale(50)
             y = -height
-            destY = dp(60)
+            destY = Dpi.scale(60)
             break
 
         case 1:
-            x = Screen.width - width  - dp(50)
+            x = Screen.width - width  - Dpi.scale(50)
             y = -height
-            destY = dp(60)
+            destY = Dpi.scale(60)
             break
 
         case 2:
-            x = dp(50)
+            x = Dpi.scale(50)
             y = Screen.height
-            destY = Screen.height - height  - dp(60)
+            destY = Screen.height - height  - Dpi.scale(60)
             break
 
         case 3:
-            x = Screen.width - width  - dp(50)
+            x = Screen.width - width  - Dpi.scale(50)
             y = Screen.height
-            destY = Screen.height - height - dp(60)
+            destY = Screen.height - height - Dpi.scale(60)
             break
         }
 
         console.log(args)
 
-        return component.createObject(parent, {
+        return component.createObject(root, {
                                              "x": x,
                                              "y": y,
                                              "width": width,

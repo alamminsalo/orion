@@ -1,6 +1,8 @@
 
 #include <QApplication>
 #include <QQmlApplicationEngine>
+#include <QtQml>
+#include <QQmlComponent>
 #include <QQuickView>
 #include <QScreen>
 #include <QMainWindow>
@@ -14,6 +16,7 @@
 #include "player/mpvrenderer.h"
 #include "systray.h"
 #include "customapp.h"
+#include "util/notificationmaker.h"
 
 int main(int argc, char *argv[])
 {
@@ -40,6 +43,8 @@ int main(int argc, char *argv[])
     cman->load();
 
     Power *power = new Power();
+
+    QQuickView view;
     QQmlApplicationEngine engine;
 
     qDebug() << "Setting context variables...";
@@ -55,7 +60,14 @@ int main(int argc, char *argv[])
     std::setlocale(LC_NUMERIC, "C");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
 
-    engine.load(QUrl(QStringLiteral("qrc:///main.qml")));
+   // QQmlComponent component(app.con, QUrl(QStringLiteral("qrc:/NotificationMaker.qml")));
+    //QObject *notificator = component.create();
+    //engine.load(QUrl("qrc:/NotificationMaker.qml"));
+    engine.load(QUrl("qrc:/main.qml"));
+
+    //Set up notifications
+    NotificationMaker *notificator = new NotificationMaker(&engine);
+    QObject::connect(cman, SIGNAL(pushNotification(QString,QString,QString)), notificator, SLOT(pushNotification(QString,QString,QString)));
 
     qDebug() << "Starting window...";
 
@@ -67,6 +79,8 @@ int main(int argc, char *argv[])
     app.exec();
 
     delete tray;
+
+    delete notificator;
 
     qDebug() << "Closing application...";
     delete cman;

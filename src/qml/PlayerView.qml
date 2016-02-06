@@ -339,10 +339,11 @@ Item {
     Text {
         id: _label
         text: "No stream currently playing"
-        font.pointSize: dp(40)
+        font.pixelSize: dp(40)
         font.family: "Droid Sans"
         color: Styles.iconColor
         anchors.centerIn: parent
+        renderType: Text.NativeRendering
     }
 
     SpinnerIcon {

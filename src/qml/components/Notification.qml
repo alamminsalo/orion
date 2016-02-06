@@ -1,6 +1,7 @@
 import QtQuick 2.0
 import QtQuick.Window 2.0
 import "../styles.js" as Styles
+import "../style"
 
 Window {
     property string title
@@ -8,24 +9,65 @@ Window {
     property string imgSrc
     property real destY
 
+    //Locations: 0 - topleft, 1 - topright, 2 - bottomleft, 3 - bottomright
+    property int location: 1
+
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
+    width: Dpi.scale(440)
+    height: Dpi.scale(140)
+
+    visible: false
 
     function close(){
         //console.log("Destroying notification")
         root.destroy()
     }
 
-    Component.onCompleted: {
-        show()
-        y = destY
+    function setPosition(){
+        switch (location){
+        case 0:
+            x =  Dpi.scale(50)
+            y = -height
+            destY = Dpi.scale(60)
+            break
+
+        case 1:
+            x = Screen.width - width  - Dpi.scale(50)
+            y = -height
+            destY = Dpi.scale(60)
+            break
+
+        case 2:
+            x = Dpi.scale(50)
+            y = Screen.height
+            destY = Screen.height - height  - Dpi.scale(60)
+            break
+
+        case 3:
+            x = Screen.width - width  - Dpi.scale(50)
+            y = Screen.height
+            destY = Screen.height - height - Dpi.scale(60)
+            break
+        }
     }
 
-    Behavior on y {
-        NumberAnimation {
-            duration: 300
-            easing.type: Easing.OutCubic
+    onVisibleChanged: {
+        if (visible){
+            setPosition()
+            showNormal()
+            anim.start()
         }
+    }
+
+    NumberAnimation {
+        id: anim
+        target: root
+        properties: "y"
+        from: y
+        to: destY
+        duration: 300
+        easing.type: Easing.OutCubic
     }
 
     Rectangle {
@@ -36,11 +78,11 @@ Window {
             id: img
             source: imgSrc
             fillMode: Image.PreserveAspectFit
-            width: dp(100)
-            height: dp(100)
+            width: Dpi.scale(100)
+            height: Dpi.scale(100)
             anchors {
                 left: parent.left
-                leftMargin: dp(10)
+                leftMargin: Dpi.scale(10)
                 verticalCenter: parent.verticalCenter
             }
         }
@@ -49,11 +91,11 @@ Window {
             anchors {
                 left: img.right
                 right: parent.right
-                leftMargin: dp(10)
-                rightMargin: dp(10)
+                leftMargin: Dpi.scale(10)
+                rightMargin: Dpi.scale(10)
                 verticalCenter: parent.verticalCenter
             }
-            height: dp(100)
+            height: Dpi.scale(100)
             clip: true
 
             Text {
@@ -68,7 +110,8 @@ Window {
                 font.family: "Droid Sans"
                 wrapMode: Text.WordWrap
                 font.bold: true
-                font.pointSize: dp(Styles.titleFont.bigger)
+                font.pixelSize: Dpi.scale(Styles.titleFont.bigger)
+                renderType: Text.NativeRendering
             }
 
             Text {
@@ -81,8 +124,9 @@ Window {
                 text: root.description
                 wrapMode: Text.WordWrap
                 color: Styles.textColor
-                font.pointSize: dp(Styles.titleFont.smaller)
+                font.pixelSize: Dpi.scale(Styles.titleFont.smaller)
                 font.family: "Droid Sans"
+                renderType: Text.NativeRendering
             }
         }
     }

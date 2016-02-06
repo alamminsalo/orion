@@ -34,5 +34,7 @@
         <file>DrawerRibbon.qml</file>
         <file>NotificationMaker.qml</file>
         <file>components/Notification.qml</file>
+        <file>style/Dpi.qml</file>
+        <file>style/qmldir</file>
     </qresource>
 </RCC>

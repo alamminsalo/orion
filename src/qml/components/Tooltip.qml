@@ -51,14 +51,15 @@ Window {
             id: text
             color: Styles.textColor
             text: root.text
-            font.pointSize: dp(Styles.titleFont.smaller)
-            font.family: "Roboto"
+            font.pixelSize: dp(Styles.titleFont.smaller)
+            font.family: "Droid Sans"
             anchors{
                 bottom: parent.bottom
                 left: parent.left
                 right: parent.right
             }
             wrapMode: Text.WordWrap
+            renderType: Text.NativeRendering
         }
     }
 

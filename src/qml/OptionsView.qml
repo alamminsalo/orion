@@ -12,11 +12,11 @@ Item{
     }
 
     //NotificationMaker is easier to just put here because all the options are near
-    NotificationMaker{
+/*    NotificationMaker{
         id: notifMaker
-        position: alertPosition.selection
+        position: g_cman.getAlertPosition()
     }
-
+*/
     Item {
         height: parent.height
         width: dp(360)

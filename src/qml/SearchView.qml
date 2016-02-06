@@ -101,7 +101,7 @@ Item {
                     selectionColor: Styles.purple
                     focus: true
                     selectByMouse: true
-                    font.pointSize: dp(Styles.titleFont.bigger)
+                    font.pixelSize: dp(Styles.titleFont.bigger)
 
 
                     verticalAlignment: Text.AlignVCenter
@@ -246,10 +246,11 @@ Item {
         Text {
             id: _label
             text: "Search for channels"
-            font.pointSize: dp(40)
+            font.pixelSize: dp(40)
             font.family: "Droid Sans"
             color: Styles.iconColor
             anchors.centerIn: parent
+            renderType: Text.NativeRendering
         }
     }
 }

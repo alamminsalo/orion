@@ -34,6 +34,7 @@ Rectangle {
             text: root.text
             font.family: "Droid Sans"
             z: root.z + 1
+            renderType: Text.NativeRendering
         }
     }
 }

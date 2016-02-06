@@ -27,7 +27,8 @@ SOURCES += src/main.cpp\
     src/power/power.cpp \
     src/systray.cpp \
     src/util/runguard.cpp \
-    src/customapp.cpp
+    src/customapp.cpp \
+    src/util/notificationmaker.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -44,7 +45,8 @@ HEADERS  += src/model/channel.h \
     src/power/power.h \
     src/systray.h \
     src/util/runguard.h \
-    src/customapp.h
+    src/customapp.h \
+    src/util/notificationmaker.h
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 

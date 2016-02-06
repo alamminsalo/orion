@@ -3,6 +3,7 @@
 
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QtQml>
 
 
 class SysTray: public QSystemTrayIcon
