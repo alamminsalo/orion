@@ -9,7 +9,6 @@ NetworkManager::NetworkManager(ChannelManager *cman)
 
     channelOperation = new QNetworkAccessManager();
     streamOperation = new QNetworkAccessManager();
-    logoOperation = new QNetworkAccessManager();
     allStreamsOperation = new QNetworkAccessManager();
     genericFileOperation = new QNetworkAccessManager();
     gamesOperation = new QNetworkAccessManager();
@@ -21,7 +20,6 @@ NetworkManager::NetworkManager(ChannelManager *cman)
 
     connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
     connect(streamOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(streamReply(QNetworkReply*)));
-    connect(logoOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(logoReply(QNetworkReply*)));
     connect(genericFileOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(fileReply(QNetworkReply*)));
     connect(allStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(allStreamsReply(QNetworkReply*)));
     connect(gamesOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gamesReply(QNetworkReply*)));
@@ -37,7 +35,6 @@ NetworkManager::~NetworkManager()
     qDebug() << "Destroyer: NetworkManager";
     delete channelOperation;
     delete streamOperation;
-    delete logoOperation;
     delete genericFileOperation;
     delete allStreamsOperation;
     delete gamesOperation;
@@ -77,18 +74,6 @@ void NetworkManager::getStreams(const QString &url)
     request.setUrl(QUrl(url));
 
     allStreamsOperation->get(request);
-}
-
-void NetworkManager::getLogo(Channel *channel)
-{
-    QString url = channel->getLogourl();
-    //qDebug() << "GET LOGO for: " << channel->getServiceName() << " from: " << url;
-
-    QNetworkRequest request;
-    request.setUrl(QUrl(url));
-    request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getServiceName());
-
-    logoOperation->get(request);
 }
 
 void NetworkManager::getFile(const QString &url, const QString &filename)
@@ -208,19 +193,6 @@ void NetworkManager::allStreamsReply(QNetworkReply *reply)
     //qDebug() << data;
 
     cman->updateStreams(JsonParser::parseStreams(data));
-}
-
-void NetworkManager::logoReply(QNetworkReply *reply)
-{
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
-        return;
-    }
-    QByteArray data = reply->readAll();
-    Channel* channel = cman->findFavourite(reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString());
-    if (channel){
-        util::writeBinaryFile(channel->getLogoPath(),data);
-    }
 }
 
 void NetworkManager::fileReply(QNetworkReply *reply)

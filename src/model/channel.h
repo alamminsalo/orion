@@ -26,8 +26,6 @@ class Channel: public QObject{
 	bool online;
     bool favourite;
     qint64 timestamp;
-    QString logopath;
-    QString previewpath;
     QString logouri;
     QString previewuri;
 
@@ -57,10 +55,6 @@ class Channel: public QObject{
 		bool hasAlert();
 		void setOnline(const bool);
         bool isOnline();
-        void setLogoPath(const QString&);
-        const QString getLogoPath();
-        void setPreviewPath(const QString&);
-        const QString getPreviewPath();
 
         const QString getLogourl();
         void setLogourl(const QString&);

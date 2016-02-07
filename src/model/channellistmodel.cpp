@@ -185,10 +185,8 @@ void ChannelListModel::updateChannel(Channel *item)
 
             channel->setName(item->getName());
             channel->setLogourl(item->getLogourl());
-            channel->setLogoPath(item->getLogoPath());
             channel->setInfo(item->getInfo());
             updateChannelForView(channel);
-            //channel->updated();
         }
     }
 }
@@ -214,20 +212,16 @@ void ChannelListModel::updateStream(Channel *item)
                 channel->setViewers(item->getViewers());
                 channel->setGame(item->getGame());
                 channel->setPreviewurl(item->getPreviewurl());
-                channel->setPreviewPath(item->getPreviewPath());
 
                 if (!item->getName().isEmpty()){
                     updateChannel(item);
                 }
-            } /*else if (channel->getName().isEmpty()){
-                netman->getChannel(channel->getServiceName());
-            }*/
+            }
 
             if (channel->isOnline() != item->isOnline()){
                 channel->setOnline(item->isOnline());
                 updateChannelForView(channel);
                 emit channelOnlineStateChanged(channel);
-                //channel->updated();
             }
         }
     }

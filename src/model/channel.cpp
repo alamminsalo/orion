@@ -68,8 +68,6 @@ Channel::Channel(const Channel &channel){
 	this->online = channel.online;
     this->logouri = channel.logouri;
     this->previewuri = channel.previewuri;
-    this->logopath = channel.logopath;
-    this->previewpath = channel.previewpath;
     this->game = channel.game;
     this->viewers = channel.viewers;
     this->favourite = channel.favourite;
@@ -154,24 +152,8 @@ bool Channel::isOnline(){
 	return online;
 }
 
-const QString Channel::getLogoPath(){
-    return logopath.isEmpty() ? DEFAULT_LOGO_PATH : logopath;
-}
-
-const QString Channel::getPreviewPath(){
-    return previewpath;
-}
-
-void Channel::setLogoPath(const QString &path){
-    logopath = path;
-}
-
 void Channel::setLogourl(const QString &uri){
     logouri = uri;
-}
-
-void Channel::setPreviewPath(const QString &path){
-    previewpath = path;
 }
 
 const QString Channel::getLogourl(){

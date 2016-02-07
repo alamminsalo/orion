@@ -3,6 +3,9 @@ import QtQuick.Window 2.0
 import "style"
 import "components"
 
+//QML-alternative to NotificationMaker class in C++
+//Currently unused, and needs rework if used again
+
 Item {
 
     property var notificationQueue: []

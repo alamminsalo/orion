@@ -66,14 +66,7 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
         QJsonObject preview = json["preview"].toObject();
 
         if (!preview["large"].isNull()){
-            QString previewuri = preview["large"].toString();
-            QStringRef extension(&previewuri,previewuri.lastIndexOf("."),(previewuri.length() - previewuri.lastIndexOf(".")));
-            QString previewpath = "resources/preview/";
-            previewpath += channel->getServiceName();
-            previewpath += extension;
-
-            channel->setPreviewurl(previewuri);
-            channel->setPreviewPath(previewpath);
+            channel->setPreviewurl(preview["large"].toString());
         }
     }
 
@@ -92,7 +85,6 @@ Channel* JsonParser::parseStream(const QJsonObject &json)
         channel->setId(c->getId());
         channel->setName(c->getName());
         channel->setLogourl(c->getLogourl());
-        channel->setLogoPath(c->getLogoPath());
         channel->setInfo(c->getInfo());
 
         delete c;
@@ -182,16 +174,7 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
         }
 
         if (!json["logo"].isNull()){
-            QString logouri = json["logo"].toString();
-            QStringRef extension(&logouri,logouri.lastIndexOf("."),(logouri.length() - logouri.lastIndexOf(".")));
-            QString logopath = "resources/logos/";
-
-            logopath += channel->getServiceName();
-            logopath += extension;
-
-            channel->setLogourl(logouri);
-            channel->setLogoPath(logopath);
-
+            channel->setLogourl(json["logo"].toString());
         }
 
         if (!json["_id"].isNull()){

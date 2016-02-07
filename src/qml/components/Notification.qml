@@ -29,25 +29,25 @@ Window {
         case 0:
             x =  Dpi.scale(50)
             y = -height
-            destY = Dpi.scale(60)
+            destY = Dpi.scale(50)
             break
 
         case 1:
             x = Screen.width - width  - Dpi.scale(50)
             y = -height
-            destY = Dpi.scale(60)
+            destY = Dpi.scale(50)
             break
 
         case 2:
             x = Dpi.scale(50)
             y = Screen.height
-            destY = Screen.height - height  - Dpi.scale(60)
+            destY = Screen.height - height  - Dpi.scale(50)
             break
 
         case 3:
             x = Screen.width - width  - Dpi.scale(50)
             y = Screen.height
-            destY = Screen.height - height - Dpi.scale(60)
+            destY = Screen.height - height - Dpi.scale(50)
             break
         }
     }
