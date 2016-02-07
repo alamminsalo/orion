@@ -12,7 +12,7 @@ Window {
     signal clicked()
 
     //Locations: 0 - topleft, 1 - topright, 2 - bottomleft, 3 - bottomright
-    property int location: 1
+    property int location: g_cman.getAlertPosition()
 
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint | Qt.Popup

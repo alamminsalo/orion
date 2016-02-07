@@ -58,7 +58,7 @@ void NotificationMaker::showNext()
         component.setParent(0);
 
         // Show notification
-        currentObject = component.create();
+        currentObject = component.create(engine->rootContext());
 
         // Set data to notification
         currentObject->setProperty("title", QVariant::fromValue(data->title));
