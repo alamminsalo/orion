@@ -9,15 +9,15 @@ Window {
     property string imgSrc
     property real destY
 
+    signal clicked()
+
     //Locations: 0 - topleft, 1 - topright, 2 - bottomleft, 3 - bottomright
     property int location: 1
 
     id: root
-    flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
+    flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint | Qt.Popup
     width: Dpi.scale(440)
     height: Dpi.scale(140)
-
-    visible: false
 
     function close(){
         //console.log("Destroying notification")
@@ -55,7 +55,8 @@ Window {
     onVisibleChanged: {
         if (visible){
             setPosition()
-            showNormal()
+            show()
+            raise()
             anim.start()
         }
     }
@@ -128,6 +129,14 @@ Window {
                 font.family: "Droid Sans"
                 renderType: Text.NativeRendering
             }
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        onClicked: {
+            root.hide()
+            root.clicked()
         }
     }
 }

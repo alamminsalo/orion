@@ -14,6 +14,18 @@ NotificationMaker::NotificationMaker(QQmlApplicationEngine *engine)
     timer->setSingleShot(true);
 
     this->engine = engine;
+
+#ifdef Q_OS_WIN //Workaround to shitty win(10?) windowing system, which hides ALL windows on minimize/ctr, including popups
+    hiddenWindow = new QQuickWindow();
+    hiddenWindow->setFlags(Qt::FramelessWindowHint | Qt::BypassWindowManagerHint | Qt::SplashScreen | Qt::WindowStaysOnTopHint);
+    hiddenWindow->setPosition(QPoint(0,0));
+    hiddenWindow->setMinimumSize(QSize(0,0));
+    hiddenWindow->setMaximumSize(QSize(1,1));
+    hiddenWindow->setHeight(1);
+    hiddenWindow->setOpacity(0);
+    hiddenWindow->setWidth(1);
+    hiddenWindow->show();
+#endif
 }
 
 NotificationMaker::~NotificationMaker()
@@ -21,15 +33,20 @@ NotificationMaker::~NotificationMaker()
     timer->stop();
     delete timer;
 
+#ifdef Q_OS_WIN
+    hiddenWindow->close();
+    delete hiddenWindow;
+#endif
+
     qDeleteAll(queue);
     queue.clear();
 }
 
-NotificationMaker::showNext()
+void NotificationMaker::showNext()
 {
     //Pops first in queue, and shows it
     if (currentObject){
-        delete currentObject;
+        currentObject->deleteLater();
         currentObject = 0;
     }
 
@@ -38,6 +55,7 @@ NotificationMaker::showNext()
         NotificationData *data = queue.takeFirst();
 
         QQmlComponent component(engine, QUrl("qrc:/components/Notification.qml"));
+        component.setParent(0);
 
         // Show notification
         currentObject = component.create();
@@ -46,6 +64,8 @@ NotificationMaker::showNext()
         currentObject->setProperty("title", QVariant::fromValue(data->title));
         currentObject->setProperty("description", QVariant::fromValue(data->message));
         currentObject->setProperty("imgSrc", QVariant::fromValue(data->imgUrl));
+
+        QObject::connect(currentObject, SIGNAL(clicked()), this, SLOT(showNext()));
 
         // Trigger notification
         currentObject->setProperty("visible", QVariant::fromValue(true));
@@ -56,7 +76,7 @@ NotificationMaker::showNext()
     }
 }
 
-NotificationMaker::pushNotification(const QString title, const QString message, const QString imgUrl)
+void NotificationMaker::pushNotification(const QString title, const QString message, const QString imgUrl)
 {
     qDebug() << "Notificator: Received notification: " << title << ", " << message << ", " << imgUrl;
     NotificationData *data = new NotificationData;

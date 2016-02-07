@@ -5,6 +5,9 @@
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QObject>
+#ifdef Q_OS_WIN
+    #include <QQuickWindow>
+#endif
 
 typedef struct {
     QString title;
@@ -20,16 +23,20 @@ public:
     virtual ~NotificationMaker();
 
 private slots:
-    showNext();
+    void showNext();
 
 public slots:
-    pushNotification(const QString title, const QString message, const QString imgUrl);
+    void pushNotification(const QString title, const QString message, const QString imgUrl);
 
 private:
     QQmlApplicationEngine *engine;
     QTimer *timer;
     QList<NotificationData*> queue;
     QObject *currentObject;
+
+#ifdef Q_OS_WIN
+    QQuickWindow *hiddenWindow;
+#endif
 };
 
 #endif // NOTIFICATIONMAKER_H
