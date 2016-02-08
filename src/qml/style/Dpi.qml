@@ -4,10 +4,10 @@ import QtQuick.Window 2.0
 
 Item {
 
-    readonly property real dpiMult: (6.192510402219141 / Screen.pixelDensity * Screen.devicePixelRatio)
+    //readonly property real dpiMult: (6.192510402219141 / Screen.pixelDensity * Screen.devicePixelRatio)
 
     function scale(val){
-        return Math.ceil(val * dpiMult * 0.7)
+        return Math.ceil(val * dpiMultiplier * 0.7)
     }
 
 }

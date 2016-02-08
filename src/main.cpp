@@ -47,7 +47,10 @@ int main(int argc, char *argv[])
     QQuickView view;
     QQmlApplicationEngine engine;
 
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 96;
+
     qDebug() << "Setting context variables...";
+    engine.rootContext()->setContextProperty("dpiMultiplier", dpiMultiplier);
     engine.rootContext()->setContextProperty("g_cman", cman);
     engine.rootContext()->setContextProperty("g_guard", &guard);
     engine.rootContext()->setContextProperty("g_powerman", power);
