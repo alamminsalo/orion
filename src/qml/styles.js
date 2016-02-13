@@ -21,10 +21,10 @@ var white = "#ffffff"
 
 
 var titleFont = {
-    smaller: 20,
-    bigger: 24
+    smaller: 18,
+    bigger: 22
 }
 
 var button = {
-    size: 24
+    size: 22
 }

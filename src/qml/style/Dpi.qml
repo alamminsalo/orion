@@ -7,7 +7,8 @@ Item {
     //readonly property real dpiMult: (6.192510402219141 / Screen.pixelDensity * Screen.devicePixelRatio)
 
     function scale(val){
-        return Math.ceil(val * dpiMultiplier / 2)
+        //return val;
+        return Math.ceil(val * 0.7)
     }
 
 }
