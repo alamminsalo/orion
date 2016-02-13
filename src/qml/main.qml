@@ -92,7 +92,7 @@ ApplicationWindow {
         pollTimer.start()
 
         //Initial view
-        g_toolBox.setView(2)
+        g_toolBox.setView(1)
 
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
