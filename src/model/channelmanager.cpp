@@ -260,6 +260,8 @@ void ChannelManager::addToFavourites(const quint32 &id){
 
         //Update featured also
         featuredModel->updateChannelForView(channel);
+
+        save();
     }
 }
 
@@ -289,6 +291,8 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
         channel->setFavourite(false);
         featuredModel->updateChannelForView(channel);
     }
+
+    save();
 }
 
 void ChannelManager::play(const QString &url){
