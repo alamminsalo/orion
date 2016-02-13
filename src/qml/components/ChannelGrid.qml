@@ -98,7 +98,7 @@ GridView {
 
                     var index = root.indexAt(mX + root.contentX, mY + root.contentY)
 
-                    if (mArea.containsMouse && index && selectedItem && selectedItem.online){
+                    if (mArea.containsMouse && selectedItem && selectedItem.online){
 
                         g_tooltip.text = ""
 

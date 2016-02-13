@@ -74,7 +74,7 @@ Rectangle {
         font.bold: true
         font.family: "Droid Sans"
         color: Styles.iconColor
-        font.pixelSize: dp(Styles.titleFont.bigger + 2)
+        font.pixelSize: dp(Styles.titleFont.bigger)
         renderType: Text.NativeRendering
     }
 
