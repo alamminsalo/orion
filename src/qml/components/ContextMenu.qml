@@ -48,7 +48,7 @@ Menu {
                     id:_label
                     text: styleData.text.split(";")[0]
                     color: styleData.enabled ? Styles.textColor : Styles.disabled
-                    font.pixelSize: dp(16)
+                    font.pixelSize: dp(20)
                     verticalAlignment: Text.AlignVCenter
                     anchors {
                         top: _icon.top

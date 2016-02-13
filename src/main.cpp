@@ -47,7 +47,12 @@ int main(int argc, char *argv[])
     QQuickView view;
     QQmlApplicationEngine engine;
 
+#ifdef Q_OS_WIN
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 96;
+
+#elif defined(Q_OS_LINUX)
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 72;
+#endif
 
     qDebug() <<"Multiplier: "<< dpiMultiplier;
 
