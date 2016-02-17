@@ -101,7 +101,7 @@ Item {
                     selectionColor: Styles.purple
                     focus: true
                     selectByMouse: true
-                    font.pixelSize: dp(Styles.titleFont.bigger)
+                    font.pointSize: dp(Styles.titleFont.bigger)
 
 
                     verticalAlignment: Text.AlignVCenter
@@ -126,7 +126,7 @@ Item {
             Icon {
                 id: _button
                 icon: "search"
-                iconSize: dp(20)
+                iconSize: dp(18)
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -149,7 +149,7 @@ Item {
 
             SpinnerIcon {
                 id: _spinner
-                iconSize: dp(20)
+                iconSize: dp(18)
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -246,7 +246,7 @@ Item {
         Text {
             id: _label
             text: "Search for channels"
-            font.pixelSize: dp(40)
+            font.pointSize: dp(Styles.bigFont)
             font.family: "Droid Sans"
             color: Styles.iconColor
             anchors.centerIn: parent

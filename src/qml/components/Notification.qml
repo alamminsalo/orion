@@ -111,7 +111,7 @@ Window {
                 font.family: "Droid Sans"
                 wrapMode: Text.WordWrap
                 font.bold: true
-                font.pixelSize: Dpi.scale(Styles.titleFont.bigger)
+                font.pointSize: Dpi.scale(Styles.titleFont.bigger)
                 renderType: Text.NativeRendering
             }
 
@@ -125,7 +125,7 @@ Window {
                 text: root.description
                 wrapMode: Text.WordWrap
                 color: Styles.textColor
-                font.pixelSize: Dpi.scale(Styles.titleFont.smaller)
+                font.pointSize: Dpi.scale(Styles.titleFont.smaller)
                 font.family: "Droid Sans"
                 renderType: Text.NativeRendering
             }

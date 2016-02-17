@@ -8,7 +8,7 @@ Item {
 
     function scale(val){
         //return val;
-        return Math.ceil(val * 0.7)
+        return Math.ceil(val * 0.666)
     }
 
 }

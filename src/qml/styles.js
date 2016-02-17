@@ -19,12 +19,15 @@ var disabled = "#444444"
 
 var white = "#ffffff"
 
+var iconSize = 16
 
 var titleFont = {
-    smaller: 18,
-    bigger: 22
+    smaller: 14,
+    bigger: 16
 }
 
+var bigFont = 22
+
 var button = {
-    size: 22
+    size: 18
 }

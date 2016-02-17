@@ -339,7 +339,7 @@ Item {
     Text {
         id: _label
         text: "No stream currently playing"
-        font.pixelSize: dp(40)
+        font.pointSize: dp(Styles.bigFont)
         font.family: "Droid Sans"
         color: Styles.iconColor
         anchors.centerIn: parent
@@ -350,7 +350,7 @@ Item {
         id: spinner
         visible: false
         anchors.centerIn: parent
-        iconSize: dp(100)
+        iconSize: dp(80)
     }
 
 

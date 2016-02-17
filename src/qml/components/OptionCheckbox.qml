@@ -13,7 +13,7 @@ Item {
     Text {
         font.family: "Droid Sans"
         color: Styles.textColor
-        font.pixelSize: dp(Styles.titleFont.bigger)
+        font.pointSize: dp(Styles.titleFont.bigger)
         text: root.text
         anchors {
             left: parent.left
@@ -49,7 +49,7 @@ Item {
             Icon {
                 icon: "check"
                 anchors.fill: parent
-                iconSize: dp(24)
+                iconSize: dp(20)
                 visible: root.checked
             }
         }

@@ -11,6 +11,7 @@ GridView {
 
     id: root
 
+    highlightFollowsCurrentItem: false
     cellHeight: dp(200)
     maximumFlickVelocity: 800
     cellWidth: cellHeight

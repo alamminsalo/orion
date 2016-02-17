@@ -6,7 +6,7 @@ Rectangle {
     property bool isSelected: false
     property string iconStr
     property int borderWidth: 6
-    property int iconSize: 20
+    property int iconSize: Styles.iconSize
     property bool highlightOn: false
     property bool iconRotated: false
 
@@ -74,7 +74,7 @@ Rectangle {
         font.bold: true
         font.family: "Droid Sans"
         color: Styles.iconColor
-        font.pixelSize: dp(Styles.titleFont.bigger)
+        font.pointSize: dp(Styles.titleFont.bigger)
         renderType: Text.NativeRendering
     }
 

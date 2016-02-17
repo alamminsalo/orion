@@ -30,7 +30,7 @@ Rectangle {
             }
 
             color: Style.textColor
-            font.pixelSize: dp(30)
+            font.pointSize: dp(Style.bigFont)
             text: root.text
             font.family: "Droid Sans"
             z: root.z + 1

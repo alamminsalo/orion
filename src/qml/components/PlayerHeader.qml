@@ -29,7 +29,7 @@ Item {
             id: _text
             anchors.centerIn: parent
             color: Styles.textColor
-            font.pixelSize: dp(30)
+            font.pointSize: dp(Styles.bigFont)
             text: root.text
             font.family: "Droid Sans"
             z: root.z + 1

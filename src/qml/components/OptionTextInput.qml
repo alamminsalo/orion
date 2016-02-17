@@ -19,7 +19,7 @@ Item {
     Text {
         font.family: "Droid Sans"
         color: Styles.textColor
-        font.pixelSize: (Styles.titleFont.bigger)
+        font.pointSize: (Styles.titleFont.bigger)
         text: root.text
         anchors {
             left: parent.left
@@ -57,7 +57,7 @@ Item {
                 selectionColor: Styles.purple
                 focus: true
                 selectByMouse: true
-                font.pixelSize: dp(Styles.titleFont.bigger)
+                font.pointSize: dp(Styles.titleFont.bigger)
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
                 inputMask: mask

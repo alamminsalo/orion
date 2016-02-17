@@ -35,7 +35,7 @@ Menu {
                 Icon {
                     id: _icon
                     icon: styleData.text.split(";")[1]
-                    iconSize: dp(16)
+                    iconSize: dp(12)
                     iconColor: styleData.enabled ? Styles.iconColor : Styles.disabled
                     anchors {
                         top: parent.top
@@ -48,7 +48,7 @@ Menu {
                     id:_label
                     text: styleData.text.split(";")[0]
                     color: styleData.enabled ? Styles.textColor : Styles.disabled
-                    font.pixelSize: dp(20)
+                    font.pointSize: dp(Styles.titleFont.smaller)
                     verticalAlignment: Text.AlignVCenter
                     anchors {
                         top: _icon.top

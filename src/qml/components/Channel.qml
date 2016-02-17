@@ -45,7 +45,7 @@ Rectangle {
 
         SpinnerIcon {
             id:_spinner
-            iconSize: dp(38)
+            iconSize: dp(30)
             anchors.fill: parent
         }
 
@@ -91,7 +91,7 @@ Rectangle {
             id: favIcon
             icon: "fav"
             opacity: favourite ? 1 : 0
-            iconSize: dp(24)
+            iconSize: dp(20)
             iconColor: Styles.purple
             anchors {
                 top: container.top
@@ -129,7 +129,7 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             font.family: "Droid Sans"
-            font.pixelSize: dp(Styles.titleFont.smaller)
+            font.pointSize: dp(Styles.titleFont.smaller)
             wrapMode: Text.WordWrap
             renderType: Text.NativeRendering
         }

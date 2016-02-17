@@ -43,7 +43,7 @@ Item {
     Text {
         font.family: "Droid Sans"
         color: Styles.textColor
-        font.pixelSize: dp(Styles.titleFont.bigger)
+        font.pointSize: dp(Styles.titleFont.bigger)
         text: root.text
         anchors {
             left: parent.left
