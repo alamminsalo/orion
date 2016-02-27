@@ -17,6 +17,7 @@
 #include "systray.h"
 #include "customapp.h"
 #include "util/notificationmaker.h"
+#include <QProcessEnvironment>
 
 int main(int argc, char *argv[])
 {
@@ -44,17 +45,17 @@ int main(int argc, char *argv[])
 
     Power *power = new Power();
 
-    QQuickView view;
     QQmlApplicationEngine engine;
 
 #ifdef Q_OS_WIN
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 96;
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
 
 #elif defined(Q_OS_LINUX)
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() * QGuiApplication::primaryScreen()->devicePixelRatio() / 72;
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72;
+
 #endif
 
-    qDebug() <<"Multiplier: "<< dpiMultiplier;
+    qDebug() <<"DPI mult: "<< dpiMultiplier;
 
     qDebug() << "Setting context variables...";
     engine.rootContext()->setContextProperty("dpiMultiplier", dpiMultiplier);
@@ -70,9 +71,6 @@ int main(int argc, char *argv[])
     std::setlocale(LC_NUMERIC, "C");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
 
-   // QQmlComponent component(app.con, QUrl(QStringLiteral("qrc:/NotificationMaker.qml")));
-    //QObject *notificator = component.create();
-    //engine.load(QUrl("qrc:/NotificationMaker.qml"));
     engine.load(QUrl("qrc:/main.qml"));
 
     //Set up notifications
