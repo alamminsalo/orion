@@ -9,6 +9,9 @@
 #include "../model/vod.h"
 #include "urls.h"
 
+#define ONLY_BROADCASTS true
+#define USE_HLS true
+
 class VodSearchOperation: public QNetworkAccessManager
 {
     Q_OBJECT

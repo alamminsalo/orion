@@ -10,9 +10,9 @@ Item{
     function search(channel){
         selectedChannel = channel;
 
-        g_vodmgr.search(selectedChannel.name, 0, 50)
+        g_vodmgr.search(selectedChannel.name, 0, 25)
 
-        itemCount = 50
+        itemCount = 25
 
         requestSelectionChange(4)
     }
@@ -54,7 +54,7 @@ Item{
         }
 
         onItemClicked: {
-            player.play(selectedChannel, selectedItem)
+            player.getStreams(selectedChannel, selectedItem)
         }
 
         onItemRightClicked: {
@@ -67,7 +67,7 @@ Item{
             MenuItem {
                 text: "Watch;play"
                 onTriggered: {
-                    player.play(selectedChannel, _menu.item)
+                    player.getStreams(selectedChannel, _menu.item)
                 }
             }
         }

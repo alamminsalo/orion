@@ -1,5 +1,5 @@
-#ifndef VODOPERATION_H
-#define VODOPERATION_H
+#ifndef VODSTREAMEXTRACTOPERATION_H
+#define VODSTREAMEXTRACTOPERATION_H
 
 #include <QObject>
 #include <QNetworkAccessManager>
@@ -7,7 +7,7 @@
 
 //Fetches the network streams data for player
 
-class VodOperation: public QNetworkAccessManager
+class VodStreamExtractOperation: public QNetworkAccessManager
 {
     Q_OBJECT
 
@@ -15,8 +15,8 @@ class VodOperation: public QNetworkAccessManager
     void getM3U(QString url);
 
 public:
-    VodOperation();
-    ~VodOperation();
+    VodStreamExtractOperation();
+    ~VodStreamExtractOperation();
 
     Q_INVOKABLE void run(const QString vod_id);
 
@@ -37,4 +37,4 @@ private:
     quint8 phase;
 };
 
-#endif // VODOPERATION_H
+#endif // VODSTREAMEXTRACTOPERATION_H

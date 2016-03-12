@@ -23,7 +23,17 @@ Item {
 
     id: root
 
-    function play(channel, vod){
+    function loadAndPlay(){
+        setWatchingTitle()
+
+        renderer.command(["loadfile", qualityMap[quality]])
+
+        spinner.visible = false
+
+        renderer.play()
+    }
+
+    function getStreams(channel, vod){
 
         if (!channel){
             return
@@ -49,7 +59,6 @@ Item {
         }
 
         paused = false
-        //renderer.play()
 
         currentChannel = {
             "_id": channel._id,
@@ -113,21 +122,17 @@ Item {
         sourcesBox.entries = qualityMap
 
         if (qualityMap[quality]){
-            setWatchingTitle()
-
-            renderer.command(["loadfile", qualityMap[quality]])
-
-            spinner.visible = false
-
             sourcesBox.setIndex(quality)
-        }
 
-        renderer.play()
+            loadAndPlay()
+        }
     }
 
-    function seekTo(percentage) {
+    function seekTo(fraction) {
+        console.log(fraction)
         if (isVod){
-            var pos = duration / 100 * percentage
+            var pos = Math.floor(duration * fraction)
+            console.log(pos)
             renderer.setProperty("playback-time", pos)
         }
     }
@@ -284,9 +289,13 @@ Item {
             }
         }
 
-        Item {
-
+        SeekBar {
+            id: seekBar
             visible: isVod
+
+            onUserChangedPosition: {
+                seekTo(position)
+            }
 
             anchors {
                 top: parent.top
@@ -295,56 +304,13 @@ Item {
                 right: vol.left
             }
 
-            Rectangle {
-                id: seekBar
-                color: Styles.seekBar
-
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: dp(10)
-                    rightMargin: dp(10)
-
-                    verticalCenter: parent.verticalCenter
-                }
-
-                height: dp(6)
-
-                Rectangle {
-                    color: "white"
-                    id: fillBar
-                    anchors {
-                        left: parent.left
-                        top: parent.top
-                        bottom: parent.bottom
-                    }
-
-                    Connections {
-                        target: renderer
-                        onPositionChanged: {
-                            var width = Math.max(0,Math.min(position / duration * seekBar.width, seekBar.width))
-
-                            fillBar.width = width
-                        }
-                    }
-                }
-            }
-
-            MouseArea {
-                anchors {
-                    fill: parent
-                    topMargin: dp(10)
-                    bottomMargin: dp(10)
-                }
-
-                propagateComposedEvents: false
-                onClicked: {
-                    var percentage = Math.max(0, Math.min(mouseX / seekBar.width * 100, 100))
-                    seekTo(percentage)
+            Connections {
+                target: renderer
+                onPositionChanged: {
+                    seekBar.setPosition(position / duration, duration)
                 }
             }
         }
-
 
         VolumeSlider {
             id: vol
@@ -375,7 +341,7 @@ Item {
             onIndexChanged: {
                 if (index != quality){
                     quality = index
-                    play(currentChannel)
+                    loadAndPlay()
                 }
             }
         }

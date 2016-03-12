@@ -4,7 +4,7 @@
 #include <QObject>
 #include "vodlistmodel.h"
 #include "../network/vodsearchoperation.h"
-#include "../network/vodoperation.h"
+#include "../network/vodstreamextractoperation.h"
 
 class VodManager: public QObject
 {
@@ -20,7 +20,7 @@ public:
 
     Q_INVOKABLE void getStreams(const QString vodId);
 
-    VodOperation *getVodGet() const;
+    VodStreamExtractOperation *getVodGet() const;
 
     Q_INVOKABLE QStringList getResults() const;
 
@@ -39,7 +39,7 @@ private:
     QString game;
     VodListModel *model;
     VodSearchOperation *vodSearch;
-    VodOperation *vodGet;
+    VodStreamExtractOperation *vodGet;
 };
 
 #endif // VODMANAGER_H

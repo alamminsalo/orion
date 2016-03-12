@@ -38,7 +38,7 @@ Item{
 
         onItemClicked: {
             if (currentItem.online){
-                player.play(currentItem)
+                player.getStreams(currentItem)
             }
         }
 
@@ -54,20 +54,20 @@ Item{
                 text: "Watch;play"
                 onTriggered: {
                     if (_menu.item.online){
-                        player.play(_menu.item)
+                        player.getStreams(_menu.item)
                     }
-                }
-            }
-            MenuItem {
-                text: "Remove;remove"
-                onTriggered: {
-                    g_cman.removeFromFavourites(_menu.item._id)
                 }
             }
             MenuItem {
                 text: "Videos;video"
                 onTriggered: {
                     vods.search(_menu.item)
+                }
+            }
+            MenuItem {
+                text: "Remove;remove"
+                onTriggered: {
+                    g_cman.removeFromFavourites(_menu.item._id)
                 }
             }
         }

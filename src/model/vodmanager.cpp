@@ -3,7 +3,7 @@
 VodManager::VodManager()
 {
     vodSearch = new VodSearchOperation();
-    vodGet = new VodOperation();
+    vodGet = new VodStreamExtractOperation();
     model = new VodListModel();
 
     connect(vodSearch, SIGNAL(operationFinished()), this, SLOT(onSearchFinished()));
@@ -49,7 +49,7 @@ VodListModel *VodManager::getModel() const
     return model;
 }
 
-VodOperation *VodManager::getVodGet() const
+VodStreamExtractOperation *VodManager::getVodGet() const
 {
     return vodGet;
 }

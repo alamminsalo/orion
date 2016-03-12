@@ -19,8 +19,13 @@ void VodSearchOperation::search(const QString channelName, quint32 offset, quint
     QString url = QString(KRAKEN_API)
             + QString("/channels/%1/videos").arg(channelName)
             + QString("?offset=%1").arg(offset)
-            + QString("&limit=%1").arg(limit)
-            + "&hls=true";
+            + QString("&limit=%1").arg(limit);
+
+    if (ONLY_BROADCASTS)
+        url += "&broadcasts=true";
+
+    if (USE_HLS)
+        url += "&hls=true";
 
     QNetworkRequest request;
     request.setUrl(QUrl(url));

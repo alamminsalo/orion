@@ -1,36 +1,36 @@
-#include "vodoperation.h"
+#include "vodstreamextractoperation.h"
 #include "../util/jsonparser.h"
 #include "../util/m3u8parser.h"
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QDebug>
 
-VodOperation::VodOperation()
+VodStreamExtractOperation::VodStreamExtractOperation()
 {
     connect(this, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleReply(QNetworkReply*)));
 }
 
-VodOperation::~VodOperation()
+VodStreamExtractOperation::~VodStreamExtractOperation()
 {
     result.clear();
 }
 
-QString VodOperation::getVod() const
+QString VodStreamExtractOperation::getVod() const
 {
     return vod;
 }
 
-void VodOperation::setVod(const QString &value)
+void VodStreamExtractOperation::setVod(const QString &value)
 {
     vod = value;
 }
 
-QStringList VodOperation::getResult() const
+QStringList VodStreamExtractOperation::getResult() const
 {
     return result;
 }
 
-void VodOperation::run(const QString vod_id)
+void VodStreamExtractOperation::run(const QString vod_id)
 {
     vod = vod_id;
 
@@ -40,7 +40,7 @@ void VodOperation::run(const QString vod_id)
     getExtractionData();
 }
 
-void VodOperation::getExtractionData()
+void VodStreamExtractOperation::getExtractionData()
 {
     phase = 0;
 
@@ -53,7 +53,7 @@ void VodOperation::getExtractionData()
     get(request);
 }
 
-void VodOperation::getM3U(QString url)
+void VodStreamExtractOperation::getM3U(QString url)
 {
     phase = 1;
 
@@ -67,7 +67,7 @@ void VodOperation::getM3U(QString url)
     get(request);
 }
 
-void VodOperation::handleReply(QNetworkReply* reply)
+void VodStreamExtractOperation::handleReply(QNetworkReply* reply)
 {
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();

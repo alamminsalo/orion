@@ -38,5 +38,6 @@
         <file>style/qmldir</file>
         <file>VodsView.qml</file>
         <file>components/Video.qml</file>
+        <file>components/SeekBar.qml</file>
     </qresource>
 </RCC>

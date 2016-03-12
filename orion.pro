@@ -29,11 +29,11 @@ SOURCES += src/main.cpp\
     src/util/runguard.cpp \
     src/customapp.cpp \
     src/util/notificationmaker.cpp \
-    src/network/vodoperation.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
-    src/network/vodsearchoperation.cpp
+    src/network/vodsearchoperation.cpp \
+    src/network/vodstreamextractoperation.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -52,12 +52,12 @@ HEADERS  += src/model/channel.h \
     src/util/runguard.h \
     src/customapp.h \
     src/util/notificationmaker.h \
-    src/network/vodoperation.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
     src/network/vodsearchoperation.h \
-    src/network/urls.h
+    src/network/urls.h \
+    src/network/vodstreamextractoperation.h
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
