@@ -3,6 +3,7 @@
 
 #include <QTimer>
 #include <QObject>
+#include <QApplication>
 
 #ifdef Q_OS_WIN
     #include <Windows.h>
@@ -12,16 +13,14 @@ class Power: public QObject
 {
     Q_OBJECT
 public:
-    Power();
+    Power(QApplication *app);
     ~Power();
 
     Q_INVOKABLE void setScreensaver(bool);
 
-    void setWid(const quint32 &value);
-
 private:
     QTimer* timer;
-    quint32 wid;
+    QApplication *app;
 
 private slots:
     void onTimerProc();

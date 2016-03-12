@@ -17,6 +17,8 @@ var iconHighlight= "#dddddd"
 var selectedTextBg= "#212125"
 var disabled = "#444444"
 
+var seekBar = "#444444"
+
 var white = "#ffffff"
 
 var iconSize = 16

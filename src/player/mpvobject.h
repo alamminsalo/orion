@@ -33,6 +33,8 @@ public slots:
     void command(const QVariant& params);
     void setProperty(const QString& name, const QVariant& value);
 
+
+
 signals:
     void onUpdate();
     void playingPaused();
@@ -40,6 +42,9 @@ signals:
     void playingResumed();
     void bufferingStarted();
     //void bufferingEnded();
+
+    void volumeChanged(int volume);
+    void positionChanged(int position);
 
 private slots:
     void doUpdate();

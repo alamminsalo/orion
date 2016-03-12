@@ -4,7 +4,7 @@ import "../styles.js" as Styles
 
 Rectangle {
     property string icon
-    property int iconSize
+    property int iconSize: 0
     property color iconColor: Styles.iconColor
 
     id: root

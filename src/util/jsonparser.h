@@ -9,6 +9,7 @@
 #include <QUrl>
 #include "../model/channel.h"
 #include "../model/game.h"
+#include "../model/vod.h"
 
 /**
  * @brief The JsonParser class
@@ -22,12 +23,15 @@ public:
     static QList<Game*> parseGames(const QByteArray&);
     static QList<Channel*> parseChannels(const QByteArray&);
     static QList<Channel*> parseFeatured(const QByteArray&);
+    static QList<Vod *> parseVods(const QByteArray&);
     static Game* parseGame(const QJsonObject&);
     static Channel* parseStream(const QByteArray&);
     static Channel* parseStream(const QJsonObject&);
     static Channel* parseChannel(const QByteArray&);
     static Channel* parseChannel(const QJsonObject&);
+    static Vod* parseVod(const QJsonObject&);
     static QString parseChannelStreamExtractionInfo(const QByteArray&);
+    static QString parseVodExtractionInfo(const QByteArray&, QString vod = "");
 };
 
 #endif // JSONPARSER_H

@@ -21,4 +21,5 @@ var icons = {
     'volume':       "\uf028",
     'volume-off':   "\uf026",
     'volume-med':   "\uf027",
+    'video':        "\uf03d"
 }

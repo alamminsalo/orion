@@ -185,6 +185,31 @@ Channel* JsonParser::parseChannel(const QJsonObject &json)
     return channel;
 }
 
+Vod *JsonParser::parseVod(const QJsonObject &json)
+{
+    Vod *vod = new Vod();
+
+    if (!json["_id"].isNull())
+        vod->setId(json["_id"].toString());
+
+    if (!json["preview"].isNull())
+        vod->setPreview(json["preview"].toString());
+
+    if (!json["title"].isNull())
+        vod->setTitle(json["title"].toString());
+
+    if (!json["length"].isNull())
+        vod->setDuration(json["length"].toInt());
+
+    if (!json["game"].isNull())
+        vod->setGame(json["game"].toString());
+
+    if (!json["views"].isNull())
+        vod->setViews(json["views"].toInt());
+
+    return vod;
+}
+
 QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
 {
     QList<Channel*> channels;
@@ -223,6 +248,25 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
     return channels;
 }
 
+QList<Vod *> JsonParser::parseVods(const QByteArray &data)
+{
+    QList<Vod *> vods;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        if (!json["videos"].isNull()){
+            foreach (const QJsonValue &item, json["videos"].toArray()){
+                vods.append(JsonParser::parseVod(item.toObject()));
+            }
+        }
+    }
+
+    return vods;
+}
+
 QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
 {
     QString url;
@@ -252,6 +296,42 @@ QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
                 + QString("&token=%1").arg(tokenData)
                 + QString("&sig=%1").arg(sig)
                 + QString("&allow_source=true&$allow_audio_only=true");
+    }
+
+    return url;
+}
+
+QString JsonParser::parseVodExtractionInfo(const QByteArray &data, QString vod)
+{
+    QString url;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        QString tokenData = json["token"].toString();
+        QString sig = json["sig"].toString();
+
+        //Strip escape markings and spaces
+        //tokenData = tokenData.trimmed().remove("\\");
+
+        if (vod.isEmpty()) {
+            QJsonDocument tokenDoc = QJsonDocument::fromJson(tokenData.toUtf8(), &error);
+            if (error.error == QJsonParseError::NoError){
+                QJsonObject tokenJson = tokenDoc.object();
+                vod = tokenJson["vod_id"].toString();
+            }
+        }
+
+        url = QString("http://usher.twitch.tv/vod/%1").arg(vod)
+                + QString("?nauth=%1").arg(tokenData)
+                + QString("&nauthsig=%1").arg(sig)
+                + QString("&p=%1").arg(qrand() * 999999)
+                + "&type=any"
+                  "&player=twitchweb"
+                  "&allow_source=true"
+                  "&$allow_audio_only=true";
     }
 
     return url;

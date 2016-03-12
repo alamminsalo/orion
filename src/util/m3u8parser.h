@@ -23,7 +23,8 @@ namespace m3u8 {
         foreach(QString str, QString(data).split("\n")){
 
             if (str.contains("VIDEO=")){
-                str.remove(0, str.indexOf(QRegExp("\".+\""))).replace("\"","");
+                str.remove(0, str.indexOf("VIDEO=") + 6);
+                str.replace("\"","");
                 lastKey = str;
             }
             else if (!lastKey.isEmpty() && str.startsWith("http://")){

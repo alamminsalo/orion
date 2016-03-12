@@ -39,7 +39,6 @@ Item{
         onItemClicked: {
             if (currentItem.online){
                 player.play(currentItem)
-                requestSelectionChange(4)
             }
         }
 
@@ -56,7 +55,6 @@ Item{
                 onTriggered: {
                     if (_menu.item.online){
                         player.play(_menu.item)
-                        requestSelectionChange(4)
                     }
                 }
             }
@@ -64,6 +62,12 @@ Item{
                 text: "Remove;remove"
                 onTriggered: {
                     g_cman.removeFromFavourites(_menu.item._id)
+                }
+            }
+            MenuItem {
+                text: "Videos;video"
+                onTriggered: {
+                    vods.search(_menu.item)
                 }
             }
         }

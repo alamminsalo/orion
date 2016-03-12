@@ -2,11 +2,12 @@
 #include <QtGlobal>
 #include <QProcess>
 #include <QDebug>
+#include <QWindow>
 
-Power::Power()
+Power::Power(QApplication *app) :
+    app(app)
 {
     timer = new QTimer();
-    wid = 0;
     connect(timer, SIGNAL(timeout()), this, SLOT(onTimerProc()));
 }
 
@@ -19,35 +20,29 @@ void Power::setScreensaver(bool enabled)
 {
 
 #ifdef Q_OS_LINUX
-    if (!wid){
-        qDebug() << "No window set";
+
+    QWindow *win = app->allWindows().at(0);
+
+    if (!win)
         return;
-    }
+
+    quint32 wid = win->winId();
 
     qDebug() << "Screensaver change event, wid" << wid;
 
     QStringList args;
-
-    if (!enabled)
-    {
-        qDebug() << "DISABLING screensaver";
-        args << "suspend" << QString::number(wid);
-    }
-    else
-    {
-        qDebug() << "ENABLING screensaver";
-        args << "resume" << QString::number(wid);
-    }
+    args << (enabled ? "resume" : "suspend") << QString::number(wid);
 
     QProcess::startDetached("xdg-screensaver",args);
 
-//    if (enabled){
-//        timer->stop();
-//    } else {
-//        if (!timer->isActive()){
-//            timer->start(25000);
-//        }
-//    }
+    // Also set timer to send nudges to xserver
+    if (enabled){
+        timer->stop();
+    } else {
+        if (!timer->isActive()){
+            timer->start(25000);
+        }
+    }
 
 #elif defined(Q_OS_WIN)
     if (!enabled)
@@ -56,12 +51,6 @@ void Power::setScreensaver(bool enabled)
         SetThreadExecutionState(ES_CONTINUOUS);
 
 #endif
-}
-
-void Power::setWid(const quint32 &value)
-{
-    //qDebug() << "Setting wid for power-saver:" << value;
-    wid = value;
 }
 
 void Power::onTimerProc()

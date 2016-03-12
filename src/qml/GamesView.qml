@@ -77,7 +77,6 @@ Item {
                 text: "Find streams;search"
                 onTriggered: {
                     search.search(":game " + _menu.item.title)
-                    requestSelectionChange(0)
                 }
             }
         }

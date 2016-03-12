@@ -17,6 +17,7 @@
 #include "systray.h"
 #include "customapp.h"
 #include "util/notificationmaker.h"
+#include "model/vodmanager.h"
 #include <QProcessEnvironment>
 
 int main(int argc, char *argv[])
@@ -38,12 +39,13 @@ int main(int argc, char *argv[])
     tray->setIcon(appIcon);
 
     QObject::connect(tray, SIGNAL(closeEventTriggered()), &app, SLOT(quit()));
+    //QObject::connect()
 
     ChannelManager *cman = new ChannelManager();
     cman->checkResources();
     cman->load();
 
-    Power *power = new Power();
+    Power *power = new Power(static_cast<QApplication *>(&app));
 
     QQmlApplicationEngine engine;
 
@@ -51,22 +53,27 @@ int main(int argc, char *argv[])
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
 
 #elif defined(Q_OS_LINUX)
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 72;
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
 
 #endif
 
     qDebug() <<"DPI mult: "<< dpiMultiplier;
 
-    qDebug() << "Setting context variables...";
-    engine.rootContext()->setContextProperty("dpiMultiplier", dpiMultiplier);
-    engine.rootContext()->setContextProperty("g_cman", cman);
-    engine.rootContext()->setContextProperty("g_guard", &guard);
-    engine.rootContext()->setContextProperty("g_powerman", power);
-    engine.rootContext()->setContextProperty("g_favourites", cman->getFavouritesProxy());
-    engine.rootContext()->setContextProperty("g_results", cman->getResultsModel());
-    engine.rootContext()->setContextProperty("g_featured", cman->getFeaturedProxy());
-    engine.rootContext()->setContextProperty("g_games", cman->getGamesModel());
-    engine.rootContext()->setContextProperty("g_tray", tray);
+    //Invokable network operations for player
+    VodManager *vod = new VodManager();
+
+    QQmlContext *rootContext = engine.rootContext();
+    rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
+    rootContext->setContextProperty("g_cman", cman);
+    rootContext->setContextProperty("g_guard", &guard);
+    rootContext->setContextProperty("g_powerman", power);
+    rootContext->setContextProperty("g_favourites", cman->getFavouritesProxy());
+    rootContext->setContextProperty("g_results", cman->getResultsModel());
+    rootContext->setContextProperty("g_featured", cman->getFeaturedProxy());
+    rootContext->setContextProperty("g_games", cman->getGamesModel());
+    rootContext->setContextProperty("g_tray", tray);
+    rootContext->setContextProperty("g_vodmgr", vod);
+    rootContext->setContextProperty("vodsModel", vod->getModel());
 
     std::setlocale(LC_NUMERIC, "C");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
@@ -78,20 +85,16 @@ int main(int argc, char *argv[])
     QObject::connect(cman, SIGNAL(pushNotification(QString,QString,QString)), notificator, SLOT(pushNotification(QString,QString,QString)));
 
     qDebug() << "Starting window...";
-
-    power->setWid(app.allWindows().at(0)->winId());
-    qDebug() << "WindowId: " << app.allWindows().at(0)->winId();
-
     tray->show();
 
     app.exec();
 
+    //Cleanup
+    delete vod;
     delete tray;
-
-    delete notificator;
-
-    qDebug() << "Closing application...";
+    delete notificator;    
     delete cman;
 
+    qDebug() << "Closing application...";
     return 0;
 }

@@ -74,6 +74,10 @@ Rectangle {
                 icon: "game"
             }
             ListElement {
+                label: "Videos"
+                icon: "video"
+            }
+            ListElement {
                 label: "Watch"
                 icon: "play"
             }

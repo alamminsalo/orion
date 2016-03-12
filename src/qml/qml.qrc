@@ -36,5 +36,7 @@
         <file>components/Notification.qml</file>
         <file>style/Dpi.qml</file>
         <file>style/qmldir</file>
+        <file>VodsView.qml</file>
+        <file>components/Video.qml</file>
     </qresource>
 </RCC>

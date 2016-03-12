@@ -15,33 +15,52 @@ Item {
     //  0 - mobile
     property int quality: 4
     property bool paused: false
+    property int duration: -1
     property var currentChannel
     property var qualityMap
     property bool fs: false
+    property bool isVod: false
 
     id: root
 
-    function play(channel){
+    function play(channel, vod){
+
         if (!channel){
             return
         }
 
         renderer.command(["stop"])
-        g_cman.findPlaybackStream(channel.name)
+
+        //console.log(typeof vod)
+
+        if (!vod || typeof vod === "undefined") {
+            g_cman.findPlaybackStream(channel.name)
+            isVod = false
+
+            duration = -1
+        }
+        else {
+            g_vodmgr.getStreams(vod._id)
+            isVod = true
+
+            duration = vod.duration
+
+            console.log("Setting up VOD, duration " + vod.duration)
+        }
 
         paused = false
-        renderer.play()
+        //renderer.play()
 
         currentChannel = {
             "_id": channel._id,
             "name": channel.name,
-            "game": channel.game,
-            "title": channel.title,
+            "game": isVod ? vod.game : channel.game,
+            "title": isVod ? vod.title : channel.title,
             "online": channel.online,
             "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
             "viewers": channel.viewers,
             "logo": channel.logo,
-            "preview": channel.preview
+            "preview": channel.preview,
         }
 
         _favIcon.update()
@@ -50,10 +69,14 @@ Item {
         spinner.visible = true
 
         setWatchingTitle()
+
+        requestSelectionChange(5)
     }
 
     function setWatchingTitle(){
-        header.text = "Currently watching: " + currentChannel.title + " playing " + currentChannel.game
+        header.text = currentChannel.title
+                + " playing " + currentChannel.game
+                + (isVod ? " (VOD)" : "")
     }
 
     function pause(){
@@ -68,32 +91,51 @@ Item {
     Connections {
         target: g_cman
         onFoundPlaybackStream: {
+            loadStreams(streams)
+        }
+    }
 
-            qualityMap = streams
+    function loadStreams(streams) {
+        qualityMap = streams
 
-            var desc = true
-            while (!qualityMap[quality] || qualityMap[quality].length <= 0){
+        var desc = true
+        while (!qualityMap[quality] || qualityMap[quality].length <= 0){
 
-                if (quality <= 0)
-                    desc = false
+            if (quality <= 0)
+                desc = false
 
-                if (quality == 4 && !desc)
-                    break;
+            if (quality == 4 && !desc)
+                break;
 
-                quality += desc ? -1 : 1
-            }
+            quality += desc ? -1 : 1
+        }
 
-            sourcesBox.entries = qualityMap
+        sourcesBox.entries = qualityMap
 
-            if (qualityMap[quality]){
-                setWatchingTitle()
+        if (qualityMap[quality]){
+            setWatchingTitle()
 
-                renderer.command(["loadfile", qualityMap[quality]])
+            renderer.command(["loadfile", qualityMap[quality]])
 
-                //spinner.visible = false
+            spinner.visible = false
 
-                sourcesBox.setIndex(quality)
-            }
+            sourcesBox.setIndex(quality)
+        }
+
+        renderer.play()
+    }
+
+    function seekTo(percentage) {
+        if (isVod){
+            var pos = duration / 100 * percentage
+            renderer.setProperty("playback-time", pos)
+        }
+    }
+
+    Connections {
+        target: g_vodmgr
+        onStreamsGetFinished: {
+            loadStreams(g_vodmgr.getResults())
         }
     }
 
@@ -214,6 +256,7 @@ Item {
         }
 
         Item {
+            id: pauseButton
             anchors {
                 top: parent.top
                 bottom: parent.bottom
@@ -240,6 +283,68 @@ Item {
                 }
             }
         }
+
+        Item {
+
+            visible: isVod
+
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+                left: pauseButton.right
+                right: vol.left
+            }
+
+            Rectangle {
+                id: seekBar
+                color: Styles.seekBar
+
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: dp(10)
+                    rightMargin: dp(10)
+
+                    verticalCenter: parent.verticalCenter
+                }
+
+                height: dp(6)
+
+                Rectangle {
+                    color: "white"
+                    id: fillBar
+                    anchors {
+                        left: parent.left
+                        top: parent.top
+                        bottom: parent.bottom
+                    }
+
+                    Connections {
+                        target: renderer
+                        onPositionChanged: {
+                            var width = Math.max(0,Math.min(position / duration * seekBar.width, seekBar.width))
+
+                            fillBar.width = width
+                        }
+                    }
+                }
+            }
+
+            MouseArea {
+                anchors {
+                    fill: parent
+                    topMargin: dp(10)
+                    bottomMargin: dp(10)
+                }
+
+                propagateComposedEvents: false
+                onClicked: {
+                    var percentage = Math.max(0, Math.min(mouseX / seekBar.width * 100, 100))
+                    seekTo(percentage)
+                }
+            }
+        }
+
 
         VolumeSlider {
             id: vol
@@ -324,8 +429,7 @@ Item {
         }
 
         onPlayingResumed: {
-            header.text = "Currently watching: " + currentChannel.title
-                    +   " playing " + currentChannel.game
+            setWatchingTitle()
             spinner.visible = false
 
             g_powerman.setScreensaver(false);

@@ -20,6 +20,7 @@ Rectangle {
         featured.visible = false
         player.visible = false
         settings.visible = false
+        vods.visible = false
 
         switch (selection){
 
@@ -44,13 +45,18 @@ Rectangle {
             games.visible = true
             break
 
-        //Player
+        //Vods
         case 4:
+            vods.visible = true
+            break
+
+        //Player
+        case 5:
             player.visible = true
             break
 
         //Settings
-        case 5:
+        case 6:
             settings.visible = true
             break
         }
@@ -73,6 +79,11 @@ Rectangle {
 
     GamesView {
         id: games
+        visible: false
+    }
+
+    VodsView {
+        id: vods
         visible: false
     }
 

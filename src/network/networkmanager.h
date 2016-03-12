@@ -9,9 +9,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include "../model/channelmanager.h"
-
-#define KRAKEN_API "https://api.twitch.tv/kraken"
-#define TWITCH_API "https://api.twitch.tv/api"
+#include "urls.h"
 
 class ChannelManager;
 

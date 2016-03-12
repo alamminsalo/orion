@@ -50,7 +50,6 @@ Item {
         onItemClicked: {
             if (currentItem.online){
                 player.play(currentItem)
-                requestSelectionChange(4)
             }
         }
 
@@ -80,7 +79,6 @@ Item {
                 onTriggered: {
                     if (_menu.item.online){
                         player.play(_menu.item)
-                        requestSelectionChange(4)
                     }
                 }
             }
@@ -89,6 +87,13 @@ Item {
                 id: _fav
                 onTriggered: {
                     _menu.addRemoveFavourite()
+                }
+            }
+
+            MenuItem {
+                text: "Videos;video"
+                onTriggered: {
+                    vods.search(_menu.item)
                 }
             }
         }

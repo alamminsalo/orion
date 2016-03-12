@@ -54,11 +54,15 @@ MpvObject::MpvObject(QQuickItem * parent)
     connect(this, &MpvObject::onUpdate, this, &MpvObject::doUpdate,
             Qt::QueuedConnection);
 
+    //Restore volume to 100
+    setProperty("volume", QVariant::fromValue(100));
 
     //Set observe properties
     mpv_observe_property(mpv, 0, "core-idle", MPV_FORMAT_FLAG);
     //mpv_observe_property(mpv, 0, "paused-for-cache", MPV_FORMAT_FLAG);
     mpv_observe_property(mpv, 0, "cache-buffering-state", MPV_FORMAT_INT64);
+
+    mpv_observe_property(mpv, 0, "playback-time", MPV_FORMAT_DOUBLE);
 
     // setup callback event handling
     mpv_set_wakeup_callback(mpv, wakeup, this);
@@ -141,14 +145,14 @@ bool MpvObject::event(QEvent *event)
                 {
                     if(prop->format == MPV_FORMAT_DOUBLE)
                     {
-//                        setTime((int)*(double*)prop->data);
-//                        lastTime = time;
+                        int pos = (int)*(double *)prop->data;
+                        emit positionChanged(pos);
                     }
                 }
                 else if(QString(prop->name) == "volume")
                 {
-//                    if(prop->format == MPV_FORMAT_DOUBLE)
-//                        setVolume((int)*(double*)prop->data);
+                   if(prop->format == MPV_FORMAT_DOUBLE)
+                        emit volumeChanged((int)*(double*)prop->data);
                 }
                 else if(QString(prop->name) == "sid")
                 {
