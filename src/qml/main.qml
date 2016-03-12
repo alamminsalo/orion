@@ -8,8 +8,7 @@ import "style"
 ApplicationWindow {
     id: root
     visible: true
-    height: Screen.height * 0.7
-    width: height * 1.2
+
     title: "Orion"
     //flags: Qt.FramelessWindowHint | Qt.Window
     visibility: g_fullscreen ? "FullScreen" : "Windowed"
@@ -81,6 +80,9 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+
+        height=Screen.height * 0.7
+        width=height * 1.2
 
         setX(Screen.width / 2 - width / 2);
         setY(Screen.height / 2 - height / 2);
