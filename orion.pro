@@ -7,7 +7,7 @@
 #
 #-------------------------------------------------
 
-QT     += opengl qml quick network
+QT     += gui opengl qml quick network
 
 TARGET = orion
 
@@ -57,7 +57,10 @@ HEADERS  += src/model/channel.h \
     src/model/vodmanager.h \
     src/network/vodsearchoperation.h \
     src/network/urls.h \
-    src/network/vodstreamextractoperation.h
+    src/network/vodstreamextractoperation.h \
+    src/player/mpv/client.h \
+    src/player/mpv/opengl_cb.h \
+    src/player/mpv/qthelper.hpp
 
 QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
 
@@ -75,15 +78,48 @@ unix: {
 
         QMAKE_EXTRA_TARGETS += first copydata
     }
+
+    #QMAKE_POST_LINK += $quote($(COPY) $PWD/distfiles * $OUT_PWD
 }
 
 RESOURCES += \
     src/qml/qml.qrc
 
+# Copies the given files to the destination directory
+defineTest(copyToDestdir) {
+    files = $$1
+
+    for(FILE, files) {
+        DDIR = $$DESTDIR
+
+        # Replace slashes in paths with backslashes for Windows
+        win32:FILE ~= s,/,\\,g
+        win32:DDIR ~= s,/,\\,g
+
+        QMAKE_POST_LINK += $$QMAKE_COPY $$quote($$FILE) $$quote($$DDIR) $$escape_expand(\\n\\t)
+    }
+
+    export(QMAKE_POST_LINK)
+}
+
 win32: {
-    LIBS += -LC:/libmpv/32 -lmpv.dll
-    INCLUDEPATH += C:/libmpv/include
+    LIBS += -L$${PWD}/libs/ -lmpv.dll
     RC_ICONS = distfiles/orion.ico
+
+    EXTRA_BINFILES = $$PWD/libs/mpv-1.dll \
+                    $$PWD/distfiles/qt.conf \
+                    $$PWD/libs/libssl32.dll \
+                    $$PWD/libs/ssleay32.dll \
+                    $$PWD/libs/libeay32.dll
+
+    EXTRA_BINFILES_WIN = $${EXTRA_BINFILES}
+    EXTRA_BINFILES_WIN ~= s,/,\\,g
+    DESTDIR_WIN = $$OUT_PWD/release
+    DESTDIR_WIN ~= s,/,\\,g
+    for(FILE,EXTRA_BINFILES_WIN){
+                QMAKE_POST_LINK +=$$quote(cmd /c copy /y $${FILE} $${DESTDIR_WIN}$$escape_expand(\n\t))
+    }
+
 }
 
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT

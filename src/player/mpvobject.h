@@ -2,9 +2,9 @@
 #define MPVOBJECT_H
 
 #include <QtQuick/QQuickFramebufferObject>
-#include <mpv/client.h>
-#include <mpv/opengl_cb.h>
-#include <mpv/qthelper.hpp>
+#include "mpv/client.h"
+#include "mpv/opengl_cb.h"
+#include "mpv/qthelper.hpp"
 #include <QEvent>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtQuick/QQuickWindow>
@@ -27,12 +27,12 @@ public:
     virtual Renderer *createRenderer() const;
 
     Q_INVOKABLE void pause();
-    Q_INVOKABLE void play();
+    Q_INVOKABLE void play(bool autoReload = true);
 
 public slots:
     void command(const QVariant& params);
     void setProperty(const QString& name, const QVariant& value);
-
+    void setOption(const QString& name, const QVariant& value);
 
 
 signals:

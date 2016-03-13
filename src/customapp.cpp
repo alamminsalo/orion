@@ -13,4 +13,6 @@ bool CustomApp::event(QEvent *e)
     } else {
        QApplication::event(e);
     }
+
+    return true;
 }

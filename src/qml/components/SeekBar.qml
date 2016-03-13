@@ -8,12 +8,18 @@ Item {
 
     id: root
 
-    signal userChangedPosition(real position)
+    signal userChangedPosition(int position)
 
-    function setPosition(fraction, duration){
-        if (root.duration !== duration)
+    function setPosition(position, duration){
+
+        if (root.duration != duration)
             root.duration = duration
-        root.position = Math.floor(duration * fraction)
+
+        if (root.position != position)
+            root.position = position
+
+
+        var fraction = position / duration
         fillBar.width = Math.floor(fraction * seekBar.width)
 
         time.updateTime()
@@ -21,6 +27,10 @@ Item {
 
     onDurationChanged: {
         time.duration = time.getTime(duration)
+    }
+
+    onPositionChanged: {
+        time.position = time.getTime(position)
     }
 
     Rectangle {
@@ -63,13 +73,14 @@ Item {
 
         propagateComposedEvents: false
         onClicked: {
-            userChangedPosition(mouseX / seekBar.width)
+            userChangedPosition((mouseX / seekBar.width) * duration)
         }
     }
 
     Item {
 
         property string duration
+        property string position
 
         id: time
         anchors {
@@ -82,10 +93,14 @@ Item {
         width: _time.contentWidth
 
         function updateTime() {
-            _time.text = getTime(root.position) + "/" + duration
+            _time.text = position + "/" + duration
         }
 
         function getTime(totalSec){
+
+            if (!totalSec)
+                return "--"
+
             var hours = parseInt(totalSec / 3600) % 24;
             var minutes = parseInt(totalSec / 60) % 60;
             var seconds = totalSec % 60;

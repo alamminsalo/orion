@@ -98,6 +98,11 @@ void MpvObject::setProperty(const QString& name, const QVariant& value)
     mpv::qt::set_property_variant(mpv, name, value);
 }
 
+void MpvObject::setOption(const QString &name, const QVariant &value)
+{
+    mpv::qt::set_option_variant(mpv, name, value);
+}
+
 QQuickFramebufferObject::Renderer *MpvObject::createRenderer() const
 {
     window()->setPersistentOpenGLContext(true);
@@ -113,9 +118,9 @@ void MpvObject::pause()
     mpv::qt::command_variant(mpv, args);
 }
 
-void MpvObject::play()
+void MpvObject::play(bool autoReload)
 {
-    if (QDateTime::currentMSecsSinceEpoch() - time > 5000){
+    if (autoReload && QDateTime::currentMSecsSinceEpoch() - time > 5000){
         qDebug() << "Waited too long, resetting playback" << mpv::qt::get_property_variant(mpv, "path");
         mpv::qt::command_variant(mpv, (QStringList() << "loadfile" << mpv::qt::get_property_variant(mpv, "path").toString()));
     }

@@ -26,6 +26,12 @@ Item {
     function loadAndPlay(){
         setWatchingTitle()
 
+        var position = !isVod ? 0 : seekBar.position
+
+        //console.log(position)
+
+        renderer.setOption("start", "+" + position)
+
         renderer.command(["loadfile", qualityMap[quality]])
 
         spinner.visible = false
@@ -94,7 +100,7 @@ Item {
         if (paused)
             renderer.pause()
         else
-            renderer.play()
+            renderer.play(!isVod)
     }
 
     Connections {
@@ -128,12 +134,10 @@ Item {
         }
     }
 
-    function seekTo(fraction) {
-        console.log(fraction)
+    function seekTo(position) {
+        console.log("Seeking to", position)
         if (isVod){
-            var pos = Math.floor(duration * fraction)
-            console.log(pos)
-            renderer.setProperty("playback-time", pos)
+            renderer.setProperty("playback-time", position)
         }
     }
 
@@ -307,7 +311,7 @@ Item {
             Connections {
                 target: renderer
                 onPositionChanged: {
-                    seekBar.setPosition(position / duration, duration)
+                    seekBar.setPosition(parseInt(position), duration)
                 }
             }
         }

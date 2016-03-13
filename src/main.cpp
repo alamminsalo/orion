@@ -22,6 +22,9 @@
 
 int main(int argc, char *argv[])
 {
+    //Force using "auto" value for QT_DEVICE_PIXEL_RATIO env var
+    qputenv("QT_DEVICE_PIXEL_RATIO",QByteArray("auto"));
+
     CustomApp app(argc, argv);
 
     //Single application solution
@@ -39,7 +42,6 @@ int main(int argc, char *argv[])
     tray->setIcon(appIcon);
 
     QObject::connect(tray, SIGNAL(closeEventTriggered()), &app, SLOT(quit()));
-    //QObject::connect()
 
     ChannelManager *cman = new ChannelManager();
     cman->checkResources();
@@ -57,6 +59,9 @@ int main(int argc, char *argv[])
 
 #endif
 
+    //dpiMultiplier /= QGuiApplication::primaryScreen()->devicePixelRatio();
+
+    qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
     qDebug() <<"DPI mult: "<< dpiMultiplier;
 
     //Invokable network operations for player
