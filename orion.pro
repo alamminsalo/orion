@@ -7,7 +7,7 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network
+QT     += gui opengl qml quick network widgets
 
 TARGET = orion
 
@@ -62,7 +62,9 @@ HEADERS  += src/model/channel.h \
     src/player/mpv/opengl_cb.h \
     src/player/mpv/qthelper.hpp
 
-QMAKE_CXXFLAGS += -std=c++11 -Wall -O2
+QMAKE_CXXFLAGS += -Wall -O2
+
+CONFIG += c++11
 
 DISTFILES += src/qml/icon/orion.svg
 
@@ -123,3 +125,10 @@ win32: {
 }
 
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
+
+macx: {
+    LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/lib/ -lmpv.1.20.0
+
+    INCLUDEPATH += $$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/include
+    DEPENDPATH += $$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/include
+}

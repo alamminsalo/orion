@@ -18,6 +18,7 @@
 #include "customapp.h"
 #include "util/notificationmaker.h"
 #include "model/vodmanager.h"
+#include <QString>
 #include <QProcessEnvironment>
 
 int main(int argc, char *argv[])
@@ -56,6 +57,9 @@ int main(int argc, char *argv[])
 
 #elif defined(Q_OS_LINUX)
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
+
+#elif defined(Q_OS_MAC)
+    qreal dpiMultiplier = 1;
 
 #endif
 
