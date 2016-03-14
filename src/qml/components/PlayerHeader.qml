@@ -29,11 +29,11 @@ Item {
             id: _text
             anchors.centerIn: parent
             color: Styles.textColor
-            font.pointSize: dp(Styles.bigFont)
+            font.pointSize: Styles.titleFont.bigger
             text: root.text
             font.family: "Droid Sans"
             z: root.z + 1
-            renderType: Text.NativeRendering
+            //renderType: Text.NativeRendering
         }
     }
 

@@ -23,8 +23,8 @@ Rectangle {
         anchors.centerIn: parent
         color: Styles.textColor
         text: root.text
-        font.pointSize: dp(Styles.button.size)
-        renderType: Text.NativeRendering
+        font.pointSize: Styles.button.size
+        //renderType: Text.NativeRendering
     }
 
     Rectangle {
@@ -37,7 +37,7 @@ Rectangle {
     Icon {
         id: iconLabel
         icon: iconStr
-        iconSize: dp(20)
+        iconSize: 20
         anchors {
             top: parent.top
             bottom: parent.bottom

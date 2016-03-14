@@ -49,9 +49,9 @@ Rectangle {
             anchors.centerIn: parent
             color: Styles.textColor
             font.family: "Droid Sans"
-            font.pointSize: dp(Styles.titleFont.smaller)
+            font.pointSize: Styles.titleFont.smaller
             font.bold: true
-            renderType: Text.NativeRendering
+            ////renderType: Text.NativeRendering
         }
     }
 
@@ -133,8 +133,8 @@ Rectangle {
                 anchors.centerIn: parent
                 color: Styles.textColor
                 font.family: "Droid Sans"
-                font.pointSize: dp(Styles.titleFont.smaller)
-                renderType: Text.NativeRendering
+                font.pointSize: Styles.titleFont.smaller
+                ////renderType: Text.NativeRendering
             }
         }
     }

@@ -21,7 +21,7 @@ Window {
         SpinnerIcon {
             id:_spinner
             anchors.fill: parent
-            iconSize: dp(60)
+            iconSize: 60
         }
 
         Image {
@@ -51,7 +51,7 @@ Window {
             id: text
             color: Styles.textColor
             text: root.text
-            font.pointSize: dp(Styles.titleFont.smaller)
+            font.pointSize: Styles.titleFont.smaller
             font.family: "Droid Sans"
             anchors{
                 bottom: parent.bottom
@@ -59,7 +59,7 @@ Window {
                 right: parent.right
             }
             wrapMode: Text.WordWrap
-            renderType: Text.NativeRendering
+            //renderType: Text.NativeRendering
         }
     }
 

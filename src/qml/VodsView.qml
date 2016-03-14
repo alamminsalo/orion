@@ -8,7 +8,23 @@ Item{
     property int itemCount: 0
 
     function search(channel){
-        selectedChannel = channel;
+
+        if (!channel || typeof channel == "undefined")
+            return
+
+        selectedChannel = {
+            "_id": channel._id,
+            "name": channel.name,
+            "game": channel.game,
+            "title": channel.title,
+            "online": channel.online,
+            "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
+            "viewers": channel.viewers,
+            "logo": channel.logo,
+            "preview": channel.preview,
+        }
+
+        header.text = "Videos for " + selectedChannel.title;
 
         g_vodmgr.search(selectedChannel.name, 0, 25)
 
@@ -21,10 +37,6 @@ Item{
         id: header
         text: ""
         z: favourites.z + 1
-    }
-
-    onSelectedChannelChanged: {
-        header.text = "Videos for " + selectedChannel.title
     }
 
     onVisibleChanged: {

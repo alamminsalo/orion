@@ -48,14 +48,14 @@ Menu {
                     id:_label
                     text: styleData.text.split(";")[0]
                     color: styleData.enabled ? Styles.textColor : Styles.disabled
-                    font.pointSize: dp(Styles.titleFont.smaller)
+                    font.pointSize: Styles.titleFont.smaller
                     verticalAlignment: Text.AlignVCenter
                     anchors {
                         top: _icon.top
                         bottom: _icon.bottom
                         left: _icon.right
                     }
-                    renderType: Text.NativeRendering
+                    //renderType: Text.NativeRendering
                 }
             }
 

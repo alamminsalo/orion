@@ -30,11 +30,11 @@ Rectangle {
             }
 
             color: Style.textColor
-            font.pointSize: dp(Style.bigFont)
+            font.pointSize: Style.titleFont.bigger
             text: root.text
             font.family: "Droid Sans"
             z: root.z + 1
-            renderType: Text.NativeRendering
+            //renderType: Text.NativeRendering
         }
     }
 }
