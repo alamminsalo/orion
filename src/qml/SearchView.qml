@@ -103,7 +103,7 @@ Item {
                     selectionColor: Styles.purple
                     focus: true
                     selectByMouse: true
-                    font.pointSize: dp(Styles.titleFont.bigger)
+                    font.pointSize: Styles.titleFont.smaller
 
 
                     verticalAlignment: Text.AlignVCenter
@@ -128,7 +128,7 @@ Item {
             Icon {
                 id: _button
                 icon: "search"
-                iconSize: dp(18)
+                iconSize: Styles.iconSize
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -151,7 +151,7 @@ Item {
 
             SpinnerIcon {
                 id: _spinner
-                iconSize: dp(18)
+                iconSize: Styles.iconSize
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
@@ -253,11 +253,11 @@ Item {
         Text {
             id: _label
             text: "Search for channels"
-            font.pointSize: dp(Styles.bigFont)
+            font.pointSize: Styles.bigFont
             font.family: "Droid Sans"
             color: Styles.iconColor
             anchors.centerIn: parent
-            renderType: Text.NativeRendering
+            ////renderType: Text.NativeRendering
         }
     }
 }

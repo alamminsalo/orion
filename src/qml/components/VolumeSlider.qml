@@ -42,6 +42,7 @@ Item {
             leftMargin: dp(10)
             verticalCenter: parent.verticalCenter
         }
+        iconSize: Styles.iconSizeBigger
     }
 
     Rectangle {

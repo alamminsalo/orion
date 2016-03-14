@@ -43,7 +43,7 @@ Item {
     Text {
         font.family: "Droid Sans"
         color: Styles.textColor
-        font.pointSize: dp(Styles.titleFont.bigger)
+        font.pointSize: Styles.titleFont.bigger
         text: root.text
         anchors {
             left: parent.left
@@ -53,7 +53,7 @@ Item {
         }
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        renderType: Text.NativeRendering
+        //renderType: Text.NativeRendering
     }
 
     Item {

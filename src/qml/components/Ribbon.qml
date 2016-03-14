@@ -74,15 +74,15 @@ Rectangle {
         font.bold: true
         font.family: "Droid Sans"
         color: Styles.iconColor
-        font.pointSize: dp(Styles.titleFont.bigger)
-        renderType: Text.NativeRendering
+        font.pointSize: Styles.titleFont.smaller
+        ////renderType: Text.NativeRendering
     }
 
     Icon {
         id: iconLabel
         rotation: iconRotated ? -180 : 0
         icon: iconStr
-        iconSize: dp(root.iconSize)
+        iconSize: root.iconSize
         anchors {
             top: parent.top
             bottom: parent.bottom

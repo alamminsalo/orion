@@ -4,7 +4,7 @@ import "../styles.js" as Styles
 
 Rectangle {
     property string icon
-    property int iconSize: 0
+    property int iconSize: Styles.iconSize
     property color iconColor: Styles.iconColor
 
     id: root
@@ -25,7 +25,7 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        font.pointSize: iconSize ? iconSize : root.height
+        font.pointSize: iconSize
         color: iconColor
         font.family: "FontAwesome"
         verticalAlignment: Text.AlignVCenter

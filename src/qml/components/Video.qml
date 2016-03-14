@@ -33,7 +33,7 @@ Rectangle {
 
         SpinnerIcon {
             id:_spinner
-            iconSize: dp(30)
+            iconSize: 30
             anchors.fill: parent
         }
 
@@ -85,9 +85,9 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
             font.family: "Droid Sans"
-            font.pointSize: dp(Styles.titleFont.smaller)
+            font.pointSize: Styles.titleFont.smaller
             wrapMode: Text.WordWrap
-            renderType: Text.NativeRendering
+            //renderType: Text.NativeRendering
         }
     }
 

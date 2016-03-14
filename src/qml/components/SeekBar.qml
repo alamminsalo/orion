@@ -121,9 +121,9 @@ Item {
             color: Styles.iconColor
             font.bold: true
             font.family: "Droid Sans"
-            font.pointSize: dp(12)
+            font.pointSize: Styles.titleFont.extrasmall
             wrapMode: Text.WordWrap
-            renderType: Text.NativeRendering
+            //renderType: Text.NativeRendering
         }
     }
 }

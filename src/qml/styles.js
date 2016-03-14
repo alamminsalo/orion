@@ -21,14 +21,16 @@ var seekBar = "#444444"
 
 var white = "#ffffff"
 
-var iconSize = 16
+var iconSize = 10
+var iconSizeBigger = iconSize + 2
 
 var titleFont = {
-    smaller: 14,
-    bigger: 16
+    extrasmall: 8,
+    smaller: 10,
+    bigger: 12
 }
 
-var bigFont = 22
+var bigFont = 16
 
 var button = {
     size: 18

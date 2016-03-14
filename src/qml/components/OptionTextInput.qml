@@ -29,7 +29,7 @@ Item {
         }
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
-        renderType: Text.NativeRendering
+        //renderType: Text.NativeRendering
     }
 
     Rectangle {

@@ -187,6 +187,7 @@ Item {
             Icon {
                 id: _favIcon
                 icon: "fav"
+                iconSize: Styles.iconSizeBigger
 
                 anchors.centerIn: parent
 
@@ -279,6 +280,7 @@ Item {
                 id: togglePause
                 anchors.centerIn: parent
                 icon: paused ? "play" : "pause"
+                iconSize: Styles.iconSizeBigger
             }
 
             MouseArea {
@@ -413,18 +415,18 @@ Item {
     Text {
         id: _label
         text: "No stream currently playing"
-        font.pointSize: dp(Styles.bigFont)
+        font.pointSize: Styles.titleFont.bigger
         font.family: "Droid Sans"
         color: Styles.iconColor
         anchors.centerIn: parent
-        renderType: Text.NativeRendering
+        ////renderType: Text.NativeRendering
     }
 
     SpinnerIcon {
         id: spinner
         visible: false
         anchors.centerIn: parent
-        iconSize: dp(80)
+        iconSize: 70
     }
 
 
