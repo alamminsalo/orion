@@ -31,7 +31,7 @@ public:
     static Channel* parseChannel(const QJsonObject&);
     static Vod* parseVod(const QJsonObject&);
     static QString parseChannelStreamExtractionInfo(const QByteArray&);
-    static QString parseVodExtractionInfo(const QByteArray&, QString vod = "");
+    static QString parseVodExtractionInfo(const QByteArray&);
 };
 
 #endif // JSONPARSER_H

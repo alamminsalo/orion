@@ -39,7 +39,7 @@ protected:
     int alertPosition;
 
 public:
-    ChannelManager();
+    ChannelManager(NetworkManager *netman);
     ~ChannelManager();
 
     bool load();
@@ -47,20 +47,12 @@ public:
     bool writeJSON(const QString&);
 
     Channel *findFavourite(const QString&);
-    void updateFavourites(const QList<Channel*>&);
     Q_INVOKABLE bool containsFavourite(const quint32&);
-
-    //Search section
-    void addSearchResults(const QList<Channel*>&);
-    void addFeaturedResults(const QList<Channel*>&);
 
     void play(const QString&);
     void checkResources();
 
     void checkStreams(const QList<Channel*>&);
-
-    void updateStreams(const QList<Channel*>&);
-    void addGames(const QList<Game*>&);
 
     ChannelListModel *getFavouritesModel() const;
 
@@ -106,6 +98,13 @@ public slots:
     void getFeatured();
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);
+    void onFoundPlaybackStream(const QStringList &);
+
+    void addSearchResults(const QList<Channel*>&);
+    void addFeaturedResults(const QList<Channel*>&);
+    void updateFavourites(const QList<Channel*>&);
+    void updateStreams(const QList<Channel*>&);
+    void addGames(const QList<Game*>&);
 };
 
 #endif //CHANNEL_MANAGER_H

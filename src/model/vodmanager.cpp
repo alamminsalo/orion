@@ -1,19 +1,15 @@
 #include "vodmanager.h"
 
-VodManager::VodManager()
+VodManager::VodManager(NetworkManager *netman) : netman(netman)
 {
-    vodSearch = new VodSearchOperation();
-    vodGet = new VodStreamExtractOperation();
     model = new VodListModel();
 
-    connect(vodSearch, SIGNAL(operationFinished()), this, SLOT(onSearchFinished()));
-    connect(vodGet, SIGNAL(operationFinished()), this, SLOT(onStreamGetFinished()));
+    connect(netman, SIGNAL(broadcastsOperationFinished(QList<Vod*>)), this, SLOT(onSearchFinished(QList<Vod*>)));
+    connect(netman, SIGNAL(m3u8OperationBFinished(QStringList)), this, SLOT(onStreamGetFinished(QStringList)));
 }
 
 VodManager::~VodManager()
 {
-    delete vodGet;
-    delete vodSearch;
     delete model;
 }
 
@@ -24,13 +20,11 @@ void VodManager::search(const QString channelName, const quint32 offset, const q
         emit searchStarted();
     }
 
-    vodSearch->search(channelName, offset, limit);
+    netman->getBroadcasts(channelName, offset, limit);
 }
 
-void VodManager::onSearchFinished()
+void VodManager::onSearchFinished(QList<Vod *> items)
 {
-    QList<Vod *> items = vodSearch->getResult();
-
     model->addAll(items);
 
     qDeleteAll(items);
@@ -39,9 +33,9 @@ void VodManager::onSearchFinished()
     emit searchFinished();
 }
 
-void VodManager::onStreamGetFinished()
+void VodManager::onStreamGetFinished(QStringList items)
 {
-    emit streamsGetFinished();
+    emit streamsGetFinished(items);
 }
 
 VodListModel *VodManager::getModel() const
@@ -49,23 +43,12 @@ VodListModel *VodManager::getModel() const
     return model;
 }
 
-VodStreamExtractOperation *VodManager::getVodGet() const
-{
-    return vodGet;
-}
-
-QStringList VodManager::getResults() const
-{
-    return vodGet->getResult();
-}
-
 QString VodManager::getGame() const
 {
     return game;
 }
 
-void VodManager::getStreams(const QString vodId)
+void VodManager::getBroadcasts(const QString vod)
 {
-    qDebug() << "Fetching vod streams for id " << vodId;
-    vodGet->run(vodId);
+    netman->getBroadcastPlaybackStream(vod);
 }

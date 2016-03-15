@@ -144,7 +144,7 @@ Item {
     Connections {
         target: g_vodmgr
         onStreamsGetFinished: {
-            loadStreams(g_vodmgr.getResults())
+            loadStreams(items)
         }
     }
 

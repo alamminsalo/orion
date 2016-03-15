@@ -8,54 +8,71 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
-#include "../model/channelmanager.h"
+#include <QList>
 #include "urls.h"
 
-class ChannelManager;
+#include "../model/channel.h"
+#include "../model/game.h"
+#include "../model/vod.h"
+
+#define ONLY_BROADCASTS true
+#define USE_HLS true
 
 class NetworkManager: public QObject
 {
     Q_OBJECT
 
 protected:
-    QNetworkAccessManager* channelOperation;
-    QNetworkAccessManager* streamOperation;
-    QNetworkAccessManager* allStreamsOperation;
-    QNetworkAccessManager* genericFileOperation;
-    QNetworkAccessManager* searchOperation;
-    QNetworkAccessManager* gamesOperation;
-    QNetworkAccessManager* gameStreamsOperation;
-    QNetworkAccessManager* featuredStreamsOperation;
-    QNetworkAccessManager* extractChannelStreamsOperation;
-    QNetworkAccessManager* m3u8StreamsOperation;
-    ChannelManager* cman;
+
+    enum M3U8TYPE {
+        LIVE = QNetworkRequest::CustomVerbAttribute + 1,
+        VOD
+    };
+
+    void getM3U8Data(const QString&, M3U8TYPE type);
 
 public:
-    NetworkManager(ChannelManager*);
+    NetworkManager();
     ~NetworkManager();
 
-    void getChannel(const QString&);
-    void getStream(const QString&);
     void getStreams(const QString&);
-    void getFile(const QString&, const QString&);
     void getGames(const quint32&, const quint32&);
     void searchChannels(const QString&, const quint32&, const quint32&);
     void getFeaturedStreams();
     void getStreamsForGame(const QString&, const quint32&, const quint32&);
     void getChannelPlaybackStream(const QString&);
-    void getChannelm3u8(const QString&);
+
+    void getBroadcasts(const QString channelName, quint32 offset, quint32 limit);
+    void getBroadcastPlaybackStream(const QString &vod);
+
+signals:
+    void allStreamsOperationFinished(const QList<Channel *>&);
+    void gamesOperationFinished(const QList<Game *>&);
+    void gameStreamsOperationFinished(const QList<Channel *>&);
+    void featuredStreamsOperationFinished(const QList<Channel *>&);
+    void searchChannelsOperationFinished(const QList<Channel *>&);
+
+    void broadcastsOperationFinished(const QList<Vod *>&);
+
+    void m3u8OperationFinished(const QStringList&);
+    void m3u8OperationBFinished(const QStringList&);
 
 private slots:
-    void channelReply(QNetworkReply*);
-    void streamReply(QNetworkReply*);
-    void allStreamsReply(QNetworkReply*);
-    void fileReply(QNetworkReply*);
-    void gamesReply(QNetworkReply*);
-    void gameStreamsReply(QNetworkReply*);
-    void featuredStreamsReply(QNetworkReply*);
-    void searchChannelsReply(QNetworkReply*);
-    void channelPlaybackStreamReply(QNetworkReply*);
-    void m3u8Reply(QNetworkReply*);
+    void handleSslErrors(QNetworkReply * reply, QList<QSslError> & errors);
+
+    void allStreamsReply();
+    void gamesReply();
+    void gameStreamsReply();
+    void featuredStreamsReply();
+    void searchChannelsReply();
+
+    void streamExtractReply();
+    void m3u8Reply();
+
+    void broadcastsReply();
+
+private:
+    QNetworkAccessManager *operation;
 };
 
 #endif // NETWORKMANAGER_H

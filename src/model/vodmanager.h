@@ -2,44 +2,38 @@
 #define VODMANAGER_H
 
 #include <QObject>
+#include "../network/networkmanager.h"
 #include "vodlistmodel.h"
-#include "../network/vodsearchoperation.h"
-#include "../network/vodstreamextractoperation.h"
 
 class VodManager: public QObject
 {
     Q_OBJECT
 
 public:
-    VodManager();
+    VodManager(NetworkManager *netman);
     ~VodManager();
 
     Q_INVOKABLE void search(const QString channelName, const quint32 offset, const quint32 limit);
 
     Q_INVOKABLE QString getGame() const;
 
-    Q_INVOKABLE void getStreams(const QString vodId);
-
-    VodStreamExtractOperation *getVodGet() const;
-
-    Q_INVOKABLE QStringList getResults() const;
+    Q_INVOKABLE void getBroadcasts(const QString vod);
 
     VodListModel *getModel() const;
 
 public slots:
-    void onSearchFinished();
-    void onStreamGetFinished();
+    void onSearchFinished(QList<Vod *>);
+    void onStreamGetFinished(QStringList);
 
 signals:
     void searchStarted();
     void searchFinished();
-    void streamsGetFinished();
+    void streamsGetFinished(QStringList items);
 
 private:
     QString game;
     VodListModel *model;
-    VodSearchOperation *vodSearch;
-    VodStreamExtractOperation *vodGet;
+    NetworkManager *netman;
 };
 
 #endif // VODMANAGER_H

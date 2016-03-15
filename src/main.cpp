@@ -12,6 +12,7 @@
 #include <QTimer>
 #include "util/runguard.h"
 #include "model/channelmanager.h"
+#include "network/networkmanager.h"
 #include "power/power.h"
 #include "player/mpvrenderer.h"
 #include "systray.h"
@@ -45,11 +46,20 @@ int main(int argc, char *argv[])
 
     QObject::connect(tray, SIGNAL(closeEventTriggered()), &app, SLOT(quit()));
 
-    ChannelManager *cman = new ChannelManager();
+    NetworkManager *netman = new NetworkManager();
+
+    //Create channels manager
+    ChannelManager *cman = new ChannelManager(netman);
     cman->checkResources();
     cman->load();
 
+    //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
+
+    //Create vods manager
+    VodManager *vod = new VodManager(netman);
+
+//-------------------------------------------------------------------------------------------------------------------//
 
     QQmlApplicationEngine engine;
 
@@ -68,9 +78,6 @@ int main(int argc, char *argv[])
 
     qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
     qDebug() <<"DPI mult: "<< dpiMultiplier;
-
-    //Invokable network operations for player
-    VodManager *vod = new VodManager();
 
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
@@ -99,10 +106,13 @@ int main(int argc, char *argv[])
 
     app.exec();
 
+//-------------------------------------------------------------------------------------------------------------------//
+
     //Cleanup
     delete vod;
     delete tray;
-    delete notificator;    
+    delete notificator;
+    delete netman;
     delete cman;
 
     qDebug() << "Closing application...";

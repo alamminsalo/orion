@@ -301,7 +301,7 @@ QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
     return url;
 }
 
-QString JsonParser::parseVodExtractionInfo(const QByteArray &data, QString vod)
+QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
 {
     QString url;
 
@@ -316,12 +316,12 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data, QString vod)
         //Strip escape markings and spaces
         //tokenData = tokenData.trimmed().remove("\\");
 
-        if (vod.isEmpty()) {
-            QJsonDocument tokenDoc = QJsonDocument::fromJson(tokenData.toUtf8(), &error);
-            if (error.error == QJsonParseError::NoError){
-                QJsonObject tokenJson = tokenDoc.object();
-                vod = tokenJson["vod_id"].toString();
-            }
+        QString vod;
+
+        QJsonDocument tokenDoc = QJsonDocument::fromJson(tokenData.toUtf8(), &error);
+        if (error.error == QJsonParseError::NoError){
+            QJsonObject tokenJson = tokenDoc.object();
+            vod = tokenJson["vod_id"].toString();
         }
 
         url = QString("http://usher.twitch.tv/vod/%1").arg(vod)

@@ -31,9 +31,7 @@ SOURCES += src/main.cpp\
     src/util/notificationmaker.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
-    src/model/vodmanager.cpp \
-    src/network/vodsearchoperation.cpp \
-    src/network/vodstreamextractoperation.cpp
+    src/model/vodmanager.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -55,9 +53,7 @@ HEADERS  += src/model/channel.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
-    src/network/vodsearchoperation.h \
     src/network/urls.h \
-    src/network/vodstreamextractoperation.h \
     src/player/mpv/client.h \
     src/player/mpv/opengl_cb.h \
     src/player/mpv/qthelper.hpp

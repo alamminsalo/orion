@@ -3,68 +3,21 @@
 #include "../util/jsonparser.h"
 #include "../util/m3u8parser.h"
 
-NetworkManager::NetworkManager(ChannelManager *cman)
+NetworkManager::NetworkManager()
 {
-    this->cman = cman;
+    operation = new QNetworkAccessManager();
 
-    channelOperation = new QNetworkAccessManager();
-    streamOperation = new QNetworkAccessManager();
-    allStreamsOperation = new QNetworkAccessManager();
-    genericFileOperation = new QNetworkAccessManager();
-    gamesOperation = new QNetworkAccessManager();
-    gameStreamsOperation = new QNetworkAccessManager();
-    searchOperation = new QNetworkAccessManager();
-    featuredStreamsOperation = new QNetworkAccessManager();
-    extractChannelStreamsOperation = new QNetworkAccessManager();
-    m3u8StreamsOperation = new QNetworkAccessManager();
+    //SSL errors handle (down the drain)
+    connect(operation, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>&)));
 
-    connect(channelOperation, SIGNAL(finished(QNetworkReply*)),this, SLOT(channelReply(QNetworkReply*)));
-    connect(streamOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(streamReply(QNetworkReply*)));
-    connect(genericFileOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(fileReply(QNetworkReply*)));
-    connect(allStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(allStreamsReply(QNetworkReply*)));
-    connect(gamesOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gamesReply(QNetworkReply*)));
-    connect(searchOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(searchChannelsReply(QNetworkReply*)));
-    connect(gameStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(gameStreamsReply(QNetworkReply*)));
-    connect(featuredStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(featuredStreamsReply(QNetworkReply*)));
-    connect(extractChannelStreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(channelPlaybackStreamReply(QNetworkReply*)));
-    connect(m3u8StreamsOperation, SIGNAL(finished(QNetworkReply*)), this, SLOT(m3u8Reply(QNetworkReply*)));
+    //Handshake
+    operation->connectToHost(TWITCH_API);
 }
 
 NetworkManager::~NetworkManager()
 {
     qDebug() << "Destroyer: NetworkManager";
-    delete channelOperation;
-    delete streamOperation;
-    delete genericFileOperation;
-    delete allStreamsOperation;
-    delete gamesOperation;
-    delete searchOperation;
-    delete gameStreamsOperation;
-    delete featuredStreamsOperation;
-    delete extractChannelStreamsOperation;
-    delete m3u8StreamsOperation;
-}
-
-void NetworkManager::getChannel(const QString &uriName)
-{
-    //qDebug() << "GET channel: " << uriName;
-    QString url = QString(KRAKEN_API) + "/channels/" + uriName;
-    QNetworkRequest request;
-    request.setUrl(QUrl(url));
-    //request.setAttribute(QNetworkRequest::CustomVerbAttribute,channel->getUriName());
-
-    channelOperation->get(request);
-}
-
-void NetworkManager::getStream(const QString &uriName)
-{
-    //qDebug() << "GET stream: " << uriName;
-    QString url = QString(KRAKEN_API) + "/streams/" + uriName;
-    QNetworkRequest request;
-    request.setUrl(QUrl(url));
-    request.setAttribute(QNetworkRequest::CustomVerbAttribute,uriName);
-
-    streamOperation->get(request);
+    operation->deleteLater();
 }
 
 void NetworkManager::getStreams(const QString &url)
@@ -73,16 +26,9 @@ void NetworkManager::getStreams(const QString &url)
     QNetworkRequest request;
     request.setUrl(QUrl(url));
 
-    allStreamsOperation->get(request);
-}
+    QNetworkReply *reply = operation->get(request);
 
-void NetworkManager::getFile(const QString &url, const QString &filename)
-{
-    QNetworkRequest request;
-    request.setUrl(QUrl(url));
-    request.setAttribute(QNetworkRequest::CustomVerbAttribute,filename);
-
-    genericFileOperation->get(request);
+    connect(reply, SIGNAL(finished()), this, SLOT(allStreamsReply()));
 }
 
 void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
@@ -93,7 +39,9 @@ void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
             + QString("&offset=%1").arg(offset);
     request.setUrl(QUrl(url));
 
-    gamesOperation->get(request);
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(gamesReply()));
 }
 
 void NetworkManager::searchChannels(const QString &query, const quint32 &offset, const quint32 &limit)
@@ -105,7 +53,9 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
             + QString("&limit=%1").arg(limit);
     request.setUrl(QUrl(url));
 
-    searchOperation->get(request);
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(searchChannelsReply()));
 }
 
 void NetworkManager::getFeaturedStreams()
@@ -117,7 +67,9 @@ void NetworkManager::getFeaturedStreams()
 
     //qDebug() << url;
 
-    featuredStreamsOperation->get(request);
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(featuredStreamsReply()));
 }
 
 void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offset, const quint32 &limit)
@@ -129,7 +81,9 @@ void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offse
             + QString("&limit=%1").arg(limit);
     request.setUrl(QUrl(url));
 
-    gameStreamsOperation->get(request);
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(gameStreamsReply()));
 }
 
 void NetworkManager::getChannelPlaybackStream(const QString &channelName)
@@ -140,51 +94,85 @@ void NetworkManager::getChannelPlaybackStream(const QString &channelName)
     QNetworkRequest request;
     request.setUrl(QUrl(url));
 
-    extractChannelStreamsOperation->get(request);
+    request.setAttribute(QNetworkRequest::User, LIVE);
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
 }
 
-void NetworkManager::getChannelm3u8(const QString &url)
+void NetworkManager::getBroadcasts(const QString channelName, quint32 offset, quint32 limit)
+{
+    QString url = QString(KRAKEN_API)
+            + QString("/channels/%1/videos").arg(channelName)
+            + QString("?offset=%1").arg(offset)
+            + QString("&limit=%1").arg(limit);
+
+    if (ONLY_BROADCASTS)
+        url += "&broadcasts=true";
+
+    if (USE_HLS)
+        url += "&hls=true";
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(broadcastsReply()));
+}
+
+void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
+{
+    QString url = QString(TWITCH_API)
+            + QString("/vods/%1").arg(vod)
+            + QString("/access_token");
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+
+    request.setAttribute(QNetworkRequest::User, VOD);
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
+}
+
+void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
 {
     QNetworkRequest request;
     request.setUrl(QUrl(url));
 
-    m3u8StreamsOperation->get(request);
+    request.setAttribute(QNetworkRequest::User, type);
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(m3u8Reply()));
 }
 
-void NetworkManager::channelReply(QNetworkReply* reply)
+void NetworkManager::handleSslErrors(QNetworkReply *reply, QList<QSslError> &errors)
 {
+    reply->ignoreSslErrors(errors);
+}
+
+void NetworkManager::allStreamsReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
     }
-
     QByteArray data = reply->readAll();
 
-    QList<Channel*> list;
-    list.append(JsonParser::parseChannel(data));
-    cman->updateFavourites(list);
+    emit allStreamsOperationFinished(JsonParser::parseStreams(data));
+
+    reply->deleteLater();
 }
 
-void NetworkManager::streamReply(QNetworkReply *reply)
+void NetworkManager::gamesReply()
 {
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
-        if (reply->error() == QNetworkReply::ContentNotFoundError){
-            //model->channelNotFound(channel);
-        }
-        return;
-    }
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    QByteArray data = reply->readAll();
-    //qDebug() << data;
-
-    QList<Channel*> list;
-    list.append(JsonParser::parseStream(data));
-    cman->updateStreams(list);
-}
-
-void NetworkManager::allStreamsReply(QNetworkReply *reply)
-{
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
@@ -192,34 +180,15 @@ void NetworkManager::allStreamsReply(QNetworkReply *reply)
     QByteArray data = reply->readAll();
     //qDebug() << data;
 
-    cman->updateStreams(JsonParser::parseStreams(data));
+    emit gamesOperationFinished(JsonParser::parseGames(data));
+
+    reply->deleteLater();
 }
 
-void NetworkManager::fileReply(QNetworkReply *reply)
+void NetworkManager::gameStreamsReply()
 {
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
-        return;
-    }
-    QByteArray data = reply->readAll();
-    QString filename = reply->request().attribute(QNetworkRequest::CustomVerbAttribute).toString();
-    util::writeBinaryFile(filename,data);
-}
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-void NetworkManager::gamesReply(QNetworkReply *reply)
-{
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
-        return;
-    }
-    QByteArray data = reply->readAll();
-    //qDebug() << data;
-
-    cman->addGames(JsonParser::parseGames(data));
-}
-
-void NetworkManager::gameStreamsReply(QNetworkReply *reply)
-{
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
@@ -228,11 +197,15 @@ void NetworkManager::gameStreamsReply(QNetworkReply *reply)
 
     //qDebug() << data;
 
-    cman->addSearchResults(JsonParser::parseStreams(data));
+    emit gameStreamsOperationFinished(JsonParser::parseStreams(data));
+
+    reply->deleteLater();
 }
 
-void NetworkManager::featuredStreamsReply(QNetworkReply *reply)
+void NetworkManager::featuredStreamsReply()
 {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
@@ -241,11 +214,15 @@ void NetworkManager::featuredStreamsReply(QNetworkReply *reply)
 
     //qDebug() << data;
 
-    cman->addFeaturedResults(JsonParser::parseFeatured(data));
+    emit featuredStreamsOperationFinished(JsonParser::parseFeatured(data));
+
+    reply->deleteLater();
 }
 
-void NetworkManager::searchChannelsReply(QNetworkReply *reply)
+void NetworkManager::searchChannelsReply()
 {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
@@ -254,11 +231,33 @@ void NetworkManager::searchChannelsReply(QNetworkReply *reply)
 
     //qDebug() << data;
 
-    cman->addSearchResults(JsonParser::parseChannels(data));
+    emit searchChannelsOperationFinished(JsonParser::parseChannels(data));
+
+    reply->deleteLater();
 }
 
-void NetworkManager::channelPlaybackStreamReply(QNetworkReply *reply)
+void NetworkManager::streamExtractReply()
 {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+    //qDebug() << data;
+
+    getM3U8Data(JsonParser::parseChannelStreamExtractionInfo(data),
+                (M3U8TYPE) reply->request().attribute(QNetworkRequest::User).toInt());
+
+    reply->deleteLater();
+}
+
+void NetworkManager::m3u8Reply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
@@ -266,13 +265,24 @@ void NetworkManager::channelPlaybackStreamReply(QNetworkReply *reply)
 
     QByteArray data = reply->readAll();
 
+    switch ((M3U8TYPE) reply->request().attribute(QNetworkRequest::User).toInt()) {
+    case LIVE:
+        emit m3u8OperationFinished(m3u8::getUrls(data));
+        break;
+
+    case VOD:
+        emit m3u8OperationBFinished(m3u8::getUrls(data));
+        break;
+    }
     //qDebug() << data;
 
-    getChannelm3u8(JsonParser::parseChannelStreamExtractionInfo(data));
+    reply->deleteLater();
 }
 
-void NetworkManager::m3u8Reply(QNetworkReply *reply)
+void NetworkManager::broadcastsReply()
 {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
     if (reply->error() != QNetworkReply::NoError){
         qDebug() << reply->errorString();
         return;
@@ -280,7 +290,7 @@ void NetworkManager::m3u8Reply(QNetworkReply *reply)
 
     QByteArray data = reply->readAll();
 
-    //qDebug() << data;
+    emit broadcastsOperationFinished(JsonParser::parseVods(data));
 
-    cman->foundPlaybackStream(m3u8::getUrls(data));
+    reply->deleteLater();
 }
