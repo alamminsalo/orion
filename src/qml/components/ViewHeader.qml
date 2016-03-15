@@ -30,9 +30,8 @@ Rectangle {
             }
 
             color: Style.textColor
-            font.pointSize: Style.titleFont.bigger
+            font.pixelSize: Style.titleFont.bigger
             text: root.text
-            font.family: "Droid Sans"
             z: root.z + 1
             //renderType: Text.NativeRendering
         }

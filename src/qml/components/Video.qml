@@ -84,8 +84,7 @@ Rectangle {
             anchors.fill: infoRect
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            font.family: "Droid Sans"
-            font.pointSize: Styles.titleFont.smaller
+            font.pixelSize: Styles.titleFont.smaller
             wrapMode: Text.WordWrap
             //renderType: Text.NativeRendering
         }

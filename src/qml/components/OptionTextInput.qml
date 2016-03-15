@@ -17,9 +17,8 @@ Item {
     Component.onCompleted: _input.text = value
 
     Text {
-        font.family: "Droid Sans"
         color: Styles.textColor
-        font.pointSize: (Styles.titleFont.bigger)
+        font.pixelSize: Styles.titleFont.bigger
         text: root.text
         anchors {
             left: parent.left
@@ -57,7 +56,7 @@ Item {
                 selectionColor: Styles.purple
                 focus: true
                 selectByMouse: true
-                font.pointSize: dp(Styles.titleFont.bigger)
+                font.pixelSize: Styles.titleFont.bigger
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
                 inputMask: mask

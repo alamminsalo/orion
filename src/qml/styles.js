@@ -21,16 +21,48 @@ var seekBar = "#444444"
 
 var white = "#ffffff"
 
-var iconSize = 10
-var iconSizeBigger = iconSize + 2
+var initialized = false
 
-var titleFont = {
-    extrasmall: 8,
-    smaller: 10,
-    bigger: 12
+var dpiMultiplier = 1
+//Do this before using!
+function applyDpi(dpi) {
+
+    if (!initialized) {
+        console.debug("Setting fonts dpi: ", dpi)
+
+        iconSize *= dpi
+        iconSizeBigger *= dpi
+
+        titleFont.extrasmall *= dpi
+        titleFont.smaller *= dpi
+        titleFont.regular *= dpi
+        titleFont.bigger *= dpi
+        titleFont.large *= dpi
+
+        button.size *= dpi
+
+        initialized = true
+
+        dpiMultiplier = dpi
+    }
 }
 
-var bigFont = 16
+function scale(val) {
+    return Math.ceil(val * dpiMultiplier)
+}
+
+//NOTE: these values are scaled and need no further scaling
+
+var iconSize = 20
+var iconSizeBigger = iconSize + 4
+
+var titleFont = {
+    extrasmall: 12,
+    smaller: 14,
+    regular: 16,
+    bigger: 18,
+    large: 20
+}
 
 var button = {
     size: 18

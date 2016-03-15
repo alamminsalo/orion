@@ -34,7 +34,10 @@ void SysTray::quitSlot()
 void SysTray::clickSlot(QSystemTrayIcon::ActivationReason reason)
 {
     if (reason == QSystemTrayIcon::ActivationReason::Trigger){
+//Dont trigger this on mac
+#ifndef Q_OS_MAC
         emit showTriggered();
+#endif
     }
 }
 

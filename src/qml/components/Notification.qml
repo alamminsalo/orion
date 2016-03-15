@@ -108,10 +108,9 @@ Window {
                 }
                 text: root.title
                 color: Styles.textColor
-                font.family: "Droid Sans"
                 wrapMode: Text.WordWrap
                 font.bold: true
-                font.pointSize: Styles.titleFont.bigger
+                font.pixelSize: Styles.titleFont.bigger
                 //renderType: Text.NativeRendering
             }
 
@@ -125,9 +124,7 @@ Window {
                 text: root.description
                 wrapMode: Text.WordWrap
                 color: Styles.textColor
-                font.pointSize: Styles.titleFont.smaller
-                font.family: "Droid Sans"
-                //renderType: Text.NativeRendering
+                font.pixelSize: Styles.titleFont.smaller
             }
         }
     }

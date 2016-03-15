@@ -98,8 +98,6 @@ Item {
             break
         }
 
-        console.log(args)
-
         return component.createObject(root, {
                                              "x": x,
                                              "y": y,

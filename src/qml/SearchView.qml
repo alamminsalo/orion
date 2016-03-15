@@ -103,7 +103,7 @@ Item {
                     selectionColor: Styles.purple
                     focus: true
                     selectByMouse: true
-                    font.pointSize: Styles.titleFont.smaller
+                    font.pixelSize: Styles.titleFont.smaller
 
 
                     verticalAlignment: Text.AlignVCenter
@@ -209,7 +209,8 @@ Item {
             _menu.items[0].enabled = _menu.item.online
 
             var item = _menu.items[2]
-            item.text = !_menu.item.favourite ? "Add favourite;fav" : "Remove favourite;remove"
+            item.text = !_menu.item.favourite ? "Add favourite" : "Remove favourite"
+            //item.text = !_menu.item.favourite ? "Add favourite;fav" : "Remove favourite;remove"
             _menu.state = !_menu.item.favourite ? 1 : 2
 
             _menu.popup()
@@ -227,7 +228,8 @@ Item {
             }
 
             MenuItem {
-                text: "Watch;play"
+                text: "Watch live"
+                //text: "Watch;play"
                 onTriggered: {
                     if (_menu.item.online){
                         player.getStreams(_menu.item)
@@ -236,7 +238,8 @@ Item {
             }
 
             MenuItem {
-                text: "Videos;video"
+                text: "Videos"
+                //text: "Videos;video"
                 onTriggered: {
                     vods.search(_menu.item)
                 }
@@ -253,8 +256,7 @@ Item {
         Text {
             id: _label
             text: "Search for channels"
-            font.pointSize: Styles.bigFont
-            font.family: "Droid Sans"
+            font.pixelSize: Styles.titleFont.large
             color: Styles.iconColor
             anchors.centerIn: parent
             ////renderType: Text.NativeRendering

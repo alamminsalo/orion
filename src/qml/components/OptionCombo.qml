@@ -41,9 +41,8 @@ Item {
     height: dp(60)
 
     Text {
-        font.family: "Droid Sans"
         color: Styles.textColor
-        font.pointSize: Styles.titleFont.bigger
+        font.pixelSize: Styles.titleFont.bigger
         text: root.text
         anchors {
             left: parent.left

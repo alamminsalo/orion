@@ -25,7 +25,7 @@ Rectangle {
 
     Text {
         anchors.centerIn: parent
-        font.pointSize: iconSize
+        font.pixelSize: iconSize
         color: iconColor
         font.family: "FontAwesome"
         verticalAlignment: Text.AlignVCenter

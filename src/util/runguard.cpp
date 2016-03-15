@@ -91,7 +91,7 @@ void RunGuard::setTimer()
 {
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-    timer->start(200);
+    timer->start(250);
 }
 
 void RunGuard::sendWakeup()

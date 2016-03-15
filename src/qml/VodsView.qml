@@ -26,9 +26,9 @@ Item{
 
         header.text = "Videos for " + selectedChannel.title;
 
-        g_vodmgr.search(selectedChannel.name, 0, 25)
+        g_vodmgr.search(selectedChannel.name, 0, 35)
 
-        itemCount = 25
+        itemCount = 35
 
         requestSelectionChange(4)
     }
@@ -77,7 +77,8 @@ Item{
         ContextMenu {
             id: _menu
             MenuItem {
-                text: "Watch;play"
+                text: "Watch video"
+                //text: "Watch;play"
                 onTriggered: {
                     player.getStreams(selectedChannel, _menu.item)
                 }

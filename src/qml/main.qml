@@ -41,9 +41,9 @@ ApplicationWindow {
         }
     }
 
-    FontLoader{
-        source: "qrc:/fonts/DroidSans.ttf"
-    }
+//    FontLoader{
+//        source: "qrc:/fonts/DroidSans.ttf"
+//    }
 
     Item {
         anchors.fill: parent
@@ -80,7 +80,6 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-
         height=Screen.height * 0.7
         width=height * 1.2
 

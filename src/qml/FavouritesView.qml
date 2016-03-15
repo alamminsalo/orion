@@ -51,7 +51,8 @@ Item{
         ContextMenu {
             id: _menu
             MenuItem {
-                text: "Watch;play"
+                //text: "Watch;play"
+                text: "Watch live"
                 onTriggered: {
                     if (_menu.item.online){
                         player.getStreams(_menu.item)
@@ -59,13 +60,15 @@ Item{
                 }
             }
             MenuItem {
-                text: "Videos;video"
+                //text: "Videos;video"
+                text: "Videos"
                 onTriggered: {
                     vods.search(_menu.item)
                 }
             }
             MenuItem {
-                text: "Remove;remove"
+                text: "Remove favourite"
+                //text: "Remove;remove"
                 onTriggered: {
                     g_cman.removeFromFavourites(_menu.item._id)
                 }

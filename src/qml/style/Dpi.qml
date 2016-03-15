@@ -2,13 +2,16 @@ pragma Singleton
 import QtQuick 2.0
 import QtQuick.Window 2.0
 
+import "../styles.js" as Styles
+
 Item {
 
-    //readonly property real dpiMult: (6.192510402219141 / Screen.pixelDensity * Screen.devicePixelRatio)
-
     function scale(val){
-        return Math.ceil(val * dpiMultiplier * .666)
+        return Styles.scale(val)
     }
 
+    Component.onCompleted: {
+        Styles.applyDpi(dpiMultiplier)
+    }
 }
 

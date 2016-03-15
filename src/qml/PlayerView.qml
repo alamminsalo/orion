@@ -135,7 +135,7 @@ Item {
     }
 
     function seekTo(position) {
-        console.log("Seeking to", position)
+        console.log("Seeking to", position, duration)
         if (isVod){
             renderer.setProperty("playback-time", position)
         }
@@ -187,7 +187,7 @@ Item {
             Icon {
                 id: _favIcon
                 icon: "fav"
-                iconSize: Styles.iconSizeBigger
+                //iconSize: Styles.iconSizeBigger
 
                 anchors.centerIn: parent
 
@@ -235,7 +235,7 @@ Item {
                         if (currentChannel.favourite)
                             g_cman.removeFromFavourites(currentChannel._id)
                         else{
-                            console.log(currentChannel)
+                            //console.log(currentChannel)
                             g_cman.addToFavourites(currentChannel._id, currentChannel.name,
                                                    currentChannel.title, currentChannel.info,
                                                    currentChannel.logo, currentChannel.preview,
@@ -280,7 +280,7 @@ Item {
                 id: togglePause
                 anchors.centerIn: parent
                 icon: paused ? "play" : "pause"
-                iconSize: Styles.iconSizeBigger
+                //iconSize: Styles.iconSizeBigger
             }
 
             MouseArea {
@@ -415,8 +415,7 @@ Item {
     Text {
         id: _label
         text: "No stream currently playing"
-        font.pointSize: Styles.titleFont.bigger
-        font.family: "Droid Sans"
+        font.pixelSize: Styles.titleFont.bigger
         color: Styles.iconColor
         anchors.centerIn: parent
         ////renderType: Text.NativeRendering

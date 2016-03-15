@@ -72,10 +72,8 @@ Rectangle {
         anchors.centerIn: parent
         text: root.text
         font.bold: true
-        font.family: "Droid Sans"
         color: Styles.iconColor
-        font.pointSize: Styles.titleFont.smaller
-        ////renderType: Text.NativeRendering
+        font.pixelSize: Styles.titleFont.regular
     }
 
     Icon {

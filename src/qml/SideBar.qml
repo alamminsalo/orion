@@ -7,7 +7,7 @@ import "styles.js" as Styles
 Rectangle {
     id: root
     color: Styles.sidebarBg
-    property int _width: dp(230)
+    property int _width: dp(180)
     property bool hidden: false
     width: !hidden ? _width : 0
     clip: true
@@ -24,7 +24,7 @@ Rectangle {
     }
 
     function toggle(){
-        root._width = isOpen ? dp(60) : dp(230)
+        root._width = isOpen ? dp(60) : dp(180)
         isOpen = !isOpen
         toggleButton.rotateIcon()
     }

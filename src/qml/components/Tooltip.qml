@@ -51,8 +51,7 @@ Window {
             id: text
             color: Styles.textColor
             text: root.text
-            font.pointSize: Styles.titleFont.smaller
-            font.family: "Droid Sans"
+            font.pixelSize: Styles.titleFont.smaller
             anchors{
                 bottom: parent.bottom
                 left: parent.left
@@ -64,8 +63,6 @@ Window {
     }
 
     function display(mX, mY){
-
-        //console.log(mX, mY)
 
         if (g_contextMenuVisible){
             return

@@ -48,8 +48,7 @@ Rectangle {
             text: "-"
             anchors.centerIn: parent
             color: Styles.textColor
-            font.family: "Droid Sans"
-            font.pointSize: Styles.titleFont.smaller
+            font.pixelSize: Styles.titleFont.extrasmall
             font.bold: true
             ////renderType: Text.NativeRendering
         }
@@ -132,9 +131,7 @@ Rectangle {
                 text: parent.str
                 anchors.centerIn: parent
                 color: Styles.textColor
-                font.family: "Droid Sans"
-                font.pointSize: Styles.titleFont.smaller
-                ////renderType: Text.NativeRendering
+                font.pixelSize: Styles.titleFont.smaller
             }
         }
     }

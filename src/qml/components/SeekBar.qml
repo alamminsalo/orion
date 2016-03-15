@@ -120,8 +120,7 @@ Item {
             text: "hh:mm:ss / hh:mm:ss"
             color: Styles.iconColor
             font.bold: true
-            font.family: "Droid Sans"
-            font.pointSize: Styles.titleFont.extrasmall
+            font.pixelSize: Styles.titleFont.extrasmall
             wrapMode: Text.WordWrap
             //renderType: Text.NativeRendering
         }

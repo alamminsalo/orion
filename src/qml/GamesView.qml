@@ -17,8 +17,8 @@ Item {
 
     onVisibleChanged: {
         if (visible && !checked){
-            g_cman.getGames(0, 25, true)
-            gamesCount = 25
+            g_cman.getGames(0, 35, true)
+            gamesCount = 35
             checked = true
             timer.start()
         }
@@ -74,7 +74,8 @@ Item {
         ContextMenu {
             id: _menu
             MenuItem {
-                text: "Find streams;search"
+                text: "Search streams"
+                //text: "Find streams;search"
                 onTriggered: {
                     search.search(":game " + _menu.item.title)
                 }

@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     }
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
+    QApplication::setFont(QFont("qrc:/fonts/DroidSans.ttf"));
 
     app.setWindowIcon(appIcon);
 
@@ -52,18 +53,18 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() / QGuiApplication::primaryScreen()->devicePixelRatio();
+
 #ifdef Q_OS_WIN
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
+    dpiMultiplier /= 96;
 
 #elif defined(Q_OS_LINUX)
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch() / 96;
+    dpiMultiplier /= 96;
 
 #elif defined(Q_OS_MAC)
-    qreal dpiMultiplier = 1;
+    dpiMultiplier /= 72;
 
 #endif
-
-    //dpiMultiplier /= QGuiApplication::primaryScreen()->devicePixelRatio();
 
     qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
     qDebug() <<"DPI mult: "<< dpiMultiplier;
