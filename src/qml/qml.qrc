@@ -39,5 +39,7 @@
         <file>VodsView.qml</file>
         <file>components/Video.qml</file>
         <file>components/SeekBar.qml</file>
+        <file>components/VodGrid.qml</file>
+        <file>util.js</file>
     </qresource>
 </RCC>

@@ -1,5 +1,7 @@
 import QtQuick 2.5
 
+import "../util.js" as Util
+
 //ChannelList.qml
 GridView {
     property variant selectedItem
@@ -99,27 +101,17 @@ GridView {
 
                     var index = root.indexAt(mX + root.contentX, mY + root.contentY)
 
-                    if (mArea.containsMouse && selectedItem && selectedItem.online){
-
-                        console.log("Tooltip triggered")
+                    if (mArea.containsMouse && selectedItem){
 
                         g_tooltip.text = ""
 
-                        if (selectedItem.game){
-                            g_tooltip.text += "Playing <b>" + selectedItem.game + "</b>"
-                        } else if (selectedItem.title){
-                            g_tooltip.text += selectedItem.title
-                        }
+                        g_tooltip.text += "<b>" + selectedItem.title + "</b><br/>";
 
-                        if (selectedItem.viewers){
-                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                            g_tooltip.text += selectedItem.viewers + " viewers"
-                        }
+                        g_tooltip.text += "Playing " + selectedItem.game + "<br/>"
+                        if (selectedItem.duration)
+                            g_tooltip.text += "Duration " + Util.getTime(selectedItem.duration) + "<br/>"
 
-                        if (selectedItem.info){
-                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                            g_tooltip.text += selectedItem.info
-                        }
+                        g_tooltip.text += selectedItem.views + " views<br/>"
 
                         g_tooltip.img = selectedItem.preview
                         g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)

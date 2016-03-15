@@ -1,6 +1,7 @@
 import QtQuick 2.0
 
 import "../styles.js" as Styles
+import "../util.js" as Util
 
 Item {
     property int duration
@@ -26,11 +27,11 @@ Item {
     }
 
     onDurationChanged: {
-        time.duration = time.getTime(duration)
+        time.duration = Util.getTime(duration)
     }
 
     onPositionChanged: {
-        time.position = time.getTime(position)
+        time.position = Util.getTime(position)
     }
 
     Rectangle {
@@ -94,25 +95,6 @@ Item {
 
         function updateTime() {
             _time.text = position + "/" + duration
-        }
-
-        function getTime(totalSec){
-
-            if (!totalSec)
-                return "--"
-
-            var hours = parseInt(totalSec / 3600) % 24;
-            var minutes = parseInt(totalSec / 60) % 60;
-            var seconds = totalSec % 60;
-
-            var result = "";
-
-            if (hours > 0)
-                result += hours + ":";
-            result += (minutes < 10 ? "0" + minutes : minutes) + ":";
-            result += (seconds  < 10 ? "0" + seconds : seconds);
-
-            return result
         }
 
         Text {

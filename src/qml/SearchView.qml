@@ -238,7 +238,7 @@ Item {
             }
 
             MenuItem {
-                text: "Videos"
+                text: "Past broadcasts"
                 //text: "Videos;video"
                 onTriggered: {
                     vods.search(_menu.item)

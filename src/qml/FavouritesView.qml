@@ -61,7 +61,7 @@ Item{
             }
             MenuItem {
                 //text: "Videos;video"
-                text: "Videos"
+                text: "Past broadcasts"
                 onTriggered: {
                     vods.search(_menu.item)
                 }

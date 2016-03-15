@@ -35,7 +35,7 @@ Item{
 
     ViewHeader{
         id: header
-        text: ""
+        text: "Channels broadcasts"
         z: favourites.z + 1
     }
 
@@ -43,7 +43,7 @@ Item{
         vods.checkScroll()
     }
 
-    ChannelGrid {
+    VodGrid {
         id: vods
         tooltipEnabled: true
 
