@@ -17,7 +17,7 @@ public:
 
     Q_INVOKABLE QString getGame() const;
 
-    Q_INVOKABLE void getBroadcasts(const QString vod);
+    Q_INVOKABLE void getBroadcasts(QString vod);
 
     VodListModel *getModel() const;
 

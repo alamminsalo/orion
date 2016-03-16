@@ -314,14 +314,14 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
         QString sig = json["sig"].toString();
 
         //Strip escape markings and spaces
-        //tokenData = tokenData.trimmed().remove("\\");
+        tokenData = tokenData.trimmed().remove("\\");
 
         QString vod;
 
         QJsonDocument tokenDoc = QJsonDocument::fromJson(tokenData.toUtf8(), &error);
         if (error.error == QJsonParseError::NoError){
             QJsonObject tokenJson = tokenDoc.object();
-            vod = tokenJson["vod_id"].toString();
+            vod = QString::number(tokenJson["vod_id"].toInt());
         }
 
         url = QString("http://usher.twitch.tv/vod/%1").arg(vod)

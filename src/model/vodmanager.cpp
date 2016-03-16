@@ -48,7 +48,10 @@ QString VodManager::getGame() const
     return game;
 }
 
-void VodManager::getBroadcasts(const QString vod)
+void VodManager::getBroadcasts(QString vod)
 {
+    //Remove leading NaN characters
+    vod.remove(QRegExp("[^0-9]"));
+
     netman->getBroadcastPlaybackStream(vod);
 }

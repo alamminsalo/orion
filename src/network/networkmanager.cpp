@@ -248,8 +248,21 @@ void NetworkManager::streamExtractReply()
     QByteArray data = reply->readAll();
     //qDebug() << data;
 
-    getM3U8Data(JsonParser::parseChannelStreamExtractionInfo(data),
-                (M3U8TYPE) reply->request().attribute(QNetworkRequest::User).toInt());
+    M3U8TYPE type = (M3U8TYPE) reply->request().attribute(QNetworkRequest::User).toInt();
+
+    QString url;
+
+    switch (type) {
+    case LIVE:
+        url = JsonParser::parseChannelStreamExtractionInfo(data);
+        break;
+
+    case VOD:
+        url = JsonParser::parseVodExtractionInfo(data);
+        break;
+    }
+
+    getM3U8Data(url, type);
 
     reply->deleteLater();
 }

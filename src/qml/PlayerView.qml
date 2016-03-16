@@ -56,7 +56,7 @@ Item {
             duration = -1
         }
         else {
-            g_vodmgr.getStreams(vod._id)
+            g_vodmgr.getBroadcasts(vod._id)
             isVod = true
 
             duration = vod.duration
