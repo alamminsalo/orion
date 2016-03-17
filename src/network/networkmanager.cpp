@@ -8,7 +8,7 @@ NetworkManager::NetworkManager()
     operation = new QNetworkAccessManager();
 
     //SSL errors handle (down the drain)
-    connect(operation, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>&)));
+    connect(operation, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
 
     //Handshake
     operation->connectToHost(TWITCH_API);
@@ -149,7 +149,7 @@ void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
     connect(reply, SIGNAL(finished()), this, SLOT(m3u8Reply()));
 }
 
-void NetworkManager::handleSslErrors(QNetworkReply *reply, QList<QSslError> &errors)
+void NetworkManager::handleSslErrors(QNetworkReply *reply, QList<QSslError> errors)
 {
     reply->ignoreSslErrors(errors);
 }

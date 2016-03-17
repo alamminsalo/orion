@@ -17,7 +17,7 @@
 #include "player/mpvrenderer.h"
 #include "systray.h"
 #include "customapp.h"
-#include "util/notificationmaker.h"
+#include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
 #include <QString>
 #include <QProcessEnvironment>
@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
 
     //Create vods manager
     VodManager *vod = new VodManager(netman);
-
 //-------------------------------------------------------------------------------------------------------------------//
 
     QQmlApplicationEngine engine;
@@ -72,9 +71,11 @@ int main(int argc, char *argv[])
     dpiMultiplier /= 96;
 
 #elif defined(Q_OS_MAC)
-    dpiMultiplier /= 72;
+    dpiMultiplier = 1;
 
 #endif
+
+    dpiMultiplier *= .7;
 
     qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
     qDebug() <<"DPI mult: "<< dpiMultiplier;
@@ -98,8 +99,8 @@ int main(int argc, char *argv[])
     engine.load(QUrl("qrc:/main.qml"));
 
     //Set up notifications
-    NotificationMaker *notificator = new NotificationMaker(&engine);
-    QObject::connect(cman, SIGNAL(pushNotification(QString,QString,QString)), notificator, SLOT(pushNotification(QString,QString,QString)));
+    NotificationManager *notificationManager = new NotificationManager(&engine);
+    QObject::connect(cman, SIGNAL(pushNotification(QString,QString,QString)), notificationManager, SLOT(pushNotification(QString,QString,QString)));
 
     qDebug() << "Starting window...";
     tray->show();
@@ -111,9 +112,9 @@ int main(int argc, char *argv[])
     //Cleanup
     delete vod;
     delete tray;
-    delete notificator;
     delete netman;
     delete cman;
+    delete notificationManager;
 
     qDebug() << "Closing application...";
     return 0;

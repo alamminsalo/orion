@@ -1,16 +1,23 @@
-#include "notificationmaker.h"
+#include "notificationmanager.h"
 #include <QVariant>
 #include <QDebug>
 
-NotificationMaker::NotificationMaker(QQmlApplicationEngine *engine)
+#ifdef Q_OS_MAC
+#include "notificationsender.h"
+
+#endif
+
+NotificationManager::NotificationManager(QQmlApplicationEngine *engine)
 {
+    net = new QNetworkAccessManager();
+    net->connectToHost("http://static-cdn.jtvnw.net");
     currentObject = 0;
 
     queue.clear();
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(showNext()));
-    timer->setInterval(4000);
+    timer->setInterval(5000);
     timer->setSingleShot(true);
 
     this->engine = engine;
@@ -28,10 +35,12 @@ NotificationMaker::NotificationMaker(QQmlApplicationEngine *engine)
 #endif
 }
 
-NotificationMaker::~NotificationMaker()
+NotificationManager::~NotificationManager()
 {
     timer->stop();
     delete timer;
+
+    net->deleteLater();
 
 #ifdef Q_OS_WIN
     hiddenWindow->close();
@@ -42,7 +51,7 @@ NotificationMaker::~NotificationMaker()
     queue.clear();
 }
 
-void NotificationMaker::showNext()
+void NotificationManager::showNext()
 {
     //Pops first in queue, and shows it
     if (currentObject){
@@ -54,6 +63,7 @@ void NotificationMaker::showNext()
 
         NotificationData *data = queue.takeFirst();
 
+#ifdef Q_OS_WIN
         QQmlComponent component(engine, QUrl("qrc:/components/Notification.qml"));
         component.setParent(0);
 
@@ -69,16 +79,21 @@ void NotificationMaker::showNext()
 
         // Trigger notification
         currentObject->setProperty("visible", QVariant::fromValue(true));
+#endif
 
+#ifdef Q_OS_MAC
+        //NotificationSender deletes itself after displaying message
+        NotificationSender *msg = new NotificationSender(net);
+        msg->pushNotification(data->title, data->message, data->imgUrl);
+#endif
         delete data;
 
         timer->start();
     }
 }
 
-void NotificationMaker::pushNotification(const QString title, const QString message, const QString imgUrl)
+void NotificationManager::pushNotification(const QString &title, const QString &message, const QString &imgUrl)
 {
-    qDebug() << "Notificator: Received notification: " << title << ", " << message << ", " << imgUrl;
     NotificationData *data = new NotificationData;
     data->title = title;
     data->message = message;

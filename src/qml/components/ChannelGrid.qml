@@ -101,8 +101,6 @@ GridView {
 
                     if (mArea.containsMouse && selectedItem && selectedItem.online){
 
-                        console.log("Tooltip triggered")
-
                         g_tooltip.text = ""
 
                         if (selectedItem.game){

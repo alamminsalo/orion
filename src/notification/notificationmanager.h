@@ -1,10 +1,14 @@
-#ifndef NOTIFICATIONMAKER_H
-#define NOTIFICATIONMAKER_H
+#ifndef NOTIFICATIONMANAGER_H
+#define NOTIFICATIONMANAGER_H
 
+#include <QNetworkAccessManager>
+#include <QObject>
 #include <QTimer>
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QObject>
+#include <QNetworkAccessManager>
+
 #ifdef Q_OS_WIN
     #include <QQuickWindow>
 #endif
@@ -15,23 +19,27 @@ typedef struct {
     QString imgUrl;
 } NotificationData;
 
-class NotificationMaker: public QObject
+class NotificationManager: public QObject
 {
     Q_OBJECT
 public:
-    NotificationMaker(QQmlApplicationEngine *engine);
-    virtual ~NotificationMaker();
+    NotificationManager(QQmlApplicationEngine *engine);
+    virtual ~NotificationManager();
 
 private slots:
     void showNext();
 
 public slots:
-    void pushNotification(const QString title, const QString message, const QString imgUrl);
+    void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
 
 private:
     QQmlApplicationEngine *engine;
+    QNetworkAccessManager *net;
+
     QTimer *timer;
+
     QList<NotificationData*> queue;
+
     QObject *currentObject;
 
 #ifdef Q_OS_WIN
@@ -39,4 +47,4 @@ private:
 #endif
 };
 
-#endif // NOTIFICATIONMAKER_H
+#endif // NOTIFICATIONMANAGER_H

@@ -77,7 +77,7 @@ signals:
     void channelExists(Channel*);
     void channelNotFound(Channel*);
     void channelStateChanged(Channel*);
-    void pushNotification(const QString title, const QString message, const QString imgUrl);
+    void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
     void newChannel(Channel*);
     void gamesUpdated();
     void channelsUpdated();

@@ -45,6 +45,8 @@ public:
     void getBroadcasts(const QString channelName, quint32 offset, quint32 limit);
     void getBroadcastPlaybackStream(const QString &vod);
 
+    QNetworkAccessManager *getOperation() const;
+
 signals:
     void allStreamsOperationFinished(const QList<Channel *>&);
     void gamesOperationFinished(const QList<Game *>&);
@@ -57,8 +59,10 @@ signals:
     void m3u8OperationFinished(const QStringList&);
     void m3u8OperationBFinished(const QStringList&);
 
+    void fileOperationFinished(const QByteArray&);
+
 private slots:
-    void handleSslErrors(QNetworkReply * reply, QList<QSslError> & errors);
+    void handleSslErrors(QNetworkReply * reply, QList<QSslError> errors);
 
     void allStreamsReply();
     void gamesReply();

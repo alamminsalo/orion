@@ -28,10 +28,10 @@ SOURCES += src/main.cpp\
     src/systray.cpp \
     src/util/runguard.cpp \
     src/customapp.cpp \
-    src/util/notificationmaker.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
-    src/model/vodmanager.cpp
+    src/model/vodmanager.cpp \
+    src/notification/notificationmanager.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -49,14 +49,14 @@ HEADERS  += src/model/channel.h \
     src/systray.h \
     src/util/runguard.h \
     src/customapp.h \
-    src/util/notificationmaker.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
     src/network/urls.h \
     src/player/mpv/client.h \
     src/player/mpv/opengl_cb.h \
-    src/player/mpv/qthelper.hpp
+    src/player/mpv/qthelper.hpp \
+    src/notification/notificationmanager.h
 
 QMAKE_CXXFLAGS += -Wall -O2
 
@@ -123,6 +123,13 @@ win32: {
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
 
 macx: {
+    LIBS += -framework Foundation
+    LIBS += -framework AppKit
+    HEADERS += src/notification/notificationsender.h
+    OBJECTIVE_SOURCES += src/notification/NotificationSender.mm
+    INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
+    INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
+
     LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/lib/ -lmpv.1.20.0
 
     INCLUDEPATH += $$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/include
