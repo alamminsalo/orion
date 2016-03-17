@@ -7,6 +7,10 @@ NetworkManager::NetworkManager()
 {
     operation = new QNetworkAccessManager();
 
+    //Set configuration
+    conf = new QNetworkConfigurationManager();
+    operation->setConfiguration(conf->defaultConfiguration());
+
     //SSL errors handle (down the drain)
     connect(operation, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
 
@@ -18,6 +22,7 @@ NetworkManager::~NetworkManager()
 {
     qDebug() << "Destroyer: NetworkManager";
     operation->deleteLater();
+    conf->deleteLater();
 }
 
 void NetworkManager::getStreams(const QString &url)
@@ -135,6 +140,11 @@ void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
     QNetworkReply *reply = operation->get(request);
 
     connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
+}
+
+QNetworkAccessManager *NetworkManager::getManager() const
+{
+    return operation;
 }
 
 void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)

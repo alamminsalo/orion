@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(tray, SIGNAL(closeEventTriggered()), &app, SLOT(quit()));
 
+    //Prime network manager
     NetworkManager *netman = new NetworkManager();
 
     //Create channels manager
@@ -96,7 +97,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl("qrc:/main.qml"));
 
     //Set up notifications
-    NotificationManager *notificationManager = new NotificationManager(&engine);
+    NotificationManager *notificationManager = new NotificationManager(&engine, netman->getManager());
     QObject::connect(cman, SIGNAL(pushNotification(QString,QString,QString)), notificationManager, SLOT(pushNotification(QString,QString,QString)));
 
     qDebug() << "Starting window...";

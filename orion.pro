@@ -125,8 +125,10 @@ win32: {
 macx: {
     LIBS += -framework Foundation
     LIBS += -framework AppKit
+
     HEADERS += src/notification/notificationsender.h
     OBJECTIVE_SOURCES += src/notification/NotificationSender.mm
+
     INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
 

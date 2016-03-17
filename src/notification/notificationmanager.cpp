@@ -7,10 +7,8 @@
 
 #endif
 
-NotificationManager::NotificationManager(QQmlApplicationEngine *engine)
+NotificationManager::NotificationManager(QQmlApplicationEngine *engine, QNetworkAccessManager *nm) : net(nm)
 {
-    net = new QNetworkAccessManager();
-    net->connectToHost("http://static-cdn.jtvnw.net");
     currentObject = 0;
 
     queue.clear();
@@ -39,8 +37,6 @@ NotificationManager::~NotificationManager()
 {
     timer->stop();
     delete timer;
-
-    net->deleteLater();
 
 #ifdef Q_OS_WIN
     hiddenWindow->close();

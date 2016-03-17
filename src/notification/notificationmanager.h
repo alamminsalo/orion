@@ -7,7 +7,6 @@
 #include <QQmlApplicationEngine>
 #include <QQmlComponent>
 #include <QObject>
-#include <QNetworkAccessManager>
 
 #ifdef Q_OS_WIN
     #include <QQuickWindow>
@@ -23,7 +22,7 @@ class NotificationManager: public QObject
 {
     Q_OBJECT
 public:
-    NotificationManager(QQmlApplicationEngine *engine);
+    NotificationManager(QQmlApplicationEngine *engine, QNetworkAccessManager *nm);
     virtual ~NotificationManager();
 
 private slots:
@@ -34,6 +33,7 @@ public slots:
 
 private:
     QQmlApplicationEngine *engine;
+
     QNetworkAccessManager *net;
 
     QTimer *timer;

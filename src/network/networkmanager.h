@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtNetwork/QNetworkAccessManager>
+#include <QNetworkConfigurationManager>
 #include <QUrl>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonDocument>
@@ -45,7 +46,7 @@ public:
     void getBroadcasts(const QString channelName, quint32 offset, quint32 limit);
     void getBroadcastPlaybackStream(const QString &vod);
 
-    QNetworkAccessManager *getOperation() const;
+    QNetworkAccessManager *getManager() const;
 
 signals:
     void allStreamsOperationFinished(const QList<Channel *>&);
@@ -77,6 +78,7 @@ private slots:
 
 private:
     QNetworkAccessManager *operation;
+    QNetworkConfigurationManager *conf;
 };
 
 #endif // NETWORKMANAGER_H
