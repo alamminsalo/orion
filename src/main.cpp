@@ -1,5 +1,4 @@
 
-#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QtQml>
 #include <QQmlComponent>
@@ -9,7 +8,6 @@
 #include <QQmlContext>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
-#include <QTimer>
 #include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "network/networkmanager.h"
@@ -19,8 +17,6 @@
 #include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
-#include <QString>
-#include <QProcessEnvironment>
 
 int main(int argc, char *argv[])
 {
@@ -62,7 +58,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->physicalDotsPerInch() / QGuiApplication::primaryScreen()->devicePixelRatio();
+    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
 
 #ifdef Q_OS_WIN
     dpiMultiplier /= 96;
@@ -71,10 +67,11 @@ int main(int argc, char *argv[])
     dpiMultiplier /= 96;
 
 #elif defined(Q_OS_MAC)
-    dpiMultiplier = 1;
+    dpiMultiplier /= 1;
 
 #endif
 
+    //Small adjustment to sizing overall
     dpiMultiplier *= .7;
 
     qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
