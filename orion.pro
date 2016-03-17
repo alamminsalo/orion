@@ -131,7 +131,4 @@ macx: {
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
 
     LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/lib/ -lmpv.1.20.0
-
-    INCLUDEPATH += $$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/include
-    DEPENDPATH += $$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/include
 }
