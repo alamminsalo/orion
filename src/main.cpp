@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     dpiMultiplier /= 96;
 
 #elif defined(Q_OS_MAC)
-    dpiMultiplier = 1;
+    dpiMultiplier /= 72;
 
 #endif
 
