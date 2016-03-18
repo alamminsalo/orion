@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QNetworkConfigurationManager>
+#include <QNetworkInterface>
 #include <QUrl>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonDocument>
@@ -24,6 +25,9 @@ class NetworkManager: public QObject
     Q_OBJECT
 
 protected:
+
+    void selectNetworkInterface();
+    void testConnection();
 
     enum M3U8TYPE {
         LIVE = QNetworkRequest::CustomVerbAttribute + 1,
@@ -49,6 +53,8 @@ public:
     QNetworkAccessManager *getManager() const;
 
 signals:
+    void finishedConnectionTest();
+
     void allStreamsOperationFinished(const QList<Channel *>&);
     void gamesOperationFinished(const QList<Game *>&);
     void gameStreamsOperationFinished(const QList<Channel *>&);
@@ -63,6 +69,7 @@ signals:
     void fileOperationFinished(const QByteArray&);
 
 private slots:
+    void testConnectionReply();
     void handleSslErrors(QNetworkReply * reply, QList<QSslError> errors);
 
     void allStreamsReply();
@@ -78,7 +85,8 @@ private slots:
 
 private:
     QNetworkAccessManager *operation;
-    QNetworkConfigurationManager *conf;
+
+    bool connectionOK;
 };
 
 #endif // NETWORKMANAGER_H

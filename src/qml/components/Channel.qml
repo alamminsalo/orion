@@ -63,7 +63,7 @@ Rectangle {
             }
 
             onProgressChanged: {
-                if (progress >= 1.0)
+                if (progress > 0.99)
                     _spinner.visible = false
             }
 
