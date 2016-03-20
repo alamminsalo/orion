@@ -35,8 +35,6 @@ Item {
         }
 
         _label.visible = false
-
-        requestSelectionChange(0)
     }
 
     onVisibleChanged: {
@@ -195,7 +193,10 @@ Item {
             }
         }
 
-        onAtYEndChanged: checkScrolled()
+        onAtYEndChanged: {
+            if (visible)
+                checkScrolled()
+        }
 
         onItemClicked: {
             if (currentItem.online){

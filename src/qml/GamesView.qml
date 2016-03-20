@@ -77,7 +77,8 @@ Item {
                 text: "Search streams"
                 //text: "Find streams;search"
                 onTriggered: {
-                    search.search(":game " + _menu.item.title)
+                    search.search(":game " + _menu.item.title)   
+                    requestSelectionChange(0)
                 }
             }
         }

@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 #endif
 
     //Small adjustment to sizing overall
-    dpiMultiplier *= .7;
+    dpiMultiplier *= .8;
 
     qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
     qDebug() <<"DPI mult: "<< dpiMultiplier;

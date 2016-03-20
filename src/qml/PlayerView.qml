@@ -371,6 +371,7 @@ Item {
         MouseArea{
             anchors.fill: parent
             hoverEnabled: true
+            propagateComposedEvents: false
 
             onClicked: {
                 if (sourcesBox.open){
