@@ -2,11 +2,6 @@
 #include <QVariant>
 #include <QDebug>
 
-#ifdef Q_OS_MAC
-#include "notificationsender.h"
-
-#endif
-
 NotificationManager::NotificationManager(QQmlApplicationEngine *engine, QNetworkAccessManager *nm) : net(nm)
 {
     currentObject = 0;
@@ -77,7 +72,7 @@ void NotificationManager::showNext()
         currentObject->setProperty("visible", QVariant::fromValue(true));
 #endif
 
-#ifdef Q_OS_MAC
+#if defined(Q_OS_MAC) || defined (Q_OS_LINUX)
         //NotificationSender deletes itself after displaying message
         NotificationSender *msg = new NotificationSender(net);
         msg->pushNotification(data->title, data->message, data->imgUrl);

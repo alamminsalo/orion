@@ -24,7 +24,7 @@ public:
     NotificationSender(QNetworkAccessManager *nm);
     ~NotificationSender();
 
-    void pushNotification(const QString &title, const QString &subtitle, const QString &url = QString());
+    void pushNotification(const QString &title, const QString &message, const QString &url = QString());
 
 private slots:
     void onFileReply();
@@ -34,7 +34,6 @@ private:
 
     QString title;
     QString subtitle;
-    QByteArray data;
 };
 
 #endif // NOTIFICATIONSENDER_H

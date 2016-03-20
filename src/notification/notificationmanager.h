@@ -12,6 +12,11 @@
     #include <QQuickWindow>
 #endif
 
+#if defined(Q_OS_MAC) || defined(Q_OS_LINUX)
+    #include "notificationsender.h"
+
+#endif
+
 typedef struct {
     QString title;
     QString message;

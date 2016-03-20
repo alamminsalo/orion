@@ -16,8 +16,8 @@ Window {
 
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint | Qt.Popup
-    width: Dpi.scale(440)
-    height: Dpi.scale(140)
+    width: Dpi.scale(400)
+    height: Dpi.scale(120)
 
     function close(){
         //console.log("Destroying notification")
@@ -79,8 +79,8 @@ Window {
             id: img
             source: imgSrc
             fillMode: Image.PreserveAspectFit
-            width: Dpi.scale(100)
-            height: Dpi.scale(100)
+            width: Dpi.scale(80)
+            height: width
             anchors {
                 left: parent.left
                 leftMargin: Dpi.scale(10)
@@ -94,7 +94,7 @@ Window {
                 right: parent.right
                 leftMargin: Dpi.scale(10)
                 rightMargin: Dpi.scale(10)
-                verticalCenter: parent.verticalCenter
+                top: img.top
             }
             height: Dpi.scale(100)
             clip: true
