@@ -62,11 +62,10 @@ CONFIG += c++11
 DISTFILES += src/qml/icon/orion.svg
 
 unix: {
-    DEFINES += USE_DBUS
     QT += dbus
     LIBS += -lmpv
     HEADERS += src/notification/notificationsender.h
-    SOURCES += src/notification/notificationsender.cpp
+    SOURCES +=
 
     #Copy some files over to destination dir
     CONFIG(release): {
@@ -129,10 +128,13 @@ macx: {
 
     HEADERS += src/notification/notificationsender.h
     #inc as obj-c
-    OBJECTIVE_SOURCES += src/notification/notificationsender.cpp
+    OBJECTIVE_SOURCES +=
 
     INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
 
     LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/lib/ -lmpv.1.20.0
 }
+
+OBJECTIVE_SOURCES += \
+    src/notification/notificationsender.mm

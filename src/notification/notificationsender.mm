@@ -6,7 +6,7 @@
 #import <NSUserNotification.h>
 #endif
 
-#ifdef USE_DBUS
+#ifdef Q_OS_LINUX
 #include <QtDBus/QtDBus>
 #include <QImage>
 #endif
@@ -83,7 +83,7 @@ void NotificationSender::sendNotification(const QString &title, const QString &m
 
 #endif
 
-#ifdef USE_DBUS
+#ifdef Q_OS_LINUX
 
 
 /**
@@ -177,6 +177,6 @@ const QDBusArgument& operator>>(const QDBusArgument& arg, QImage&) {
   return arg;
 }
 
-#endif //USE_DBUS
+#endif //Q_OS_LINUX
 
 
