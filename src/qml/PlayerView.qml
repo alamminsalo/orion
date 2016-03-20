@@ -30,13 +30,17 @@ Item {
 
         //console.log(position)
 
-        renderer.setOption("start", "+" + position)
+        if (isVod)
+            renderer.setOption("start", "+" + position)
 
-        renderer.command(["loadfile", qualityMap[quality]])
+        var stream = qualityMap[quality]
+        console.debug("Loading: ", stream)
+
+        renderer.command(["loadfile", stream])
 
         spinner.visible = false
 
-        renderer.play()
+        renderer.play(false)
     }
 
     function getStreams(channel, vod){
