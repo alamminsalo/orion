@@ -2,9 +2,6 @@
 #
 # Orion: Twitch Client written in C++/QML
 #
-# Deployment: create dir 'lib' to build dir and copy over the needed libraries
-# (libmpv, snorenotify)
-#
 #-------------------------------------------------
 
 QT     += gui opengl qml quick network widgets

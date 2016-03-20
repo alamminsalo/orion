@@ -24,15 +24,12 @@ MpvObject::MpvObject(QQuickItem * parent)
     mpv_set_option_string(mpv, "msg-level", "all=v");
 #endif
 
-//    mpv_set_option_string(mpv, "config", "yes");
-//    mpv_set_option_string(mpv, "config-dir", ".");
-
     // Make use of the MPV_SUB_API_OPENGL_CB API.
     mpv::qt::set_option_variant(mpv, "vo", "opengl-cb");
     //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
     // Request hw decoding, just for testing.
-    //mpv::qt::set_option_variant(mpv, "hwdec", "auto");
+    mpv::qt::set_option_variant(mpv, "hwdec", "auto");
 
     //Cache
     mpv::qt::set_option_variant(mpv, "cache", 8192);

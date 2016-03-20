@@ -84,7 +84,7 @@ signals:
     void resultsUpdated();
     void featuredUpdated();
     void searchingStarted();
-    void foundPlaybackStream(const QStringList &streams);
+    void foundPlaybackStream(const QStringList streams);
     void deletedChannel(const quint32 &chanid);
     void addedChannel(const quint32 &chanid);
 
