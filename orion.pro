@@ -28,7 +28,7 @@ SOURCES += src/main.cpp\
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
-    src/notification/notificationmanager.cpp
+    src/notification/notificationmanager.cpp \
 
 
 HEADERS  += src/model/channel.h \
@@ -61,11 +61,11 @@ CONFIG += c++11
 
 DISTFILES += src/qml/icon/orion.svg
 
-unix: {
+unix:!macx: {
     QT += dbus
     LIBS += -lmpv
     HEADERS += src/notification/notificationsender.h
-    SOURCES +=
+    SOURCES +=  src/notification/notificationsender.cpp
 
     #Copy some files over to destination dir
     CONFIG(release): {

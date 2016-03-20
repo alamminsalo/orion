@@ -21,6 +21,7 @@ public:
 private:
     QTimer* timer;
     QApplication *app;
+    quint32 cookie;
 
 private slots:
     void onTimerProc();
