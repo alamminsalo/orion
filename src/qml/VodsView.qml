@@ -35,7 +35,7 @@ Item{
 
     ViewHeader{
         id: header
-        text: "Channels broadcasts"
+        text: "Channel vods"
         z: favourites.z + 1
     }
 

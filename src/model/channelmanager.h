@@ -36,6 +36,7 @@ protected:
     GameListModel* gamesModel;
 
     bool alert;
+    bool closeToTray;
     int alertPosition;
 
 public:
@@ -72,6 +73,8 @@ public:
     Q_INVOKABLE void addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
                                      const  QString &info, const QString &logo, const QString &preview,
                                      const QString& game, const qint32 &viewers, bool online);
+    Q_INVOKABLE bool isCloseToTray() const;
+    Q_INVOKABLE void setCloseToTray(bool arg);
 
 signals:
     void channelExists(Channel*);

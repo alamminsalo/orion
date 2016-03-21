@@ -11,12 +11,6 @@ Item{
         text: "Settings"
     }
 
-    //NotificationMaker is easier to just put here because all the options are near
-/*    NotificationMaker{
-        id: notifMaker
-        position: g_cman.getAlertPosition()
-    }
-*/
     Item {
         height: parent.height
         width: dp(360)
@@ -57,5 +51,18 @@ Item{
             text: "Notification position"
         }
 
+        OptionCheckbox {
+            id: closeToTrayOption
+            anchors {
+                top: alertPosition.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.isCloseToTray()
+            onClicked: {
+                g_cman.setCloseToTray(checked)
+            }
+            text: "Close to tray"
+        }
     }
 }

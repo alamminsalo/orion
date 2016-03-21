@@ -74,7 +74,7 @@ Rectangle {
                 icon: "game"
             }
             ListElement {
-                label: "Broadcasts"
+                label: "VODs"
                 icon: "video"
             }
             ListElement {

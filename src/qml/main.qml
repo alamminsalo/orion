@@ -23,6 +23,12 @@ ApplicationWindow {
         return Dpi.scale(number)
     }
 
+    onClosing: {
+        if (!g_cman.isCloseToTray()) {
+            Qt.quit()
+        }
+    }
+
     Connections {
         target: g_tray
         onShowTriggered: {
@@ -40,10 +46,6 @@ ApplicationWindow {
             root.raise()
         }
     }
-
-//    FontLoader{
-//        source: "qrc:/fonts/DroidSans.ttf"
-//    }
 
     Item {
         anchors.fill: parent

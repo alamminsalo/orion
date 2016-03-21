@@ -63,13 +63,22 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
             chan->setFavourite(true);
             featuredModel->updateChannelForView(chan);
         }
-
-        //netman->getStream(channel->getServiceName());
     }
+}
+
+bool ChannelManager::isCloseToTray() const
+{
+    return closeToTray;
+}
+
+void ChannelManager::setCloseToTray(bool arg)
+{
+    closeToTray = arg;
 }
 
 ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     alert = true;
+    closeToTray = false;
 
     alertPosition = 1;
 
@@ -170,6 +179,10 @@ bool ChannelManager::load(){
         alertPosition = json["alertPosition"].toInt();
     }
 
+    if (!json["closeToTray"].isNull()){
+        closeToTray = json["closeToTray"].toBool();
+    }
+
     if (json["channels"].isUndefined()){
         qDebug() << "Error: Bad file format: Missing field \"channels\"";
         return false;
@@ -240,10 +253,9 @@ bool ChannelManager::save() const
     QJsonValue val(arr);
     QJsonObject obj;
     obj["channels"] = val;
-
     obj["alert"] = QJsonValue(alert);
-
     obj["alertPosition"] = QJsonValue(alertPosition);
+    obj["closeToTray"] = QJsonValue(closeToTray);
 
     return util::writeFile(appPath(),QJsonDocument(obj).toJson());
 }
