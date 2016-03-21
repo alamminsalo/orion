@@ -52,13 +52,12 @@ MpvObject::MpvObject(QQuickItem * parent)
             Qt::QueuedConnection);
 
     //Restore volume to 100
-    setProperty("volume", QVariant::fromValue(100));
+    //setProperty("volume", QVariant::fromValue(100));
 
     //Set observe properties
     mpv_observe_property(mpv, 0, "core-idle", MPV_FORMAT_FLAG);
-    //mpv_observe_property(mpv, 0, "paused-for-cache", MPV_FORMAT_FLAG);
+    //mpv_observe_property(mpv, 0, "volume", MPV_FORMAT_DOUBLE);
     mpv_observe_property(mpv, 0, "cache-buffering-state", MPV_FORMAT_INT64);
-
     mpv_observe_property(mpv, 0, "playback-time", MPV_FORMAT_DOUBLE);
 
     // setup callback event handling
@@ -121,9 +120,17 @@ void MpvObject::play(bool autoReload)
         qDebug() << "Waited too long, resetting playback" << mpv::qt::get_property_variant(mpv, "path");
         mpv::qt::command_variant(mpv, (QStringList() << "loadfile" << mpv::qt::get_property_variant(mpv, "path").toString()));
     }
+
     QStringList args = (QStringList() << "set" << "pause" << "no");
     mpv::qt::command_variant(mpv, args);
 }
+
+QVariant MpvObject::getProperty(const QString &name)
+{
+    return mpv::qt::get_property_variant(mpv, name);
+}
+
+
 
 bool MpvObject::event(QEvent *event)
 {
@@ -154,7 +161,7 @@ bool MpvObject::event(QEvent *event)
                 else if(QString(prop->name) == "volume")
                 {
                    if(prop->format == MPV_FORMAT_DOUBLE)
-                        emit volumeChanged((int)*(double*)prop->data);
+                        emit volumeChanged(*(double*)prop->data);
                 }
                 else if(QString(prop->name) == "sid")
                 {

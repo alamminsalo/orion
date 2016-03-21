@@ -28,12 +28,12 @@ public:
 
     Q_INVOKABLE void pause();
     Q_INVOKABLE void play(bool autoReload = true);
+    Q_INVOKABLE QVariant getProperty(const QString &name);
 
 public slots:
     void command(const QVariant& params);
     void setProperty(const QString& name, const QVariant& value);
     void setOption(const QString& name, const QVariant& value);
-
 
 signals:
     void onUpdate();
@@ -43,7 +43,7 @@ signals:
     void bufferingStarted();
     //void bufferingEnded();
 
-    void volumeChanged(int volume);
+    void volumeChanged(double volume);
     void positionChanged(int position);
 
 private slots:

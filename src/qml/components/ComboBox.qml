@@ -7,6 +7,8 @@ Rectangle {
     property var selectedItem
     property bool open: list.visible
 
+    id: root
+
     signal indexChanged(int index)
 
     function select(item){
@@ -32,15 +34,14 @@ Rectangle {
     Rectangle {
         id: rect
         color: "transparent"
-        width: dp(100)
-        height: dp(50)
+        width: root.width
+        height: root.height
         border {
             color: Styles.border
             width: dp(1)
         }
         anchors {
-            bottom: parent.bottom
-            left: parent.left
+            verticalCenter: parent.verticalCenter
         }
 
         Text {
@@ -85,11 +86,11 @@ Rectangle {
         id: list
         interactive: false
         anchors {
-            bottom: parent.top
+            bottom: rect.top
         }
 
-        width: dp(100)
-        height: srcModel.count * dp(50)
+        width: dp(90)
+        height: srcModel.count * root.height
 
         MouseArea {
             anchors.fill: parent
@@ -122,8 +123,8 @@ Rectangle {
         delegate: Rectangle {
             property int index: itemIndex
             property string str: names[index] ? names[index] : ""
-            width: dp(100)
-            height: dp(50)
+            width: root.width
+            height: root.height
 
             color: Styles.shadeColor
 

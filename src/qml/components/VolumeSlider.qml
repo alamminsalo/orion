@@ -2,8 +2,8 @@ import QtQuick 2.0
 import "../styles.js" as Styles
 
 Item {
-    property int value: 100
-    property int _value
+    property double value: 100
+    property double _value
     property bool open: false
     property bool mute: false
 
@@ -38,9 +38,7 @@ Item {
         id: icon
         icon: value > 50 ? "volume" : value > 0 ? "volume-med" : "volume-off"
         anchors {
-            left: parent.left
-            leftMargin: dp(10)
-            verticalCenter: parent.verticalCenter
+            centerIn: parent
         }
         //iconSize: Styles.iconSizeBigger
     }
@@ -91,6 +89,7 @@ Item {
             color: Styles.iconColor
             id: sliderBar
             width: dp(4)
+
             anchors {
                 top: parent.top
                 bottom: parent.bottom

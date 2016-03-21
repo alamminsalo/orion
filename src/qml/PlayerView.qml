@@ -34,6 +34,10 @@ Item {
             renderer.setOption("start", "+" + position)
 
         var stream = qualityMap[quality]
+
+        //Stop everything earlier
+        renderer.command(["stop"])
+
         console.debug("Loading: ", stream)
 
         renderer.command(["loadfile", stream])
@@ -191,7 +195,6 @@ Item {
             Icon {
                 id: _favIcon
                 icon: "fav"
-                //iconSize: Styles.iconSizeBigger
 
                 anchors.centerIn: parent
 
@@ -250,7 +253,6 @@ Item {
                 }
             }
         }
-
     }
 
     PlayerHeader {
@@ -284,7 +286,6 @@ Item {
                 id: togglePause
                 anchors.centerIn: parent
                 icon: paused ? "play" : "pause"
-                //iconSize: Styles.iconSizeBigger
             }
 
             MouseArea {
@@ -325,21 +326,59 @@ Item {
         VolumeSlider {
             id: vol
             z: parent.z + 1
+
+            property bool initialized: false
+
+            anchors {
+                right: fsButton.left
+                verticalCenter: parent.verticalCenter
+            }
+
+            function initialize(vol) {
+                value = vol || 100
+                initialized = true
+            }
+
+            onValueChanged: {
+                if (initialized) {
+                    var val
+                    if (Qt.platform === "linux")
+                        val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
+
+                    else //Windows seems to handle this by itself
+                        val = Math.max(0, Math.min(100, value))
+
+                    renderer.setProperty("volume", val)
+                }
+            }
+        }
+
+        Icon {
+            id: fsButton
+            icon: !g_fullscreen ? "expand" : "compress"
             anchors {
                 right: sourcesBox.left
                 verticalCenter: parent.verticalCenter
                 rightMargin: dp(10)
             }
-            onValueChanged: {
-                var val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
-                renderer.setProperty("volume", val)
+            width: dp(50)
+            height: width
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: g_fullscreen = !g_fullscreen
+                hoverEnabled: true
+
+                onHoveredChanged: {
+                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                }
             }
         }
 
         ComboBox {
             id: sourcesBox
-            width: dp(100)
-            height: dp(50)
+            width: dp(90)
+            height: dp(40)
             names: ["Mobile","Low","Medium","High","Source"]
 
             anchors {
@@ -381,11 +420,13 @@ Item {
                 if (sourcesBox.open){
                     sourcesBox.close()
                 }
+
+                clickTimer.start()
             }
 
             onDoubleClicked: {
                 g_fullscreen = !g_fullscreen
-                //renderer.command(["set","pause", "no"])
+                clickTimer.dblClicked = true
             }
 
             onPositionChanged: {
@@ -414,6 +455,10 @@ Item {
 
         onBufferingStarted: {
             spinner.visible = true
+        }
+
+        Component.onCompleted: {
+            vol.initialize(Math.round(getProperty("volume")))
         }
     }
 
@@ -447,6 +492,24 @@ Item {
                 header.hide()
                 footer.hide()
             }
+        }
+    }
+
+    //Workaround to buggy interaction in combined pause / fullscreen on click / dblclick
+    Timer {
+        property bool dblClicked: false
+        id: clickTimer
+        interval: 400
+        running: false
+        repeat: false
+        onTriggered: {
+            if (!dblClicked)
+                pause()
+        }
+
+        onRunningChanged: {
+            if (running)
+                dblClicked = false
         }
     }
 }
