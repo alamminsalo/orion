@@ -33,6 +33,7 @@ protected:
     ChannelListModel* featuredModel;
     QSortFilterProxyModel* featuredProxy;
 
+    //Games (and game search results)
     GameListModel* gamesModel;
 
     bool alert;
@@ -75,6 +76,7 @@ public:
                                      const QString& game, const qint32 &viewers, bool online);
     Q_INVOKABLE bool isCloseToTray() const;
     Q_INVOKABLE void setCloseToTray(bool arg);
+    Q_INVOKABLE void searchGames(QString, const quint32&, const quint32&);
 
 signals:
     void channelExists(Channel*);
@@ -82,7 +84,6 @@ signals:
     void channelStateChanged(Channel*);
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
     void newChannel(Channel*);
-    void gamesUpdated();
     void channelsUpdated();
     void resultsUpdated();
     void featuredUpdated();
@@ -90,19 +91,20 @@ signals:
     void foundPlaybackStream(const QStringList streams);
     void deletedChannel(const quint32 &chanid);
     void addedChannel(const quint32 &chanid);
+    void gamesSearchStarted();
+    void gamesUpdated();
 
 public slots:
     void checkFavourites();
     void addToFavourites(const quint32&);
     void removeFromFavourites(const quint32&);
-    void getGames(const quint32&, const quint32&, bool);
     void searchChannels(QString, const quint32&, const quint32&, bool);
+
     void notify(Channel*);
     void getFeatured();
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);
     void onFoundPlaybackStream(const QStringList &);
-
     void addSearchResults(const QList<Channel*>&);
     void addFeaturedResults(const QList<Channel*>&);
     void updateFavourites(const QList<Channel*>&);

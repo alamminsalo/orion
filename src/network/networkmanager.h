@@ -43,10 +43,10 @@ public:
     void getStreams(const QString&);
     void getGames(const quint32&, const quint32&);
     void searchChannels(const QString&, const quint32&, const quint32&);
+    void searchGames(const QString&);
     void getFeaturedStreams();
     void getStreamsForGame(const QString&, const quint32&, const quint32&);
     void getChannelPlaybackStream(const QString&);
-
     void getBroadcasts(const QString channelName, quint32 offset, quint32 limit);
     void getBroadcastPlaybackStream(const QString &vod);
 
@@ -60,27 +60,23 @@ signals:
     void gameStreamsOperationFinished(const QList<Channel *>&);
     void featuredStreamsOperationFinished(const QList<Channel *>&);
     void searchChannelsOperationFinished(const QList<Channel *>&);
-
+    void searchGamesOperationFinished(const QList<Game *>&);
     void broadcastsOperationFinished(const QList<Vod *>&);
-
     void m3u8OperationFinished(const QStringList&);
     void m3u8OperationBFinished(const QStringList&);
-
     void fileOperationFinished(const QByteArray&);
 
 private slots:
     void testConnectionReply();
     void handleSslErrors(QNetworkReply * reply, QList<QSslError> errors);
-
     void allStreamsReply();
     void gamesReply();
     void gameStreamsReply();
     void featuredStreamsReply();
     void searchChannelsReply();
-
+    void searchGamesReply();
     void streamExtractReply();
     void m3u8Reply();
-
     void broadcastsReply();
 
 private:

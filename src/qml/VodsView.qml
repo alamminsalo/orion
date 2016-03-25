@@ -36,7 +36,7 @@ Item{
     ViewHeader{
         id: header
         text: "Channel vods"
-        z: favourites.z + 1
+        z: vods.z + 1
     }
 
     onVisibleChanged: {
@@ -66,7 +66,7 @@ Item{
         }
 
         onItemClicked: {
-            player.getStreams(selectedChannel, selectedItem)
+            playerView.getStreams(selectedChannel, selectedItem)
         }
 
         onItemRightClicked: {
@@ -80,7 +80,7 @@ Item{
                 text: "Watch video"
                 //text: "Watch;play"
                 onTriggered: {
-                    player.getStreams(selectedChannel, _menu.item)
+                    playerView.getStreams(selectedChannel, _menu.item)
                 }
             }
         }

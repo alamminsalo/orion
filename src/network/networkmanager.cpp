@@ -157,6 +157,36 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
     connect(reply, SIGNAL(finished()), this, SLOT(searchChannelsReply()));
 }
 
+void NetworkManager::searchGames(const QString &query)
+{
+    QNetworkRequest request;
+    QString url = QString(KRAKEN_API)
+            + QString("/search/games?q=%1").arg(query)
+            + "&type=suggest";
+
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(searchGamesReply()));
+}
+
+void NetworkManager::searchGamesReply()
+{
+
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    emit searchGamesOperationFinished(JsonParser::parseGames(data));
+
+    reply->deleteLater();
+}
+
 void NetworkManager::getFeaturedStreams()
 {
     QNetworkRequest request;

@@ -200,7 +200,7 @@ Item {
 
         onItemClicked: {
             if (currentItem.online){
-                player.getStreams(currentItem)
+                playerView.getStreams(currentItem)
             }
         }
 
@@ -233,7 +233,7 @@ Item {
                 //text: "Watch;play"
                 onTriggered: {
                     if (_menu.item.online){
-                        player.getStreams(_menu.item)
+                        playerView.getStreams(_menu.item)
                     }
                 }
             }
@@ -242,7 +242,7 @@ Item {
                 text: "Past broadcasts"
                 //text: "Videos;video"
                 onTriggered: {
-                    vods.search(_menu.item)
+                    vodsView.search(_menu.item)
                 }
             }
 

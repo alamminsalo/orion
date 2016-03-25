@@ -104,8 +104,10 @@ QList<Game*> JsonParser::parseGames(const QByteArray &data)
     if (error.error == QJsonParseError::NoError) {
         QJsonObject json = doc.object();
 
-        if (!json["top"].isNull()){
-            QJsonArray arr = json["top"].toArray();
+        QString arg = (!json["top"].isNull() ? "top" : (!json["games"].isNull() ? "games" : ""));
+
+        if (!arg.isEmpty()){
+            QJsonArray arr = json[arg].toArray();
             foreach (const QJsonValue &item, arr){
                 Game* game = parseGame(item.toObject());
                 if (!game->getName().isEmpty()){
@@ -123,7 +125,8 @@ Game* JsonParser::parseGame(const QJsonObject &json)
 {
     Game* game = new Game();
 
-    if (!json["game"].isNull()){
+    //From top games
+    if (json.contains("game") && !json["game"].isNull()){
         const QJsonObject gameObj = json["game"].toObject();
 
         if (!json["viewers"].isNull())
@@ -137,6 +140,20 @@ Game* JsonParser::parseGame(const QJsonObject &json)
 
         if (!gameObj["logo"].isNull() && !gameObj["logo"].toObject()["medium"].isNull())
             game->setPreview(gameObj["logo"].toObject()["medium"].toString());
+    }
+    //From games search
+    else {
+        if (!json["name"].isNull())
+            game->setName(json["name"].toString());
+
+        if (!json["viewers"].isNull())
+            game->setViewers(json["viewers"].toInt());
+
+        if (!json["box"].isNull() && !json["box"].toObject()["medium"].isNull())
+            game->setLogo(json["box"].toObject()["medium"].toString());
+
+        if (!json["logo"].isNull() && !json["logo"].toObject()["medium"].isNull())
+            game->setPreview(json["logo"].toObject()["medium"].toString());
     }
 
     return game;

@@ -7,6 +7,55 @@
 #include <QJsonArray>
 #include <QApplication>
 
+
+ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
+    alert = true;
+    closeToTray = false;
+
+    alertPosition = 1;
+
+    favouritesModel = new ChannelListModel();
+
+    resultsModel = new ChannelListModel();
+
+    featuredModel = new ChannelListModel();
+
+    gamesModel = new GameListModel();
+
+    connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
+
+    favouritesProxy = new QSortFilterProxyModel();
+    favouritesProxy->setSourceModel(favouritesModel);
+    favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
+    favouritesProxy->sort(0, Qt::DescendingOrder);
+
+    featuredProxy = new QSortFilterProxyModel();
+    featuredProxy->setSourceModel(featuredModel);
+    featuredProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
+    featuredProxy->sort(0, Qt::DescendingOrder);
+
+    connect(netman, SIGNAL(allStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(updateStreams(QList<Channel*>)));
+    connect(netman, SIGNAL(featuredStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addFeaturedResults(QList<Channel*>)));
+    connect(netman, SIGNAL(gamesOperationFinished(const QList<Game*>&)), this, SLOT(addGames(QList<Game*>)));
+    connect(netman, SIGNAL(gameStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
+    connect(netman, SIGNAL(searchChannelsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
+    connect(netman, SIGNAL(m3u8OperationFinished(const QStringList&)), this, SLOT(onFoundPlaybackStream(const QStringList&)));
+    connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
+}
+
+ChannelManager::~ChannelManager(){
+    qDebug() << "Destroyer: ChannelManager";
+
+    save();
+
+    delete favouritesModel;
+    delete resultsModel;
+    delete featuredModel;
+    delete gamesModel;
+    delete favouritesProxy;
+    delete featuredProxy;
+}
+
 QString appPath(){
     return qApp->applicationDirPath() + "/" + DATA_FILE;
 }
@@ -76,52 +125,20 @@ void ChannelManager::setCloseToTray(bool arg)
     closeToTray = arg;
 }
 
-ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
-    alert = true;
-    closeToTray = false;
+void ChannelManager::searchGames(QString q, const quint32 &offset, const quint32 &limit)
+{
+    if (offset == 0 || !q.isEmpty())
+        gamesModel->clear();
 
-    alertPosition = 1;
+    //If query is empty, search games by viewercount
+    if (q.isEmpty())
+        netman->getGames(offset, limit);
 
-    favouritesModel = new ChannelListModel();
+    //Else by queryword
+    else if (offset == 0)
+        netman->searchGames(q);
 
-    resultsModel = new ChannelListModel();
-
-    featuredModel = new ChannelListModel();
-
-    gamesModel = new GameListModel();
-
-    connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
-
-    favouritesProxy = new QSortFilterProxyModel();
-    favouritesProxy->setSourceModel(favouritesModel);
-    favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
-    favouritesProxy->sort(0, Qt::DescendingOrder);
-
-    featuredProxy = new QSortFilterProxyModel();
-    featuredProxy->setSourceModel(featuredModel);
-    featuredProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
-    featuredProxy->sort(0, Qt::DescendingOrder);
-
-
-    connect(netman, SIGNAL(allStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(updateStreams(QList<Channel*>)));
-    connect(netman, SIGNAL(featuredStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addFeaturedResults(QList<Channel*>)));
-    connect(netman, SIGNAL(gamesOperationFinished(const QList<Game*>&)), this, SLOT(addGames(QList<Game*>)));
-    connect(netman, SIGNAL(gameStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
-    connect(netman, SIGNAL(searchChannelsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
-    connect(netman, SIGNAL(m3u8OperationFinished(const QStringList&)), this, SLOT(onFoundPlaybackStream(const QStringList&)));
-}
-
-ChannelManager::~ChannelManager(){
-    qDebug() << "Destroyer: ChannelManager";
-
-    save();
-
-    delete favouritesModel;
-    delete resultsModel;
-    delete featuredModel;
-    delete gamesModel;
-    delete favouritesProxy;
-    delete featuredProxy;
+    emit gamesSearchStarted();
 }
 
 ChannelListModel *ChannelManager::getFavouritesModel() const
@@ -355,15 +372,6 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
 void ChannelManager::checkFavourites()
 {
     checkStreams(favouritesModel->getChannels());
-}
-
-void ChannelManager::getGames(const quint32 &offset, const quint32 &limit, bool clear)
-{
-    if (clear){
-        gamesModel->clear();
-    }
-
-    netman->getGames(offset,limit);
 }
 
 void ChannelManager::searchChannels(QString q, const quint32 &offset, const quint32 &limit, bool clear)

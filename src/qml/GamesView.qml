@@ -8,17 +8,142 @@ Item {
     anchors.fill: parent
     property int gamesCount: 0
     property bool checked: false
+    property string query: ""
 
-    ViewHeader{
+    function search(clear) {
+        if (clear) {
+            gamesCount = 0
+        }
+        g_cman.searchGames(query, gamesCount, 25);
+        gamesCount += 25
+    }
+
+    Connections {
+        target: g_cman
+
+        onGamesSearchStarted: {
+            _spinner.visible = true
+        }
+
+        onGamesUpdated: {
+            games.checkScroll()
+            _spinner.visible = false
+        }
+    }
+
+    ViewHeader {
+        text: "Games"
         id: header
-        text: "All games"
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: dp(100)
+        color: Style.bg
         z: games.z + 1
+        clip: true
+
+        Rectangle {
+            property string text: _input.text
+
+            id: searchBox
+            height: dp(60)
+            width: _input.width + _spacer.width + _button.width
+            color: Style.sidebarBg
+            radius: 5
+            anchors.centerIn: parent
+            anchors.margins: dp(10)
+            border.color: Style.border
+            border.width: dp(1)
+            clip: true
+
+            MouseArea {
+                id: inputArea
+                cursorShape: Qt.IBeamCursor
+                width: dp(300)
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: parent.left
+                }
+
+                TextInput{
+                    id: _input
+                    color: Style.iconColor
+                    anchors.fill: parent
+                    clip:true
+                    selectionColor: Style.purple
+                    focus: true
+                    selectByMouse: true
+                    font.pixelSize: Style.titleFont.smaller
+
+
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+
+                    Keys.onReturnPressed: {
+                        query = searchBox.text
+                        search(true)
+                    }
+                }
+            }
+
+
+            Rectangle {
+                id: _spacer
+                width: dp(1)
+                color: Style.border
+                anchors {
+                    left: inputArea.right
+                    top: parent.top
+                    bottom: parent.bottom
+                }
+            }
+
+            Icon {
+                id: _button
+                icon: "search"
+                iconSize: Style.iconSize
+                visible: !_spinner.visible
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: _spacer.right
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    hoverEnabled: true
+
+                    onClicked: {
+                        query = searchBox.text
+                        search(true)
+                    }
+
+                    onHoveredChanged: {
+                        parent.iconColor = containsMouse ? Style.iconHighlight : Style.iconColor
+                    }
+                }
+            }
+
+            SpinnerIcon {
+                id: _spinner
+                iconSize: Style.iconSize
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: _spacer.right
+                }
+                visible: false
+            }
+        }
     }
 
     onVisibleChanged: {
         if (visible && !checked){
-            g_cman.getGames(0, 35, true)
-            gamesCount = 35
+            if (query === "")
+                search()
             checked = true
             timer.start()
         }
@@ -47,13 +172,12 @@ Item {
 
         function checkScroll(){
             if (atYEnd && model.count() === gamesCount && gamesCount > 0){
-                g_cman.getGames(gamesCount, 25, false);
-                gamesCount += 25
+                search()
             }
         }
 
         onItemClicked: {
-            search.search(":game " + currentItem.title)
+            searchView.search(":game " + currentItem.title)
             requestSelectionChange(0)
         }
 
@@ -66,9 +190,7 @@ Item {
 
         Connections {
             target: g_cman
-            onGamesUpdated: {
-                games.checkScroll()
-            }
+
         }
 
         ContextMenu {

@@ -14,86 +14,86 @@ Rectangle {
     color: Styles.bg
 
     onSelectionChanged: {
-        search.visible = false
-        favourites.visible = false
-        games.visible = false
-        featured.visible = false
-        player.visible = false
-        settings.visible = false
-        vods.visible = false
+        searchView.visible = false
+        favouritesView.visible = false
+        gamesView.visible = false
+        featuredView.visible = false
+        playerView.visible = false
+        settingsView.visible = false
+        vodsView.visible = false
 
         switch (selection){
 
         //Search
         case 0:
-            search.visible = true
-            search.focusInput()
+            searchView.visible = true
+            searchView.focusInput()
             break
 
         //Featured
         case 1:
-            featured.visible = true
+            featuredView.visible = true
             break
 
         //Fav
         case 2:
-            favourites.visible = true
+            favouritesView.visible = true
             break
 
         //Games
         case 3:
-            games.visible = true
+            gamesView.visible = true
             break
 
         //Vods
         case 4:
-            vods.visible = true
+            vodsView.visible = true
             break
 
         //Player
         case 5:
-            player.visible = true
+            playerView.visible = true
             break
 
         //Settings
         case 6:
-            settings.visible = true
+            settingsView.visible = true
             break
         }
     }
 
     SearchView {
-        id: search
+        id: searchView
         visible: false
     }
 
     FeaturedView{
-        id: featured
+        id: featuredView
         visible: false
     }
 
     FavouritesView{
-        id: favourites
+        id: favouritesView
         visible: false
     }
 
     GamesView {
-        id: games
+        id: gamesView
         visible: false
     }
 
     VodsView {
-        id: vods
+        id: vodsView
         visible: false
     }
 
     PlayerView{
-        id: player
+        id: playerView
         visible: false
     }
 
     OptionsView{
-        id: settings
+        id: settingsView
         visible: false
     }
 
@@ -101,7 +101,7 @@ Rectangle {
 
     Rectangle {
         id: _gradient
-        visible: !player.visible
+        visible: !playerView.visible
         height: root.height * .33
         gradient: Gradient {
             GradientStop { position: 0.0; color: "transparent" }
