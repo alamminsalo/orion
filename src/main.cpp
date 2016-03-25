@@ -21,7 +21,8 @@
 int main(int argc, char *argv[])
 {
     //Force using "auto" value for QT_DEVICE_PIXEL_RATIO env var
-    qputenv("QT_DEVICE_PIXEL_RATIO",QByteArray("auto"));
+    //NOTE apparently this causes application to crash on moving to another screen
+    //qputenv("QT_DEVICE_PIXEL_RATIO",QByteArray("auto"));
 
     CustomApp app(argc, argv);
 
