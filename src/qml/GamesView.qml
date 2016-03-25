@@ -147,6 +147,9 @@ Item {
             checked = true
             timer.start()
         }
+
+        if (visible)
+            _input.focus = true
     }
 
     ChannelGrid {
