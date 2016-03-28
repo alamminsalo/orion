@@ -17,6 +17,7 @@ Power::Power(QApplication *app) :
 
 Power::~Power()
 {
+    setScreensaver(true);
     delete timer;
 }
 
