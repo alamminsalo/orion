@@ -23,6 +23,10 @@ ApplicationWindow {
         return Dpi.scale(number)
     }
 
+    function fitToAspectRatio() {
+        height = view.width * 0.5625
+    }
+
     onClosing: {
         if (!g_cman.isCloseToTray()) {
             Qt.quit()

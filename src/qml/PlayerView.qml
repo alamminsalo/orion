@@ -166,7 +166,7 @@ Item {
         }
     }
 
-    PlayerHeader{
+    PlayerHeader {
         text: "Currently watching: N/A"
         id: header
         z: renderer.z + 1
@@ -321,6 +321,27 @@ Item {
                 target: renderer
                 onPositionChanged: {
                     seekBar.setPosition(parseInt(position), duration)
+                }
+            }
+        }
+
+        Icon {
+            id: fitButton
+            icon: "crop"
+            anchors {
+                right: vol.left
+                verticalCenter: parent.verticalCenter
+            }
+            width: dp(50)
+            height: width
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: g_rootWindow.fitToAspectRatio()
+                hoverEnabled: true
+
+                onHoveredChanged: {
+                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
                 }
             }
         }
