@@ -1,4 +1,4 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import "components"
 import mpv 1.0
 
@@ -70,6 +70,8 @@ Item {
             duration = vod.duration
 
             console.log("Setting up VOD, duration " + vod.duration)
+
+            seekBar.position = 0
         }
 
         paused = false
