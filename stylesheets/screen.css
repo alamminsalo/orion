@@ -251,11 +251,9 @@ section#downloads a.tgz {
 }
 
 section#downloads a.zip:hover {
-  background-position: 0 -197px;
 }
 
 section#downloads a.tgz:hover {
-  background-position: -275px -197px;
 }
 
 span.banner-fix {
