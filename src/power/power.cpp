@@ -6,6 +6,8 @@
 
 #ifdef Q_OS_LINUX
     #include <QtDBus>
+#elif defined(Q_OS_MAC)
+    #include <CoreServices/CoreServices.h>
 #endif
 
 Power::Power(QApplication *app) :
@@ -23,6 +25,11 @@ Power::~Power()
 
 void Power::setScreensaver(bool enabled)
 {
+
+    if (enabled)
+        qDebug() << "Enabled screensaver";
+    else
+        qDebug() << "Disabled screensaver";
 
 #ifdef Q_OS_LINUX
 
@@ -78,10 +85,28 @@ void Power::setScreensaver(bool enabled)
         SetThreadExecutionState(ES_CONTINUOUS);
 
 #endif
+
+#ifdef Q_OS_MAC
+    if (enabled){
+        timer->stop();
+    } else {
+        if (!timer->isActive()){
+            timer->start(25000);
+        }
+    }
+#endif
 }
 
 void Power::onTimerProc()
 {
-    qDebug() << "Screensaver: Reset event";
+#ifdef Q_OS_LINUX
     QProcess::startDetached("xdg-screensaver reset");
+
+#endif
+
+#ifdef Q_OS_MAC
+    UpdateSystemActivity(OverallAct);
+    qDebug() << "Sent nudge to osx screensaver";
+#endif
+
 }

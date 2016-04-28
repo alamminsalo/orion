@@ -6,7 +6,7 @@
 
 QT     += gui opengl qml quick network widgets
 
-TARGET = orion
+TARGET = Orion
 
 DEFINES += APP_NAME=\\\"Orion\\\" \
         #DEBUG_LIBMPV
@@ -133,7 +133,7 @@ macx: {
     INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
 
-    LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.15.0_1/lib/ -lmpv.1.20.0
+    LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv.1.20.0
 }
 
 OBJECTIVE_SOURCES += \

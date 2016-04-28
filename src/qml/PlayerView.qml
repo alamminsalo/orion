@@ -477,7 +477,7 @@ Item {
         }
 
         onBufferingStarted: {
-            spinner.visible = true
+            //spinner.visible = true
         }
 
         Component.onCompleted: {
