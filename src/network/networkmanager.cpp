@@ -5,9 +5,9 @@
 #include <QNetworkConfiguration>
 #include <QEventLoop>
 
-NetworkManager::NetworkManager()
+NetworkManager::NetworkManager(QNetworkAccessManager *man)
 {
-    operation = new QNetworkAccessManager();
+    operation = man;
 
     //Select interface
     selectNetworkInterface();
@@ -22,7 +22,7 @@ NetworkManager::NetworkManager()
 NetworkManager::~NetworkManager()
 {
     qDebug() << "Destroyer: NetworkManager";
-    operation->deleteLater();
+    //operation->deleteLater();
 }
 
 void NetworkManager::selectNetworkInterface()
@@ -317,6 +317,15 @@ void NetworkManager::editUserFavourite(const QString &access_token, const QStrin
 QNetworkAccessManager *NetworkManager::getManager() const
 {
     return operation;
+}
+
+void NetworkManager::clearCookies() {
+    QNetworkCookieJar *jar = operation->cookieJar();
+    operation->clearAccessCache();
+    //operation->cache()->clear();
+    foreach(QNetworkCookie c, jar->cookiesForUrl(QUrl(KRAKEN_API))) {
+        jar->deleteCookie(c);
+    }
 }
 
 void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)

@@ -37,8 +37,6 @@ MpvObject::MpvObject(QQuickItem * parent)
     if (mpv_initialize(mpv) < 0)
         throw std::runtime_error("could not initialize mpv context");
 
-
-
     // Setup the callback that will make QtQuick update and redraw if there
     // is a new video frame. Use a queued connection: this makes sure the
     // doUpdate() function is run on the GUI thread.

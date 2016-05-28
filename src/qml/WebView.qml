@@ -1,10 +1,9 @@
 import QtQuick 2.0
-import QtWebEngine 1.1
+import QtWebKit 3.0
 import "components"
 
 Item {
-    height: parent.height
-    width: parent.width
+    anchors.fill: parent
 
     property bool requestInProgress: false
 
@@ -14,6 +13,7 @@ Item {
             var scope = "user_read%20user_subscriptions%20user_follows_edit"
             web.url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + clientId
                     + "&redirect_uri=http://localhost&scope=" + scope
+                    + "&force_verify=true"
             requestInProgress = true
         }
     }
@@ -24,15 +24,16 @@ Item {
         netman.clearCookies()
     }
 
-    WebEngineView {
+    WebView {
         id: web
-        height: parent.height
-        width: parent.width
+        anchors.fill: parent
 
         onLoadingChanged: {
-            if (!loading && requestInProgress) {
-                requestSelectionChange(7)
-                requestInProgress = false
+            if (!loading) {
+                if (requestInProgress) {
+                    requestSelectionChange(7)
+                    requestInProgress = false
+                }
             }
         }
 

@@ -2,8 +2,6 @@ import QtQuick 2.5
 import "components"
 import "styles.js" as Styles
 
-import mpv 1.0
-
 
 Rectangle {
     property int selection
@@ -111,6 +109,7 @@ Rectangle {
         id: webView
         visible: false
     }
+
 
     //The gradient that is applied to each view
     GradientBottom {

@@ -17,7 +17,7 @@
 #include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
-#include <QtWebEngine/QtWebEngine>
+#include <QNetworkCookieJar>
 
 int main(int argc, char *argv[])
 {
@@ -27,15 +27,22 @@ int main(int argc, char *argv[])
 
     CustomApp app(argc, argv);
 
-    //Init webview
-    QtWebEngine::initialize();
-
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
     if ( !guard.tryToRun() ){
         guard.sendWakeup();
         return -1;
     }
+
+    QQmlApplicationEngine engine;
+    engine.networkAccessManager()->cookieJar()->deleteLater();
+    engine.networkAccessManager()->setCookieJar(new QNetworkCookieJar());
+
+    QNetworkCookieJar *jar = engine.networkAccessManager()->cookieJar();
+
+//    for(int i=0; i < engine.){
+//        qDebug() << c->name() << "," << c->value();
+//    }
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
     QApplication::setFont(QFont("qrc:/fonts/DroidSans.ttf"));
@@ -48,7 +55,7 @@ int main(int argc, char *argv[])
     QObject::connect(tray, SIGNAL(closeEventTriggered()), &app, SLOT(quit()));
 
     //Prime network manager
-    NetworkManager *netman = new NetworkManager();
+    NetworkManager *netman = new NetworkManager(engine.networkAccessManager());
 
     //Create channels manager
     ChannelManager *cman = new ChannelManager(netman);
@@ -61,8 +68,6 @@ int main(int argc, char *argv[])
     //Create vods manager
     VodManager *vod = new VodManager(netman);
 //-------------------------------------------------------------------------------------------------------------------//
-
-    QQmlApplicationEngine engine;
 
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
 

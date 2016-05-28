@@ -314,7 +314,7 @@ Item {
                 top: parent.top
                 bottom: parent.bottom
                 left: pauseButton.right
-                right: vol.left
+                right: fitButton.left
             }
 
             Connections {

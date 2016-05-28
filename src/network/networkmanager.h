@@ -5,7 +5,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QNetworkConfigurationManager>
 #include <QNetworkInterface>
-#include <QtWebEngine>
+#include <QtWebKitWidgets/QtWebKitWidgets>
 #include <QUrl>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonDocument>
@@ -38,7 +38,7 @@ protected:
     void getM3U8Data(const QString&, M3U8TYPE type);
 
 public:
-    NetworkManager();
+    NetworkManager(QNetworkAccessManager *);
     ~NetworkManager();
 
     void getStreams(const QString&);
@@ -59,7 +59,7 @@ public:
     QNetworkAccessManager *getManager() const;
 
     //TODO: move to new class if more operations need to be added
-    Q_INVOKABLE void clearCookies() { QQuickWebEngineProfile::defaultProfile()->cookieStore()->deleteAllCookies();}
+    Q_INVOKABLE void clearCookies();
     Q_INVOKABLE QString getClientId() const { return QString(CLIENT_ID); }
 
 signals:

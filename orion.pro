@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webengine
+QT     += gui opengl qml quick network widgets webkit
 
-TARGET = Orion
+TARGET = orion
 
 DEFINES += APP_NAME=\\\"Orion\\\" \
         #DEBUG_LIBMPV
