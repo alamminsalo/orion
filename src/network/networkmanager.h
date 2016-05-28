@@ -5,6 +5,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QNetworkConfigurationManager>
 #include <QNetworkInterface>
+#include <QtWebEngine>
 #include <QUrl>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonDocument>
@@ -50,7 +51,16 @@ public:
     void getBroadcasts(const QString channelName, quint32 offset, quint32 limit);
     void getBroadcastPlaybackStream(const QString &vod);
 
+    //Methods using oauth
+    void getUser(const QString &access_token);
+    void getUserFavourites(const QString &access_token, quint32 offset, quint32 limit);
+    void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
+
     QNetworkAccessManager *getManager() const;
+
+    //TODO: move to new class if more operations need to be added
+    Q_INVOKABLE void clearCookies() { QQuickWebEngineProfile::defaultProfile()->cookieStore()->deleteAllCookies();}
+    Q_INVOKABLE QString getClientId() const { return QString(CLIENT_ID); }
 
 signals:
     void finishedConnectionTest();
@@ -65,6 +75,11 @@ signals:
     void m3u8OperationFinished(const QStringList&);
     void m3u8OperationBFinished(const QStringList&);
     void fileOperationFinished(const QByteArray&);
+    void favouritesReplyFinished(const QList<Channel *>&);
+
+    //oauth
+    void userNameOperationFinished(const QString&);
+    void userEditFollowsOperationFinished();
 
 private slots:
     void testConnectionReply();
@@ -78,6 +93,11 @@ private slots:
     void streamExtractReply();
     void m3u8Reply();
     void broadcastsReply();
+    void favouritesReply();
+    void editUserFavouritesReply();
+
+    //Oauth slots
+    void userReply();
 
 private:
     QNetworkAccessManager *operation;

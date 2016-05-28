@@ -129,6 +129,13 @@ Channel *ChannelListModel::find(const quint32 &id)
     return 0;
 }
 
+void ChannelListModel::clearView()
+{
+    //Gives a sign to drop all channels from view, without removing them
+    emit beginRemoveRows(QModelIndex(), 0, channels.size());
+    emit endRemoveRows();
+}
+
 void ChannelListModel::clear()
 {
     if (!channels.isEmpty()){

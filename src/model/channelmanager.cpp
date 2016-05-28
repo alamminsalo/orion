@@ -12,6 +12,9 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     alert = true;
     closeToTray = false;
 
+    access_token = "";
+    tempFavourites = 0;
+
     alertPosition = 1;
 
     favouritesModel = new ChannelListModel();
@@ -41,6 +44,9 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     connect(netman, SIGNAL(searchChannelsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
     connect(netman, SIGNAL(m3u8OperationFinished(const QStringList&)), this, SLOT(onFoundPlaybackStream(const QStringList&)));
     connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
+
+    connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
+    connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&)), this, SLOT(addFollowedResults(const QList<Channel*>&)));
 }
 
 ChannelManager::~ChannelManager(){
@@ -139,6 +145,36 @@ void ChannelManager::searchGames(QString q, const quint32 &offset, const quint32
         netman->searchGames(q);
 
     emit gamesSearchStarted();
+}
+
+void ChannelManager::setAccessToken(const QString &arg)
+{
+    access_token = arg;
+
+    if (isAccessTokenAvailable()) {
+        //Fetch display name for logged in user
+        netman->getUser(access_token);
+
+        //move favs to tempfavs
+        if (!tempFavourites) {
+            tempFavourites = favouritesModel;
+
+            favouritesModel = new ChannelListModel();
+            favouritesProxy->setSourceModel(favouritesModel);
+        }
+    }
+
+    else {
+        //Reload local favourites from memory
+        if (tempFavourites) {
+            delete favouritesModel;
+            favouritesModel = tempFavourites;
+            tempFavourites = 0;
+            favouritesProxy->setSourceModel(favouritesModel);
+        }
+    }
+
+    emit accessTokenUpdated();
 }
 
 ChannelListModel *ChannelManager::getFavouritesModel() const
@@ -256,12 +292,22 @@ bool ChannelManager::load(){
 
     qDeleteAll(_channels);
 
+    if (!json["access_token"].isNull()){
+        setAccessToken(json["access_token"].toString());
+    }
+
 	return true;
 }
 
-bool ChannelManager::save() const
+bool ChannelManager::save()
 {
     QJsonArray arr;
+
+    if (tempFavourites) {
+        delete favouritesModel;
+        favouritesModel = tempFavourites;
+        tempFavourites = 0;
+    }
 
     foreach (Channel* channel, favouritesModel->getChannels()){
         arr.append(QJsonValue(channel->getJSON()));
@@ -273,6 +319,7 @@ bool ChannelManager::save() const
     obj["alert"] = QJsonValue(alert);
     obj["alertPosition"] = QJsonValue(alertPosition);
     obj["closeToTray"] = QJsonValue(closeToTray);
+    obj["access_token"] = QJsonValue(access_token);
 
     return util::writeFile(appPath(),QJsonDocument(obj).toJson());
 }
@@ -285,6 +332,11 @@ void ChannelManager::addToFavourites(const quint32 &id){
     }
 
     if (channel){
+
+        if (isAccessTokenAvailable() && !user_name.isEmpty()) {
+            netman->editUserFavourite(access_token, user_name, channel->getServiceName(), true);
+        }
+
         favouritesModel->addChannel(new Channel(*channel));
 
         channel->setFavourite(true);
@@ -295,7 +347,8 @@ void ChannelManager::addToFavourites(const quint32 &id){
         //Update featured also
         featuredModel->updateChannelForView(channel);
 
-        save();
+        if (!isAccessTokenAvailable())
+            save();
     }
 }
 
@@ -308,6 +361,10 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
 
     emit deletedChannel(chan->getId());
 
+    if (isAccessTokenAvailable() && !user_name.isEmpty()) {
+        netman->editUserFavourite(access_token, user_name, chan->getServiceName(), false);
+    }
+
     favouritesModel->removeChannel(chan);
 
     chan = 0;
@@ -315,6 +372,7 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
     //Update results
     Channel* channel = resultsModel->find(id);
     if (channel){
+
         channel->setFavourite(false);
         resultsModel->updateChannelForView(channel);
     }
@@ -326,7 +384,8 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
         featuredModel->updateChannelForView(channel);
     }
 
-    save();
+    if (!isAccessTokenAvailable())
+        save();
 }
 
 void ChannelManager::play(const QString &url){
@@ -480,14 +539,44 @@ void ChannelManager::addGames(const QList<Game*> &list)
 void ChannelManager::notify(Channel *channel)
 {
     if (alert && channel){
-        /*QStringList args;
-        args << channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline");
-        args << channel->getInfo() << channel->getLogourl();
-
-        emit pushNotification(args);*/
-
         emit pushNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                               channel->getInfo(),
                               channel->getLogourl());
     }
+}
+
+
+//Login function
+void ChannelManager::onUserNameUpdated(const QString &name)
+{
+    user_name = name;
+    emit userNameUpdated(user_name);
+
+    if (isAccessTokenAvailable()) {
+        //Start using user followed channels
+        getFollowedChannels(FOLLOWED_FETCH_LIMIT, 0);
+    }
+}
+
+void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)
+{
+    if (offset == 0)
+        favouritesModel->clear();
+
+    netman->getUserFavourites(user_name, offset, limit);
+}
+
+
+void ChannelManager::addFollowedResults(const QList<Channel *> &list)
+{
+    favouritesModel->addAll(list);
+
+    if (list.size() == FOLLOWED_FETCH_LIMIT)
+        getFollowedChannels(FOLLOWED_FETCH_LIMIT, favouritesModel->count());
+
+    qDeleteAll(list);
+
+    emit followedUpdated();
+
+    checkFavourites();
 }

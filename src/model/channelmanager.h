@@ -14,6 +14,8 @@
 #define DIALOG_FILE         "resources/scripts/dialog.sh"
 #define PLAY_FILE           "resources/scripts/play.sh"
 
+#define FOLLOWED_FETCH_LIMIT 25
+
 class NetworkManager;
 
 QString appPath();
@@ -24,6 +26,8 @@ class ChannelManager: public QObject
 
 protected:
     NetworkManager* netman;
+
+    ChannelListModel* tempFavourites;
 
     ChannelListModel* favouritesModel;
     QSortFilterProxyModel* favouritesProxy;
@@ -40,12 +44,16 @@ protected:
     bool closeToTray;
     int alertPosition;
 
+    //Oauth
+    QString user_name;
+    QString access_token;
+
 public:
     ChannelManager(NetworkManager *netman);
     ~ChannelManager();
 
     bool load();
-    bool save() const;
+    bool save();
     bool writeJSON(const QString&);
 
     Channel *findFavourite(const QString&);
@@ -76,7 +84,14 @@ public:
                                      const QString& game, const qint32 &viewers, bool online);
     Q_INVOKABLE bool isCloseToTray() const;
     Q_INVOKABLE void setCloseToTray(bool arg);
+    Q_INVOKABLE void getFollowedChannels(const quint32&, const quint32&);
     Q_INVOKABLE void searchGames(QString, const quint32&, const quint32&);
+
+    Q_INVOKABLE void setAccessToken(const QString &arg);
+    Q_INVOKABLE bool isAccessTokenAvailable() { return access_token.length() > 0; }
+
+private:
+
 
 signals:
     void channelExists(Channel*);
@@ -93,6 +108,11 @@ signals:
     void addedChannel(const quint32 &chanid);
     void gamesSearchStarted();
     void gamesUpdated();
+    void followedUpdated();
+
+    //oauth methods
+    void accessTokenUpdated();
+    void userNameUpdated(const QString name);
 
 public slots:
     void checkFavourites();
@@ -105,11 +125,15 @@ public slots:
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);
     void onFoundPlaybackStream(const QStringList &);
+
+private slots:
     void addSearchResults(const QList<Channel*>&);
     void addFeaturedResults(const QList<Channel*>&);
     void updateFavourites(const QList<Channel*>&);
     void updateStreams(const QList<Channel*>&);
     void addGames(const QList<Game*>&);
+    void onUserNameUpdated(const QString &name);
+    void addFollowedResults(const QList<Channel*>&);
 };
 
 #endif //CHANNEL_MANAGER_H

@@ -16,6 +16,7 @@ var iconColor = "#aaaaaa"
 var iconHighlight= "#dddddd"
 var selectedTextBg= "#212125"
 var disabled = "#444444"
+var grayButtonColor = "#333333"
 
 var seekBar = "#444444"
 

@@ -64,5 +64,43 @@ Item{
             }
             text: "Close to tray"
         }
+
+        OptionEntry {
+            id: loginOption
+            text: "Twitch account"
+            anchors {
+                top: closeToTrayOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            BasicButton {
+                id: connectButton
+
+                property bool loggedIn: g_cman.isAccessTokenAvailable()
+                text: loggedIn ? "Log out" : "Log in"
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    right: parent.right
+                }
+                onClicked: {
+                    if (!loggedIn)
+                        webView.requestAccessToken()
+                    else {
+                        webView.logout()
+                        loginOption.text = "Twitch account"
+                    }
+                }
+
+                Connections {
+                    target: g_cman
+                    onAccessTokenUpdated: {
+                        connectButton.loggedIn = g_cman.isAccessTokenAvailable()
+                    }
+                    onUserNameUpdated: {
+                        loginOption.text = "Logged in as " + name
+                    }
+                }
+            }
+        }
     }
 }

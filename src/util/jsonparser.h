@@ -22,6 +22,7 @@ public:
     static QList<Channel*> parseStreams(const QByteArray&);
     static QList<Game*> parseGames(const QByteArray&);
     static QList<Channel*> parseChannels(const QByteArray&);
+    static QList<Channel*> parseFavourites(const QByteArray&);
     static QList<Channel*> parseFeatured(const QByteArray&);
     static QList<Vod *> parseVods(const QByteArray&);
     static Game* parseGame(const QJsonObject&);
@@ -32,6 +33,8 @@ public:
     static Vod* parseVod(const QJsonObject&);
     static QString parseChannelStreamExtractionInfo(const QByteArray&);
     static QString parseVodExtractionInfo(const QByteArray&);
+    static QString parseUserName(const QByteArray&);
+    static int parseTotal(const QByteArray&);
 };
 
 #endif // JSONPARSER_H

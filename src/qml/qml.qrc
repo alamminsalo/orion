@@ -40,5 +40,9 @@
         <file>components/SeekBar.qml</file>
         <file>components/VodGrid.qml</file>
         <file>util.js</file>
+        <file>WebView.qml</file>
+        <file>components/GradientBottom.qml</file>
+        <file>components/BasicButton.qml</file>
+        <file>components/OptionEntry.qml</file>
     </qresource>
 </RCC>

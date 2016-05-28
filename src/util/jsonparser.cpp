@@ -231,7 +231,6 @@ QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
 {
     QList<Channel*> channels;
 
-
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
@@ -240,6 +239,24 @@ QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
         QJsonArray arr = json["channels"].toArray();
         foreach (const QJsonValue &item, arr){
             channels.append(JsonParser::parseChannel(item.toObject()));
+        }
+    }
+
+    return channels;
+}
+
+QList<Channel *> JsonParser::parseFavourites(const QByteArray &data)
+{
+    QList<Channel*> channels;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+
+        QJsonArray arr = json["follows"].toArray();
+        foreach (const QJsonValue &item, arr){
+            channels.append(JsonParser::parseChannel(item.toObject()["channel"].toObject()));
         }
     }
 
@@ -352,4 +369,34 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
     }
 
     return url;
+}
+
+QString JsonParser::parseUserName(const QByteArray &data)
+{
+    QString displayName;
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+        if (!json["name"].isNull())
+            displayName = json["name"].toString();
+    }
+
+    return displayName;
+}
+
+int JsonParser::parseTotal(const QByteArray &data)
+{
+    int total = 0;
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data,&error);
+
+    if (error.error == QJsonParseError::NoError){
+        QJsonObject json = doc.object();
+        if (!json["_total"].isNull())
+            total = json["_total"].toInt();
+    }
+
+    return total;
 }

@@ -21,33 +21,39 @@ Rectangle {
         playerView.visible = false
         settingsView.visible = false
         vodsView.visible = false
+        webView.visible = false
 
         switch (selection){
 
         //Search
         case 0:
             searchView.visible = true
+            gradient.parent = searchView
             searchView.focusInput()
             break
 
         //Featured
         case 1:
             featuredView.visible = true
+            gradient.parent = featuredView
             break
 
         //Fav
         case 2:
             favouritesView.visible = true
+            gradient.parent = favouritesView
             break
 
         //Games
         case 3:
             gamesView.visible = true
+            gradient.parent = gamesView
             break
 
         //Vods
         case 4:
             vodsView.visible = true
+            gradient.parent = vodsView
             break
 
         //Player
@@ -58,6 +64,10 @@ Rectangle {
         //Settings
         case 6:
             settingsView.visible = true
+            break
+
+        case 7:
+            webView.visible = true
             break
         }
     }
@@ -97,24 +107,15 @@ Rectangle {
         visible: false
     }
 
-
-
-    Rectangle {
-        id: _gradient
-        visible: !playerView.visible
-        height: root.height * .33
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "transparent" }
-            GradientStop { position: 1.0; color: "#111111" }
-        }
-
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
+    WebView{
+        id: webView
+        visible: false
     }
 
-    onHeightChanged: _gradient.height = height * .33
+    //The gradient that is applied to each view
+    GradientBottom {
+        id: gradient
+        parent: searchView
+    }
 
 }

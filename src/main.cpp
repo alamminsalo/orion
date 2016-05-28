@@ -17,6 +17,7 @@
 #include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
+#include <QtWebEngine/QtWebEngine>
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +26,9 @@ int main(int argc, char *argv[])
     //qputenv("QT_DEVICE_PIXEL_RATIO",QByteArray("auto"));
 
     CustomApp app(argc, argv);
+
+    //Init webview
+    QtWebEngine::initialize();
 
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
@@ -81,6 +85,7 @@ int main(int argc, char *argv[])
 
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
+    rootContext->setContextProperty("netman", netman);
     rootContext->setContextProperty("g_cman", cman);
     rootContext->setContextProperty("g_guard", &guard);
     rootContext->setContextProperty("g_powerman", power);

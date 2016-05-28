@@ -498,7 +498,7 @@ Item {
         id: spinner
         visible: false
         anchors.centerIn: parent
-        iconSize: 70
+        iconSize: dp(70)
     }
 
 

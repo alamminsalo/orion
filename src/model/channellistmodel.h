@@ -30,6 +30,7 @@ public:
     void removeChannel(Channel*);
     Channel* find(const QString&);
     Channel* find(const quint32&);
+    void clearView();
     void clear();
 
     enum Roles {

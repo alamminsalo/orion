@@ -266,6 +266,54 @@ void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
     connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
 }
 
+void NetworkManager::getUser(const QString &access_token)
+{
+    QString url = QString(KRAKEN_API) + "/user";
+    QString auth = "OAuth " + access_token;
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(userReply()));
+}
+
+void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset, quint32 limit)
+{
+    QString url = QString(KRAKEN_API) + "/users/" + user_name + "/follows/channels"
+            + QString("?offset=%1").arg(offset)
+            + QString("&limit=%1").arg(limit);
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(favouritesReply()));
+}
+
+void NetworkManager::editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add)
+{
+    QString url = QString(KRAKEN_API) + "/users/" + user
+            + "/follows/channels/" + channel;
+
+    QString auth = "OAuth " + access_token;
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = 0;
+
+    if (add)
+        reply = operation->put(request, QByteArray());
+    else
+        reply = operation->deleteResource(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(editUserFavouritesReply()));
+}
+
 QNetworkAccessManager *NetworkManager::getManager() const
 {
     return operation;
@@ -438,6 +486,53 @@ void NetworkManager::broadcastsReply()
     QByteArray data = reply->readAll();
 
     emit broadcastsOperationFinished(JsonParser::parseVods(data));
+
+    reply->deleteLater();
+}
+
+void NetworkManager::favouritesReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+
+    emit favouritesReplyFinished(JsonParser::parseFavourites(data));
+
+    reply->deleteLater();
+}
+
+void NetworkManager::editUserFavouritesReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+
+    //Nothing to do
+    emit userEditFollowsOperationFinished();
+
+    reply->deleteLater();
+}
+
+void NetworkManager::userReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->error() != QNetworkReply::NoError){
+        qDebug() << reply->errorString();
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+
+    emit userNameOperationFinished(JsonParser::parseUserName(data));
 
     reply->deleteLater();
 }
