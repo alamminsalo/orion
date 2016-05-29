@@ -17,7 +17,7 @@
 #include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
-#include <QNetworkCookieJar>
+#include <QtWebEngine>
 
 int main(int argc, char *argv[])
 {
@@ -34,15 +34,11 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    //Init engine
     QQmlApplicationEngine engine;
-    engine.networkAccessManager()->cookieJar()->deleteLater();
-    engine.networkAccessManager()->setCookieJar(new QNetworkCookieJar());
 
-    QNetworkCookieJar *jar = engine.networkAccessManager()->cookieJar();
-
-//    for(int i=0; i < engine.){
-//        qDebug() << c->name() << "," << c->value();
-//    }
+    //Init webengine
+    QtWebEngine::initialize();
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
     QApplication::setFont(QFont("qrc:/fonts/DroidSans.ttf"));
@@ -102,7 +98,6 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_vodmgr", vod);
     rootContext->setContextProperty("vodsModel", vod->getModel());
 
-    std::setlocale(LC_NUMERIC, "C");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
 
     engine.load(QUrl("qrc:/main.qml"));

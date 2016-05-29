@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webkit
+QT     += gui opengl qml quick network widgets webengine
 
 TARGET = orion
 
@@ -28,7 +28,8 @@ SOURCES += src/main.cpp\
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
-    src/notification/notificationmanager.cpp
+    src/notification/notificationmanager.cpp \
+    src/player/mpvrenderer.cpp
 
 
 HEADERS  += src/model/channel.h \

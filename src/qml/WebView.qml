@@ -1,5 +1,5 @@
 import QtQuick 2.0
-import QtWebKit 3.0
+import QtWebEngine 1.1
 import "components"
 
 Item {
@@ -24,7 +24,7 @@ Item {
         netman.clearCookies()
     }
 
-    WebView {
+    WebEngineView {
         id: web
         anchors.fill: parent
 

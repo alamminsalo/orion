@@ -95,11 +95,6 @@ Rectangle {
         visible: false
     }
 
-    PlayerView{
-        id: playerView
-        visible: false
-    }
-
     OptionsView{
         id: settingsView
         visible: false
@@ -107,6 +102,11 @@ Rectangle {
 
     WebView{
         id: webView
+        visible: false
+    }
+
+    PlayerView{
+        id: playerView
         visible: false
     }
 

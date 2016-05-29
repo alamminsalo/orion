@@ -4,7 +4,6 @@
 #include <QtGlobal>
 #include <QDateTime>
 
-
 static void wakeup(void *ctx)
 {
     MpvObject *mpvhandler = (MpvObject*)ctx;
@@ -14,6 +13,8 @@ static void wakeup(void *ctx)
 MpvObject::MpvObject(QQuickItem * parent)
     : QQuickFramebufferObject(parent), mpv_gl(0)
 {
+    std::setlocale(LC_NUMERIC, "C");
+
     mpv = mpv::qt::Handle::FromRawHandle(mpv_create());
     if (!mpv)
         throw std::runtime_error("could not create mpv context");
@@ -29,7 +30,7 @@ MpvObject::MpvObject(QQuickItem * parent)
     //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
     // Request hw decoding, just for testing.
-    mpv::qt::set_option_variant(mpv, "hwdec", "auto");
+    mpv::qt::set_option_variant(mpv, "hwdec-preload", "auto");
 
     //Cache
     mpv::qt::set_option_variant(mpv, "cache", 8192);
@@ -101,7 +102,6 @@ QQuickFramebufferObject::Renderer *MpvObject::createRenderer() const
 {
     window()->setPersistentOpenGLContext(true);
     window()->setPersistentSceneGraph(true);
-
     return new MpvRenderer(this);
 }
 

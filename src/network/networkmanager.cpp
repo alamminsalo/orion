@@ -4,6 +4,7 @@
 #include "../util/m3u8parser.h"
 #include <QNetworkConfiguration>
 #include <QEventLoop>
+#include <QtWebEngine>
 
 NetworkManager::NetworkManager(QNetworkAccessManager *man)
 {
@@ -320,12 +321,7 @@ QNetworkAccessManager *NetworkManager::getManager() const
 }
 
 void NetworkManager::clearCookies() {
-    QNetworkCookieJar *jar = operation->cookieJar();
-    operation->clearAccessCache();
-    //operation->cache()->clear();
-    foreach(QNetworkCookie c, jar->cookiesForUrl(QUrl(KRAKEN_API))) {
-        jar->deleteCookie(c);
-    }
+    QQuickWebEngineProfile::defaultProfile()->cookieStore()->deleteAllCookies();
 }
 
 void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
