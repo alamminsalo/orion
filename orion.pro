@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webengine multimedia
+QT     += gui opengl qml quick network widgets webengine av
 
 TARGET = orion
 

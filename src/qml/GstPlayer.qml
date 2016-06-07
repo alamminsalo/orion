@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtMultimedia 5.5
+import QtAV 1.6
 import "components"
 
 import "styles.js" as Styles
@@ -485,14 +485,6 @@ Item {
         font.pixelSize: Styles.titleFont.bigger
         color: Styles.iconColor
         anchors.centerIn: parent
-        ////renderType: Text.NativeRendering
-    }
-
-    SpinnerIcon {
-        id: spinner
-        visible: renderer.bufferProgress < 1.0
-        anchors.centerIn: parent
-        iconSize: dp(70)
     }
 
 
