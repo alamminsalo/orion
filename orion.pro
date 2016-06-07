@@ -4,12 +4,12 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webengine
+QT     += gui opengl qml quick network widgets webengine multimedia
 
 TARGET = orion
 
-DEFINES += APP_NAME=\\\"Orion\\\" \
-        #DEBUG_LIBMPV
+DEFINES += APP_NAME=\\\"Orion\\\"
+
 
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
@@ -20,7 +20,6 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/player/mpvobject.cpp \
     src/power/power.cpp \
     src/systray.cpp \
     src/util/runguard.cpp \
@@ -29,7 +28,6 @@ SOURCES += src/main.cpp\
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
     src/notification/notificationmanager.cpp \
-    src/player/mpvrenderer.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -41,8 +39,6 @@ HEADERS  += src/model/channel.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
     src/util/m3u8parser.h \
-    src/player/mpvobject.h \
-    src/player/mpvrenderer.h \
     src/power/power.h \
     src/systray.h \
     src/util/runguard.h \
@@ -51,20 +47,38 @@ HEADERS  += src/model/channel.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
     src/network/urls.h \
-    src/player/mpv/client.h \
-    src/player/mpv/opengl_cb.h \
-    src/player/mpv/qthelper.hpp \
     src/notification/notificationmanager.h
+
+#CONFIG += MPV
+
+#If mpv player is defined as backend for player
+MPV {
+    #DEFINES += DEBUG_LIBMPV
+    DEFINES += MPV_PLAYER
+    SOURCES +=  src/player/mpvrenderer.cpp \
+                src/player/mpvobject.cpp
+
+    HEADERS +=  src/player/mpv/client.h \
+                src/player/mpv/opengl_cb.h \
+                src/player/mpv/qthelper.hpp \
+                src/player/mpvobject.h \
+                src/player/mpvrenderer.h \
+
+    unix:!macx: LIBS += -lmpv
+    win32: LIBS += -L$${PWD}/libs/ -lmpv.dll
+    macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv.1.20.0
+}
 
 QMAKE_CXXFLAGS += -Wall -O2
 
 CONFIG += c++11
 
-DISTFILES += src/qml/icon/orion.svg
+DISTFILES += src/qml/icon/orion.svg \
+    src/qml/player.html
 
 unix:!macx: {
     QT += dbus
-    LIBS += -lmpv
+
     HEADERS += src/notification/notificationsender.h
     SOURCES +=  src/notification/notificationsender.cpp
 
@@ -102,7 +116,6 @@ defineTest(copyToDestdir) {
 }
 
 win32: {
-    LIBS += -L$${PWD}/libs/ -lmpv.dll
     RC_ICONS = distfiles/orion.ico
 
     EXTRA_BINFILES = $$PWD/libs/mpv-1.dll \
@@ -133,8 +146,6 @@ macx: {
 
     INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
-
-    LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv.1.20.0
 }
 
 OBJECTIVE_SOURCES += \

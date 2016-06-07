@@ -37,6 +37,10 @@ Item {
             }
         }
 
+        onFullScreenRequested: {
+            console.log("OK")
+        }
+
         onUrlChanged: {
             console.log(url)
 

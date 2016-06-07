@@ -6,18 +6,23 @@
 #include <QScreen>
 #include <QMainWindow>
 #include <QQmlContext>
+#include <QString>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
+#include <QtWebEngine>
+#include <QResource>
 #include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "network/networkmanager.h"
 #include "power/power.h"
-#include "player/mpvrenderer.h"
 #include "systray.h"
 #include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
-#include <QtWebEngine>
+
+#ifdef MPV_PLAYER
+    #include "player/mpvrenderer.h"
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -98,7 +103,13 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_vodmgr", vod);
     rootContext->setContextProperty("vodsModel", vod->getModel());
 
+#ifdef MPV_PLAYER
+    rootContext->setContextProperty("backend_mpv", true);
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
+
+#else
+    rootContext->setContextProperty("backend_mpv", false);
+#endif
 
     engine.load(QUrl("qrc:/main.qml"));
 

@@ -44,5 +44,8 @@
         <file>components/GradientBottom.qml</file>
         <file>components/BasicButton.qml</file>
         <file>components/OptionEntry.qml</file>
+        <file>WebPlayer.qml</file>
+        <file>player.html</file>
+        <file>GstPlayer.qml</file>
     </qresource>
 </RCC>

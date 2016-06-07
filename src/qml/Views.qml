@@ -5,6 +5,7 @@ import "styles.js" as Styles
 
 Rectangle {
     property int selection
+    property alias playerView: loader.item
     id: root
 
     signal requestSelectionChange(int index)
@@ -105,11 +106,15 @@ Rectangle {
         visible: false
     }
 
-    PlayerView{
-        id: playerView
-        visible: false
+    Loader {
+        id: loader
+        //visible: false
+        source: backend_mpv ? "PlayerView.qml" : "GstPlayer.qml"
+        onLoaded: {
+            item.parent = root
+            item.visible = false
+        }
     }
-
 
     //The gradient that is applied to each view
     GradientBottom {

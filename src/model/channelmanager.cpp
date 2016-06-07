@@ -102,6 +102,10 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
         channel->setOnline(online);
         channel->setViewers(viewers);
 
+        if (isAccessTokenAvailable() && !user_name.isEmpty()) {
+            netman->editUserFavourite(access_token, user_name, channel->getServiceName(), true);
+        }
+
         favouritesModel->addChannel(channel);
 
         emit addedChannel(channel->getId());
