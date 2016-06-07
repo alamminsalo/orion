@@ -5,7 +5,7 @@
 #include <QtNetwork/QNetworkAccessManager>
 #include <QNetworkConfigurationManager>
 #include <QNetworkInterface>
-#include <QtWebKitWidgets/QtWebKitWidgets>
+//#include <QtWebKitWidgets/QtWebKitWidgets>
 #include <QUrl>
 #include <QtNetwork/QNetworkReply>
 #include <QJsonDocument>

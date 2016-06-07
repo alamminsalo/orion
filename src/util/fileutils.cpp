@@ -39,10 +39,10 @@ bool util::fileExists(const char* file){
     return (stat(file, &buf) != -1);
 }
 
-bool util::folderExists(const char* file){
-	struct stat buf;
-    return (stat(file, &buf) != -1 && S_ISDIR(buf.st_mode));
-}
+//bool util::folderExists(const char* file){
+//	struct stat buf;
+//    return (stat(file, &buf) != -1 && S_ISDIR(buf.st_mode));
+//}
 
 
 bool util::writeBinaryFile(const QString &filename, const QByteArray &data)

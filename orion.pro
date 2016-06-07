@@ -72,6 +72,7 @@ MPV {
 QMAKE_CXXFLAGS += -Wall -O2
 
 CONFIG += c++11
+CONFIG += console
 
 DISTFILES += src/qml/icon/orion.svg \
     src/qml/player.html
@@ -118,10 +119,7 @@ defineTest(copyToDestdir) {
 win32: {
     RC_ICONS = distfiles/orion.ico
 
-    EXTRA_BINFILES = $$PWD/libs/mpv-1.dll \
-                    $$PWD/distfiles/qt.conf \
-                    $$PWD/libs/libssl32.dll \
-                    $$PWD/libs/ssleay32.dll \
+    EXTRA_BINFILES = $$PWD/libs/ssleay32.dll \
                     $$PWD/libs/libeay32.dll
 
     EXTRA_BINFILES_WIN = $${EXTRA_BINFILES}

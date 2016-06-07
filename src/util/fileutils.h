@@ -18,7 +18,7 @@ namespace util{
     bool writeBinaryFile(const QString&, const QByteArray&);
 	void writeImage(const char*,FILE*);
 	bool fileExists(const char*);
-	bool folderExists(const char*);
+//	bool folderExists(const char*);
 }
 
 #endif
