@@ -72,7 +72,7 @@ MPV {
 QMAKE_CXXFLAGS += -Wall -O2
 
 CONFIG += c++11
-CONFIG += console
+#CONFIG += console
 
 DISTFILES += src/qml/icon/orion.svg \
     src/qml/player.html
