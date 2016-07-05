@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webengine av
+QT     += gui opengl qml quick network widgets webengine
 
 TARGET = orion
 
@@ -49,7 +49,7 @@ HEADERS  += src/model/channel.h \
     src/network/urls.h \
     src/notification/notificationmanager.h
 
-#CONFIG += MPV
+CONFIG += MPV
 
 #If mpv player is defined as backend for player
 MPV {
@@ -66,7 +66,9 @@ MPV {
 
     unix:!macx: LIBS += -lmpv
     win32: LIBS += -L$${PWD}/libs/ -lmpv.dll
-    macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv.1.20.0
+    macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv
+} else {
+    QT += av
 }
 
 QMAKE_CXXFLAGS += -Wall -O2

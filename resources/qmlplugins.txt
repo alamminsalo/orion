@@ -1,0 +1,1 @@
+Enginio,Qt,QtQml,QtQuick,QtQuick.2,QtWebChannel,QtWebEngine,QtWebView

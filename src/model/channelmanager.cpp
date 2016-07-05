@@ -6,6 +6,7 @@
 #include <QThread>
 #include <QJsonArray>
 #include <QApplication>
+#include <QStandardPaths>
 
 
 ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
@@ -63,7 +64,13 @@ ChannelManager::~ChannelManager(){
 }
 
 QString appPath(){
-    return qApp->applicationDirPath() + "/" + DATA_FILE;
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
+    if (!dir.mkpath("./orion")) {
+        qDebug() << "Error creating data dir!";
+    }
+    dir.cd("./orion");
+
+    return dir.absoluteFilePath(DATA_FILE);
 }
 
 QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
@@ -207,6 +214,7 @@ void ChannelManager::checkResources()
         QFile file(appPath());
         file.open(QIODevice::ReadWrite);
         file.write("{}");
+        qDebug() << "Created data file!";
     }
 }
 

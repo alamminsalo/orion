@@ -321,7 +321,7 @@ QNetworkAccessManager *NetworkManager::getManager() const
 }
 
 void NetworkManager::clearCookies() {
-    QQuickWebEngineProfile::defaultProfile()->cookieStore()->deleteAllCookies();
+    //QQuickWebEngineProfile::defaultProfile()->cookieStore()->deleteAllCookies();
 }
 
 void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
