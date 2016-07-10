@@ -24,6 +24,9 @@ class ChannelManager: public QObject
 {
     Q_OBJECT
 
+    //Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
+    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
+
 protected:
     NetworkManager* netman;
 
@@ -87,11 +90,11 @@ public:
     Q_INVOKABLE void getFollowedChannels(const quint32&, const quint32&);
     Q_INVOKABLE void searchGames(QString, const quint32&, const quint32&);
 
+    Q_INVOKABLE QString username() const;
+    Q_INVOKABLE QString accessToken() const;
+
     Q_INVOKABLE void setAccessToken(const QString &arg);
     Q_INVOKABLE bool isAccessTokenAvailable() { return access_token.length() > 0; }
-
-private:
-
 
 signals:
     void channelExists(Channel*);

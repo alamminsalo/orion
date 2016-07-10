@@ -10,7 +10,6 @@ TARGET = orion
 
 DEFINES += APP_NAME=\\\"Orion\\\"
 
-
 SOURCES += src/main.cpp\
     src/model/channelmanager.cpp \
     src/model/channel.cpp \
@@ -49,9 +48,12 @@ HEADERS  += src/model/channel.h \
     src/network/urls.h \
     src/notification/notificationmanager.h
 
-CONFIG += MPV
+#Communi IRC plugin
+CONFIG += communi
+COMMUNI += core model util
 
 #If mpv player is defined as backend for player
+CONFIG += MPV
 MPV {
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER

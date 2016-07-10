@@ -4,7 +4,6 @@ import QtQuick.Controls 1.4
 import "styles.js" as Styles
 import "style"
 
-
 ApplicationWindow {
     id: root
     visible: true

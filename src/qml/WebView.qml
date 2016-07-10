@@ -10,7 +10,7 @@ Item {
     function requestAccessToken() {
         if (!requestInProgress) {
             var clientId = netman.getClientId()
-            var scope = "user_read%20user_subscriptions%20user_follows_edit"
+            var scope = "user_read%20user_subscriptions%20user_follows_edit%20chat_login"
             web.url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + clientId
                     + "&redirect_uri=http://localhost&scope=" + scope
                     + "&force_verify=true"

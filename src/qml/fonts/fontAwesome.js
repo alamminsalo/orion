@@ -24,5 +24,6 @@ var icons = {
     "video":        "\uf03d",
     "expand":       "\uf065",
     "compress":     "\uf066",
-    "crop":         "\uf125"
+    "crop":         "\uf125",
+    "chat":         "\uf086"
 }

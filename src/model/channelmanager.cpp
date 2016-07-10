@@ -158,6 +158,16 @@ void ChannelManager::searchGames(QString q, const quint32 &offset, const quint32
     emit gamesSearchStarted();
 }
 
+QString ChannelManager::username() const
+{
+    return user_name;
+}
+
+QString ChannelManager::accessToken() const
+{
+    return access_token;
+}
+
 void ChannelManager::setAccessToken(const QString &arg)
 {
     access_token = arg;

@@ -47,5 +47,8 @@
         <file>WebPlayer.qml</file>
         <file>player.html</file>
         <file>GstPlayer.qml</file>
+        <file>irc/Chat.qml</file>
+        <file>irc/ChatView.qml</file>
+        <file>irc/ChatMessage.qml</file>
     </qresource>
 </RCC>
