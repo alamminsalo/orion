@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtAV 1.6
+import QtAV 1.7
 import "components"
 import "irc"
 import "styles.js" as Styles
@@ -25,6 +25,8 @@ Item {
 
     function loadAndPlay(){
         setWatchingTitle()
+
+        chatview.joinChannel(currentChannel.name)
 
         var position = !isVod ? 0 : seekBar.position
 
@@ -174,7 +176,7 @@ Item {
         PlayerHeader {
             text: "Currently watching: N/A"
             id: header
-            z: renderer.z + 1
+            z: output.z + 1
 
             MouseArea {
                 id: mAreaHeader
@@ -477,7 +479,7 @@ Item {
 
         Rectangle {
             color: "black"
-            anchors.fill: root
+            anchors.fill: parent
 
             VideoOutput {
                 id: output
@@ -494,7 +496,8 @@ Item {
                 onClicked: {
                     if (sourcesBox.open){
                         sourcesBox.close()
-                    }                }
+                    }
+                }
 
                 onDoubleClicked: {
                     g_fullscreen = !g_fullscreen

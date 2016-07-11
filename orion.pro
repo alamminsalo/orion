@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webengine
+QT     += gui opengl qml quick network widgets webengine av
 
 TARGET = orion
 
@@ -53,7 +53,7 @@ CONFIG += communi
 COMMUNI += core
 
 #If mpv player is defined as backend for player
-CONFIG += MPV
+#CONFIG += MPV
 MPV {
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
@@ -140,7 +140,7 @@ win32: {
 
 macx: {
     ICON = $$PWD/distfiles/orion.icns
-    LIBS += -framework Foundation
+    LIBS += -framework Foundation -framework CoreServices
     LIBS += -framework AppKit
 
     HEADERS += src/notification/notificationsender.h
