@@ -26,8 +26,6 @@ Item {
     function loadAndPlay(){
         setWatchingTitle()
 
-        chatview.joinChannel(currentChannel.name)
-
         var position = !isVod ? 0 : seekBar.position
 
         //console.log(position)
@@ -96,6 +94,8 @@ Item {
         spinner.visible = true
 
         setWatchingTitle()
+
+        chatview.joinChannel(currentChannel.name)
 
         requestSelectionChange(5)
     }
