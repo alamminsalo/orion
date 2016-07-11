@@ -128,7 +128,6 @@ Item {
         }
 
         onMessageReceived: {
-            console.log("Message received: " + message.toData())
 
             if (message.command === "PING") {
                 //Reply to ping request

@@ -139,6 +139,7 @@ win32: {
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
 
 macx: {
+    ICON = $$PWD/distfiles/orion.icns
     LIBS += -framework Foundation
     LIBS += -framework AppKit
 

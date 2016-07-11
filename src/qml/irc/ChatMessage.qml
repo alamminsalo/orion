@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import "../styles.js" as Styles
 
-Rectangle {
+Item {
     id: root
     property string user
     property string msg
@@ -11,8 +11,6 @@ Rectangle {
         right: parent.right
     }
     height: _text.contentHeight + width * 0.04
-
-    color: Styles.highlight
 
     Component.onCompleted: {
         _text.text = "<b>%1</b>: %2".arg(user).arg(msg)
