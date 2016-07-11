@@ -14,11 +14,3 @@ for FRAMEWORK in $FRAMEWORKS; do
 	$DIR/Contents/MacOS/orion
 done
 
-#echo "Additional libs..."
-#install_name_tool -id @executable_path/../Frameworks/QtAV.framework/Versions/1/QtAV \
-#$DIR/Contents/Frameworks/QtAV.framework/Versions/1/QtAV
-#install_name_tool -change /Users/antti/Qt/5.5/clang_64/lib/QtAV.framework/Versions/1/QtAV \
-#@executable_path/../Frameworks/QtAV.framework/Versions/1/QtAV \
-#$DIR/Contents/MacOS/orion
-
-
