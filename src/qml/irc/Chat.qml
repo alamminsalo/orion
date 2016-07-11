@@ -4,11 +4,12 @@ import Communi 3.0
 Item {
     id: root
 
-    property int hardlimit: 10          //Leave space for ping messages
-    property var sentMessageTimes: []   //Array holding timestamps for sent out messages
-    property var messageQueue: []       //Outgoing msg queue
+    property int hardlimit: 20          //Leave space for ping messages
+    property var sentCommandTimes: []   //Array holding timestamps for sent out messages
+    property var commandQueue: []       //Outgoing msg queue
 
     signal messageReceived(string user, string message)
+    signal clear()
 
     property string accesstoken: g_cman.accesstoken
     onAccesstokenChanged: {
@@ -35,35 +36,46 @@ Item {
     function joinChannel(channelName) {
         leaveChannel()
 
-        root.channel = channelName
-        _queueMessage("JOIN #%1".arg(root.channel))
-
-        console.log("Joining channel " + channelName)
+        if (channelName) {
+            root.channel = "#" + channelName
+            _queueCommand(cmd.createJoin(root.channel))
+        }
     }
 
     function leaveChannel() {
         //Leaves current channel
         if (root.channel) {
-            _queueMessage("PART #%1".arg(root.channel))
+            _queueCommand(cmd.createPart(root.channel))
         }
         root.channel = undefined
     }
 
     function sendChatMessage(message) {
         if (root.channel) {
-            _queueMessage("PRIVMSG #%1 :%2".arg(root.channel).arg(message))
+            _queueCommand(cmd.createMessage(root.channel,message))
         }
 
         else console.log("Not currently in a channel")
     }
 
-    function _sendMessage(message) {
-        conn.sendRaw(message)
-        sentMessageTimes.push(Date.now())
+    function _sendCommand(command) {
+        conn.sendCommand(command)
+        sentCommandTimes.push(Date.now())
+
+        //Echo message back to local chat if needed
+        var message = command.toMessage(conn.nickName, conn)
+
+        if (message.command === "JOIN") {
+            root.clear()
+            root.messageReceived("Joined channel", root.channel)
+        }
+
+        else if (message.command === "PRIVMSG")
+            root.messageReceived(message.nick, message.parameters[1])
     }
 
-    function _queueMessage(message) {
-        messageQueue.push(message)
+    function _queueCommand(message) {
+        commandQueue.push(message)
     }
 
     function _handleQueue() {
@@ -71,26 +83,27 @@ Item {
         var time = Date.now()
 
         var i = 0;
-        while (i < sentMessageTimes.length && time - sentMessageTimes[i] < 30000) {
+        while (i < sentCommandTimes.length && time - sentCommandTimes[i] < 30000) {
             i++
         }
         if (i > 0) {
-            sentMessageTimes.splice(0, i)
+            sentCommandTimes.splice(0, i)
         }
 
         //Send messages from queue
-        while (messageQueue.length > 0 && sentMessageTimes.length < hardlimit) {
-            _sendMessage(messageQueue.splice(0,1))
+        while (commandQueue.length > 0 && sentCommandTimes.length < hardlimit) {
+            _sendCommand(commandQueue.splice(0,1)[0])
         }
+    }
+
+    IrcCommand {
+        id: cmd
     }
 
     IrcConnection {
         id: conn
         host: "irc.chat.twitch.tv"
         port:  6667
-        //enabled: false
-        //password: "oauth:" + accesstoken
-        //userName: username
         nickName: userName
         realName: userName
 
@@ -102,24 +115,34 @@ Item {
             //Errors
         }
 
+        onDisconnected: {
+            console.log("Disconnected from channel.")
+        }
+
         function reconnect() {
             close()
-            console.log(userName, password)
             if (userName && password) {
-                console.log("Connecting as " + userName + ":" + password + "...")
+                //console.log("Connecting as " + userName + ":" + password + "...")
                 open()
             }
         }
 
         onMessageReceived: {
-            //console.log(message.toData())
+            console.log("Message received: " + message.toData())
 
             if (message.command === "PING") {
-                _sendMessage("PONG :tmi.twitch.tv")  //Reply to ping request instantly
+                //Reply to ping request
+                _queueCommand(cmd.createPong("tmi.twitch.tv"))
             }
 
             else if (message.command === "PRIVMSG") {
-                root.messageReceived(message.ident, message.parameters[1])  //Emit messageReceived signal
+                //Emit messageReceived signal
+                root.messageReceived(message.nick, message.parameters[1])
+            }
+
+            else {
+                //Something else
+                console.log("Message received: " + message.toData())
             }
         }
     }

@@ -7,7 +7,7 @@ Rectangle {
     implicitHeight: dp(400)
     implicitWidth: dp(200)
 
-    color: Styles.bg
+    color: Styles.sidebarBg
 
     function joinChannel(channel) {
         chatModel.clear()
@@ -45,7 +45,7 @@ Rectangle {
             top: parent.top
             left: parent.left
             right: parent.right
-            bottom: inputArea.top
+            bottom: spacer.top
         }
 
         delegate: ChatMessage {
@@ -58,6 +58,17 @@ Rectangle {
     }
 
     Rectangle {
+        id: spacer
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: inputArea.top
+        }
+        height: dp(3)
+        color: Styles.border
+    }
+
+    Rectangle {
         id: inputArea
 
         height: dp(30)
@@ -66,6 +77,8 @@ Rectangle {
             left: parent.left
             right: parent.right
         }
+
+        color: Styles.bg
 
         MouseArea {
             cursorShape: Qt.IBeamCursor
@@ -80,6 +93,7 @@ Rectangle {
                     leftMargin: dp(5)
                     rightMargin: dp(5)
                 }
+                color: "#ffffff"
                 clip:true
                 selectionColor: Styles.purple
                 focus: true
@@ -109,6 +123,10 @@ Rectangle {
 
             if (_toend)
                 _toend = false
+        }
+
+        onClear: {
+            chatModel.clear()
         }
     }
 }

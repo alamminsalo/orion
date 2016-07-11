@@ -50,7 +50,7 @@ HEADERS  += src/model/channel.h \
 
 #Communi IRC plugin
 CONFIG += communi
-COMMUNI += core model util
+COMMUNI += core
 
 #If mpv player is defined as backend for player
 CONFIG += MPV
