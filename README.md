@@ -15,5 +15,7 @@ Features desktop notifications and integrated player
 
 ##Dependencies
 
-libmpv
+libmpv (not supported on windows) or QtAV
+
+libcommuni
 
