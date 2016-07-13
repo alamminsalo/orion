@@ -11,8 +11,6 @@ Features desktop notifications and integrated player
 
 ![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/2.png)
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/3.png)
-
 ##Dependencies
 
 libmpv (not supported on windows) or QtAV
