@@ -26,7 +26,7 @@ libcommuni
 ####Install needed libraries and software
 
 ```
-pacman -S git gcc qtcreator qt5-svg qt5-webengine qtav
+sudo pacman -S git gcc qtcreator qt5-svg qt5-webengine qtav
 ```
 
 ####Get libcommuni, build and install it:
