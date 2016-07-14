@@ -14,8 +14,8 @@ Item {
         if (clear) {
             gamesCount = 0
         }
-        g_cman.searchGames(query, gamesCount, 25);
-        gamesCount += 25
+        g_cman.searchGames(query, gamesCount, 100);
+        gamesCount += 100
     }
 
     Connections {

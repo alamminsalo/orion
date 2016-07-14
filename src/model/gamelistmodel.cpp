@@ -91,10 +91,10 @@ void GameListModel::removeGame(Game *game)
     }
 }
 
-Game *GameListModel::find(const QString &q)
+Game *GameListModel::find(const uint id)
 {
     foreach(Game *game, games){
-        if (game->getName() == q){
+        if (game->getId() == id){
             return game;
         }
     }

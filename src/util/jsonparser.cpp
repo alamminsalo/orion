@@ -129,6 +129,9 @@ Game* JsonParser::parseGame(const QJsonObject &json)
     if (json.contains("game") && !json["game"].isNull()){
         const QJsonObject gameObj = json["game"].toObject();
 
+        if (!gameObj["_id"].isNull())
+            game->setId(gameObj["_id"].toInt());
+
         if (!json["viewers"].isNull())
             game->setViewers(json["viewers"].toInt());
 
@@ -143,6 +146,9 @@ Game* JsonParser::parseGame(const QJsonObject &json)
     }
     //From games search
     else {
+        if (!json["_id"].isNull())
+            game->setId(json["_id"].toInt());
+
         if (!json["name"].isNull())
             game->setName(json["name"].toString());
 

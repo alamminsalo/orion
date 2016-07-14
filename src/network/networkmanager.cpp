@@ -365,7 +365,6 @@ void NetworkManager::gamesReply()
         return;
     }
     QByteArray data = reply->readAll();
-    //qDebug() << data;
 
     emit gamesOperationFinished(JsonParser::parseGames(data));
 

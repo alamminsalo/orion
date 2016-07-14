@@ -8,6 +8,7 @@ class Game : public QObject
 {
     Q_OBJECT
 
+    uint id;
     QString name;
     QString logo;
     QString preview;
@@ -29,6 +30,9 @@ public:
 
     QString getPreview() const;
     void setPreview(const QString &value);
+
+    uint getId() const;
+    void setId(const uint &value);
 
 signals:
     void updated();
