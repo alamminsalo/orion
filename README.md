@@ -53,3 +53,10 @@ If all goes well, orion/build directory should now contain a working binary name
 By running 'run.sh', a desktop entry is created for the menus also
 
 
+##Windows troubleshooting
+
+You need Visual C++ 2015-runtime installed. 
+
+Installer can be found in the application's install directory (I'll make it install automatically in the next version)
+
+
