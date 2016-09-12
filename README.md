@@ -3,7 +3,13 @@
 
 QML/C++-written desktop client for Twitch.tv
 
-Features desktop notifications and integrated player
+Features: 
+
+* Login by twitch credentials
+* Desktop notifications
+* Integrated player (mpv or qtav backend)
+* Chat support
+* Support for live streams and vods
 
 ##Screencaptures
 
