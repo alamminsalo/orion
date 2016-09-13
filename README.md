@@ -21,7 +21,7 @@ Features:
 
 `mpv` (default), `qtav` or `qt5-multimedia`
 
-libcommuni
+`libcommuni`
 
 
 
