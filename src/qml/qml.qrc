@@ -20,7 +20,9 @@
         <file>FeaturedView.qml</file>
         <file>fonts/font-awesome.css</file>
         <file>fonts/DroidSans.ttf</file>
-        <file>PlayerView.qml</file>
+        <file>MultimediaPlayerView.qml</file>
+        <file>QtAVPlayerView.qml</file>
+        <file>MpvPlayerView.qml</file>
         <file>components/ViewHeader.qml</file>
         <file>components/PlayerHeader.qml</file>
         <file>OptionsView.qml</file>
@@ -46,7 +48,6 @@
         <file>components/OptionEntry.qml</file>
         <file>WebPlayer.qml</file>
         <file>player.html</file>
-        <file>GstPlayer.qml</file>
         <file>irc/Chat.qml</file>
         <file>irc/ChatView.qml</file>
         <file>irc/ChatMessage.qml</file>

@@ -103,11 +103,14 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("vodsModel", vod->getModel());
 
 #ifdef MPV_PLAYER
-    rootContext->setContextProperty("backend_mpv", true);
+    rootContext->setContextProperty("player_backend", "mpv");
     qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
 
-#else
-    rootContext->setContextProperty("backend_mpv", false);
+#elif defined (QTAV_PLAYER)
+    rootContext->setContextProperty("player_backend", "qtav");
+
+#elif defined (MULTIMEDIA_PLAYER)
+    rootContext->setContextProperty("player_backend", "multimedia");
 #endif
 
     engine.load(QUrl("qrc:/main.qml"));

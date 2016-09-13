@@ -109,7 +109,19 @@ Rectangle {
     Loader {
         id: loader
         //visible: false
-        source: backend_mpv ? "PlayerView.qml" : "GstPlayer.qml"
+        source: { 
+		switch (player_backend) {
+		case "mpv":
+			return "MpvPlayerView.qml";
+
+		case "qtav":
+			return "QtAVPlayerView.qml";
+
+		case "multimedia":
+		default:
+			return "MultimediaPlayerView.qml";
+		}
+	}
         onLoaded: {
             item.parent = root
             item.visible = false

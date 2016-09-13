@@ -52,9 +52,10 @@ HEADERS  += src/model/channel.h \
 CONFIG += communi
 COMMUNI += core
 
-#If mpv player is defined as backend for player
-CONFIG += MPV
-MPV {
+#Backend for player
+CONFIG += BACKEND_MPV
+
+BACKEND_MPV {
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
     SOURCES +=  src/player/mpvrenderer.cpp \
@@ -69,8 +70,16 @@ MPV {
     unix:!macx: LIBS += -lmpv
     win32: LIBS += -L$${PWD}/libs/ -lmpv.dll
     macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv
-} else {
+} 
+
+BACKEND_QTAV {
     QT += av
+    DEFINES += QTAV_PLAYER
+}
+
+BACKEND_MULTIMEDIA {
+    QT += multimedia
+    DEFINES += MULTIMEDIA_PLAYER
 }
 
 QMAKE_CXXFLAGS += -Wall -O2
