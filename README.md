@@ -23,8 +23,6 @@ Features:
 
 * `libcommuni`
 
-
-
 ##Building on linux
 
 (Using arch linux examples, but can be applied to other distros as well)
@@ -35,7 +33,9 @@ Features:
 sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine mpv
 ```
 
-If using backend other than mpv, install those packages instead
+If using backend other than mpv, install those packages instead. Also change the line saying `CONFIG += BACKEND_MPV` in the .pro file to the backend you wish to use:
+
+`CONFIG += BACKEND_QTAV` or `CONFIG += BACKEND_MULTIMEDIA`, meaning qtav or qt multimedia, respectively
 
 ####Get libcommuni, build and install it:
 
