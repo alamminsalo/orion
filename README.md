@@ -19,7 +19,7 @@ Features:
 
 ##Dependencies
 
-libmpv (not supported on windows) or QtAV
+`mpv` (default), `qtav` or `qt5-multimedia`
 
 libcommuni
 
@@ -32,26 +32,10 @@ libcommuni
 ####Install needed libraries and software
 
 ```
-sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine
+sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine mpv
 ```
 
-####Mpv as backend
-
-```
-sudo pacman -S mpv
-```
-
-####QtAV as backend
-
-```
-sudo pacman -S qtav
-```
-
-####Qt Multimedia as backend
-
-```
-sudo pacman -S qt5-multimedia
-```
+If using backend other than mpv, install those packages instead
 
 ####Get libcommuni, build and install it:
 
