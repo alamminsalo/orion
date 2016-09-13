@@ -19,9 +19,9 @@ Features:
 
 ##Dependencies
 
-`mpv` (default), `qtav` or `qt5-multimedia`
+* `mpv` (default), `qtav` or `qt5-multimedia`
 
-`libcommuni`
+* `libcommuni`
 
 
 
