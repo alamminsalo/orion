@@ -32,7 +32,7 @@ libcommuni
 ####Install needed libraries and software
 
 ```
-sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine qtav
+sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine mpv
 ```
 
 ####Get libcommuni, build and install it:
