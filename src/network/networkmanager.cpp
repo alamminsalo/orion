@@ -11,27 +11,32 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man)
     operation = man;
 
     //Select interface
-    selectNetworkInterface();
+    connectionOK = false;
+    testNetworkInterface();
 
     //SSL errors handle (down the drain)
     connect(operation, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
 
     //Handshake
     operation->connectToHost(TWITCH_API);
+
+    //Set up offline poller
+    offlinePoller.setInterval(2000);
+    connect(&offlinePoller, SIGNAL(timeout()), this, SLOT(testNetworkInterface()));
 }
 
 NetworkManager::~NetworkManager()
 {
+    offlinePoller.stop();
     qDebug() << "Destroyer: NetworkManager";
     //operation->deleteLater();
 }
 
-void NetworkManager::selectNetworkInterface()
+void NetworkManager::testNetworkInterface()
 {
     //Chooses a working network interface from interfaces list, if default configuration doesn't work
 
     QNetworkConfigurationManager conf;
-    connectionOK = false;
     QString identifier;
 
     QEventLoop loop;
@@ -96,6 +101,11 @@ void NetworkManager::selectNetworkInterface()
 
         }
     }
+
+    if (!connectionOK) {
+        operation->setConfiguration(conf.defaultConfiguration());
+        offlinePoller.start();
+    }
 }
 
 void NetworkManager::testConnection()
@@ -115,9 +125,24 @@ void NetworkManager::testConnectionReply()
 //    if (reply->error() == QNetworkReply::NoError)
 //        qDebug() << "Got response: " << reply->readAll();
 
-    connectionOK = (reply->error() == QNetworkReply::NoError);
+    handleNetworkError(reply);
 
     emit finishedConnectionTest();
+}
+
+/**
+ * @brief NetworkManager::getStream
+ * Gets single stream status. Usable for polling a channel's stream
+ */
+void NetworkManager::getStream(const QString &channelName)
+{
+    QString url = KRAKEN_API + QString("/streams/%1").arg(channelName);
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(streamReply()));
 }
 
 void NetworkManager::getStreams(const QString &url)
@@ -170,22 +195,6 @@ void NetworkManager::searchGames(const QString &query)
     QNetworkReply *reply = operation->get(request);
 
     connect(reply, SIGNAL(finished()), this, SLOT(searchGamesReply()));
-}
-
-void NetworkManager::searchGamesReply()
-{
-
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
-
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
-        return;
-    }
-    QByteArray data = reply->readAll();
-
-    emit searchGamesOperationFinished(JsonParser::parseGames(data));
-
-    reply->deleteLater();
 }
 
 void NetworkManager::getFeaturedStreams()
@@ -288,6 +297,7 @@ void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset,
             + QString("&limit=%1").arg(limit);
     QNetworkRequest request;
     request.setUrl(QUrl(url));
+    request.setAttribute(QNetworkRequest::User, (int) (offset + limit));
 
     QNetworkReply *reply = operation->get(request);
 
@@ -336,17 +346,72 @@ void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
     connect(reply, SIGNAL(finished()), this, SLOT(m3u8Reply()));
 }
 
+bool NetworkManager::handleNetworkError(QNetworkReply *reply)
+{
+    if (reply->error() != QNetworkReply::NoError){
+
+        if (reply->error() >= 1 && reply->error() <= 199) {
+
+            if (connectionOK == true) {
+                connectionOK = false;
+                emit networkAccessChanged(false);
+            }
+
+            if (!offlinePoller.isActive())
+                offlinePoller.start();
+        }
+
+        qDebug() << reply->errorString();
+
+        return false;
+    }
+
+    if (!connectionOK) {
+        connectionOK = true;
+        emit networkAccessChanged(true);
+    }
+
+    if (offlinePoller.isActive())
+        offlinePoller.stop();
+
+    return true;
+}
+
 void NetworkManager::handleSslErrors(QNetworkReply *reply, QList<QSslError> errors)
 {
-    reply->ignoreSslErrors(errors);
+    foreach (QSslError e, errors) {
+        qDebug() << "Ssl error: " << e.errorString();
+    }
+
+    //reply->ignoreSslErrors(errors);
+}
+
+void NetworkManager::streamReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+
+    //qDebug() << data;
+
+    Channel *channel = JsonParser::parseStream(data);
+
+    emit streamGetOperationFinished(channel->getServiceName(), channel->isOnline());
+
+    channel->deleteLater();
+
+    reply->deleteLater();
 }
 
 void NetworkManager::allStreamsReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
     QByteArray data = reply->readAll();
@@ -356,12 +421,26 @@ void NetworkManager::allStreamsReply()
     reply->deleteLater();
 }
 
+void NetworkManager::searchGamesReply()
+{
+
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    emit searchGamesOperationFinished(JsonParser::parseGames(data));
+
+    reply->deleteLater();
+}
+
 void NetworkManager::gamesReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
     QByteArray data = reply->readAll();
@@ -375,8 +454,7 @@ void NetworkManager::gameStreamsReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
     QByteArray data = reply->readAll();
@@ -392,8 +470,7 @@ void NetworkManager::featuredStreamsReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
     QByteArray data = reply->readAll();
@@ -409,8 +486,7 @@ void NetworkManager::searchChannelsReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
     QByteArray data = reply->readAll();
@@ -426,8 +502,7 @@ void NetworkManager::streamExtractReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
 
@@ -457,8 +532,7 @@ void NetworkManager::m3u8Reply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
 
@@ -482,8 +556,7 @@ void NetworkManager::broadcastsReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
 
@@ -498,14 +571,15 @@ void NetworkManager::favouritesReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
 
     QByteArray data = reply->readAll();
 
-    emit favouritesReplyFinished(JsonParser::parseFavourites(data));
+    int offset = reply->request().attribute(QNetworkRequest::User).toInt();
+
+    emit favouritesReplyFinished(JsonParser::parseFavourites(data), offset);
 
     reply->deleteLater();
 }
@@ -514,8 +588,7 @@ void NetworkManager::editUserFavouritesReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
 
@@ -529,11 +602,9 @@ void NetworkManager::userReply()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
-    if (reply->error() != QNetworkReply::NoError){
-        qDebug() << reply->errorString();
+    if (!handleNetworkError(reply)) {
         return;
     }
-
     QByteArray data = reply->readAll();
 
     emit userNameOperationFinished(JsonParser::parseUserName(data));

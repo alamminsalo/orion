@@ -26,11 +26,6 @@ Power::~Power()
 void Power::setScreensaver(bool enabled)
 {
 
-    if (enabled)
-        qDebug() << "Enabled screensaver";
-    else
-        qDebug() << "Disabled screensaver";
-
 #ifdef Q_OS_LINUX
 
     if (!enabled) {

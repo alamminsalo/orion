@@ -39,6 +39,7 @@ class Channel: public QObject{
         Channel(const QString&, const QString&, const QString&, bool, time_t, const QString&, const QString&);
         Channel(const Channel&);
         ~Channel();
+        void updateWith(const Channel &other);
         const QJsonObject getJSON() const;
         void setName(const QString&);
         void setServiceName(const QString&);
@@ -48,15 +49,15 @@ class Channel: public QObject{
         const QString lastOnline();
 		void updateTime();
         qint64 getTime();
-        const QString getName();
+        const QString getName() const;
         const QString getServiceName();
         const QString getFullUri();
-        const QString getInfo();
+        const QString getInfo() const;
 		bool hasAlert();
 		void setOnline(const bool);
         bool isOnline();
 
-        const QString getLogourl();
+        const QString getLogourl() const;
         void setLogourl(const QString&);
 
         const QString getPreviewurl();

@@ -66,7 +66,6 @@ Item {
         var message = command.toMessage(conn.nickName, conn)
 
         if (message.command === "JOIN") {
-            root.clear()
             root.messageReceived("Joined channel", root.channel)
         }
 
@@ -109,6 +108,9 @@ Item {
 
         onConnected: {
             console.log("Connected to chat")
+            if (root.channel) {
+                _queueCommand(cmd.createJoin(root.channel))
+            }
         }
 
         onConnectedChanged: {

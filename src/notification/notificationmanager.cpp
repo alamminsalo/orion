@@ -10,7 +10,7 @@ NotificationManager::NotificationManager(QQmlApplicationEngine *engine, QNetwork
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(showNext()));
-    timer->setInterval(5000);
+    timer->setInterval(3000);
     timer->setSingleShot(true);
 
     this->engine = engine;

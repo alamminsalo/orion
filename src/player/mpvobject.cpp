@@ -30,10 +30,10 @@ MpvObject::MpvObject(QQuickItem * parent)
     //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
     // Request hw decoding, just for testing.
-    mpv::qt::set_option_variant(mpv, "hwdec-preload", "auto");
+    //mpv::qt::set_option_variant(mpv, "hwdec-preload", "auto");
 
     //Cache
-    mpv::qt::set_option_variant(mpv, "cache", 8192);
+    //mpv::qt::set_option_variant(mpv, "cache", 8192);
 
     if (mpv_initialize(mpv) < 0)
         throw std::runtime_error("could not initialize mpv context");

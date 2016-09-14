@@ -80,6 +80,10 @@ BACKEND_QTAV {
 BACKEND_MULTIMEDIA {
     QT += multimedia
     DEFINES += MULTIMEDIA_PLAYER
+    macx: {
+        LIBS += -framework AVFoundation
+        INCLUDEPATH += /System/Library/Frameworks/AVFoundation.framework/Versions/Current/Headers
+    }
 }
 
 QMAKE_CXXFLAGS += -Wall -O2

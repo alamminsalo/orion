@@ -11,6 +11,12 @@ Item{
         z: favourites.z + 1
     }
 
+    onVisibleChanged: {
+        if (visible) {
+            g_cman.getFollowedChannels()
+        }
+    }
+
     ChannelGrid {
         id: favourites
         tooltipEnabled: true

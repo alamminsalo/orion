@@ -16,26 +16,6 @@ Item {
         anchors.fill: parent
     }
 
-    Item {
-        anchors {
-            left: parent.left
-            top: parent.top
-            bottom: parent.bottom
-            margins: dp(20)
-        }
-        width: _text.width
-
-        Text {
-            id: _text
-            anchors.centerIn: parent
-            color: Styles.textColor
-            font.pixelSize: Styles.titleFont.bigger
-            text: root.text
-            z: root.z + 1
-            //renderType: Text.NativeRendering
-        }
-    }
-
     Behavior on height {
         NumberAnimation {
             duration: 200

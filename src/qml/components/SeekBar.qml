@@ -13,10 +13,10 @@ Item {
 
     function setPosition(position, duration){
 
-        if (root.duration != duration)
+        //if (root.duration != duration)
             root.duration = duration
 
-        if (root.position != position)
+        //if (root.position != position)
             root.position = position
 
 

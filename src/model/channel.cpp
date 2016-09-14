@@ -4,6 +4,17 @@ Channel::~Channel(){
     //qDebug() << "Destroyer: Channel";
 }
 
+void Channel::updateWith(const Channel &other)
+{
+    if (this->getId() == other.getId()) {
+        this->setName(other.getName());
+        this->setLogourl(other.getLogourl());
+        this->setInfo(other.getInfo());
+        this->setViewers(other.getViewers());
+        this->setGame(other.getGame());
+    }
+}
+
 quint32 Channel::getId() const
 {
     return id;
@@ -120,7 +131,7 @@ qint64 Channel::getTime(){
 	return timestamp;
 }
 
-const QString Channel::getName(){
+const QString Channel::getName() const{
 	return name;
 }
 
@@ -132,7 +143,7 @@ const QString Channel::getFullUri(){
     return "http://twitch.tv/" + serviceName;
 }
 
-const QString Channel::getInfo(){
+const QString Channel::getInfo() const{
 	return info;
 }
 
@@ -156,7 +167,7 @@ void Channel::setLogourl(const QString &uri){
     logouri = uri;
 }
 
-const QString Channel::getLogourl(){
+const QString Channel::getLogourl() const{
     return !logouri.isEmpty() ? logouri : DEFAULT_LOGO_URL;
 }
 

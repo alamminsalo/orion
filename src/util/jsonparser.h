@@ -27,9 +27,9 @@ public:
     static QList<Vod *> parseVods(const QByteArray&);
     static Game* parseGame(const QJsonObject&);
     static Channel* parseStream(const QByteArray&);
-    static Channel* parseStream(const QJsonObject&);
+    static Channel* parseStreamJson(const QJsonObject&);
     static Channel* parseChannel(const QByteArray&);
-    static Channel* parseChannel(const QJsonObject&);
+    static Channel* parseChannelJson(const QJsonObject&);
     static Vod* parseVod(const QJsonObject&);
     static QString parseChannelStreamExtractionInfo(const QByteArray&);
     static QString parseVodExtractionInfo(const QByteArray&);

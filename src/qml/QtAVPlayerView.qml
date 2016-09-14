@@ -454,61 +454,8 @@ Item {
             }
         }
 
-        MediaPlayer {
+        QtAVBackend {
             id: renderer
-
-            onStopped: {
-                header.text = "Playback stopped"
-                g_powerman.setScreensaver(true);
-            }
-
-            onPaused: {
-                header.text = "Paused"
-                g_powerman.setScreensaver(true);
-            }
-
-            onPlaying: {
-                setWatchingTitle()
-                g_powerman.setScreensaver(false);
-            }
-
-            Component.onCompleted: {
-                vol.initialize(100)
-            }
-        }
-
-        Rectangle {
-            color: "black"
-            anchors.fill: parent
-
-            VideoOutput {
-                id: output
-                anchors.fill: parent
-                source: renderer
-            }
-
-            MouseArea{
-                z: output.z + 1
-                anchors.fill: parent
-                hoverEnabled: true
-                propagateComposedEvents: false
-
-                onClicked: {
-                    if (sourcesBox.open){
-                        sourcesBox.close()
-                    }
-                }
-
-                onDoubleClicked: {
-                    g_fullscreen = !g_fullscreen
-                }
-
-                onPositionChanged: {
-                    header.show()
-                    footer.show()
-                    headerTimer.restart()
-                }
-            }
         }
 
         Text {
