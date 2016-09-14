@@ -1,5 +1,5 @@
 import QtQuick 2.5
-import QtAV 1.7
+import QtMultimedia 5.6
 import "components"
 import "irc"
 import "styles.js" as Styles
@@ -132,7 +132,7 @@ Item {
         color: "black"
         anchors.fill: parent
 
-        VideoOutput2 {
+        VideoOutput {
             id: output
             anchors.fill: parent
             source: renderer

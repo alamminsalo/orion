@@ -292,6 +292,10 @@ void NetworkManager::getUser(const QString &access_token)
 
 void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset, quint32 limit)
 {
+    if (user_name.isEmpty()) {
+        return;
+    }
+
     QString url = QString(KRAKEN_API) + "/users/" + user_name + "/follows/channels"
             + QString("?offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);

@@ -509,11 +509,12 @@ Item {
 
                 onValueChanged: {
                     var val
-                    if (Qt.platform === "linux")
-                        val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
+                    //if (Qt.platform === "linux")
+                    //val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
 
-                    else //Windows/Mac seems to handle this by itself
-                        val = Math.max(0, Math.min(100, value))
+                    //else
+                    //Windows/Mac/Linux seems to handle this by itself!
+                    val = Math.max(0, Math.min(100, value))
 
                     renderer.setVolume(val)
                 }
