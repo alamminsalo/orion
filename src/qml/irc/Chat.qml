@@ -59,9 +59,6 @@ Item {
     }
 
     function _sendCommand(command) {
-        if (!conn.username || !conn.password)
-            return
-
         conn.sendCommand(command)
         sentCommandTimes.push(Date.now())
 
@@ -126,7 +123,7 @@ Item {
 
         function reconnect() {
             close()
-            if (username && userName !== "" && password && password !== "") {
+            if (userName && password) {
                 //console.log("Connecting as " + userName + ":" + password + "...")
                 open()
             }
