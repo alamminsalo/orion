@@ -52,10 +52,13 @@ HEADERS  += src/model/channel.h \
 CONFIG += communi
 COMMUNI += core
 
-#Backend for player
-BACKEND = mpv
+#Backend for player, uses mpv as default
+!qtav: !multimedia {
+    CONFIG *= mpv
+}
 
-equals(BACKEND, mpv) {
+mpv {
+    message(Selecting mpv as backend)
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
     SOURCES +=  src/player/mpvrenderer.cpp \
@@ -72,12 +75,14 @@ equals(BACKEND, mpv) {
     macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv
 }
 
-equals(BACKEND, qtav) {
+qtav {
+    message(Selecting qtav as backend)
     QT += av
     DEFINES += QTAV_PLAYER
 }
 
-equals(BACKEND, multimedia) {
+multimedia {
+    message(Selecting qt multimedia as backend)
     QT += multimedia
     DEFINES += MULTIMEDIA_PLAYER
     macx: {

@@ -33,9 +33,16 @@ Features:
 sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine mpv
 ```
 
-If using backend other than mpv, install those packages instead. Also change the line saying `CONFIG += BACKEND_MPV` in the .pro file to the backend you wish to use:
+If using backend other than mpv, install those packages instead.
 
-`CONFIG += BACKEND_QTAV` or `CONFIG += BACKEND_MULTIMEDIA`, meaning qtav or qt multimedia, respectively
+####Choosing player backend (optional)
+To select a backend used, pass a CONFIG-variable a backend for qmake (alternatively edit straight to .pro file):
+
+* MPV: `CONFIG+=mpv`
+* QtAV: `CONFIG+=qtav`
+* Qt5 Multimedia: `CONFIG+=multimedia`
+
+As default, mpv is used (if nothing is passed)
 
 ####Get libcommuni, build and install it:
 
