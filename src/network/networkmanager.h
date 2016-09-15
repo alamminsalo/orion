@@ -78,6 +78,7 @@ signals:
     void fileOperationFinished(const QByteArray&);
     void favouritesReplyFinished(const QList<Channel *>&, const quint32);
     void streamGetOperationFinished(const QString channelName, const bool online);
+    void error(const QString &error);
 
     //oauth
     void userNameOperationFinished(const QString&);

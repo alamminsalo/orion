@@ -32,6 +32,14 @@ Rectangle {
             _toend = true
     }
 
+    Connections {
+        target: g_rootWindow
+
+        onHeightChanged: {
+            list.positionViewAtEnd()
+        }
+    }
+
     ListView {
         id: list
         visible: root.width > 0

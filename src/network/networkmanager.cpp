@@ -522,6 +522,7 @@ void NetworkManager::streamExtractReply()
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
     if (!handleNetworkError(reply)) {
+        emit error("token_error");
         return;
     }
 
@@ -552,6 +553,9 @@ void NetworkManager::m3u8Reply()
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
     if (!handleNetworkError(reply)) {
+
+        emit error("playlist_error");
+
         return;
     }
 

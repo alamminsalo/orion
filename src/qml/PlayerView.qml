@@ -69,6 +69,20 @@ Item {
                 root.streamOnline = online
             }
         }
+
+        onError: {
+            switch (error) {
+
+            case "token_error":
+            case "playlist_error":
+                //Display message
+                setHeaderText("Error getting stream")
+                break;
+
+            default:
+                break;
+            }
+        }
     }
 
     Timer {

@@ -38,8 +38,10 @@ Item {
     }
 
     onVisibleChanged: {
-        if (visible)
+        if (visible) {
+            channels.positionViewAtBeginning()
             channels.checkScrolled()
+        }
     }
 
     Connections {
