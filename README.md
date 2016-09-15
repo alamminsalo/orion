@@ -7,7 +7,7 @@ Features:
 
 * Login by twitch credentials
 * Desktop notifications
-* Integrated player (mpv or qtav backend)
+* Integrated player
 * Chat support
 * Support for live streams and vods
 
