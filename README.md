@@ -76,4 +76,4 @@ Installer can be found in the application's install directory (I'll make it inst
 
 ##Known issues
 
-* If network goes down while Orion is running, the images stop loading in the application until restart. Otherwise the application should work fine.
+* If network goes down while Orion is running, the images stop loading until application restart. Otherwise the application should work fine
