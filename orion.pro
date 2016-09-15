@@ -8,6 +8,8 @@ QT     += gui opengl qml quick network widgets webengine
 
 TARGET = orion
 
+VERSION = 1.3.1
+
 DEFINES += APP_NAME=\\\"Orion\\\"
 
 SOURCES += src/main.cpp\
