@@ -111,6 +111,7 @@ void NetworkManager::testNetworkInterface()
 void NetworkManager::testConnection()
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(TWITCH_API_BASE));
 
     QNetworkReply *reply = operation->get(request);
@@ -138,6 +139,7 @@ void NetworkManager::getStream(const QString &channelName)
 {
     QString url = KRAKEN_API + QString("/streams/%1").arg(channelName);
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
     QNetworkReply *reply = operation->get(request);
@@ -149,6 +151,7 @@ void NetworkManager::getStreams(const QString &url)
 {
     //qDebug() << "GET: " << url;
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
     QNetworkReply *reply = operation->get(request);
@@ -159,6 +162,7 @@ void NetworkManager::getStreams(const QString &url)
 void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = KRAKEN_API;
     url += QString("/games/top?limit=%1").arg(limit)
             + QString("&offset=%1").arg(offset);
@@ -172,6 +176,7 @@ void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
 void NetworkManager::searchChannels(const QString &query, const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
             + QString("/search/channels?q=%1").arg(query)
             + QString("&offset=%1").arg(offset)
@@ -186,6 +191,7 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
 void NetworkManager::searchGames(const QString &query)
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
             + QString("/search/games?q=%1").arg(query)
             + "&type=suggest";
@@ -200,6 +206,7 @@ void NetworkManager::searchGames(const QString &query)
 void NetworkManager::getFeaturedStreams()
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
             + "/streams/featured?limit=25&offset=0";
     request.setUrl(QUrl(url));
@@ -214,6 +221,7 @@ void NetworkManager::getFeaturedStreams()
 void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
             + QString("/streams?game=%1").arg(game)
             + QString("&offset=%1").arg(offset)
@@ -231,6 +239,7 @@ void NetworkManager::getChannelPlaybackStream(const QString &channelName)
             + QString("/channels/%1").arg(channelName)
             + QString("/access_token");
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
     request.setAttribute(QNetworkRequest::User, LIVE);
@@ -254,6 +263,7 @@ void NetworkManager::getBroadcasts(const QString channelName, quint32 offset, qu
         url += "&hls=true";
 
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
     QNetworkReply *reply = operation->get(request);
@@ -267,6 +277,7 @@ void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
             + QString("/vods/%1").arg(vod)
             + QString("/access_token");
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
     request.setAttribute(QNetworkRequest::User, VOD);
@@ -282,6 +293,7 @@ void NetworkManager::getUser(const QString &access_token)
     QString auth = "OAuth " + access_token;
 
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
 
@@ -300,6 +312,7 @@ void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset,
             + QString("?offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setAttribute(QNetworkRequest::User, (int) (offset + limit));
 
@@ -316,6 +329,7 @@ void NetworkManager::editUserFavourite(const QString &access_token, const QStrin
     QString auth = "OAuth " + access_token;
 
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
 
@@ -341,6 +355,7 @@ void NetworkManager::clearCookies() {
 void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
 {
     QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
     request.setAttribute(QNetworkRequest::User, type);
