@@ -99,6 +99,20 @@ void ChannelListModel::addAll(const QList<Channel *> &list)
     }
 }
 
+void ChannelListModel::mergeAll(const QList<Channel *> &list)
+{
+    if (!list.isEmpty()){
+        foreach (Channel* channel, list){
+            Channel *c = find(channel->getId());
+            if (c) {
+                c->updateWith(*channel);
+            } else {
+                addChannel(new Channel(*channel));
+            }
+        }
+    }
+}
+
 void ChannelListModel::removeChannel(Channel *channel)
 {
     int index = channels.indexOf(channel);
@@ -189,10 +203,7 @@ void ChannelListModel::updateChannel(Channel *item)
     if (item && !item->getServiceName().isEmpty()){
 
         if (Channel *channel = find(item->getServiceName())){
-
-            channel->setName(item->getName());
-            channel->setLogourl(item->getLogourl());
-            channel->setInfo(item->getInfo());
+            channel->updateWith(*item);
             updateChannelForView(channel);
         }
     }
@@ -205,8 +216,6 @@ void ChannelListModel::updateChannels(const QList<Channel *> &list)
             updateChannel(channel);
         }
     }
-
-    //emit channelsUpdated();
 }
 
 void ChannelListModel::updateStream(Channel *item)
@@ -230,6 +239,17 @@ void ChannelListModel::updateStream(Channel *item)
                 updateChannelForView(channel);
                 emit channelOnlineStateChanged(channel);
             }
+        }
+    }
+}
+
+void ChannelListModel::setAllChannelsOffline()
+{
+    foreach(Channel *channel, channels) {
+        if (channel->isOnline()) {
+            channel->setOnline(false);
+            updateChannelForView(channel);
+            emit channelOnlineStateChanged(channel);
         }
     }
 }

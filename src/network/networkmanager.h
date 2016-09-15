@@ -12,6 +12,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QList>
+#include <QTimer>
 #include "urls.h"
 
 #include "../model/channel.h"
@@ -20,6 +21,7 @@
 
 #define ONLY_BROADCASTS true
 #define USE_HLS true
+#define FOLLOWED_FETCH_LIMIT 25
 
 class NetworkManager: public QObject
 {
@@ -27,20 +29,19 @@ class NetworkManager: public QObject
 
 protected:
 
-    void selectNetworkInterface();
-    void testConnection();
-
     enum M3U8TYPE {
         LIVE = QNetworkRequest::CustomVerbAttribute + 1,
         VOD
     };
 
     void getM3U8Data(const QString&, M3U8TYPE type);
+    bool handleNetworkError(QNetworkReply *error);
 
 public:
     NetworkManager(QNetworkAccessManager *);
     ~NetworkManager();
 
+    Q_INVOKABLE void getStream(const QString&);
     void getStreams(const QString&);
     void getGames(const quint32&, const quint32&);
     void searchChannels(const QString&, const quint32&, const quint32&);
@@ -53,7 +54,7 @@ public:
 
     //Methods using oauth
     void getUser(const QString &access_token);
-    void getUserFavourites(const QString &access_token, quint32 offset, quint32 limit);
+    void getUserFavourites(const QString &user_name, quint32 offset, quint32 limit);
     void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
 
     QNetworkAccessManager *getManager() const;
@@ -75,13 +76,18 @@ signals:
     void m3u8OperationFinished(const QStringList&);
     void m3u8OperationBFinished(const QStringList&);
     void fileOperationFinished(const QByteArray&);
-    void favouritesReplyFinished(const QList<Channel *>&);
+    void favouritesReplyFinished(const QList<Channel *>&, const quint32);
+    void streamGetOperationFinished(const QString channelName, const bool online);
 
     //oauth
     void userNameOperationFinished(const QString&);
     void userEditFollowsOperationFinished();
 
+    void networkAccessChanged(bool up);
+
 private slots:
+    void testNetworkInterface();
+    void testConnection();
     void testConnectionReply();
     void handleSslErrors(QNetworkReply * reply, QList<QSslError> errors);
     void allStreamsReply();
@@ -95,14 +101,15 @@ private slots:
     void broadcastsReply();
     void favouritesReply();
     void editUserFavouritesReply();
+    void streamReply();
 
     //Oauth slots
     void userReply();
 
 private:
     QNetworkAccessManager *operation;
-
     bool connectionOK;
+    QTimer offlinePoller;
 };
 
 #endif // NETWORKMANAGER_H

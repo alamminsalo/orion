@@ -14,8 +14,6 @@
 #define DIALOG_FILE         "resources/scripts/dialog.sh"
 #define PLAY_FILE           "resources/scripts/play.sh"
 
-#define FOLLOWED_FETCH_LIMIT 25
-
 class NetworkManager;
 
 QString appPath();
@@ -87,7 +85,7 @@ public:
                                      const QString& game, const qint32 &viewers, bool online);
     Q_INVOKABLE bool isCloseToTray() const;
     Q_INVOKABLE void setCloseToTray(bool arg);
-    Q_INVOKABLE void getFollowedChannels(const quint32&, const quint32&);
+    Q_INVOKABLE void getFollowedChannels(const quint32 &limit = FOLLOWED_FETCH_LIMIT, const quint32 &offset = 0);
     Q_INVOKABLE void searchGames(QString, const quint32&, const quint32&);
 
     Q_INVOKABLE QString username() const;
@@ -97,12 +95,7 @@ public:
     Q_INVOKABLE bool isAccessTokenAvailable() { return access_token.length() > 0; }
 
 signals:
-    void channelExists(Channel*);
-    void channelNotFound(Channel*);
-    void channelStateChanged(Channel*);
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
-    void newChannel(Channel*);
-    void channelsUpdated();
     void resultsUpdated();
     void featuredUpdated();
     void searchingStarted();
@@ -136,7 +129,8 @@ private slots:
     void updateStreams(const QList<Channel*>&);
     void addGames(const QList<Game*>&);
     void onUserNameUpdated(const QString &name);
-    void addFollowedResults(const QList<Channel*>&);
+    void addFollowedResults(const QList<Channel*>&, const quint32);
+    void onNetworkAccessChanged(bool);
 };
 
 #endif //CHANNEL_MANAGER_H

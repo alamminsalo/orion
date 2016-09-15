@@ -1,5 +1,4 @@
 import QtQuick 2.5
-import QtMultimedia 5.6
 import "components"
 import "irc"
 import "styles.js" as Styles
@@ -14,35 +13,86 @@ Item {
     //  1 - low
     //  0 - mobile
     property int quality: 4
-    property bool paused: false
     property int duration: -1
     property var currentChannel
     property var qualityMap
     property bool fs: false
     property bool isVod: false
+    property bool streamOnline: true
+
+    //Renderer interface
+    property alias renderer: loader.item
 
     id: root
+
+    Connections {
+        target: g_cman
+
+        onAddedChannel: {
+            console.log("Added channel")
+            if (currentChannel && currentChannel._id == chanid){
+                currentChannel.favourite = true
+                _favIcon.update()
+            }
+        }
+
+        onDeletedChannel: {
+            console.log("Deleted channel")
+            if (currentChannel && currentChannel._id == chanid){
+                currentChannel.favourite = false
+                _favIcon.update()
+            }
+        }
+
+        onFoundPlaybackStream: {
+            loadStreams(streams)
+        }
+    }
+
+    Connections {
+        target: netman
+
+        onNetworkAccessChanged: {
+            if (up && currentChannel && !renderer.status !== "PAUSED") {
+                //console.log("Network up. Resuming playback...")
+                loadAndPlay()
+            }
+        }
+
+        onStreamGetOperationFinished: {
+            //console.log("Received stream status", channelName, online)
+            if (channelName === currentChannel.name) {
+                if (online && !root.streamOnline) {
+                    console.log("Stream back online, resuming playback")
+                    loadAndPlay()
+                }
+                root.streamOnline = online
+            }
+        }
+    }
+
+    Timer {
+        //Polls channel when stream goes down
+        id: pollTimer
+        interval: 4000
+        repeat: true
+        onTriggered: {
+            if (currentChannel && currentChannel.name)
+                netman.getStream(currentChannel.name)
+        }
+    }
+
 
     function loadAndPlay(){
         setWatchingTitle()
 
-        var position = !isVod ? 0 : seekBar.position
-
-        //console.log(position)
-
-        if (isVod)
-            seekTo(position)
+        var start = !isVod ? undefined : seekBar.position
 
         var stream = qualityMap[quality]
 
-        //Stop everything earlier
-        renderer.stop()
-
         console.debug("Loading: ", stream)
 
-        renderer.source = stream
-
-        renderer.play()
+        renderer.load(stream, start)
     }
 
     function getStreams(channel, vod){
@@ -69,21 +119,19 @@ Item {
 
             console.log("Setting up VOD, duration " + vod.duration)
 
-            seekBar.position = 0
+            seekBar.setPosition(0, duration)
         }
-
-        paused = false
 
         currentChannel = {
             "_id": channel._id,
             "name": channel.name,
             "game": isVod ? vod.game : channel.game,
-            "title": isVod ? vod.title : channel.title,
-            "online": channel.online,
-            "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
-            "viewers": channel.viewers,
-            "logo": channel.logo,
-            "preview": channel.preview,
+                            "title": isVod ? vod.title : channel.title,
+                                             "online": channel.online,
+                                             "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
+                                             "viewers": channel.viewers,
+                                             "logo": channel.logo,
+                                             "preview": channel.preview,
         }
 
         _favIcon.update()
@@ -94,29 +142,19 @@ Item {
 
         chatview.joinChannel(currentChannel.name)
 
+        pollTimer.restart()
+
         requestSelectionChange(5)
     }
 
+    function setHeaderText(text) {
+        headerText.text = text
+    }
+
     function setWatchingTitle(){
-        header.text = currentChannel.title
-                + " playing " + currentChannel.game
-                + (isVod ? " (VOD)" : "")
-    }
-
-    function pause(){
-        paused = !paused
-
-        if (paused)
-            renderer.pause()
-        else
-            renderer.play()
-    }
-
-    Connections {
-        target: g_cman
-        onFoundPlaybackStream: {
-            loadStreams(streams)
-        }
+        setHeaderText(currentChannel.title
+                      + " playing " + currentChannel.game
+                      + (isVod ? " (VOD)" : ""))
     }
 
     function loadStreams(streams) {
@@ -144,9 +182,9 @@ Item {
     }
 
     function seekTo(position) {
-        console.log("Seeking to", position, duration)
+        //console.log("Seeking to", position, duration)
         if (isVod){
-            renderer.seek(position * 1000)
+            renderer.seekTo(position)
         }
     }
 
@@ -160,12 +198,71 @@ Item {
     Connections {
         target: g_rootWindow
         onClosing: {
-            if (!paused)
-                pause()
+            renderer.pause()
+        }
+    }
+
+    Connections {
+        target: renderer
+
+        onStatusChanged: {
+            //console.log("Renderer status changed to " + renderer.status)
+            togglePause.icon = renderer.status != "PLAYING" ? "play" : "pause"
+        }
+
+        onVolumeChanged: {
+            //console.log("Renderer volume changed to " + renderer.volume)
+        }
+
+        onPositionChanged: {
+            //console.log("Renderer position changed to " + renderer.position)
+            seekBar.setPosition(renderer.position, duration)
+        }
+
+        onPlayingResumed: {
+            setWatchingTitle()
+        }
+
+        onPlayingPaused: {
+            setHeaderText("Paused")
+        }
+
+        onPlayingStopped: {
+            setHeaderText("Playback stopped")
         }
     }
 
     Item {
+        id: playerArea
+        anchors.fill: parent
+
+        Loader {
+            id: loader
+            anchors.fill: parent
+
+            source: {
+                switch (player_backend) {
+                case "mpv":
+                    return "MpvBackend.qml";
+
+                case "qtav":
+                    return "QtAVBackend.qml";
+
+                case "multimedia":
+                default:
+                    return "MultimediaBackend.qml";
+                }
+            }
+
+            onLoaded: {
+                console.log("Loaded renderer")
+            }
+        }
+    }
+
+    Item {
+        z: playerArea.z + 1
+
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -173,10 +270,31 @@ Item {
             right: chatview.left
         }
 
+        MouseArea{
+            anchors.fill: parent
+            hoverEnabled: true
+            propagateComposedEvents: false
+
+            onClicked: {
+                if (sourcesBox.open){
+                    sourcesBox.close()
+                }
+            }
+
+            onDoubleClicked: {
+                g_fullscreen = !g_fullscreen
+            }
+
+            onPositionChanged: {
+                header.show()
+                footer.show()
+                headerTimer.restart()
+            }
+        }
+
         PlayerHeader {
-            text: "Currently watching: N/A"
             id: header
-            z: output.z + 1
+            //z: playerArea.z + 1
 
             MouseArea {
                 id: mAreaHeader
@@ -189,6 +307,31 @@ Item {
                 top: parent.top
                 left: parent.left
                 right: parent.right
+            }
+
+            Item {
+                anchors {
+                    left: parent.left
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: favourite.left
+                }
+
+                clip: true
+
+                Text {
+                    id: headerText
+                    anchors {
+                        verticalCenter: parent.verticalCenter
+                        left: parent.left
+                        right: parent.right
+                        margins: dp(20)
+                    }
+
+                    color: Styles.textColor
+                    font.pixelSize: Styles.titleFont.bigger
+                    z: root.z + 1
+                }
             }
 
             Item {
@@ -206,26 +349,6 @@ Item {
                     icon: "fav"
 
                     anchors.centerIn: parent
-
-                    Connections {
-                        target: g_cman
-
-                        onAddedChannel: {
-                            console.log("Added channel")
-                            if (currentChannel && currentChannel._id == chanid){
-                                currentChannel.favourite = true
-                                _favIcon.update()
-                            }
-                        }
-
-                        onDeletedChannel: {
-                            console.log("Deleted channel")
-                            if (currentChannel && currentChannel._id == chanid){
-                                currentChannel.favourite = false
-                                _favIcon.update()
-                            }
-                        }
-                    }
 
                     function update(){
                         if (currentChannel)
@@ -291,7 +414,7 @@ Item {
 
         PlayerHeader {
             id: footer
-            z: output.z + 1
+            //z: playerArea.z + 1
             anchors {
                 bottom: parent.bottom
                 left: parent.left
@@ -311,7 +434,7 @@ Item {
                     top: parent.top
                     bottom: parent.bottom
                     left: parent.left
-                    leftMargin: dp(10)
+                    leftMargin: dp(5)
                 }
 
                 width: dp(50)
@@ -319,13 +442,13 @@ Item {
                 Icon {
                     id: togglePause
                     anchors.centerIn: parent
-                    icon: paused ? "play" : "pause"
+                    icon: "play"//renderer.status != "PLAYING" ? "play" : "pause"
                 }
 
                 MouseArea {
                     id: pauseArea
                     anchors.fill: parent
-                    onClicked: pause()
+                    onClicked: renderer.togglePause()
                     hoverEnabled: true
 
                     onHoveredChanged: {
@@ -348,14 +471,6 @@ Item {
                     left: pauseButton.right
                     right: fitButton.left
                 }
-
-                Connections {
-                    target: renderer
-
-                    onPositionChanged: {
-                        seekBar.setPosition(parseInt(renderer.position / 1000), duration)
-                    }
-                }
             }
 
             Icon {
@@ -365,12 +480,16 @@ Item {
                     right: vol.left
                     verticalCenter: parent.verticalCenter
                 }
-                width: dp(50)
+                width: !g_fullscreen ? dp(50) : 0
                 height: width
+                visible: !g_fullscreen
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: g_rootWindow.fitToAspectRatio()
+                    onClicked: {
+                        if (!g_fullscreen)
+                            g_rootWindow.fitToAspectRatio()
+                    }
                     hoverEnabled: true
 
                     onHoveredChanged: {
@@ -383,24 +502,21 @@ Item {
                 id: vol
                 z: parent.z + 1
 
-                property bool initialized: false
-
                 anchors {
                     right: fsButton.left
                     verticalCenter: parent.verticalCenter
                 }
 
-                function initialize(vol) {
-                    value = vol || 100
-                    initialized = true
-                }
-
                 onValueChanged: {
-                    if (initialized) {
-                        var val = Math.max(0, Math.min(100, value))
+                    var val
+                    //if (Qt.platform === "linux")
+                    //val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
 
-                        renderer.volume = val / 100.0
-                    }
+                    //else
+                    //Windows/Mac/Linux seems to handle this by itself!
+                    val = Math.max(0, Math.min(100, value))
+
+                    renderer.setVolume(val)
                 }
             }
 
@@ -410,7 +526,7 @@ Item {
                 anchors {
                     right: sourcesBox.left
                     verticalCenter: parent.verticalCenter
-                    rightMargin: dp(10)
+                    rightMargin: dp(5)
                 }
                 width: dp(50)
                 height: width
@@ -435,7 +551,7 @@ Item {
                 anchors {
                     right: parent.right
                     verticalCenter: parent.verticalCenter
-                    rightMargin: dp(10)
+                    rightMargin: dp(5)
                 }
 
                 onIndexChanged: {
@@ -454,63 +570,6 @@ Item {
             }
         }
 
-        MediaPlayer {
-            id: renderer
-
-            onStopped: {
-                header.text = "Playback stopped"
-                g_powerman.setScreensaver(true);
-            }
-
-            onPaused: {
-                header.text = "Paused"
-                g_powerman.setScreensaver(true);
-            }
-
-            onPlaying: {
-                setWatchingTitle()
-                g_powerman.setScreensaver(false);
-            }
-
-            Component.onCompleted: {
-                vol.initialize(100)
-            }
-        }
-
-        Rectangle {
-            color: "black"
-            anchors.fill: parent
-
-            VideoOutput {
-                id: output
-                anchors.fill: parent
-                source: renderer
-            }
-
-            MouseArea{
-                z: output.z + 1
-                anchors.fill: parent
-                hoverEnabled: true
-                propagateComposedEvents: false
-
-                onClicked: {
-                    if (sourcesBox.open){
-                        sourcesBox.close()
-                    }
-                }
-
-                onDoubleClicked: {
-                    g_fullscreen = !g_fullscreen
-                }
-
-                onPositionChanged: {
-                    header.show()
-                    footer.show()
-                    headerTimer.restart()
-                }
-            }
-        }
-
         Text {
             id: _label
             text: "No stream currently playing"
@@ -519,10 +578,9 @@ Item {
             anchors.centerIn: parent
         }
 
-
         Timer {
             id: headerTimer
-            interval: 4000
+            interval: 3000
             running: false
             repeat: false
             onTriggered: {
@@ -547,5 +605,12 @@ Item {
 
         width: visible ? dp(250) : 0
         visible: false
+
+        Behavior on width {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.InCubic
+            }
+        }
     }
 }

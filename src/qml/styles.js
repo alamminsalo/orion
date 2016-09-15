@@ -22,6 +22,9 @@ var seekBar = "#444444"
 
 var white = "#ffffff"
 
+var connectionErrorColor = "#ff8c00"
+var errorTextColor = "#ffffff"
+
 var initialized = false
 
 var dpiMultiplier = 1

@@ -56,6 +56,7 @@ Rectangle {
             width: imgSize
             anchors.centerIn: container
 
+
             Component.onCompleted: {
                 if (root.scaleImage){
                     width = height

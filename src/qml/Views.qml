@@ -5,7 +5,7 @@ import "styles.js" as Styles
 
 Rectangle {
     property int selection
-    property alias playerView: loader.item
+//    property alias playerView: loader.item
     id: root
 
     signal requestSelectionChange(int index)
@@ -106,27 +106,32 @@ Rectangle {
         visible: false
     }
 
-    Loader {
-        id: loader
-        //visible: false
-        source: { 
-		switch (player_backend) {
-		case "mpv":
-			return "MpvPlayerView.qml";
-
-		case "qtav":
-			return "QtAVPlayerView.qml";
-
-		case "multimedia":
-		default:
-			return "MultimediaPlayerView.qml";
-		}
-	}
-        onLoaded: {
-            item.parent = root
-            item.visible = false
-        }
+    PlayerView {
+        id: playerView
+        visible: false
     }
+
+//    Loader {
+//        id: loader
+//        //visible: false
+//        source: {
+//		switch (player_backend) {
+//		case "mpv":
+//            return "PlayerView.qml";
+
+//		case "qtav":
+//			return "QtAVPlayerView.qml";
+
+//		case "multimedia":
+//		default:
+//			return "MultimediaPlayerView.qml";
+//		}
+//	}
+//        onLoaded: {
+//            item.parent = root
+//            item.visible = false
+//        }
+//    }
 
     //The gradient that is applied to each view
     GradientBottom {
@@ -134,4 +139,41 @@ Rectangle {
         parent: searchView
     }
 
+    Rectangle {
+        id: connectionErrorRectangle
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: 0
+        color: Styles.connectionErrorColor
+        clip: true
+
+        Text {
+            anchors.centerIn: parent
+            font.pixelSize: Styles.titleFont.bigger
+            color: Styles.errorTextColor
+            text: "Connection error"
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+        }
+    }
+
+    Connections {
+        target: netman
+        onNetworkAccessChanged: {
+            if (up) {
+                connectionErrorRectangle.height = 0
+            }
+            else {
+                connectionErrorRectangle.height = dp(50)
+            }
+        }
+    }
 }

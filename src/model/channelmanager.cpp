@@ -47,7 +47,9 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
 
     connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
-    connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&)), this, SLOT(addFollowedResults(const QList<Channel*>&)));
+    connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
+
+    connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
 }
 
 ChannelManager::~ChannelManager(){
@@ -181,6 +183,7 @@ void ChannelManager::setAccessToken(const QString &arg)
             tempFavourites = favouritesModel;
 
             favouritesModel = new ChannelListModel();
+            connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
             favouritesProxy->setSourceModel(favouritesModel);
         }
     }
@@ -582,23 +585,42 @@ void ChannelManager::onUserNameUpdated(const QString &name)
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)
 {
-    if (offset == 0)
-        favouritesModel->clear();
+    //if (offset == 0)
+        //favouritesModel->clear();
 
     netman->getUserFavourites(user_name, offset, limit);
 }
 
 
-void ChannelManager::addFollowedResults(const QList<Channel *> &list)
+void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quint32 offset)
 {
-    favouritesModel->addAll(list);
+//    qDebug() << "Merging channel data for " << list.size()
+//             << " items with " << offset << " offset.";
+
+    favouritesModel->mergeAll(list);
 
     if (list.size() == FOLLOWED_FETCH_LIMIT)
-        getFollowedChannels(FOLLOWED_FETCH_LIMIT, favouritesModel->count());
+        getFollowedChannels(FOLLOWED_FETCH_LIMIT, offset);
 
     qDeleteAll(list);
 
     emit followedUpdated();
 
     checkFavourites();
+}
+
+void ChannelManager::onNetworkAccessChanged(bool up)
+{
+    if (up) {
+        if (isAccessTokenAvailable()) {
+            //Relogin
+            favouritesModel->clear();
+            netman->getUser(access_token);
+        }
+    } else {
+        qDebug() << "Network went down";
+        favouritesModel->setAllChannelsOffline();
+        resultsModel->setAllChannelsOffline();
+        featuredModel->setAllChannelsOffline();
+    }
 }

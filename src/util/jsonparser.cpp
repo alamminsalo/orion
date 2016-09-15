@@ -13,7 +13,7 @@ QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
         //Online streams
         QJsonArray arr = json["streams"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseStream(item.toObject()));
+            channels.append(JsonParser::parseStreamJson(item.toObject()));
         }
 
         //Offline streams
@@ -44,43 +44,51 @@ Channel *JsonParser::parseStream(const QByteArray &data)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        return parseStream(doc.object());
+        return parseStreamJson(doc.object());
     }
     return new Channel();
 }
 
-Channel* JsonParser::parseStream(const QJsonObject &json)
+Channel* JsonParser::parseStreamJson(const QJsonObject &json)
 {
     Channel* channel = new Channel();
 
+    QJsonObject jsonObj;
+
+    if (!jsonObj["stream"].isNull()) {
+        jsonObj = jsonObj["stream"].toObject();
+    } else {
+        jsonObj = json;
+    }
+
     //Take name from _links
-    QJsonObject links = json["_links"].toObject();
+    QJsonObject links = jsonObj["_links"].toObject();
     if (!links["self"].isNull()){
         QString channelName = links["self"].toString();
         channelName.remove(0, channelName.lastIndexOf('/') + 1);
         channel->setServiceName(channelName);
     }
 
-    if (!json["preview"].isNull()){
+    if (!jsonObj["preview"].isNull()){
 
-        QJsonObject preview = json["preview"].toObject();
+        QJsonObject preview = jsonObj["preview"].toObject();
 
         if (!preview["large"].isNull()){
             channel->setPreviewurl(preview["large"].toString());
         }
     }
 
-    if (!json["viewers"].isNull()){
-        channel->setViewers(json["viewers"].toInt());
+    if (!jsonObj["viewers"].isNull()){
+        channel->setViewers(jsonObj["viewers"].toInt());
     }
 
-    if (!json["game"].isNull()){
-        channel->setGame(json["game"].toString());
+    if (!jsonObj["game"].isNull()){
+        channel->setGame(jsonObj["game"].toString());
     }
 
-    if (!json["channel"].isNull()){
+    if (!jsonObj["channel"].isNull()){
 
-        Channel *c = parseChannel(json["channel"].toObject());
+        Channel *c = parseChannelJson(jsonObj["channel"].toObject());
         channel->setServiceName(c->getServiceName());
         channel->setId(c->getId());
         channel->setName(c->getName());
@@ -169,12 +177,12 @@ Channel* JsonParser::parseChannel(const QByteArray &data){
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        return parseChannel(doc.object());
+        return parseChannelJson(doc.object());
     }
     return new Channel();
 }
 
-Channel* JsonParser::parseChannel(const QJsonObject &json)
+Channel* JsonParser::parseChannelJson(const QJsonObject &json)
 {
     Channel* channel = new Channel();
 
@@ -244,7 +252,7 @@ QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
 
         QJsonArray arr = json["channels"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseChannel(item.toObject()));
+            channels.append(JsonParser::parseChannelJson(item.toObject()));
         }
     }
 
@@ -262,7 +270,7 @@ QList<Channel *> JsonParser::parseFavourites(const QByteArray &data)
 
         QJsonArray arr = json["follows"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseChannel(item.toObject()["channel"].toObject()));
+            channels.append(JsonParser::parseChannelJson(item.toObject()["channel"].toObject()));
         }
     }
 
@@ -280,7 +288,7 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
 
         if (!json["featured"].isNull()){
             foreach (const QJsonValue &item, json["featured"].toArray()){
-                channels.append(JsonParser::parseStream(item.toObject()["stream"].toObject()));
+                channels.append(JsonParser::parseStreamJson(item.toObject()["stream"].toObject()));
             }
         }
     }

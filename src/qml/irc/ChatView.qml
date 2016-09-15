@@ -10,8 +10,10 @@ Rectangle {
     color: Styles.sidebarBg
 
     function joinChannel(channel) {
-        chatModel.clear()
-        chat.joinChannel(channel)
+        if ("#" + channel != chat.channel) {
+            chatModel.clear()
+            chat.joinChannel(channel)
+        }
     }
 
     function leaveChannel() {
@@ -32,6 +34,7 @@ Rectangle {
 
     ListView {
         id: list
+        visible: root.width > 0
 
         model: ListModel {
             id: chatModel
@@ -53,8 +56,10 @@ Rectangle {
             msg: model.message
         }
 
-        boundsBehavior: Flickable.StopAtBounds
-        snapMode: ListView.SnapOneItem
+        onFlickingVerticallyChanged: {
+            if (root.width > 0 && list.contentHeight - (list.contentY + list.height) < 80)
+                list.positionViewAtEnd()
+        }
     }
 
     Rectangle {
@@ -118,7 +123,7 @@ Rectangle {
                 chatModel.remove(0, chatModel.count - max)
             }
 
-            if (_toend || list.atYEnd) //list.contentHeight - (list.contentY + list.height) < 10 || !root.visible)
+            if (_toend || list.atYEnd)//list.contentHeight - (list.contentY + list.height) < 10 || !root.visible)
                 list.positionViewAtEnd()
 
             if (_toend)
