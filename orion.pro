@@ -53,9 +53,9 @@ CONFIG += communi
 COMMUNI += core
 
 #Backend for player
-CONFIG += BACKEND_MPV
+BACKEND = mpv
 
-BACKEND_MPV {
+equals(BACKEND, mpv) {
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
     SOURCES +=  src/player/mpvrenderer.cpp \
@@ -70,14 +70,14 @@ BACKEND_MPV {
     unix:!macx: LIBS += -lmpv
     win32: LIBS += -L$${PWD}/libs/ -lmpv.dll
     macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv
-} 
+}
 
-BACKEND_QTAV {
+equals(BACKEND, qtav) {
     QT += av
     DEFINES += QTAV_PLAYER
 }
 
-BACKEND_MULTIMEDIA {
+equals(BACKEND, multimedia) {
     QT += multimedia
     DEFINES += MULTIMEDIA_PLAYER
     macx: {
