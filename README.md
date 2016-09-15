@@ -74,4 +74,6 @@ You need Visual C++ 2015-runtime installed.
 
 Installer can be found in the application's install directory (I'll make it install automatically in the next version)
 
+##Known issues
 
+* If network goes down while Orion is running, the images stop loading in the application until restart. Otherwise the application should work fine.
