@@ -248,7 +248,12 @@ Item {
 
     Item {
         id: playerArea
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: chatview.left
+            bottom: parent.bottom
+        }
 
         Loader {
             id: loader
