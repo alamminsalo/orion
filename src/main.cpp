@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     QObject::connect(tray, SIGNAL(closeEventTriggered()), &app, SLOT(quit()));
 
     //Prime network manager
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
     NetworkManager *netman = new NetworkManager(engine.networkAccessManager());
 
     //Create channels manager
