@@ -107,16 +107,19 @@ Item {
         id: renderer
 
         onStopped: {
+            root.status = "STOPPED"
             root.playingStopped()
             g_powerman.setScreensaver(true);
         }
 
         onPaused: {
+            root.status = "PAUSED"
             root.playingPaused()
             g_powerman.setScreensaver(true);
         }
 
         onPlaying: {
+            root.status = "PLAYING"
             root.playingResumed()
             g_powerman.setScreensaver(false);
         }
