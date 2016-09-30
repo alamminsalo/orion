@@ -26,12 +26,6 @@ Rectangle {
         _input.text = ""
     }
 
-    property bool _toend: false
-    onVisibleChanged: {
-        if (visible)
-            _toend = true
-    }
-
     Connections {
         target: g_rootWindow
 
@@ -40,9 +34,11 @@ Rectangle {
         }
     }
 
+
     ListView {
         id: list
         visible: root.width > 0
+        property bool lock: true
 
         model: ListModel {
             id: chatModel
@@ -51,7 +47,6 @@ Rectangle {
         clip: true
         highlightFollowsCurrentItem: true
         spacing: dp(2)
-
         anchors {
             top: parent.top
             left: parent.left
@@ -64,9 +59,11 @@ Rectangle {
             msg: model.message
         }
 
-        onFlickingVerticallyChanged: {
-            if (root.width > 0 && list.contentHeight - (list.contentY + list.height) < 80)
-                list.positionViewAtEnd()
+        onContentYChanged: {
+            if (atYEnd)
+                lock = true;
+            else
+                lock = false
         }
     }
 
@@ -131,11 +128,8 @@ Rectangle {
                 chatModel.remove(0, chatModel.count - max)
             }
 
-            if (_toend || list.atYEnd)//list.contentHeight - (list.contentY + list.height) < 10 || !root.visible)
+            if (list.lock)
                 list.positionViewAtEnd()
-
-            if (_toend)
-                _toend = false
         }
 
         onClear: {
