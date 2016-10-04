@@ -13,7 +13,7 @@ Features:
 
 ##Screencaptures
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/4.png)
+![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
 
 ![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/5.png)
 
