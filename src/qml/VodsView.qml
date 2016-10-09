@@ -40,7 +40,10 @@ Item{
     }
 
     onVisibleChanged: {
-        vods.checkScroll()
+        if (visible) {
+            vods.positionViewAtBeginning()
+            vods.checkScroll()
+        }
     }
 
     VodGrid {

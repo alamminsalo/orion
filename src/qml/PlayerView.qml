@@ -69,6 +69,20 @@ Item {
                 root.streamOnline = online
             }
         }
+
+        onError: {
+            switch (error) {
+
+            case "token_error":
+            case "playlist_error":
+                //Display message
+                setHeaderText("Error getting stream")
+                break;
+
+            default:
+                break;
+            }
+        }
     }
 
     Timer {
@@ -234,7 +248,12 @@ Item {
 
     Item {
         id: playerArea
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: chatview.left
+            bottom: parent.bottom
+        }
 
         Loader {
             id: loader
