@@ -509,12 +509,11 @@ Item {
 
                 onValueChanged: {
                     var val
-                    //if (Qt.platform === "linux")
-                    //val = Math.max(0,Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
-
-                    //else
-                    //Windows/Mac/Linux seems to handle this by itself!
-                    val = Math.max(0, Math.min(100, value))
+                    // MPV uses non-linear volume
+                    if (player_backend === "mpv")
+                        val = Math.max(0, Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
+                    else
+                        val = Math.max(0, Math.min(100, value))
 
                     renderer.setVolume(val)
                 }
