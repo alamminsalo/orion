@@ -528,8 +528,8 @@ Item {
 
                 onValueChanged: {
                     var val
-                    // MPV uses non-linear volume
-                    if (player_backend === "mpv")
+                    // MPV uses non-linear volume on linux
+                    if (Qt.platform === "linux" && player_backend === "mpv")
                         val = Math.max(0, Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
                     else
                         val = Math.max(0, Math.min(100, value))
