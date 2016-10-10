@@ -7,13 +7,13 @@ Features:
 
 * Login by twitch credentials
 * Desktop notifications
-* Integrated player (mpv or qtav backend)
+* Integrated player
 * Chat support
 * Support for live streams and vods
 
 ##Screencaptures
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/4.png)
+![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
 
 ![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/5.png)
 
@@ -74,4 +74,7 @@ You need Visual C++ 2015-runtime installed.
 
 Installer can be found in the application's install directory (I'll make it install automatically in the next version)
 
+##Known issues
 
+* If network goes down while Orion is running, the images stop loading until application restart. Otherwise the application should work fine after network is back up
+* Sometimes the stream hangs and doesn't load on start. Restarting the stream should work

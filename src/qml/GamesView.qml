@@ -148,8 +148,10 @@ Item {
             timer.start()
         }
 
-        if (visible)
+        if (visible) {
             _input.focus = true
+            games.positionViewAtBeginning()
+        }
     }
 
     ChannelGrid {
