@@ -15,30 +15,66 @@
 import QtQuick 2.0
 import "../styles.js" as Styles
 
-Item {
+Flow {
     id: root
     property string user
     property string msg
+    property int fontSize: Styles.titleFont.smaller
 
-    anchors {
-        left: parent.left
-        right: parent.right
-    }
-    height: _text.contentHeight + width * 0.04
+//    anchors {
+//        left: parent.left
+//        right: parent.right
+//    }
+    spacing: fontSize * 0.3
+    //height:
 
     Component.onCompleted: {
-        _text.text = user ? "<b>%1</b>: %2".arg(user).arg(msg) : "<b>%1</b>".arg(msg)
+        _text.text = "<b>%1</b>".arg(user) + (msg ? ": " : "")
+
+        if (msg)
+            parseMsg(msg)
+    }
+
+    function parseMsg(msg) {
+        var mlist = msg.split(" ")
+
+        for (var i=0; i < mlist.length; i++) {
+            var str = mlist[i]
+
+            if (!str)
+                continue
+
+            var dtext = Qt.createQmlObject('import QtQuick 2.0; Text {}', root, "dynText" + i);
+            dtext.text = str
+            dtext.color= Styles.textColor
+            dtext.font.pixelSize = fontSize
+            dtext.wrapMode = Text.WordWrap
+
+            if (isUrl(str)) {
+                console.log("IS URL")
+                var mArea = Qt.createQmlObject('import QtQuick 2.0; MouseArea {anchors.fill: parent;}', dtext, "mArea" + i);
+                mArea.clicked.connect(function() {
+                    Qt.openUrlExternally(str)
+                })
+                dtext.color = Styles.purple
+            }
+        }
+    }
+
+    function isUrl(str) {
+        return str.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
     }
 
     Text {
         id: _text
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
-        font.pixelSize: Styles.titleFont.smaller
+        font.pixelSize: fontSize
+        //visible: false
         wrapMode: Text.WordWrap
-        anchors {
-            fill: root
-            margins: parent.width * 0.02
-        }
+//        anchors {
+//            fill: root
+//            margins: parent.width * 0.02
+//        }
     }
 }

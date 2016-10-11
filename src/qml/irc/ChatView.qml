@@ -62,7 +62,7 @@ Rectangle {
 
         clip: true
         highlightFollowsCurrentItem: true
-        spacing: dp(2)
+        spacing: dp(10)
 
         delegate: ChatMessage {
             user: model.user
@@ -146,7 +146,7 @@ Rectangle {
             var max = 1000
             //Limit msg count in list
             if (list.count > max) {
-                remove(0, list.count - list.max)
+                list.remove(0, list.count - list.max)
             }
 
             if (list.lock)

@@ -43,9 +43,12 @@ Item {
     }
 
     function joinChannel(channelName) {
+        if (!chat.connected)
+            chat.reopenSocket()
+
         chat.join(channelName)
         root.channel = channelName
-        messageReceived(null, "Joined channel #" + channelName)
+        messageReceived("Joined channel #" + channelName, null)
     }
 
     function leaveChannel() {
