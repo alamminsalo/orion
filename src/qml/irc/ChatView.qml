@@ -49,11 +49,12 @@ Rectangle {
         }
     }
 
-
     ListView {
         id: list
-        visible: root.width > 0
+        //visible: root.width > 0
+
         property bool lock: true
+        property int scrollbuf: 0
 
         model: ListModel {
             id: chatModel
@@ -62,6 +63,12 @@ Rectangle {
         clip: true
         highlightFollowsCurrentItem: true
         spacing: dp(2)
+
+        delegate: ChatMessage {
+            user: model.user
+            msg: model.message
+        }
+
         anchors {
             top: parent.top
             left: parent.left
@@ -69,27 +76,14 @@ Rectangle {
             bottom: spacer.top
         }
 
-        delegate: ChatMessage {
-            user: model.user
-            msg: model.message
-        }
-
         onContentYChanged: {
+
             if (atYEnd)
                 lock = true;
-            else
+            else if (scrollbuf < 0)
                 lock = false
-        }
-
-        onCountChanged: {
-            //Limit msg count in list
-            var max = 1000
-            if (chatModel.count > max) {
-                chatModel.remove(0, chatModel.count - max)
-            }
-
-            if (list.lock)
-                list.positionViewAtEnd()
+            else
+                scrollbuf--
         }
     }
 
@@ -147,6 +141,16 @@ Rectangle {
 
         onMessageReceived: {
             chatModel.append({"user": user, "message": message})
+            list.scrollbuf = 10
+
+            var max = 1000
+            //Limit msg count in list
+            if (list.count > max) {
+                remove(0, list.count - list.max)
+            }
+
+            if (list.lock)
+                list.positionViewAtEnd()
         }
 
         onClear: {
