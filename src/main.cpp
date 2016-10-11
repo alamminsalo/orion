@@ -32,6 +32,7 @@
 #include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
+#include "model/ircchat.h"
 
 #ifdef MPV_PLAYER
     #include "player/mpvrenderer.h"
@@ -127,6 +128,8 @@ int main(int argc, char *argv[])
 #elif defined (MULTIMEDIA_PLAYER)
     rootContext->setContextProperty("player_backend", "multimedia");
 #endif
+
+    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
     engine.load(QUrl("qrc:/main.qml"));
 

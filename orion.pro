@@ -29,6 +29,7 @@ SOURCES += src/main.cpp\
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
     src/notification/notificationmanager.cpp \
+    src/model/ircchat.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -48,11 +49,12 @@ HEADERS  += src/model/channel.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
     src/network/urls.h \
-    src/notification/notificationmanager.h
+    src/notification/notificationmanager.h \
+    src/model/ircchat.h
 
 #Communi IRC plugin
-CONFIG += communi
-COMMUNI += core
+#CONFIG += communi
+#COMMUNI += core
 
 #Backend for player, uses mpv as default
 !qtav: !multimedia {
