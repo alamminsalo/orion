@@ -44,14 +44,14 @@ To select a backend used, pass CONFIG-variable a suitable backend for qmake (alt
 
 As default, mpv is used (if nothing is passed)
 
-####Get orion from github
+####Get orion from github and install
 
 ```
 git clone https://github.com/alamminsalo/orion
 cd orion
 mkdir build && cd build
 qmake ../
-make && make install
+make && sudo make install
 ```
 
 ##Windows troubleshooting
