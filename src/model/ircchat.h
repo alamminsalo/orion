@@ -45,8 +45,10 @@ public:
     Q_PROPERTY(QString password MEMBER userpass)
     Q_PROPERTY(bool anonymous READ anonymous WRITE setAnonymous NOTIFY anonymousChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
+    Q_PROPERTY(bool inRoom READ inRoom)
 
     Q_INVOKABLE void join(const QString channel);
+    Q_INVOKABLE void leave();
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void reopenSocket();
 
@@ -60,6 +62,7 @@ public:
 
     //# Network
     bool connected();
+    inline bool inRoom() { return !room.isEmpty(); }
 
 signals:
     void errorOccured(QString errorDescription);
@@ -71,10 +74,10 @@ public slots:
     void sendMessage(const QString &msg);
     void onSockStateChanged();
 private slots:
+    void initialize();
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
-    void badgesReceived(QNetworkReply *dataSource);
-    //void emotesReceived(QNetworkReply *dataSource);
+
 private:
     void parseCommand(QString cmd);
     QString getParamValue(QString params, QString param);

@@ -36,33 +36,37 @@ IrcChat::IrcChat(QObject *parent) :
     sock->connectToHost(HOST, PORT);
     connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
     connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
+    connect(sock, SIGNAL(connected()), this, SLOT(initialize()));
     connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
     connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+
+    room = "";
 }
 
 IrcChat::~IrcChat() { disconnect(); }
 
 void IrcChat::join(const QString channel) {
-    // Tell server that we support twitch-specific commands
-    sock->write("CAP REQ :twitch.tv/commands\r\n");
-    sock->write("CAP REQ :twitch.tv/tags\r\n");
-    // Login
-    sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
-    sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+
+    if (inRoom())
+        leave();
+
     // Join channel's chat room
     sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
 
-    QNetworkAccessManager *manager = new QNetworkAccessManager(this);
-    connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(badgesReceived(QNetworkReply*)));
-    connect(manager, SIGNAL(finished(QNetworkReply*)), manager, SLOT(deleteLater()));
-    manager->get(QNetworkRequest(QUrl("https://api.twitch.tv/kraken/chat/" + channel + "/badges")));
-
     // Save channel name for later use
     room = channel;
+
+    qDebug() << "Joined channel " << channel;
+}
+
+void IrcChat::leave()
+{
+    sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    room = "";
 }
 
 void IrcChat::disconnect() {
-    sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    leave();
     sock->close();
 }
 
@@ -104,6 +108,16 @@ void IrcChat::onSockStateChanged() {
     emit connectedChanged();
 }
 
+void IrcChat::initialize()
+{
+    // Tell server that we support twitch-specific commands
+    sock->write("CAP REQ :twitch.tv/commands\r\n");
+    sock->write("CAP REQ :twitch.tv/tags\r\n");
+    // Login
+    sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
+    sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+}
+
 void IrcChat::receive() {
     QString msg;
     while (sock->canReadLine()) {
@@ -132,18 +146,6 @@ void IrcChat::processError(QAbstractSocket::SocketError socketError) {
     errorOccured(err);
 }
 
-void IrcChat::badgesReceived(QNetworkReply *dataSource) {
-    QByteArray rawData = dataSource->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(rawData);
-    QJsonObject data = doc.object();
-    foreach(QString spec, data.keys()) {
-        if(!data[spec].toObject()["image"].isNull()) {
-            badges.insert(spec, data[spec].toObject()["image"].toString());
-        }
-    }
-    dataSource->deleteLater();
-}
-
 void IrcChat::parseCommand(QString cmd) {
     if(cmd.startsWith("PING ")) {
         sock->write("PONG\r\n");
@@ -165,7 +167,7 @@ void IrcChat::parseCommand(QString cmd) {
         // We are not interested in this one, it only exists because otherwise USERSTATE would be trigged instead
         return;
     }
-    qDebug() << "Unrecognized chat command:" << cmd;
+    //qDebug() << "Unrecognized chat command:" << cmd;
 }
 
 QString IrcChat::getParamValue(QString params, QString param) {

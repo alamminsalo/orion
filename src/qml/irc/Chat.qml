@@ -21,6 +21,7 @@ Item {
     id: root
 
     signal messageReceived(string user, string message)
+    signal notify(string message)
     signal clear()
 
     property string accesstoken: g_cman.accesstoken
@@ -43,17 +44,16 @@ Item {
 
     function joinChannel(channelName) {
         chat.join(channelName)
-        clear()
+        root.channel = channelName
+        messageReceived(null, "Joined channel #" + channelName)
     }
 
     function leaveChannel() {
-        if (chat.connected)
-            chat.disconnect()
-        clear()
+        chat.leave()
     }
 
     function sendChatMessage(message) {
-        if (chat.connected)
+        if (chat.inRoom && chat.connected)
             chat.sendMessage(message)
     }
 

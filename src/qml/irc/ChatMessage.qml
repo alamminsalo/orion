@@ -27,7 +27,7 @@ Item {
     height: _text.contentHeight + width * 0.04
 
     Component.onCompleted: {
-        _text.text = "<b>%1</b>: %2".arg(user).arg(msg)
+        _text.text = user ? "<b>%1</b>: %2".arg(user).arg(msg) : "<b>%1</b>".arg(msg)
     }
 
     Text {

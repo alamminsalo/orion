@@ -38,6 +38,7 @@ Rectangle {
     function sendMessage() {
         chat.sendChatMessage(_input.text)
         _input.text = ""
+        list.positionViewAtEnd()
     }
 
     Connections {
@@ -78,6 +79,17 @@ Rectangle {
                 lock = true;
             else
                 lock = false
+        }
+
+        onCountChanged: {
+            //Limit msg count in list
+            var max = 1000
+            if (chatModel.count > max) {
+                chatModel.remove(0, chatModel.count - max)
+            }
+
+            if (list.lock)
+                list.positionViewAtEnd()
         }
     }
 
@@ -135,15 +147,6 @@ Rectangle {
 
         onMessageReceived: {
             chatModel.append({"user": user, "message": message})
-
-            //Limit msg count in list
-            var max = 1000
-            if (chatModel.count > max) {
-                chatModel.remove(0, chatModel.count - max)
-            }
-
-            if (list.lock)
-                list.positionViewAtEnd()
         }
 
         onClear: {

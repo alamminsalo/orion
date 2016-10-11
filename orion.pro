@@ -8,7 +8,7 @@ QT     += gui opengl qml quick network widgets webengine
 
 TARGET = orion
 
-VERSION = 1.3.3
+VERSION = 1.3.4
 
 DEFINES += APP_NAME=\\\"Orion\\\"
 
@@ -51,10 +51,6 @@ HEADERS  += src/model/channel.h \
     src/network/urls.h \
     src/notification/notificationmanager.h \
     src/model/ircchat.h
-
-#Communi IRC plugin
-#CONFIG += communi
-#COMMUNI += core
 
 #Backend for player, uses mpv as default
 !qtav: !multimedia {
