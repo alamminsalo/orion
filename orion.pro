@@ -106,16 +106,30 @@ unix:!macx: {
     SOURCES +=  src/notification/notificationsender.cpp
 
     #Copy some files over to destination dir
-    CONFIG(release): {
-        copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
-        first.depends = $(first) copydata
-        export(first.depends)
-        export(copydata.commands)
+    #CONFIG(release): {
+    #    copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
+    #    first.depends = $(first) copydata
+    #    export(first.depends)
+    #    export(copydata.commands)
 
-        QMAKE_EXTRA_TARGETS += first copydata
-    }
+    #    QMAKE_EXTRA_TARGETS += first copydata
+    #}
 
     #QMAKE_POST_LINK += $quote($(COPY) $PWD/distfiles * $OUT_PWD
+
+}
+
+unix:!macx: {
+	target.path = /usr/bin
+	INSTALLS += target
+
+	_desktop.files = distfiles/Orion.desktop
+	_desktop.path = /usr/local/share/applications
+
+	_icon.files = distfiles/orion.svg
+	_icon.path = /usr/local/share/icons
+
+	INSTALLS += _desktop _icon
 }
 
 RESOURCES += \
@@ -171,3 +185,5 @@ macx: {
 
 OBJECTIVE_SOURCES += \
     src/notification/notificationsender.mm
+
+

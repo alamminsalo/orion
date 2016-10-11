@@ -44,15 +44,6 @@ To select a backend used, pass CONFIG-variable a suitable backend for qmake (alt
 
 As default, mpv is used (if nothing is passed)
 
-####Get libcommuni, build and install it:
-
-```
-git clone https://github.com/communi/libcommuni
-cd libcommuni
-qmake
-make
-sudo make install
-```
 ####Get orion from github
 
 ```
@@ -60,13 +51,8 @@ git clone https://github.com/alamminsalo/orion
 cd orion
 mkdir build && cd build
 qmake ../
-make
+make && make install
 ```
-
-If all goes well, orion/build directory should now contain a working binary named 'orion'!
-
-By running 'run.sh', a desktop entry is created for the menus also
-
 
 ##Windows troubleshooting
 
