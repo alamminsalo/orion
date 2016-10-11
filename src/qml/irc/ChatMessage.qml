@@ -21,12 +21,7 @@ Flow {
     property string msg
     property int fontSize: Styles.titleFont.smaller
 
-//    anchors {
-//        left: parent.left
-//        right: parent.right
-//    }
     spacing: fontSize * 0.3
-    //height:
 
     Component.onCompleted: {
         _text.text = "<b>%1</b>".arg(user) + (msg ? ": " : "")
@@ -48,14 +43,16 @@ Flow {
             dtext.text = str
             dtext.color= Styles.textColor
             dtext.font.pixelSize = fontSize
-            dtext.wrapMode = Text.WordWrap
+            //dtext.wrapMode = Text.WordWrap
 
             if (isUrl(str)) {
                 console.log("IS URL")
                 var mArea = Qt.createQmlObject('import QtQuick 2.0; MouseArea {anchors.fill: parent;}', dtext, "mArea" + i);
+                mArea.cursorShape = Qt.PointingHandCursor;
                 mArea.clicked.connect(function() {
                     Qt.openUrlExternally(str)
                 })
+                dtext.font.underline = true
                 dtext.color = Styles.purple
             }
         }
@@ -70,11 +67,6 @@ Flow {
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
         font.pixelSize: fontSize
-        //visible: false
-        wrapMode: Text.WordWrap
-//        anchors {
-//            fill: root
-//            margins: parent.width * 0.02
-//        }
+        //wrapMode: Text.WordWrap
     }
 }

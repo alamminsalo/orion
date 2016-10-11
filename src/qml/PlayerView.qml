@@ -641,7 +641,7 @@ Item {
         Behavior on width {
             NumberAnimation {
                 duration: 200
-                easing.type: Easing.InCubic
+                easing.type: Easing.OutCubic
             }
         }
     }

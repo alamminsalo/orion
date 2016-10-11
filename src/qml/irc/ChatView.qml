@@ -23,6 +23,11 @@ Rectangle {
 
     color: Styles.sidebarBg
 
+    onVisibleChanged: {
+        if (visible)
+            _input.forceActiveFocus()
+    }
+
     function joinChannel(channel) {
         if ("#" + channel != chat.channel) {
             chatModel.clear()
@@ -51,7 +56,6 @@ Rectangle {
 
     ListView {
         id: list
-        //visible: root.width > 0
 
         property bool lock: true
         property int scrollbuf: 0
@@ -64,9 +68,13 @@ Rectangle {
         highlightFollowsCurrentItem: true
         spacing: dp(10)
 
-        delegate: ChatMessage {
-            user: model.user
-            msg: model.message
+        delegate: Component {
+            ChatMessage {
+                user: model.user
+                msg: model.message
+
+                width: root.width
+            }
         }
 
         anchors {
@@ -141,7 +149,7 @@ Rectangle {
 
         onMessageReceived: {
             chatModel.append({"user": user, "message": message})
-            list.scrollbuf = 10
+            list.scrollbuf = 6
 
             var max = 1000
             //Limit msg count in list
