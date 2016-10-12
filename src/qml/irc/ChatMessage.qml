@@ -46,7 +46,6 @@ Flow {
             //dtext.wrapMode = Text.WordWrap
 
             if (isUrl(str)) {
-                console.log("IS URL")
                 var mArea = Qt.createQmlObject('import QtQuick 2.0; MouseArea {anchors.fill: parent;}', dtext, "mArea" + i);
                 mArea.cursorShape = Qt.PointingHandCursor;
                 mArea.clicked.connect(function() {
@@ -59,7 +58,7 @@ Flow {
     }
 
     function isUrl(str) {
-        return str.match(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/)
+        return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
     }
 
     Text {
