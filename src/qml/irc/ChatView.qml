@@ -153,8 +153,8 @@ Rectangle {
 
             var max = 1000
             //Limit msg count in list
-            if (list.count > max) {
-                list.remove(0, list.count - list.max)
+            if (chatModel.count > max) {
+                chatModel.remove(0, chatModel.count - max)
             }
 
             if (list.lock)
