@@ -158,9 +158,10 @@ Rectangle {
             chatModel.append({"user": user, "message": message})
             list.scrollbuf = 6
 
-            var max = 1000
+            var max = 500
             //Limit msg count in list
             if (chatModel.count > max) {
+                console.log("Removing item from chat")
                 chatModel.remove(0, chatModel.count - max)
             }
         }
