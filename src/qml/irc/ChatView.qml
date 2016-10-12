@@ -102,19 +102,21 @@ Rectangle {
             right: parent.right
             bottom: inputArea.top
         }
-        height: dp(3)
+        height: inputArea.visible ? dp(3) : 0
         color: Styles.border
     }
 
     Rectangle {
         id: inputArea
 
-        height: dp(30)
+        height: !chat.isAnonymous ? dp(30) : 0
         anchors {
             bottom: parent.bottom
             left: parent.left
             right: parent.right
         }
+
+        visible: !chat.isAnonymous
 
         color: Styles.bg
 

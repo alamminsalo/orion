@@ -124,6 +124,8 @@ void IrcChat::login()
 {
     if (userpass.isEmpty() || username.isEmpty())
         setAnonymous(true);
+    else
+        setAnonymous(false);
 
     // Tell server that we support twitch-specific commands
     sock->write("CAP REQ :twitch.tv/commands\r\n");

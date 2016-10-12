@@ -24,6 +24,7 @@ Item {
     signal notify(string message)
     signal clear()
 
+    property alias isAnonymous: chat.anonymous
     property var channel: undefined
     property var singleShot: undefined
 
