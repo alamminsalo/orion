@@ -28,15 +28,19 @@
 
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent) {
+
+    logged_in = false;
+
     // Open socket
     sock = new QTcpSocket(this);
     if(sock) {
         emit errorOccured("Error opening socket");
     }
-    sock->connectToHost(HOST, PORT);
+
+    //createConnection();
     connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
     connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
-    connect(sock, SIGNAL(connected()), this, SLOT(initialize()));
+    connect(sock, SIGNAL(connected()), this, SLOT(login()));
     connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
     connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
 
@@ -90,6 +94,9 @@ void IrcChat::setAnonymous(bool newAnonymous) {
             userpass = "blah";
         }
         anonym = newAnonymous;
+
+        //login();
+
         emit anonymousChanged();
     }
 }
@@ -108,17 +115,29 @@ void IrcChat::onSockStateChanged() {
     emit connectedChanged();
 }
 
-void IrcChat::initialize()
+void IrcChat::createConnection()
 {
+    sock->connectToHost(HOST, PORT);
+}
+
+void IrcChat::login()
+{
+    if (userpass.isEmpty() || username.isEmpty())
+        setAnonymous(true);
+
     // Tell server that we support twitch-specific commands
     sock->write("CAP REQ :twitch.tv/commands\r\n");
     sock->write("CAP REQ :twitch.tv/tags\r\n");
+
     // Login
     sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
     sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+
+    logged_in = true;
 }
 
 void IrcChat::receive() {
+    qDebug() << "message recv";
     QString msg;
     while (sock->canReadLine()) {
         msg = sock->readLine();

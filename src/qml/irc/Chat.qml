@@ -24,28 +24,22 @@ Item {
     signal notify(string message)
     signal clear()
 
-    property string accesstoken: g_cman.accesstoken
-    onAccesstokenChanged: {
-        console.log("Setting chat password")
-        chat.password = "oauth:" + accesstoken
-        reconnect()
-    }
-
     property var channel: undefined
+    property var singleShot: undefined
 
     Connections {
         target: g_cman
-        onUserNameUpdated: {
-            console.log("Setting chat username: " + name)
-            chat.name = name
-            reconnect()
+
+        onLogin: {
+            console.log("Login command: ", username, password)
+            chat.name = username
+            chat.password = password.length > 0 ? "oauth:" + password : ""
+
+            chat.reopenSocket()
         }
     }
 
     function joinChannel(channelName) {
-        if (!chat.connected)
-            chat.reopenSocket()
-
         chat.join(channelName)
         root.channel = channelName
         messageReceived("Joined channel #" + channelName, null)
@@ -85,6 +79,7 @@ Item {
         }
 
         onNoticeReceived: {
+            console.log(name,password)
             root.messageReceived("--NOTIFICATION--", message)
         }
     }
