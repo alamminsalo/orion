@@ -24,13 +24,19 @@ ApplicationWindow {
 
     title: "Orion"
     //flags: Qt.FramelessWindowHint | Qt.Window
-    visibility: g_fullscreen ? "FullScreen" : "Windowed"
+    visibility: g_fullscreen ? "FullScreen" : windowstate
 
     property variant g_rootWindow: root
     property variant g_tooltip
     property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
+    onG_fullscreenChanged: {
+        if (g_fullscreen)
+            windowstate = visibility
+    }
+
+    property var windowstate: "Windowed"
 
     function dp(number){
         return Dpi.scale(number)
