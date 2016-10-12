@@ -20,6 +20,7 @@ import "../util.js" as Util
 Item {
     property int duration
     property int position
+    property alias containsMouse: mouseArea.containsMouse
 
     id: root
 
@@ -41,11 +42,13 @@ Item {
     }
 
     onDurationChanged: {
-        time.duration = Util.getTime(duration)
+        if (isVod)
+            time.duration = Util.getTime(duration)
     }
 
     onPositionChanged: {
-        time.position = Util.getTime(position)
+        if (isVod)
+            time.position = Util.getTime(position)
     }
 
     Rectangle {
@@ -77,6 +80,9 @@ Item {
     }
 
     MouseArea {
+        id: mouseArea
+        visible: isVod
+        enabled: visible
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -86,9 +92,46 @@ Item {
             bottomMargin: dp(10)
         }
 
+        cursorShape: Qt.PointingHandCursor
+
+        hoverEnabled: true
+
         propagateComposedEvents: false
         onClicked: {
-            userChangedPosition((mouseX / seekBar.width) * duration)
+            userChangedPosition(Math.round((mouseX / seekBar.width) * duration))
+        }
+
+        onPositionChanged: {
+            hoverlabel.text = Util.getTime(Math.round((mouseX / seekBar.width) * duration))
+        }
+
+        Rectangle {
+            id: hoverlabel
+            property alias text: _label.text
+
+            anchors.bottom: parent.top
+            height: dp(40)
+            width: dp(100)
+            visible: parent.containsMouse
+            color: Styles.bg
+
+            x: mouseArea.mouseX - width / 2
+
+            radius: dp(7)
+
+            border {
+                color: Styles.border
+                width: dp(1)
+            }
+
+            Text {
+                id: _label
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                color: Styles.textColor
+                font.pixelSize: Styles.titleFont.regular
+            }
         }
     }
 

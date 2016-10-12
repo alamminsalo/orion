@@ -616,13 +616,13 @@ Item {
             running: false
             repeat: false
             onTriggered: {
-                if (mAreaHeader.containsMouse || mAreaFooter.containsMouse || vol.open || sourcesBox.open || pauseArea.containsMouse){
-                    restart()
-                }
-                else {
+                if (canHideHeaders()) {
                     header.hide()
                     footer.hide()
                 }
+
+                else
+                    restart()
             }
         }
     }
@@ -644,5 +644,22 @@ Item {
                 easing.type: Easing.OutCubic
             }
         }
+    }
+
+    function canHideHeaders() {
+        if (mAreaHeader.containsMouse)
+            return false
+        if (mAreaFooter.containsMouse)
+            return false
+        if (vol.open)
+            return false
+        if (sourcesBox.open)
+            return false
+        if (pauseArea.containsMouse)
+            return false
+        if (seekBar.containsMouse)
+            return false
+
+        return true
     }
 }
