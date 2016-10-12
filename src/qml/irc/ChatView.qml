@@ -93,6 +93,11 @@ Rectangle {
             else
                 scrollbuf--
         }
+
+        onCountChanged: {
+            if (list.lock)
+                list.positionViewAtEnd()
+        }
     }
 
     Rectangle {
@@ -158,9 +163,6 @@ Rectangle {
             if (chatModel.count > max) {
                 chatModel.remove(0, chatModel.count - max)
             }
-
-            if (list.lock)
-                list.positionViewAtEnd()
         }
 
         onClear: {
