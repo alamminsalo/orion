@@ -137,7 +137,6 @@ void IrcChat::login()
 }
 
 void IrcChat::receive() {
-    qDebug() << "message recv";
     QString msg;
     while (sock->canReadLine()) {
         msg = sock->readLine();
