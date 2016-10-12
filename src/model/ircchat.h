@@ -73,8 +73,9 @@ signals:
 public slots:
     void sendMessage(const QString &msg);
     void onSockStateChanged();
+    void login();
 private slots:
-    void initialize();
+    void createConnection();
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
 
@@ -84,6 +85,7 @@ private:
     QTcpSocket *sock;
     QString room;
     QMap<QString, QString> badges;
+    bool logged_in;
 };
 
 #endif // IRCCHAT_H

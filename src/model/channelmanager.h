@@ -36,7 +36,7 @@ class ChannelManager: public QObject
 {
     Q_OBJECT
 
-    //Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
+    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
     Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
 
 protected:
@@ -123,6 +123,7 @@ signals:
     //oauth methods
     void accessTokenUpdated();
     void userNameUpdated(const QString name);
+    void login(QString username, QString password);
 
 public slots:
     void checkFavourites();

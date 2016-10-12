@@ -210,6 +210,8 @@ void ChannelManager::setAccessToken(const QString &arg)
             tempFavourites = 0;
             favouritesProxy->setSourceModel(favouritesModel);
         }
+
+        emit login("", "");
     }
 
     emit accessTokenUpdated();
@@ -333,6 +335,8 @@ bool ChannelManager::load(){
 
     if (!json["access_token"].isNull()){
         setAccessToken(json["access_token"].toString());
+    } else {
+        setAccessToken("");
     }
 
 	return true;
@@ -592,6 +596,8 @@ void ChannelManager::onUserNameUpdated(const QString &name)
     emit userNameUpdated(user_name);
 
     if (isAccessTokenAvailable()) {
+        emit login(user_name, access_token);
+
         //Start using user followed channels
         getFollowedChannels(FOLLOWED_FETCH_LIMIT, 0);
     }
