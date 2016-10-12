@@ -36,8 +36,8 @@ class ChannelManager: public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
-    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
+//    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
+//    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
 
 protected:
     NetworkManager* netman;
@@ -67,7 +67,7 @@ public:
     ChannelManager(NetworkManager *netman);
     ~ChannelManager();
 
-    bool load();
+    Q_INVOKABLE bool load();
     bool save();
     bool writeJSON(const QString&);
 
@@ -106,7 +106,7 @@ public:
     Q_INVOKABLE QString accessToken() const;
 
     Q_INVOKABLE void setAccessToken(const QString &arg);
-    Q_INVOKABLE bool isAccessTokenAvailable() { return access_token.length() > 0; }
+    Q_INVOKABLE bool isAccessTokenAvailable() { return !access_token.isEmpty(); }
 
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
@@ -123,7 +123,7 @@ signals:
     //oauth methods
     void accessTokenUpdated();
     void userNameUpdated(const QString name);
-    void login(QString username, QString password);
+    void login(const QString &username, const QString &password);
 
 public slots:
     void checkFavourites();

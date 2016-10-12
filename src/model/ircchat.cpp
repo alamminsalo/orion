@@ -37,7 +37,7 @@ IrcChat::IrcChat(QObject *parent) :
         emit errorOccured("Error opening socket");
     }
 
-    createConnection();
+    //createConnection();
     connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
     connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
     connect(sock, SIGNAL(connected()), this, SLOT(login()));
@@ -50,9 +50,6 @@ IrcChat::IrcChat(QObject *parent) :
 IrcChat::~IrcChat() { disconnect(); }
 
 void IrcChat::join(const QString channel) {
-
-    if (!logged_in)
-        login();
 
     if (inRoom())
         leave();
@@ -125,12 +122,12 @@ void IrcChat::createConnection()
 
 void IrcChat::login()
 {
+    if (userpass.isEmpty() || username.isEmpty())
+        setAnonymous(true);
+
     // Tell server that we support twitch-specific commands
     sock->write("CAP REQ :twitch.tv/commands\r\n");
     sock->write("CAP REQ :twitch.tv/tags\r\n");
-
-    if (userpass.isEmpty() || username.isEmpty())
-        setAnonymous(true);
 
     // Login
     sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());

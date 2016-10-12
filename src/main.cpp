@@ -76,7 +76,6 @@ int main(int argc, char *argv[])
     //Create channels manager
     ChannelManager *cman = new ChannelManager(netman);
     cman->checkResources();
-    cman->load();
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
