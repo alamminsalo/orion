@@ -21,8 +21,6 @@ Features:
 
 * `mpv` (default), `qtav` or `qt5-multimedia`
 
-* `libcommuni`
-
 ##Building on linux
 
 (Using arch linux examples, but can be applied to other distros as well)
