@@ -62,18 +62,24 @@ Rectangle {
 
         model: ListModel {
             id: chatModel
+
+            onCountChanged: {
+                if (list.lock)
+                    list.positionViewAtEnd()
+            }
         }
 
         clip: true
         highlightFollowsCurrentItem: true
         spacing: dp(10)
 
-        delegate: Component {
-            ChatMessage {
-                user: model.user
-                msg: model.message
+        delegate: ChatMessage {
+            user: model.user
+            msg: model.message
 
-                width: root.width
+            anchors {
+                left: parent.left
+                right: parent.right
             }
         }
 
@@ -92,11 +98,6 @@ Rectangle {
                 lock = false
             else
                 scrollbuf--
-        }
-
-        onCountChanged: {
-            if (list.lock)
-                list.positionViewAtEnd()
         }
     }
 
