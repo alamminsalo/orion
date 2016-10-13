@@ -46,7 +46,7 @@ Item {
 
         _text.text += textStr.trim()
 
-        console.log("Created text object: " + textStr)
+        //console.log("Created text object: " + textStr)
     }
 
     function makeUrl(str) {
@@ -71,5 +71,6 @@ Item {
         linkColor: Styles.purple
         wrapMode: Text.WordWrap
         onLinkActivated: Qt.openUrlExternally(link)
+        //renderType: Text.NativeRendering
     }
 }
