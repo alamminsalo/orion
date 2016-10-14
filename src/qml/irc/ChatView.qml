@@ -59,20 +59,29 @@ Rectangle {
 
         property bool lock: true
         property int scrollbuf: 0
+        property int previousY: 0
 
         model: ListModel {
             id: chatModel
+
+            onCountChanged: {
+                console.log("count changed (model)")
+                if (list.lock) {
+                    console.log("Going to end")
+                    list.positionViewAtEnd()
+                }
+            }
         }
 
         clip: true
-        highlightFollowsCurrentItem: true
+        highlightFollowsCurrentItem: false
         spacing: dp(10)
+        boundsBehavior: Flickable.StopAtBounds
 
         delegate: Component {
             ChatMessage {
                 user: model.user
                 msg: model.message
-
                 width: root.width
             }
         }
@@ -84,19 +93,21 @@ Rectangle {
             bottom: spacer.top
         }
 
+        onCountChanged: {
+            console.log("count changed (list)")
+        }
+
         onContentYChanged: {
+            console.log(scrollbuf)
 
             if (atYEnd)
                 lock = true;
             else if (scrollbuf < 0)
                 lock = false
-            else
+            else if (previousY > contentY)
                 scrollbuf--
-        }
 
-        onCountChanged: {
-            if (list.lock)
-                list.positionViewAtEnd()
+            previousY = contentY
         }
     }
 
@@ -155,6 +166,7 @@ Rectangle {
         id: chat
 
         onMessageReceived: {
+            console.log("added")
             chatModel.append({"user": user, "message": message})
             list.scrollbuf = 6
 
