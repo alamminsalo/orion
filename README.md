@@ -63,3 +63,9 @@ Installer can be found in the application's install directory (I'll make it inst
 * If network goes down while Orion is running, the images stop loading until application restart. Otherwise the application should work fine after network is back up
 * Sometimes the stream hangs and doesn't load on start. Restarting the stream should work
 * Vods are sometimes having issues, skipping some parts of the video. Needs further investigating
+
+##Contributing
+
+If you love this software and want to show your support, buy me a beer!
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W82QWCPCRT4KN)
