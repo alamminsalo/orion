@@ -248,7 +248,6 @@ Item {
         }
 
         onPositionChanged: {
-            console.log("Renderer position changed to " + renderer.position)
             seekBar.setPosition(renderer.position, duration)
         }
 

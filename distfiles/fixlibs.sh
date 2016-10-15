@@ -29,7 +29,7 @@ for FRAMEWORK in $FRAMEWORKS; do
 	$DIR/Contents/Resources/qml/QtQuick.2/libqtquick2plugin.dylib
 done
 
-#QtQuick.2 dylib
+#QtWebEngine
 FRAMEWORKS="QtWebEngine QtWebEngineCore QtQuick QtQml QtCore QtNetwork QtGui QtWebChannel"
 for FRAMEWORK in $FRAMEWORKS; do
 	echo $FRAMEWORK
