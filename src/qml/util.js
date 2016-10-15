@@ -20,7 +20,6 @@ function getTime(totalSec){
     if (!totalSec)
         return "NaN"
 
-    console.log(totalSec)
     var days = Math.floor(parseInt(totalSec / (3600 * 24)))
     var hours = parseInt(totalSec / 3600) % 24;
     var minutes = parseInt(totalSec / 60) % 60;
