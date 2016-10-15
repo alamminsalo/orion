@@ -13,7 +13,7 @@
  */
 
 import QtQuick 2.5
-import QtMultimedia 5.6
+import QtMultimedia 5.5
 import "components"
 import "irc"
 import "styles.js" as Styles
@@ -49,7 +49,7 @@ Item {
         console.log("Loading src", src, start)
         stop();
 
-        if (start !== undefined) {
+        if (start >= 0) {
             seekTo(start)
         }
 
@@ -79,7 +79,7 @@ Item {
 
     function seekTo(pos) {
         renderer.seek(pos * 1000)
-        //root.position = ms
+        root.position = pos
     }
 
     function setVolume(vol) {

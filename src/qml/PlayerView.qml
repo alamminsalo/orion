@@ -114,7 +114,7 @@ Item {
     function loadAndPlay(){
         setWatchingTitle()
 
-        var start = !isVod ? undefined : seekBar.position
+        var start = !isVod ? -1 : seekBar.position
 
         var stream = qualityMap[quality]
 
@@ -210,7 +210,7 @@ Item {
     }
 
     function seekTo(position) {
-        //console.log("Seeking to", position, duration)
+        console.log("Seeking to", position, duration)
         if (isVod){
             renderer.seekTo(position)
         }
@@ -248,7 +248,7 @@ Item {
         }
 
         onPositionChanged: {
-            //console.log("Renderer position changed to " + renderer.position)
+            console.log("Renderer position changed to " + renderer.position)
             seekBar.setPosition(renderer.position, duration)
         }
 

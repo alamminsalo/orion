@@ -18,8 +18,8 @@ import "../styles.js" as Styles
 import "../util.js" as Util
 
 Item {
-    property int duration
-    property int position
+    property int duration: 0
+    property int position: 0
     property alias containsMouse: mouseArea.containsMouse
 
     id: root
@@ -27,16 +27,11 @@ Item {
     signal userChangedPosition(int position)
 
     function setPosition(position, duration){
-
-        //if (root.duration != duration)
-            root.duration = duration
-
-        //if (root.position != position)
-            root.position = position
-
+        root.duration = duration
+        root.position = position
 
         var fraction = position / duration
-        fillBar.width = Math.floor(fraction * seekBar.width)
+        fillBar.width = Math.min(seekBar.width, Math.floor(fraction * seekBar.width))
 
         time.updateTime()
     }
@@ -98,11 +93,14 @@ Item {
 
         propagateComposedEvents: false
         onClicked: {
-            userChangedPosition(Math.round((mouseX / seekBar.width) * duration))
+            var _pos = Math.round((mouseX / seekBar.width) * duration)
+            console.log("User changed pos: ", _pos, duration)
+            userChangedPosition(_pos)
         }
 
         onPositionChanged: {
-            hoverlabel.text = Util.getTime(Math.round((mouseX / seekBar.width) * duration))
+            var _pos = Math.round((mouseX / seekBar.width) * duration)
+            hoverlabel.text = Util.getTime(_pos)
         }
 
         Rectangle {

@@ -49,7 +49,7 @@ Item {
         console.log("Loading src", src, start)
         stop();
 
-        if (start !== undefined) {
+        if (start >= 0) {
             position = start
             renderer.setOption("start", "+" + position)
         }
@@ -79,9 +79,9 @@ Item {
         console.log(status)
     }
 
-    function seekTo(ms) {
-        renderer.setProperty("playback-time", ms)
-        //root.position = ms
+    function seekTo(sec) {
+        renderer.setProperty("playback-time", sec)
+        root.position = sec
     }
 
     function setVolume(vol) {

@@ -17,6 +17,30 @@ for FRAMEWORK in $FRAMEWORKS; do
 	$DIR/Contents/MacOS/orion
 done
 
+#QtQuick.2 dylib
+FRAMEWORKS="QtQuick QtQml QtNetwork QtCore QtGui"
+for FRAMEWORK in $FRAMEWORKS; do
+	echo $FRAMEWORK
+	install_name_tool -id @executable_path/../Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
+	$DIR/Contents/Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK
+
+	install_name_tool -change @rpath/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
+	@executable_path/../Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
+	$DIR/Contents/Resources/qml/QtQuick.2/libqtquick2plugin.dylib
+done
+
+#QtQuick.2 dylib
+FRAMEWORKS="QtWebEngine QtWebEngineCore QtQuick QtQml QtCore QtNetwork QtGui QtWebChannel"
+for FRAMEWORK in $FRAMEWORKS; do
+	echo $FRAMEWORK
+	install_name_tool -id @executable_path/../Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
+	$DIR/Contents/Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK
+
+	install_name_tool -change @rpath/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
+	@executable_path/../Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
+	$DIR/Contents/Resources/qml/QtWebEngine/libqtwebengineplugin.dylib
+done
+
 #Multimedia libs
 FRAMEWORKS="QtGui QtCore QtQuick QtQml QtNetwork QtMultimedia QtMultimediaQuick_p"
 for FRAMEWORK in $FRAMEWORKS; do

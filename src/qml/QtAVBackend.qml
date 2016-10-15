@@ -49,7 +49,7 @@ Item {
         console.log("Loading src", src, start)
         stop();
 
-        if (start !== undefined) {
+        if (start >= 0) {
             seekTo(start)
         }
 
@@ -79,7 +79,7 @@ Item {
 
     function seekTo(pos) {
         renderer.seek(pos * 1000)
-        //root.position = ms
+        root.position = pos
     }
 
     function setVolume(vol) {
