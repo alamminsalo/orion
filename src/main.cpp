@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     QtWebEngine::initialize();
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
-    QApplication::setFont(QFont("qrc:/fonts/DroidSans.ttf"));
+    app.setFont(QFont("qrc:/fonts/NotoSans-Regular.ttf"));
 
     app.setWindowIcon(appIcon);
 

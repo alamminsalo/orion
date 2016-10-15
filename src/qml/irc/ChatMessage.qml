@@ -15,13 +15,13 @@
 import QtQuick 2.0
 import "../styles.js" as Styles
 
-Flow {
+Item {
     id: root
     property string user
     property string msg
     property int fontSize: Styles.titleFont.smaller
 
-    spacing: fontSize * 0.3
+    height: childrenRect.height
 
     Component.onCompleted: {
         _text.text = "<b>%1</b>".arg(user) + (msg ? ": " : "")
@@ -31,7 +31,9 @@ Flow {
     }
 
     function parseMsg(msg) {
+
         var mlist = msg.split(" ")
+        var textStr = ""
 
         for (var i=0; i < mlist.length; i++) {
             var str = mlist[i]
@@ -39,22 +41,18 @@ Flow {
             if (!str)
                 continue
 
-            var dtext = Qt.createQmlObject('import QtQuick 2.0; Text {}', root, "dynText" + i);
-            dtext.text = str
-            dtext.color= Styles.textColor
-            dtext.font.pixelSize = fontSize
-            //dtext.wrapMode = Text.WordWrap
-
-            if (isUrl(str)) {
-                var mArea = Qt.createQmlObject('import QtQuick 2.0; MouseArea {anchors.fill: parent;}', dtext, "mArea" + i);
-                mArea.cursorShape = Qt.PointingHandCursor;
-                mArea.clicked.connect(function() {
-                    Qt.openUrlExternally(str)
-                })
-                dtext.font.underline = true
-                dtext.color = Styles.purple
-            }
+            textStr += "%1 ".arg(!isUrl(str) ? str : makeUrl(str))
         }
+
+        _text.text += textStr.trim()
+
+        //console.log("Created text object: " + textStr)
+    }
+
+    function makeUrl(str) {
+        return "<a href=\"%2%1\">%1</a>"
+            .arg(str)
+            .arg(str.match(/^(https?:\/\/)/) ? "" : "http://") //Set http:// start if omitted
     }
 
     function isUrl(str) {
@@ -63,9 +61,16 @@ Flow {
 
     Text {
         id: _text
+        anchors {
+            left: parent.left
+            right: parent.right
+        }
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
         font.pixelSize: fontSize
-        //wrapMode: Text.WordWrap
+        linkColor: Styles.purple
+        wrapMode: Text.WordWrap
+        onLinkActivated: Qt.openUrlExternally(link)
+        //renderType: Text.NativeRendering
     }
 }
