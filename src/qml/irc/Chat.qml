@@ -51,8 +51,7 @@ Item {
     }
 
     function sendChatMessage(message) {
-        if (chat.inRoom && chat.connected)
-            chat.sendMessage(message)
+        chat.sendMessage(message)
     }
 
     function reconnect() {

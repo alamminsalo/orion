@@ -51,15 +51,15 @@ IrcChat::~IrcChat() { disconnect(); }
 
 void IrcChat::join(const QString channel) {
 
+    if (inRoom())
+        leave();
+
     // Save channel name for later use
     room = channel;
 
     if (!connected()) {
         reopenSocket();
     }
-
-    if (inRoom())
-        leave();
 
     // Join channel's chat room
     sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
@@ -112,8 +112,10 @@ bool IrcChat::connected() {
 }
 
 void IrcChat::sendMessage(const QString &msg) {
-    sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
-    emit messageReceived(username, msg);
+    if (inRoom() && connected()) {
+        sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
+        emit messageReceived(username, msg);
+    }
 }
 
 void IrcChat::onSockStateChanged() {
