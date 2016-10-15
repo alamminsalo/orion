@@ -97,14 +97,14 @@ Item {
     onStatusChanged: {
         switch (status) {
         case "PLAYING":
-                playingResumed();
-                break;
+            playingResumed();
+            break;
         case "PAUSED":
-                playingPaused();
-                break;
+            playingPaused();
+            break;
         case "STOPPED":
-                playingStopped();
-                break;
+            playingStopped();
+            break;
         }
     }
 

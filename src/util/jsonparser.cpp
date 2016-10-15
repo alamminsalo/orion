@@ -393,7 +393,7 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
                 + "&type=any"
                   "&player=twitchweb"
                   "&allow_source=true"
-                  "&$allow_audio_only=true";
+                  "&allow_audio_only=true";
     }
 
     return url;

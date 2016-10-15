@@ -8,7 +8,7 @@ QT     += gui opengl qml quick network widgets webengine
 
 TARGET = orion
 
-VERSION = 1.3.4
+VERSION = 1.3.5
 
 DEFINES += APP_NAME=\\\"Orion\\\"
 
@@ -105,31 +105,16 @@ unix:!macx: {
     HEADERS += src/notification/notificationsender.h
     SOURCES +=  src/notification/notificationsender.cpp
 
-    #Copy some files over to destination dir
-    #CONFIG(release): {
-    #    copydata.commands = $(COPY) $$PWD/distfiles/* $$OUT_PWD
-    #    first.depends = $(first) copydata
-    #    export(first.depends)
-    #    export(copydata.commands)
+    target.path = /usr/bin
+    INSTALLS += target
 
-    #    QMAKE_EXTRA_TARGETS += first copydata
-    #}
+    _desktop.files = distfiles/Orion.desktop
+    _desktop.path = /usr/local/share/applications
 
-    #QMAKE_POST_LINK += $quote($(COPY) $PWD/distfiles * $OUT_PWD
+    _icon.files = distfiles/orion.svg
+    _icon.path = /usr/local/share/icons
 
-}
-
-unix:!macx: {
-	target.path = /usr/bin
-	INSTALLS += target
-
-	_desktop.files = distfiles/Orion.desktop
-	_desktop.path = /usr/local/share/applications
-
-	_icon.files = distfiles/orion.svg
-	_icon.path = /usr/local/share/icons
-
-	INSTALLS += _desktop _icon
+    INSTALLS += _desktop _icon
 }
 
 RESOURCES += \
@@ -171,6 +156,8 @@ win32: {
 #CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
 
 macx: {
+    QMAKE_INFO_PLIST = distfiles/Info.plist
+
     ICON = $$PWD/distfiles/orion.icns
     LIBS += -framework Foundation -framework CoreServices
     LIBS += -framework AppKit

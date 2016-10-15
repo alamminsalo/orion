@@ -32,7 +32,7 @@ Item {
         target: g_cman
 
         onLogin: {
-            console.log("Login command: ", username, password)
+            //console.log("Login command: ", username, password)
             chat.name = username
             chat.password = password.length > 0 ? "oauth:" + password : ""
 
@@ -80,7 +80,6 @@ Item {
         }
 
         onNoticeReceived: {
-            console.log(name,password)
             root.messageReceived("--NOTIFICATION--", message)
         }
     }

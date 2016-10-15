@@ -25,5 +25,6 @@ var icons = {
     "expand":       "\uf065",
     "compress":     "\uf066",
     "crop":         "\uf125",
-    "chat":         "\uf086"
+    "chat":         "\uf086",
+    "reload":       "\uf021"
 }

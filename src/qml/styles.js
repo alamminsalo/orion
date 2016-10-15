@@ -75,11 +75,11 @@ var iconSize = 20
 var iconSizeBigger = iconSize + 4
 
 var titleFont = {
-    extrasmall: 13,
-    smaller: 15,
-    regular: 17,
-    bigger: 19,
-    large: 21
+    extrasmall: 12,
+    smaller: 14,
+    regular: 16,
+    bigger: 18,
+    large: 20
 }
 
 var button = {

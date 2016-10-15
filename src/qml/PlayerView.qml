@@ -216,6 +216,11 @@ Item {
         }
     }
 
+    function reloadStream() {
+        renderer.stop()
+        loadAndPlay()
+    }
+
     Connections {
         target: g_vodmgr
         onStreamsGetFinished: {
@@ -249,14 +254,17 @@ Item {
 
         onPlayingResumed: {
             setWatchingTitle()
+            spinner.visible = false
         }
 
         onPlayingPaused: {
             setHeaderText("Paused")
+            spinner.visible = false
         }
 
         onPlayingStopped: {
             setHeaderText("Playback stopped")
+            spinner.visible = false
         }
     }
 
@@ -290,6 +298,13 @@ Item {
             onLoaded: {
                 console.log("Loaded renderer")
             }
+        }
+
+        SpinnerIcon {
+            id: spinner
+            anchors.centerIn: parent
+            iconSize: parent.width * 0.1
+            visible: false
         }
     }
 
@@ -481,11 +496,35 @@ Item {
                 MouseArea {
                     id: pauseArea
                     anchors.fill: parent
-                    onClicked: renderer.togglePause()
+                    onClicked: {
+                        renderer.togglePause()
+                    }
+
                     hoverEnabled: true
 
                     onHoveredChanged: {
                         togglePause.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                    }
+                }
+            }
+
+            Icon {
+                id: reloadButton
+                icon: "reload"
+                anchors {
+                    left: pauseButton.right
+                    leftMargin: dp(5)
+                    verticalCenter: parent.verticalCenter
+                }
+
+                MouseArea {
+                    id: reloadArea
+                    anchors.fill: parent
+                    onClicked: reloadStream()
+                    hoverEnabled: true
+
+                    onHoveredChanged: {
+                        reloadButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
                     }
                 }
             }
@@ -501,7 +540,7 @@ Item {
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
-                    left: pauseButton.right
+                    left: reloadButton.right
                     right: fitButton.left
                 }
             }
@@ -587,10 +626,8 @@ Item {
                 }
 
                 onIndexChanged: {
-                    if (index != quality){
-                        quality = index
-                        loadAndPlay()
-                    }
+                    quality = index
+                    loadAndPlay()
                 }
             }
         }
@@ -658,6 +695,8 @@ Item {
         if (pauseArea.containsMouse)
             return false
         if (seekBar.containsMouse)
+            return false
+        if (reloadArea.containsMouse)
             return false
 
         return true
