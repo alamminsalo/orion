@@ -66,6 +66,6 @@ Installer can be found in the application's install directory (I'll make it inst
 
 ##Contributing
 
-If you love this software and want to contribute to my habits of intoxication, buy me a beer!
+If you love this software and want to show your support, you can always buy me a beer!
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=W82QWCPCRT4KN)
