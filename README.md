@@ -17,6 +17,8 @@ Features:
 
 ![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/5.png)
 
+![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/8.png)
+
 ##Dependencies
 
 * `mpv` (default), `qtav` or `qt5-multimedia`
