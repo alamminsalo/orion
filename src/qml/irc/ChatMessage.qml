@@ -24,8 +24,8 @@ Item {
     height: childrenRect.height
 
     Component.onCompleted: {
-        _text.text = "<b>%1</b>".arg(user) + (msg ? ": " : "")
-
+        _text.text = "<font color=\""+chat.colors[user]+"\"><b>%1</b></font>".arg(user) + (msg ? ": " : "")
+        _text.user = user
         if (msg)
             parseMsg(msg)
     }
@@ -61,6 +61,7 @@ Item {
 
     Text {
         id: _text
+        property string user: ""
         anchors {
             left: parent.left
             right: parent.right
