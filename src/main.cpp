@@ -38,6 +38,11 @@
     #include "player/mpvrenderer.h"
 #endif
 
+inline void noisyFailureMsgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+
+}
+
 int main(int argc, char *argv[])
 {
     //Force using "auto" value for QT_DEVICE_PIXEL_RATIO env var
@@ -61,7 +66,9 @@ int main(int argc, char *argv[])
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
     app.setFont(QFont("qrc:/fonts/NotoSans-Regular.ttf"));
-
+    #ifndef  QT_DEBUG
+        qInstallMessageHandler(noisyFailureMsgHandler);
+    #endif
     app.setWindowIcon(appIcon);
 
     SysTray *tray = new SysTray();
