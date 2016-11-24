@@ -24,6 +24,13 @@ Item {
     width: dp(50)
     height: dp(50)
 
+    onValueChanged: {
+        if (value > 100)
+            value = 100;
+        else if (value < 0)
+            value = 0;
+    }
+
     function refresh(){
         open = iconArea.containsMouse || sliderArea.containsMouse || sliderArea.pressed
     }
@@ -86,10 +93,10 @@ Item {
 
             onMouseYChanged: {
                 if (pressed){
-                    var yPos = Math.max(sliderBar.y, Math.min(sliderBar.y + sliderBar.height, mouseY))
-                    var _val = ((sliderBar.height - yPos + sliderBar.y)/ sliderBar.height) * 100
-                    value = Math.max(0, Math.min(100,_val))
-                    mute = false
+                    var yPos = Math.max(sliderBar.y, Math.min(sliderBar.y + sliderBar.height, mouseY));
+                    var _val = ((sliderBar.height - yPos + sliderBar.y)/ sliderBar.height) * 100;
+                    value = _val;
+                    mute = false;
                 }
             }
 
