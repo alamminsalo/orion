@@ -21,9 +21,10 @@
 #include "game.h"
 #include "../network/networkmanager.h"
 
+#include <QSettings>
 #include <QSortFilterProxyModel>
 
-#define DATA_FILE           "data.json"
+#define DATA_FILE           "settings.bin"
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 #define DIALOG_FILE         "resources/scripts/dialog.sh"
 #define PLAY_FILE           "resources/scripts/play.sh"
@@ -58,6 +59,7 @@ protected:
     bool alert;
     bool closeToTray;
     int alertPosition;
+    int volumeLevel;
 
     //Oauth
     QString user_name;
@@ -67,8 +69,8 @@ public:
     ChannelManager(NetworkManager *netman);
     ~ChannelManager();
 
-    Q_INVOKABLE bool load();
-    bool save();
+    void load();
+    void save();
     bool writeJSON(const QString&);
 
     Channel *findFavourite(const QString&);
@@ -93,6 +95,9 @@ public:
 
     Q_INVOKABLE int getAlertPosition() const;
     Q_INVOKABLE void setAlertPosition(const int &value);
+
+    Q_INVOKABLE int getVolumeLevel() const;
+    Q_INVOKABLE void setVolumeLevel(const int &value);
 
     Q_INVOKABLE void addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
                                      const  QString &info, const QString &logo, const QString &preview,
