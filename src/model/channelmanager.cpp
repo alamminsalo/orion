@@ -263,11 +263,11 @@ void ChannelManager::load(){
     }
 
     if (!settings.value("alertPosition").isNull()) {
-        alert = settings.value("alertPosition").toInt();
+        alertPosition = settings.value("alertPosition").toInt();
     }
 
     if (!settings.value("closeToTray").isNull()) {
-        alert = settings.value("closeToTray").toBool();
+        closeToTray = settings.value("closeToTray").toBool();
     }
 
     if (!settings.value("channels").isNull()) {
