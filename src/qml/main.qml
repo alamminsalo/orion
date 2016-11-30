@@ -114,7 +114,6 @@ ApplicationWindow {
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root)
 
-        g_cman.load()
         g_cman.checkFavourites()
         pollTimer.start()
 

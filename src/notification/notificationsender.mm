@@ -17,7 +17,7 @@
 #include <QNetworkRequest>
 
 #ifdef Q_OS_MAC
-#import <NSUserNotification.h>
+#import <Foundation/NSUserNotification.h>
 #endif
 
 NotificationSender::NotificationSender(QNetworkAccessManager *nm) : netman(nm)

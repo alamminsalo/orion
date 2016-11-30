@@ -577,16 +577,19 @@ Item {
                     right: fsButton.left
                     verticalCenter: parent.verticalCenter
                 }
+                Component.onCompleted: {
+                   vol.value = g_cman.getVolumeLevel()
+                }
 
                 onValueChanged: {
                     var val
-                    // MPV uses non-linear volume on linux
                     if (Qt.platform === "linux" && player_backend === "mpv")
                         val = Math.max(0, Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
                     else
                         val = Math.max(0, Math.min(100, value))
 
                     renderer.setVolume(val)
+                    g_cman.setVolumeLevel(val);
                 }
             }
 

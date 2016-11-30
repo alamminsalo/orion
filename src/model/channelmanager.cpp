@@ -64,6 +64,7 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
 
     connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
+    load();
 }
 
 ChannelManager::~ChannelManager(){
@@ -249,103 +250,101 @@ void ChannelManager::checkResources()
 
 
 
-bool ChannelManager::load(){
+void ChannelManager::load(){
 
-    qDebug() << "Opening JSON...";
-
+    QSettings settings(appPath(), QSettings::NativeFormat);
     QJsonParseError error;
-    if (!QFile::exists(appPath())){
-        qDebug() << "File doesn't exist";
-        return false;
-    }
-    QJsonObject json = QJsonDocument::fromJson(util::readFile(appPath()).toUtf8(),&error).object();
-
     if (error.error != QJsonParseError::NoError){
         qDebug() << "Parsing error!";
-        return false;
     }
 
-    if (!json["alert"].isNull()){
-        alert = json["alert"].toBool();
+    if (!settings.value("alert").isNull()) {
+        alert = settings.value("alert").toBool();
     }
 
-    if (!json["alertPosition"].isNull()){
-        alertPosition = json["alertPosition"].toInt();
+    if (!settings.value("alertPosition").isNull()) {
+        alert = settings.value("alertPosition").toInt();
     }
 
-    if (!json["closeToTray"].isNull()){
-        closeToTray = json["closeToTray"].toBool();
+    if (!settings.value("closeToTray").isNull()) {
+        alert = settings.value("closeToTray").toBool();
     }
 
-    if (json["channels"].isUndefined()){
-        qDebug() << "Error: Bad file format: Missing field \"channels\"";
-        return false;
-	}
+    if (!settings.value("channels").isNull()) {
+        QJsonParseError error;
+        QJsonObject json = QJsonDocument::fromJson(settings.value("channels").toByteArray(),&error).object();
 
-    if (!json["channels"].isArray()){
-        qDebug() << "Error: Bad file format: channels is not array";
-        return false;
+        if (json["channels"].isUndefined()){
+            qDebug() << "Error: Bad file format: Missing field \"channels\"";
+        }
+
+        if (!json["channels"].isArray()){
+            qDebug() << "Error: Bad file format: channels is not array";
+        }
+
+        const QJsonArray &arr = json["channels"].toArray();
+
+        QList<Channel*> _channels;
+
+        foreach(const QJsonValue &value, arr){
+            QJsonObject obj = value.toObject();
+
+            if (obj["title"].isUndefined() || obj["title"].isNull()){
+                qDebug() << "title is missing";
+            }
+            if (obj["uri"].isUndefined() || obj["uri"].isNull()){
+                qDebug() << "uri is missing";
+            }
+            if (obj["info"].isUndefined() || obj["info"].isNull()){
+                qDebug() << "info is missing";
+            }
+            if (obj["alert"].isUndefined() || obj["alert"].isNull()){
+                qDebug() << "alert is missing";
+            }
+            if (obj["lastSeen"].isUndefined() || obj["lastSeen"].isNull()){
+                qDebug() << "lastSeen is missing";
+            }
+            if (obj["logo"].isUndefined() && obj["logo"].isNull()){
+                qDebug() << "logo is missing";
+            }
+            if (obj["preview"].isUndefined() && obj["preview"].isNull()){
+                qDebug() << "preview is missing";
+            }
+
+            Channel* channel = new Channel(
+                        obj["uri"].toString(),
+                        obj["title"].toString(),
+                        obj["info"].toString(),
+                        obj["alert"].toBool(),
+                        obj["lastSeen"].toInt(),
+                        obj["logo"].toString(),
+                        obj["preview"].toString());
+            channel->setId(obj["id"].toInt());
+
+            _channels.append(channel);
+        }
+
+        favouritesModel->addAll(_channels);
+
+        qDeleteAll(_channels);
     }
 
-    const QJsonArray &arr = json["channels"].toArray();
-
-    QList<Channel*> _channels;
-
-    foreach(const QJsonValue &value, arr){
-        QJsonObject obj = value.toObject();
-
-        if (obj["title"].isUndefined() || obj["title"].isNull()){
-            qDebug() << "title is missing";
-        }
-        if (obj["uri"].isUndefined() || obj["uri"].isNull()){
-            qDebug() << "uri is missing";
-        }
-        if (obj["info"].isUndefined() || obj["info"].isNull()){
-            qDebug() << "info is missing";
-        }
-        if (obj["alert"].isUndefined() || obj["alert"].isNull()){
-            qDebug() << "alert is missing";
-        }
-        if (obj["lastSeen"].isUndefined() || obj["lastSeen"].isNull()){
-            qDebug() << "lastSeen is missing";
-        }
-        if (obj["logo"].isUndefined() && obj["logo"].isNull()){
-            qDebug() << "logo is missing";
-        }
-        if (obj["preview"].isUndefined() && obj["preview"].isNull()){
-            qDebug() << "preview is missing";
-        }
-
-        Channel* channel = new Channel(
-                    obj["uri"].toString(),
-                    obj["title"].toString(),
-                    obj["info"].toString(),
-                    obj["alert"].toBool(),
-                    obj["lastSeen"].toInt(),
-                    obj["logo"].toString(),
-                    obj["preview"].toString());
-        channel->setId(obj["id"].toInt());
-
-        _channels.append(channel);
-    }
-
-    favouritesModel->addAll(_channels);
-
-    qDeleteAll(_channels);
-
-    if (!json["access_token"].isNull()){
-        setAccessToken(json["access_token"].toString());
+    if (!settings.value("access_token").isNull()) {
+        setAccessToken(settings.value("access_token").toString());
     } else {
         setAccessToken("");
     }
-
-	return true;
+    if (!settings.value("volumeLevel").isNull()) {
+        setVolumeLevel(settings.value("volumeLevel").toInt());
+    } else {
+        setVolumeLevel(100);
+    }
 }
 
-bool ChannelManager::save()
+void ChannelManager::save()
 {
     QJsonArray arr;
-
+    QSettings settings(appPath(),QSettings::NativeFormat);
     if (tempFavourites) {
         delete favouritesModel;
         favouritesModel = tempFavourites;
@@ -358,13 +357,12 @@ bool ChannelManager::save()
 
     QJsonValue val(arr);
     QJsonObject obj;
-    obj["channels"] = val;
-    obj["alert"] = QJsonValue(alert);
-    obj["alertPosition"] = QJsonValue(alertPosition);
-    obj["closeToTray"] = QJsonValue(closeToTray);
-    obj["access_token"] = QJsonValue(access_token);
-
-    return util::writeFile(appPath(),QJsonDocument(obj).toJson());
+    settings.setValue("channels", QJsonDocument(obj).toJson());
+    settings.setValue("alert", alert);
+    settings.setValue("alertPosition", alertPosition);
+    settings.setValue("closeToTray", closeToTray);
+    settings.setValue("access_token", access_token);
+    settings.setValue("volumeLevel", volumeLevel);
 }
 
 void ChannelManager::addToFavourites(const quint32 &id){
@@ -643,4 +641,10 @@ void ChannelManager::onNetworkAccessChanged(bool up)
         resultsModel->setAllChannelsOffline();
         featuredModel->setAllChannelsOffline();
     }
+}
+int ChannelManager::getVolumeLevel() const {
+    return volumeLevel;
+}
+void ChannelManager::setVolumeLevel(const int &value) {
+    volumeLevel = value;
 }
