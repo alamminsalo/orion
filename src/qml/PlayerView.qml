@@ -18,7 +18,10 @@ import "irc"
 import "styles.js" as Styles
 
 Item {
-    anchors.fill: parent
+    anchors {
+        left: parent.left
+        bottom: parent.bottom
+    }
 
     //Quality values:
     //  4 - source
@@ -123,11 +126,19 @@ Item {
         renderer.load(stream, start)
     }
 
+    function stopStream() {
+        renderer.stop()
+        root.visible = false
+        smallPlayer = false
+    }
+
     function getStreams(channel, vod){
 
         if (!channel){
             return
         }
+
+        smallPlayer = true
 
         renderer.stop()
 
@@ -439,7 +450,7 @@ Item {
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
-                    right: parent.right
+                    right: stopButton.left
                     rightMargin: dp(5)
                 }
                 width: dp(50)
@@ -457,6 +468,31 @@ Item {
                     }
                 }
             }
+
+	    Item {
+                id: stopButton
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: parent.right
+                    rightMargin: dp(5)
+                }
+		Text {
+		    anchors.centerIn: parent
+		    text: "X"
+		    color: "white"
+		}
+                width: dp(50)
+                height: width
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        stopStream()
+                    }
+                    hoverEnabled: true
+                }
+	    }
         }
 
         PlayerHeader {

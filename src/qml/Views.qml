@@ -19,6 +19,7 @@ import "styles.js" as Styles
 
 Rectangle {
     property int selection
+    property bool smallPlayer: true
 //    property alias playerView: loader.item
     id: root
 
@@ -31,10 +32,13 @@ Rectangle {
         favouritesView.visible = false
         gamesView.visible = false
         featuredView.visible = false
-        playerView.visible = false
+        playerView.visible = smallPlayer
         settingsView.visible = false
         vodsView.visible = false
         webView.visible = false
+
+	playerView.width = parent.width / 3
+	playerView.height = parent.height / 3
 
         switch (selection){
 
@@ -72,6 +76,8 @@ Rectangle {
         //Player
         case 5:
             playerView.visible = true
+            playerView.width = parent.width
+            playerView.height = parent.height
             break
 
         //Settings
