@@ -19,7 +19,7 @@ import "styles.js" as Styles
 
 Rectangle {
     property int selection
-    property bool smallPlayer: true
+    property bool smallPlayer: false
 //    property alias playerView: loader.item
     id: root
 
