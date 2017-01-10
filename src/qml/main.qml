@@ -82,6 +82,10 @@ ApplicationWindow {
                 bottom: parent.bottom
             }
 
+            onSelectedViewChanged: {
+                view.setSelection(selectedView)
+            }
+
             Component.onCompleted: toggle()
         }
 
@@ -95,7 +99,6 @@ ApplicationWindow {
 
             Views {
                 id: view
-                selection: sidebar.selectedView
                 anchors.fill: parent
                 onRequestSelectionChange: {
                     g_toolBox.setView(index)
