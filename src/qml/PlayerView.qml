@@ -38,6 +38,7 @@ Item {
 
     //Minimode, bit ugly
     property bool smallMode: false
+    property alias enableSmallMode: miniModeCheckBox.checked
 
     //Animations, need to be declared BEFORE width, height binds
     Behavior on width {
@@ -48,16 +49,13 @@ Item {
         }
     }
 
-    Behavior on height {
-        enabled: smallMode
-        NumberAnimation {
-            duration: 250
-            easing.type: Easing.OutCubic
-        }
-    }
-
     width: smallMode ? parent.width / 3 : parent.width
-    height: smallMode ? parent.height / 3 : parent.height
+    height: smallMode ? width * 0.5625 : parent.height
+
+    onSmallModeChanged: {
+        if (smallMode)
+            chatview.visible = false
+    }
 
     //Renderer interface
     property alias renderer: loader.item
@@ -388,28 +386,29 @@ Item {
                 right: parent.right
             }
 
-            Item {
+            Text {
+                id: headerText
                 anchors {
                     left: parent.left
                     top: parent.top
                     bottom: parent.bottom
-                    right: favourite.left
+                    right: miniModeCheckBox.left
+                    margins: dp(5)
                 }
+                fontSizeMode: Text.Fit
+                verticalAlignment: Text.AlignVCenter
+                color: Styles.textColor
+                font.pixelSize: Styles.titleFont.bigger
+                z: root.z + 1
+            }
 
-                clip: true
-
-                Text {
-                    id: headerText
-                    anchors {
-                        verticalCenter: parent.verticalCenter
-                        left: parent.left
-                        right: parent.right
-                        margins: dp(20)
-                    }
-
-                    color: Styles.textColor
-                    font.pixelSize: Styles.titleFont.bigger
-                    z: root.z + 1
+            OptionCheckbox {
+                id: miniModeCheckBox
+                text: "Mini player"
+                fontSize: dp(14)
+                anchors {
+                    right: favourite.left
+                    verticalCenter: parent.verticalCenter
                 }
             }
 
@@ -719,6 +718,7 @@ Item {
                 anchors.fill: parent
                 onClicked: {
                     root.smallMode = false
+                    root.enableSmallMode = false
                 }
                 hoverEnabled: true
                 onHoveredChanged: {

@@ -26,7 +26,7 @@ Rectangle {
     color: Styles.bg
 
     function setSelection(sel) {
-        if (selection === 5 && playerView.isPlaying())
+        if (selection === 5 && playerView.isPlaying() && playerView.enableSmallMode)
             playerView.smallMode = true
 
         selection = sel
