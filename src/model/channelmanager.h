@@ -56,10 +56,12 @@ protected:
     //Games (and game search results)
     GameListModel* gamesModel;
 
+    //TODO: move settings to own class
     bool alert;
     bool closeToTray;
     int alertPosition;
     int volumeLevel;
+    bool minimizeOnStartup;
 
     //Oauth
     QString user_name;
@@ -71,7 +73,6 @@ public:
 
     void load();
     void save();
-    bool writeJSON(const QString&);
 
     Channel *findFavourite(const QString&);
     Q_INVOKABLE bool containsFavourite(const quint32&);
@@ -112,6 +113,9 @@ public:
 
     Q_INVOKABLE void setAccessToken(const QString &arg);
     Q_INVOKABLE bool isAccessTokenAvailable() { return !access_token.isEmpty(); }
+
+    Q_INVOKABLE bool isMinimizeOnStartup() const;
+    Q_INVOKABLE void setMinimizeOnStartup(bool value);
 
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);

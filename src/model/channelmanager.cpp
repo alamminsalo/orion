@@ -22,15 +22,14 @@
 #include <QApplication>
 #include <QStandardPaths>
 
-
 ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
-    alert = true;
-    closeToTray = false;
-
     access_token = "";
     tempFavourites = 0;
 
+    alert = true;
+    closeToTray = false;
     alertPosition = 1;
+    minimizeOnStartup = false;
 
     favouritesModel = new ChannelListModel();
 
@@ -270,6 +269,10 @@ void ChannelManager::load(){
         closeToTray = settings.value("closeToTray").toBool();
     }
 
+    if (!settings.value("minimizeOnStartup").isNull()) {
+        minimizeOnStartup = settings.value("minimizeOnStartup").toBool();
+    }
+
     if (!settings.value("channels").isNull()) {
         QJsonParseError error;
         QJsonObject json = QJsonDocument::fromJson(settings.value("channels").toByteArray(),&error).object();
@@ -363,6 +366,7 @@ void ChannelManager::save()
     settings.setValue("closeToTray", closeToTray);
     settings.setValue("access_token", access_token);
     settings.setValue("volumeLevel", volumeLevel);
+    settings.setValue("minimizeOnStartup", minimizeOnStartup);
 }
 
 void ChannelManager::addToFavourites(const quint32 &id){
@@ -647,4 +651,14 @@ int ChannelManager::getVolumeLevel() const {
 }
 void ChannelManager::setVolumeLevel(const int &value) {
     volumeLevel = value;
+}
+
+bool ChannelManager::isMinimizeOnStartup() const
+{
+    return minimizeOnStartup;
+}
+
+void ChannelManager::setMinimizeOnStartup(bool value)
+{
+    minimizeOnStartup = value;
 }

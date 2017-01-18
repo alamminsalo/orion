@@ -45,10 +45,6 @@ inline void noisyFailureMsgHandler(QtMsgType type, const QMessageLogContext &con
 
 int main(int argc, char *argv[])
 {
-    //Force using "auto" value for QT_DEVICE_PIXEL_RATIO env var
-    //NOTE apparently this causes application to crash on moving to another screen
-    //qputenv("QT_DEVICE_PIXEL_RATIO",QByteArray("auto"));
-
     CustomApp app(argc, argv);
 
     //Single application solution
@@ -140,7 +136,7 @@ int main(int argc, char *argv[])
     engine.load(QUrl("qrc:/main.qml"));
 
     //Set up notifications
-    NotificationManager *notificationManager = new NotificationManager(&engine, netman->getManager());
+    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager());
     QObject::connect(cman, SIGNAL(pushNotification(QString,QString,QString)), notificationManager, SLOT(pushNotification(QString,QString,QString)));
 
     qDebug() << "Starting window...";

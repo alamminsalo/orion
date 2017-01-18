@@ -66,9 +66,23 @@ Item{
         }
 
         OptionCheckbox {
-            id: closeToTrayOption
+            id: minStartupOption
             anchors {
                 top: alertPosition.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.isMinimizeOnStartup()
+            onClicked: {
+                g_cman.setMinimizeOnStartup(checked)
+            }
+            text: "Start minimized"
+        }
+
+        OptionCheckbox {
+            id: closeToTrayOption
+            anchors {
+                top: minStartupOption.bottom
                 left: parent.left
                 right: parent.right
             }

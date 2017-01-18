@@ -123,6 +123,10 @@ ApplicationWindow {
         //Initial view
         g_toolBox.setView(2)
 
+
+        if (g_cman.isMinimizeOnStartup())
+            root.hide();
+
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
         console.log("Logical pixel density", Screen.logicalPixelDensity)
