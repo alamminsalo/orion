@@ -15,13 +15,27 @@
 import QtQuick 2.0
 import "../styles.js" as Styles
 
-Rectangle {
+Item {
     id: root
 
     implicitHeight: dp(400)
     implicitWidth: dp(200)
 
-    color: Styles.sidebarBg
+    //Visibity status:
+    //0 - hidden
+    //1 - solid visible
+    //2 - opaque
+    property int status: 0
+
+    visible: root.status > 0
+
+    property real _opacity: root.status > 1 ? 0.6 : 1.0
+
+    Rectangle {
+        anchors.fill: parent
+        color: Styles.sidebarBg
+        opacity: root._opacity
+    }
 
     onVisibleChanged: {
         if (visible)
@@ -111,14 +125,16 @@ Rectangle {
             right: parent.right
             bottom: inputArea.top
         }
-        height: inputArea.visible ? dp(3) : 0
+        height: inputArea.visible ? dp(2) : 0
         color: Styles.border
+
+        opacity: root._opacity
     }
 
-    Rectangle {
+    Item {
         id: inputArea
 
-        height: !chat.isAnonymous ? dp(30) : 0
+        height: !chat.isAnonymous ? dp(45) : 0
         anchors {
             bottom: parent.bottom
             left: parent.left
@@ -127,7 +143,11 @@ Rectangle {
 
         visible: !chat.isAnonymous
 
-        color: Styles.bg
+        Rectangle {
+            anchors.fill: parent
+            color: Styles.bg
+            opacity: root._opacity
+        }
 
         MouseArea {
             cursorShape: Qt.IBeamCursor
@@ -139,8 +159,7 @@ Rectangle {
                 id: _input
                 anchors {
                     fill: parent
-                    leftMargin: dp(5)
-                    rightMargin: dp(5)
+                    margins: dp(5)
                 }
                 color: "#ffffff"
                 clip:true

@@ -54,7 +54,7 @@ Item {
 
     onSmallModeChanged: {
         if (smallMode)
-            chatview.visible = false
+            chatview.status = 0
     }
 
     //Renderer interface
@@ -296,7 +296,7 @@ Item {
         anchors {
             top: parent.top
             left: parent.left
-            right: chatview.left
+            right: chatview.status < 2 ? chatview.left : parent.right
             bottom: parent.bottom
         }
 
@@ -479,7 +479,11 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        chatview.visible = !chatview.visible
+                        //chatview.visible = !chatview.visible
+                        chatview.status++
+
+                        if (chatview.status > 2)
+                            chatview.status = 0
                     }
                     hoverEnabled: true
 
@@ -745,6 +749,7 @@ Item {
 
     ChatView {
         id: chatview
+
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -752,7 +757,6 @@ Item {
         }
 
         width: visible ? dp(250) : 0
-        visible: false
 
         Behavior on width {
             NumberAnimation {
