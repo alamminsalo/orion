@@ -19,68 +19,69 @@ import "styles.js" as Styles
 
 Rectangle {
     property int selection
-    property bool smallPlayer: false
-//    property alias playerView: loader.item
     id: root
 
     signal requestSelectionChange(int index)
 
     color: Styles.bg
 
+    function setSelection(sel) {
+        if (selection === 5 && playerView.isPlaying() && playerView.enableSmallMode)
+            playerView.smallMode = true
+
+        selection = sel
+    }
+
     onSelectionChanged: {
         searchView.visible = false
         favouritesView.visible = false
         gamesView.visible = false
         featuredView.visible = false
-        playerView.visible = smallPlayer
+        playerView.visible = playerView.smallMode
         settingsView.visible = false
         vodsView.visible = false
         webView.visible = false
 
-	playerView.width = parent.width / 3
-	playerView.height = parent.height / 3
-
         switch (selection){
 
-        //Search
+            //Search
         case 0:
             searchView.visible = true
             gradient.parent = searchView
             searchView.focusInput()
             break
 
-        //Featured
+            //Featured
         case 1:
             featuredView.visible = true
             gradient.parent = featuredView
             break
 
-        //Fav
+            //Fav
         case 2:
             favouritesView.visible = true
             gradient.parent = favouritesView
             break
 
-        //Games
+            //Games
         case 3:
             gamesView.visible = true
             gradient.parent = gamesView
             break
 
-        //Vods
+            //Vods
         case 4:
             vodsView.visible = true
             gradient.parent = vodsView
             break
 
-        //Player
+            //Player
         case 5:
             playerView.visible = true
-            playerView.width = parent.width
-            playerView.height = parent.height
+            playerView.smallMode = false
             break
 
-        //Settings
+            //Settings
         case 6:
             settingsView.visible = true
             break
@@ -129,29 +130,12 @@ Rectangle {
     PlayerView {
         id: playerView
         visible: false
+
+        onSmallModeChanged: {
+            if (root.selection !== 5)
+                visible = false
+        }
     }
-
-//    Loader {
-//        id: loader
-//        //visible: false
-//        source: {
-//		switch (player_backend) {
-//		case "mpv":
-//            return "PlayerView.qml";
-
-//		case "qtav":
-//			return "QtAVPlayerView.qml";
-
-//		case "multimedia":
-//		default:
-//			return "MultimediaPlayerView.qml";
-//		}
-//	}
-//        onLoaded: {
-//            item.parent = root
-//            item.visible = false
-//        }
-//    }
 
     //The gradient that is applied to each view
     GradientBottom {

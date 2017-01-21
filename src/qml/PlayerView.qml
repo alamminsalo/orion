@@ -33,14 +33,41 @@ Item {
     property int duration: -1
     property var currentChannel
     property var qualityMap
-    property bool fs: false
     property bool isVod: false
     property bool streamOnline: true
+
+    //Minimode, bit ugly
+    property bool smallMode: false
+    property alias enableSmallMode: miniModeCheckBox.checked
+
+    //Animations, need to be declared BEFORE width, height binds
+    Behavior on width {
+        enabled: smallMode
+        NumberAnimation {
+            duration: 250
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    width: smallMode ? parent.width / 3 : parent.width
+    height: smallMode ? width * 0.5625 : parent.height
+
+    onSmallModeChanged: {
+        if (smallMode)
+            chatview.status = 0
+    }
 
     //Renderer interface
     property alias renderer: loader.item
 
     id: root
+
+    //Fix minimode header bar
+    clip: true
+
+    function isPlaying() {
+        return (renderer.status === "PLAYING")
+    }
 
     Connections {
         target: g_cman
@@ -92,7 +119,7 @@ Item {
 
             case "token_error":
             case "playlist_error":
-                //Display message
+                //Display messagetrue
                 setHeaderText("Error getting stream")
                 break;
 
@@ -126,23 +153,13 @@ Item {
         renderer.load(stream, start)
     }
 
-    function stopStream() {
-        renderer.stop()
-        root.visible = false
-        smallPlayer = false
-    }
-
     function getStreams(channel, vod){
 
         if (!channel){
             return
         }
 
-        smallPlayer = true
-
         renderer.stop()
-
-        //console.log(typeof vod)
 
         if (!vod || typeof vod === "undefined") {
             g_cman.findPlaybackStream(channel.name)
@@ -174,13 +191,9 @@ Item {
         }
 
         _favIcon.update()
-
         _label.visible = false
-
         setWatchingTitle()
-
         chatview.joinChannel(currentChannel.name)
-
         pollTimer.restart()
 
         requestSelectionChange(5)
@@ -283,7 +296,7 @@ Item {
         anchors {
             top: parent.top
             left: parent.left
-            right: chatview.left
+            right: chatview.status < 2 ? chatview.left : parent.right
             bottom: parent.bottom
         }
 
@@ -340,7 +353,11 @@ Item {
             }
 
             onDoubleClicked: {
-                g_fullscreen = !g_fullscreen
+                if (smallMode) {
+                    requestSelectionChange(5)
+                } else {
+                    g_fullscreen = !g_fullscreen
+                }
             }
 
             onPositionChanged: {
@@ -353,6 +370,8 @@ Item {
         PlayerHeader {
             id: header
             //z: playerArea.z + 1
+
+            visible: !smallMode
 
             MouseArea {
                 id: mAreaHeader
@@ -367,28 +386,29 @@ Item {
                 right: parent.right
             }
 
-            Item {
+            Text {
+                id: headerText
                 anchors {
                     left: parent.left
                     top: parent.top
                     bottom: parent.bottom
-                    right: favourite.left
+                    right: miniModeCheckBox.left
+                    margins: dp(5)
                 }
+                fontSizeMode: Text.Fit
+                verticalAlignment: Text.AlignVCenter
+                color: Styles.textColor
+                font.pixelSize: Styles.titleFont.bigger
+                z: root.z + 1
+            }
 
-                clip: true
-
-                Text {
-                    id: headerText
-                    anchors {
-                        verticalCenter: parent.verticalCenter
-                        left: parent.left
-                        right: parent.right
-                        margins: dp(20)
-                    }
-
-                    color: Styles.textColor
-                    font.pixelSize: Styles.titleFont.bigger
-                    z: root.z + 1
+            OptionCheckbox {
+                id: miniModeCheckBox
+                text: "Mini player"
+                fontSize: dp(14)
+                anchors {
+                    right: favourite.left
+                    verticalCenter: parent.verticalCenter
                 }
             }
 
@@ -450,7 +470,7 @@ Item {
                 anchors {
                     top: parent.top
                     bottom: parent.bottom
-                    right: stopButton.left
+                    right: parent.right
                     rightMargin: dp(5)
                 }
                 width: dp(50)
@@ -459,7 +479,11 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        chatview.visible = !chatview.visible
+                        //chatview.visible = !chatview.visible
+                        chatview.status++
+
+                        if (chatview.status > 2)
+                            chatview.status = 0
                     }
                     hoverEnabled: true
 
@@ -468,36 +492,13 @@ Item {
                     }
                 }
             }
-
-	    Item {
-                id: stopButton
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: parent.right
-                    rightMargin: dp(5)
-                }
-		Text {
-		    anchors.centerIn: parent
-		    text: "X"
-		    color: "white"
-		}
-                width: dp(50)
-                height: width
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        stopStream()
-                    }
-                    hoverEnabled: true
-                }
-	    }
         }
 
         PlayerHeader {
             id: footer
             //z: playerArea.z + 1
+            visible: !smallMode
+
             anchors {
                 bottom: parent.bottom
                 left: parent.left
@@ -594,8 +595,9 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        if (!g_fullscreen)
+                        if (!g_fullscreen) {
                             g_rootWindow.fitToAspectRatio()
+                        }
                     }
                     hoverEnabled: true
 
@@ -614,7 +616,7 @@ Item {
                     verticalCenter: parent.verticalCenter
                 }
                 Component.onCompleted: {
-                   vol.value = g_cman.getVolumeLevel()
+                    vol.value = g_cman.getVolumeLevel()
                 }
 
                 onValueChanged: {
@@ -700,6 +702,35 @@ Item {
                     restart()
             }
         }
+
+        Icon {
+            id: stopButton
+
+            icon: "remove"
+
+            anchors {
+                top: parent.top
+                right: parent.right
+                rightMargin: dp(5)
+            }
+
+            visible: root.smallMode
+            width: dp(50)
+            height: width
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    root.smallMode = false
+                    root.enableSmallMode = false
+                }
+                hoverEnabled: true
+                onHoveredChanged: {
+                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                }
+                propagateComposedEvents: false
+            }
+        }
     }
 
     MouseArea {
@@ -718,6 +749,7 @@ Item {
 
     ChatView {
         id: chatview
+
         anchors {
             top: parent.top
             bottom: parent.bottom
@@ -725,7 +757,6 @@ Item {
         }
 
         width: visible ? dp(250) : 0
-        visible: false
 
         Behavior on width {
             NumberAnimation {

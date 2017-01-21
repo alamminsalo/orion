@@ -17,7 +17,7 @@ import "../styles.js" as Styles
 
 Item {
     property string text
-    property int thickness: dp(60)
+    property int thickness: dp(48)
     property string color: Styles.shadeColor
     id: root
 

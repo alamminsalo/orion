@@ -18,13 +18,16 @@ import "../styles.js" as Styles
 Item {
     property string text
     property bool checked: true
+    property alias fontSize: text.font.pixelSize
 
     signal clicked()
 
     id: root
     height: dp(60)
+    width: text.contentWidth + checkbox.width + dp(20) + dp(10)
 
     Text {
+        id: text
         color: Styles.textColor
         font.pixelSize: Styles.titleFont.bigger
         text: root.text
@@ -40,6 +43,7 @@ Item {
     }
 
     Rectangle {
+        id: checkbox
         anchors {
             right: parent.right
             top: parent.top

@@ -82,6 +82,10 @@ ApplicationWindow {
                 bottom: parent.bottom
             }
 
+            onSelectedViewChanged: {
+                view.setSelection(selectedView)
+            }
+
             Component.onCompleted: toggle()
         }
 
@@ -95,7 +99,6 @@ ApplicationWindow {
 
             Views {
                 id: view
-                selection: sidebar.selectedView
                 anchors.fill: parent
                 onRequestSelectionChange: {
                     g_toolBox.setView(index)
@@ -119,6 +122,10 @@ ApplicationWindow {
 
         //Initial view
         g_toolBox.setView(2)
+
+
+        if (g_cman.isMinimizeOnStartup())
+            root.hide();
 
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
