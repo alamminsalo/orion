@@ -392,7 +392,7 @@ Item {
                     left: parent.left
                     top: parent.top
                     bottom: parent.bottom
-                    right: miniModeCheckBox.left
+                    right: miniModeContainer.left
                     margins: dp(5)
                 }
                 fontSizeMode: Text.Fit
@@ -402,13 +402,23 @@ Item {
                 z: root.z + 1
             }
 
-            OptionCheckbox {
-                id: miniModeCheckBox
-                text: "Mini player"
-                fontSize: dp(14)
+            Item {
+                id: miniModeContainer
                 anchors {
+                    top: parent.top
+                    bottom: parent.bottom
                     right: favourite.left
-                    verticalCenter: parent.verticalCenter
+                    rightMargin: dp(5)
+                }
+                width: dp(50)
+
+                IconButton {
+                    id: miniModeCheckBox
+                    icon: "minimode"
+                    checkable: true
+                    checked: true
+
+                    anchors.centerIn: parent
                 }
             }
 
