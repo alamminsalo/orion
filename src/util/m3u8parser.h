@@ -21,44 +21,43 @@
 
 namespace m3u8 {
 
-    static QStringList getUrls(const QByteArray &data)
+    static QVariantMap getUrls(const QByteArray &data)
     {
+        QVariantMap streams;
 
-
-        QStringList streams;
-
-        streams.push_back("");
-        streams.push_back("");
-        streams.push_back("");
-        streams.push_back("");
-        streams.push_back("");
-
-        QString lastKey;
+        QString streamName;
         foreach(QString str, QString(data).split("\n")){
 
             if (str.contains("VIDEO=")){
                 str.remove(0, str.indexOf("VIDEO=") + 6);
                 str.replace("\"","");
-                lastKey = str;
+                streamName = str;
             }
-            else if (!lastKey.isEmpty() && str.startsWith("http://")){
+            else if (!streamName.isEmpty() && str.startsWith("http://")){
 
-                if (lastKey == "mobile")
-                    streams[0] = str;
+                if (streamName == "chunked")
+                    streamName = "source";
 
-                else if (lastKey == "low")
-                    streams[1] = str;
+                streams.insert(streamName, str);
 
-                else if (lastKey == "medium")
-                    streams[2] = str;
+//                qDebug() << lastKey << ", " << str;
 
-                else if (lastKey == "high")
-                    streams[3] = str;
+//                if (lastKey == "mobile")
+//                    streams[0] = str;
 
-                else if (lastKey == "chunked")
-                    streams[4] = str;
+//                else if (lastKey == "low")
+//                    streams[1] = str;
 
-                lastKey.clear();
+//                else if (lastKey == "medium")
+//                    streams[2] = str;
+
+//                else if (lastKey == "high")
+//                    streams[3] = str;
+
+//                else if (lastKey == "chunked")
+//                    streams[4] = str;
+
+                streamName.clear();
             }
         }
 

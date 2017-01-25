@@ -122,7 +122,7 @@ signals:
     void resultsUpdated();
     void featuredUpdated();
     void searchingStarted();
-    void foundPlaybackStream(const QStringList streams);
+    void foundPlaybackStream(const QVariantMap &streams);
     void deletedChannel(const quint32 &chanid);
     void addedChannel(const quint32 &chanid);
     void gamesSearchStarted();
@@ -144,7 +144,6 @@ public slots:
     void getFeatured();
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);
-    void onFoundPlaybackStream(const QStringList &);
 
 private slots:
     void addSearchResults(const QList<Channel*>&);
