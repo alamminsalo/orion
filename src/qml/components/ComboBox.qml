@@ -64,7 +64,10 @@ Rectangle {
         sortEntries(nameWeight);
 
         console.log("Setting new entries")
+
         srcModel.clear()
+        list.currentIndex = -1
+
         for (var i = entries.length - 1; i > -1; i--){
             if (entries[i] && entries[i].length > 0){
                 srcModel.append( { "itemIndex": i})
@@ -138,8 +141,8 @@ Rectangle {
         }
 
         onCurrentIndexChanged: {
-            console.log(currentItem.text)
-            root.itemChanged(currentItem.text)
+            if (currentItem)
+                root.itemChanged(currentItem.text)
         }
 
         width: dp(90)
