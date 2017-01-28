@@ -92,12 +92,40 @@ Item{
             }
             text: "Close to tray"
         }
+	
+        OptionCheckbox {
+            id: chatSwapOption
+            anchors {
+                top: closeToTrayOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.swapChat
+            onClicked: {
+                g_cman.swapChat = !g_cman.swapChat
+            }
+            text: "Swap Chat Side"
+        }
+
+        OptionCheckbox {
+            id: miniPlayerOption
+            anchors {
+                top: chatSwapOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            //checked: 
+            //onClicked: {
+                //g_cman.miniPlayer = !g_cman.miniPlayer
+            //}
+            text: "Mini Player"
+        }
 
         OptionEntry {
             id: loginOption
             text: "Twitch account"
             anchors {
-                top: closeToTrayOption.bottom
+                top: miniPlayerOption.bottom
                 left: parent.left
                 right: parent.right
             }

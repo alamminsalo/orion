@@ -428,3 +428,9 @@ int JsonParser::parseTotal(const QByteArray &data)
 
     return total;
 }
+
+/*void JsonParser::parseEmotes(const QByteArray &data)
+{
+
+}
+*/

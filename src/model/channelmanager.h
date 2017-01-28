@@ -36,6 +36,8 @@ QString appPath();
 class ChannelManager: public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat) //NOTIFIY swapChatChanged)
+    //Q_PROPERTY(bool miniPlayer READ getMiniPlayer WRITE setMiniPlayer) //NOTIFIY swapChatChanged)
 
 //    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
 //    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
@@ -62,6 +64,7 @@ protected:
     int alertPosition;
     int volumeLevel;
     bool minimizeOnStartup;
+    bool _swapChat;
 
     //Oauth
     QString user_name;
@@ -117,6 +120,9 @@ public:
     Q_INVOKABLE bool isMinimizeOnStartup() const;
     Q_INVOKABLE void setMinimizeOnStartup(bool value);
 
+    void setSwapChat(bool value);
+    bool getSwapChat();
+
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
     void resultsUpdated();
@@ -128,6 +134,7 @@ signals:
     void gamesSearchStarted();
     void gamesUpdated();
     void followedUpdated();
+    void swapChatChanged();
 
     //oauth methods
     void accessTokenUpdated();

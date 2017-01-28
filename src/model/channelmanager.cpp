@@ -342,6 +342,9 @@ void ChannelManager::load(){
     } else {
         setVolumeLevel(100);
     }
+    if(!settings.value("swapChat").isNull()) {
+        _swapChat = settings.value("swapChat").toBool();
+    }
 }
 
 void ChannelManager::save()
@@ -367,6 +370,7 @@ void ChannelManager::save()
     settings.setValue("access_token", access_token);
     settings.setValue("volumeLevel", volumeLevel);
     settings.setValue("minimizeOnStartup", minimizeOnStartup);
+    settings.setValue("swapChat", _swapChat);
 }
 
 void ChannelManager::addToFavourites(const quint32 &id){
@@ -656,4 +660,13 @@ bool ChannelManager::isMinimizeOnStartup() const
 void ChannelManager::setMinimizeOnStartup(bool value)
 {
     minimizeOnStartup = value;
+}
+
+void ChannelManager::setSwapChat(bool value) {
+    _swapChat = value;
+    //emit swapChatChanged();
+}
+
+bool ChannelManager::getSwapChat() {
+    return _swapChat;
 }
