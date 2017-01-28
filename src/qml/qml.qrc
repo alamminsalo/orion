@@ -53,5 +53,6 @@
         <file>irc/ChatView.qml</file>
         <file>irc/ChatMessage.qml</file>
         <file>MpvBackend.qml</file>
+        <file>IconButton.qml</file>
     </qresource>
 </RCC>

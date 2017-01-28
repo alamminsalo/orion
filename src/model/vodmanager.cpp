@@ -19,7 +19,7 @@ VodManager::VodManager(NetworkManager *netman) : netman(netman)
     model = new VodListModel();
 
     connect(netman, SIGNAL(broadcastsOperationFinished(QList<Vod*>)), this, SLOT(onSearchFinished(QList<Vod*>)));
-    connect(netman, SIGNAL(m3u8OperationBFinished(QStringList)), this, SLOT(onStreamGetFinished(QStringList)));
+    connect(netman, SIGNAL(m3u8OperationBFinished(QVariantMap)), this, SIGNAL(streamsGetFinished(QVariantMap)));
 }
 
 VodManager::~VodManager()
@@ -45,11 +45,6 @@ void VodManager::onSearchFinished(QList<Vod *> items)
     items.clear();
 
     emit searchFinished();
-}
-
-void VodManager::onStreamGetFinished(QStringList items)
-{
-    emit streamsGetFinished(items);
 }
 
 VodListModel *VodManager::getModel() const

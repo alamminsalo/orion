@@ -87,8 +87,8 @@ signals:
     void searchChannelsOperationFinished(const QList<Channel *>&);
     void searchGamesOperationFinished(const QList<Game *>&);
     void broadcastsOperationFinished(const QList<Vod *>&);
-    void m3u8OperationFinished(const QStringList&);
-    void m3u8OperationBFinished(const QStringList&);
+    void m3u8OperationFinished(const QVariantMap&);
+    void m3u8OperationBFinished(const QVariantMap&);
     void fileOperationFinished(const QByteArray&);
     void favouritesReplyFinished(const QList<Channel *>&, const quint32);
     void streamGetOperationFinished(const QString channelName, const bool online);

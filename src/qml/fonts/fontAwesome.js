@@ -26,5 +26,7 @@ var icons = {
     "compress":     "\uf066",
     "crop":         "\uf125",
     "chat":         "\uf086",
-    "reload":       "\uf021"
+    "reload":       "\uf021",
+	"minimode":		"\uf2d2"
 }
+

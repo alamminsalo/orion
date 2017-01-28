@@ -37,12 +37,11 @@ public:
 
 public slots:
     void onSearchFinished(QList<Vod *>);
-    void onStreamGetFinished(QStringList);
 
 signals:
     void searchStarted();
     void searchFinished();
-    void streamsGetFinished(QStringList items);
+    void streamsGetFinished(QVariantMap items);
 
 private:
     QString game;

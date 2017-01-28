@@ -29,10 +29,10 @@ Item {
     //  2 - medium
     //  1 - low
     //  0 - mobile
-    property int quality: 4
+    //property alias quality: sourcesBox.selectedItem
     property int duration: -1
     property var currentChannel
-    property var qualityMap
+    property var streamMap
     property bool isVod: false
     property bool streamOnline: true
 
@@ -141,16 +141,16 @@ Item {
     }
 
 
-    function loadAndPlay(){
+    function loadAndPlay(streamName){
         setWatchingTitle()
 
         var start = !isVod ? -1 : seekBar.position
 
-        var stream = qualityMap[quality]
+        var url = streamMap[streamName]
 
-        console.debug("Loading: ", stream)
+        console.debug("Loading: ", url)
 
-        renderer.load(stream, start)
+        renderer.load(url, start)
     }
 
     function getStreams(channel, vod){
@@ -210,27 +210,20 @@ Item {
     }
 
     function loadStreams(streams) {
-        qualityMap = streams
 
-        var desc = true
-        while (!qualityMap[quality] || qualityMap[quality].length <= 0){
-
-            if (quality <= 0)
-                desc = false
-
-            if (quality == 4 && !desc)
-                break;
-
-            quality += desc ? -1 : 1
+        console.log("DEBUG STREAMS")
+        var sourceNames = []
+        for (var k in streams) {
+            console.log(k + " => " + streams[k])
+            sourceNames.push(k)
         }
 
-        sourcesBox.entries = qualityMap
+        streamMap = streams
 
-        if (qualityMap[quality]){
-            sourcesBox.setIndex(quality)
+        //TODO: sort sourceNames => [source , ... , mobile/smallest reso]
+        sourcesBox.entries = sourceNames
 
-            loadAndPlay()
-        }
+        sourcesBox.selectFirst()
     }
 
     function seekTo(position) {
@@ -392,7 +385,7 @@ Item {
                     left: parent.left
                     top: parent.top
                     bottom: parent.bottom
-                    right: miniModeCheckBox.left
+                    right: miniModeContainer.left
                     margins: dp(5)
                 }
                 fontSizeMode: Text.Fit
@@ -402,13 +395,23 @@ Item {
                 z: root.z + 1
             }
 
-            OptionCheckbox {
-                id: miniModeCheckBox
-                text: "Mini player"
-                fontSize: dp(14)
+            Item {
+                id: miniModeContainer
                 anchors {
+                    top: parent.top
+                    bottom: parent.bottom
                     right: favourite.left
-                    verticalCenter: parent.verticalCenter
+                    rightMargin: dp(5)
+                }
+                width: dp(50)
+
+                IconButton {
+                    id: miniModeCheckBox
+                    icon: "minimode"
+                    checkable: true
+                    checked: true
+
+                    anchors.centerIn: parent
                 }
             }
 
@@ -654,10 +657,11 @@ Item {
             }
 
             ComboBox {
+                //Contains data for sources
                 id: sourcesBox
                 width: dp(90)
                 height: dp(40)
-                names: ["Mobile","Low","Medium","High","Source"]
+                //names: ["Mobile","Low","Medium","High","Source"]
 
                 anchors {
                     right: parent.right
@@ -665,9 +669,8 @@ Item {
                     rightMargin: dp(5)
                 }
 
-                onIndexChanged: {
-                    quality = index
-                    loadAndPlay()
+                onItemChanged: {
+                    loadAndPlay(item)
                 }
             }
         }

@@ -56,7 +56,7 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     connect(netman, SIGNAL(gamesOperationFinished(const QList<Game*>&)), this, SLOT(addGames(QList<Game*>)));
     connect(netman, SIGNAL(gameStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
     connect(netman, SIGNAL(searchChannelsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
-    connect(netman, SIGNAL(m3u8OperationFinished(const QStringList&)), this, SLOT(onFoundPlaybackStream(const QStringList&)));
+    connect(netman, SIGNAL(m3u8OperationFinished(QVariantMap)), this, SIGNAL(foundPlaybackStream(QVariantMap)));
     connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
 
     connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
@@ -531,11 +531,6 @@ void ChannelManager::findPlaybackStream(const QString &serviceName)
 void ChannelManager::setAlert(const bool &val)
 {
     alert = val;
-}
-
-void ChannelManager::onFoundPlaybackStream(const QStringList &items)
-{
-    emit foundPlaybackStream(items);
 }
 
 void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
