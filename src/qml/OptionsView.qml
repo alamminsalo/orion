@@ -107,25 +107,11 @@ Item{
             text: "Swap Chat Side"
         }
 
-        OptionCheckbox {
-            id: miniPlayerOption
-            anchors {
-                top: chatSwapOption.bottom
-                left: parent.left
-                right: parent.right
-            }
-            //checked: 
-            //onClicked: {
-                //g_cman.miniPlayer = !g_cman.miniPlayer
-            //}
-            text: "Mini Player"
-        }
-
         OptionEntry {
             id: loginOption
             text: "Twitch account"
             anchors {
-                top: miniPlayerOption.bottom
+                top: chatSwapOption.bottom
                 left: parent.left
                 right: parent.right
             }

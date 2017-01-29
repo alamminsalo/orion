@@ -37,7 +37,6 @@ class ChannelManager: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat NOTIFY swapChatChanged)
-    //Q_PROPERTY(bool miniPlayer READ getMiniPlayer WRITE setMiniPlayer) //NOTIFIY swapChatChanged)
 
 //    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
 //    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)

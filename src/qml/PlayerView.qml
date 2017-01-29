@@ -717,7 +717,7 @@ Item {
                 rightMargin: dp(5)
             }
 
-            visible: root.smallMode
+            visible: smallMode
             width: dp(50)
             height: width
 
