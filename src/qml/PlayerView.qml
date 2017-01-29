@@ -288,8 +288,8 @@ Item {
         id: playerArea
         anchors {
             top: parent.top
-            left: parent.left
-            right: chatview.status < 2 ? chatview.left : parent.right
+            left: g_cman.swapChat ? chatview.status < 2 ? chatview.right : parent.left : parent.left
+            right: g_cman.swapChat ? parent.right : chatview.status < 2 ? chatview.left : parent.right
             bottom: parent.bottom
         }
 
@@ -330,8 +330,8 @@ Item {
         anchors {
             top: parent.top
             bottom: parent.bottom
-            left: parent.left
-            right: chatview.left
+            left: g_cman.swapChat ? chatview.right : parent.left
+            right: g_cman.swapChat ? parent.right : chatview.left
         }
 
         MouseArea{
@@ -756,7 +756,8 @@ Item {
         anchors {
             top: parent.top
             bottom: parent.bottom
-            right: parent.right
+            right: !g_cman.swapChat ? parent.right : undefined
+	    left: g_cman.swapChat ? parent.left : undefined
         }
 
         width: visible ? dp(250) : 0

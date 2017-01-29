@@ -664,7 +664,7 @@ void ChannelManager::setMinimizeOnStartup(bool value)
 
 void ChannelManager::setSwapChat(bool value) {
     _swapChat = value;
-    //emit swapChatChanged();
+    emit swapChatChanged();
 }
 
 bool ChannelManager::getSwapChat() {
