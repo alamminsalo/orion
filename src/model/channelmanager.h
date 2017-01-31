@@ -24,7 +24,7 @@
 #include <QSettings>
 #include <QSortFilterProxyModel>
 
-#define DATA_FILE           "settings.bin"
+#define DATA_FILE           "settings.json"
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 #define DIALOG_FILE         "resources/scripts/dialog.sh"
 #define PLAY_FILE           "resources/scripts/play.sh"
@@ -76,9 +76,6 @@ public:
 
     Channel *findFavourite(const QString&);
     Q_INVOKABLE bool containsFavourite(const quint32&);
-
-    void play(const QString&);
-    void checkResources();
 
     void checkStreams(const QList<Channel*>&);
 

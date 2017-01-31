@@ -2,9 +2,9 @@
 #define MPVOBJECT_H
 
 #include <QtQuick/QQuickFramebufferObject>
-#include "mpv/client.h"
-#include "mpv/opengl_cb.h"
-#include "mpv/qthelper.hpp"
+#include <mpv/client.h>
+#include <mpv/opengl_cb.h>
+#include <mpv/qthelper.hpp>
 #include <QEvent>
 #include <QtGui/QOpenGLFramebufferObject>
 #include <QtQuick/QQuickWindow>

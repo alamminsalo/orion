@@ -120,6 +120,32 @@ const QJsonObject Channel::getJSON() const{
     return QJsonObject::fromVariantMap(map);
 }
 
+const void Channel::writeToSettings(QSettings &settings) const
+{
+    settings.setValue("name", name);
+    settings.setValue("serviceName", serviceName);
+    settings.setValue("info", info);
+    settings.setValue("logouri", logouri);
+    settings.setValue("previewuri", previewuri);
+    settings.setValue("alert", alert);
+    settings.setValue("timestamp", timestamp);
+    settings.setValue("id", id);
+}
+
+Channel::Channel(const QSettings &settings)
+{
+    //Deserialization constructor
+
+    name = settings.value("name").toString();
+    serviceName = settings.value("serviceName").toString();
+    info = settings.value("info").toString();
+    logouri = settings.value("logouri").toString();
+    previewuri = settings.value("previewuri").toString();
+    alert = settings.value("alert").toBool();
+    timestamp = settings.value("timestamp").toLongLong();
+    id = settings.value("id").toInt();
+}
+
 void Channel::setName(const QString &newName){
 	name = newName;
 

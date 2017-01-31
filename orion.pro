@@ -4,11 +4,11 @@
 #
 #-------------------------------------------------
 
-QT     += gui opengl qml quick network widgets webengine
+QT     += gui qml quick network widgets webengine
 
 TARGET = orion
 
-VERSION = 1.3.9
+VERSION = 1.4.0
 
 DEFINES += APP_NAME=\\\"Orion\\\"
 
@@ -64,14 +64,11 @@ mpv {
     SOURCES +=  src/player/mpvrenderer.cpp \
                 src/player/mpvobject.cpp
 
-    HEADERS +=  src/player/mpv/client.h \
-                src/player/mpv/opengl_cb.h \
-                src/player/mpv/qthelper.hpp \
-                src/player/mpvobject.h \
-                src/player/mpvrenderer.h \
+    HEADERS +=  src/player/mpvobject.h \
+                src/player/mpvrenderer.h
 
     unix:!macx: LIBS += -lmpv
-    win32: LIBS += -L$${PWD}/libs/ -lmpv.dll
+    win32: LIBS += -L$$PWD/libs -lmpv
     macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv
 }
 
@@ -142,6 +139,8 @@ win32: {
 
     EXTRA_BINFILES = $$PWD/libs/ssleay32.dll \
                     $$PWD/libs/libeay32.dll
+
+    mpv: EXTRA_BINFILES += $$PWD/libs/mpv-1.dll
 
     EXTRA_BINFILES_WIN = $${EXTRA_BINFILES}
     EXTRA_BINFILES_WIN ~= s,/,\\,g

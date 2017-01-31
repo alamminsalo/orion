@@ -80,7 +80,7 @@ Rectangle {
                 icon: "featured"
             }
             ListElement {
-                label: "Favourites"
+                label: "Followed"
                 icon: "fav"
             }
             ListElement {

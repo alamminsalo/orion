@@ -18,7 +18,6 @@
 #include <QProcess>
 #include "../util/fileutils.h"
 #include <QThread>
-#include <QJsonArray>
 #include <QApplication>
 #include <QStandardPaths>
 
@@ -80,11 +79,12 @@ ChannelManager::~ChannelManager(){
 }
 
 QString appPath(){
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation));
-    if (!dir.mkpath("./orion")) {
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+    if (!dir.mkpath(".")) {
         qDebug() << "Error creating data dir!";
     }
-    dir.cd("./orion");
+
+    qDebug() << dir.absoluteFilePath(DATA_FILE);
 
     return dir.absoluteFilePath(DATA_FILE);
 }
@@ -145,6 +145,9 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
             chan->setFavourite(true);
             featuredModel->updateChannelForView(chan);
         }
+
+        if (!isAccessTokenAvailable())
+            save();
     }
 }
 
@@ -237,107 +240,47 @@ ChannelListModel *ChannelManager::getResultsModel() const
     return resultsModel;
 }
 
-void ChannelManager::checkResources()
-{
-    if (!QFile::exists(appPath())){
-        QFile file(appPath());
-        file.open(QIODevice::ReadWrite);
-        file.write("{}");
-        qDebug() << "Created data file!";
-    }
-}
-
-
-
 void ChannelManager::load(){
+    QSettings settings("orion.application", "Orion");
 
-    QSettings settings(appPath(), QSettings::NativeFormat);
-    QJsonParseError error;
-    if (error.error != QJsonParseError::NoError){
-        qDebug() << "Parsing error!";
-    }
-
-    if (!settings.value("alert").isNull()) {
+    if (settings.contains("alert")) {
         alert = settings.value("alert").toBool();
     }
 
-    if (!settings.value("alertPosition").isNull()) {
+    if (settings.contains("alertPosition")) {
         alertPosition = settings.value("alertPosition").toInt();
     }
 
-    if (!settings.value("closeToTray").isNull()) {
+    if (settings.contains("closeToTray")) {
         closeToTray = settings.value("closeToTray").toBool();
     }
 
-    if (!settings.value("minimizeOnStartup").isNull()) {
+    if (settings.contains("minimizeOnStartup")) {
         minimizeOnStartup = settings.value("minimizeOnStartup").toBool();
     }
 
-    if (!settings.value("channels").isNull()) {
-        QJsonParseError error;
-        QJsonObject json = QJsonDocument::fromJson(settings.value("channels").toByteArray(),&error).object();
-
-        if (json["channels"].isUndefined()){
-            qDebug() << "Error: Bad file format: Missing field \"channels\"";
-        }
-
-        if (!json["channels"].isArray()){
-            qDebug() << "Error: Bad file format: channels is not array";
-        }
-
-        const QJsonArray &arr = json["channels"].toArray();
-
+    if (settings.contains("channels")) {
         QList<Channel*> _channels;
 
-        foreach(const QJsonValue &value, arr){
-            QJsonObject obj = value.toObject();
+        int size = settings.beginReadArray("channels");
 
-            if (obj["title"].isUndefined() || obj["title"].isNull()){
-                qDebug() << "title is missing";
-            }
-            if (obj["uri"].isUndefined() || obj["uri"].isNull()){
-                qDebug() << "uri is missing";
-            }
-            if (obj["info"].isUndefined() || obj["info"].isNull()){
-                qDebug() << "info is missing";
-            }
-            if (obj["alert"].isUndefined() || obj["alert"].isNull()){
-                qDebug() << "alert is missing";
-            }
-            if (obj["lastSeen"].isUndefined() || obj["lastSeen"].isNull()){
-                qDebug() << "lastSeen is missing";
-            }
-            if (obj["logo"].isUndefined() && obj["logo"].isNull()){
-                qDebug() << "logo is missing";
-            }
-            if (obj["preview"].isUndefined() && obj["preview"].isNull()){
-                qDebug() << "preview is missing";
-            }
-
-            Channel* channel = new Channel(
-                        obj["uri"].toString(),
-                        obj["title"].toString(),
-                        obj["info"].toString(),
-                        obj["alert"].toBool(),
-                        obj["lastSeen"].toInt(),
-                        obj["logo"].toString(),
-                        obj["preview"].toString());
-            channel->setId(obj["id"].toInt());
-
-            _channels.append(channel);
+        for(int i=0; i<size; i++){
+            settings.setArrayIndex(i);
+            _channels.append(new Channel(settings));
         }
+        settings.endArray();
 
         favouritesModel->addAll(_channels);
 
         qDeleteAll(_channels);
     }
 
-    if (!settings.value("access_token").isNull()) {
+    if (settings.contains("access_token")) {
         setAccessToken(settings.value("access_token").toString());
     } else {
         setAccessToken("");
     }
-    if (!settings.value("volumeLevel").isNull()) {
+    if (settings.contains("volumeLevel")) {
         setVolumeLevel(settings.value("volumeLevel").toInt());
     } else {
         setVolumeLevel(100);
@@ -346,27 +289,31 @@ void ChannelManager::load(){
 
 void ChannelManager::save()
 {
-    QJsonArray arr;
-    QSettings settings(appPath(),QSettings::NativeFormat);
+    QSettings settings("orion.application", "Orion");
+
+    if (!settings.isWritable())
+        qDebug() << "Error: settings file not writable";
+
     if (tempFavourites) {
         delete favouritesModel;
         favouritesModel = tempFavourites;
         tempFavourites = 0;
     }
 
-    foreach (Channel* channel, favouritesModel->getChannels()){
-        arr.append(QJsonValue(channel->getJSON()));
-    }
-
-    QJsonValue val(arr);
-    QJsonObject obj;
-    settings.setValue("channels", QJsonDocument(obj).toJson());
     settings.setValue("alert", alert);
     settings.setValue("alertPosition", alertPosition);
     settings.setValue("closeToTray", closeToTray);
     settings.setValue("access_token", access_token);
     settings.setValue("volumeLevel", volumeLevel);
     settings.setValue("minimizeOnStartup", minimizeOnStartup);
+
+    //Write channels
+    settings.beginWriteArray("channels");
+    for (int i=0; i < favouritesModel->count(); i++){
+        settings.setArrayIndex(i);
+        favouritesModel->getChannels().at(i)->writeToSettings(settings);
+    }
+    settings.endArray();
 }
 
 void ChannelManager::addToFavourites(const quint32 &id){
@@ -431,20 +378,6 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
 
     if (!isAccessTokenAvailable())
         save();
-}
-
-void ChannelManager::play(const QString &url){
-    if (QFile::exists(PLAY_FILE)){
-
-        if (!QFileInfo(PLAY_FILE).isExecutable())
-            QProcess::execute("chmod +x " + QString(PLAY_FILE));
-
-        QStringList args;
-        args << url;
-
-        QProcess::startDetached(PLAY_FILE, args);
-    }
-    else qDebug() << "Couldn't locate 'play.sh'";
 }
 
 void ChannelManager::checkStreams(const QList<Channel *> &list)
@@ -603,7 +536,7 @@ void ChannelManager::onUserNameUpdated(const QString &name)
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)
 {
     //if (offset == 0)
-        //favouritesModel->clear();
+    //favouritesModel->clear();
 
     netman->getUserFavourites(user_name, offset, limit);
 }
@@ -611,8 +544,8 @@ void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& of
 
 void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quint32 offset)
 {
-//    qDebug() << "Merging channel data for " << list.size()
-//             << " items with " << offset << " offset.";
+    //    qDebug() << "Merging channel data for " << list.size()
+    //             << " items with " << offset << " offset.";
 
     favouritesModel->mergeAll(list);
 
