@@ -79,11 +79,9 @@ Item {
         wrapMode: Text.WordWrap
         onLinkActivated: function(link)
         {
-            if (!link.substr(0,5) === 'user:')
-            {
-                Qt.openUrlExternally(link)
-            }
-            else
+            console.log(link.substr(0,5))
+            console.log(link.substr(0,5) === "user:")
+            if (link.substr(0,5) === "user:")
             {
                 var value = "@"+link.replace('user:',"")+', '
                 if (_input.text === "")
@@ -93,6 +91,11 @@ Item {
                 else {
                     _input.text = _input.text + ' '+ value
                 }
+
+            }
+            else
+            {
+                Qt.openUrlExternally(link)
             }
         }
 
