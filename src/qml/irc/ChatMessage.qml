@@ -79,8 +79,6 @@ Item {
         wrapMode: Text.WordWrap
         onLinkActivated: function(link)
         {
-            console.log(link.substr(0,5))
-            console.log(link.substr(0,5) === "user:")
             if (link.substr(0,5) === "user:")
             {
                 var value = "@"+link.replace('user:',"")+', '
