@@ -50,9 +50,9 @@ Item {
     }
 
     function makeUrl(str) {
-        return "<a href=\"%2%1\">%1</a>"
-            .arg(str)
-            .arg(str.match(/^(https?:\/\/)/) ? "" : "http://") //Set http:// start if omitted
+        var urlPattern = /\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+        var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        return str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
     }
 
     function isUrl(str) {
