@@ -24,6 +24,20 @@ Item {
     width: dp(50)
     height: dp(50)
 
+    MouseArea {
+        anchors.fill: parent
+        onWheel: {
+            if (wheel.angleDelta.y > 0)
+            {
+                value += 10
+            }
+            else
+            {
+                value -= 10
+            }
+        }
+    }
+
     onValueChanged: {
         if (value > 100)
             value = 100;
