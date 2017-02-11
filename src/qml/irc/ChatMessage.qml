@@ -24,10 +24,16 @@ Item {
     height: childrenRect.height
 
     Component.onCompleted: {
-        _text.text = "<font color=\""+chat.colors[user]+"\"><b>%1</b></font>".arg(user) + (msg ? ": " : "")
-        _text.user = user
+
+
         if (msg)
+        {
+            _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (msg ? ": " : "")
             parseMsg(msg)
+        }
+        else
+            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user) + (msg ? ": " : "")
+        _text.user = user
     }
 
     function parseMsg(msg) {
@@ -50,9 +56,9 @@ Item {
     }
 
     function makeUrl(str) {
-        return "<a href=\"%2%1\">%1</a>"
-            .arg(str)
-            .arg(str.match(/^(https?:\/\/)/) ? "" : "http://") //Set http:// start if omitted
+        var urlPattern = /\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+        var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        return str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
     }
 
     function isUrl(str) {
@@ -71,7 +77,25 @@ Item {
         font.pixelSize: fontSize
         linkColor: Styles.purple
         wrapMode: Text.WordWrap
-        onLinkActivated: Qt.openUrlExternally(link)
-        //renderType: Text.NativeRendering
+        onLinkActivated: function(link)
+        {
+            if (link.substr(0,5) === "user:")
+            {
+                var value = "@"+link.replace('user:',"")+', '
+                if (_input.text === "")
+                {
+                    _input.text = value
+                }
+                else {
+                    _input.text = _input.text + ' '+ value
+                }
+
+            }
+            else
+            {
+                Qt.openUrlExternally(link)
+            }
+        }
+
     }
 }

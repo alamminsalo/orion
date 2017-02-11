@@ -21,7 +21,7 @@ Item{
 
     ViewHeader{
         id: header
-        text: "My favourites"
+        text: "Followed channels"
         z: favourites.z + 1
     }
 
@@ -87,8 +87,7 @@ Item{
                 }
             }
             MenuItem {
-                text: "Remove favourite"
-                //text: "Remove;remove"
+                text: "Unfollow"
                 onTriggered: {
                     g_cman.removeFromFavourites(_menu.item._id)
                 }

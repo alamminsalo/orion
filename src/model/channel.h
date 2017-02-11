@@ -21,6 +21,7 @@
 #include <QVariantMap>
 #include <QDateTime>
 #include <QDebug>
+#include <QSettings>
 
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 #define DEFAULT_LOGO_PATH   "resources/logos/default.png"
@@ -54,7 +55,6 @@ class Channel: public QObject{
         Channel(const Channel&);
         ~Channel();
         void updateWith(const Channel &other);
-        const QJsonObject getJSON() const;
         void setName(const QString&);
         void setServiceName(const QString&);
         void setInfo(const QString&);
@@ -90,6 +90,11 @@ class Channel: public QObject{
 
         bool isFavourite() const;
         void setFavourite(bool value);
+
+        //Saving and serializing
+        const QJsonObject getJSON() const;
+        const void writeToSettings(QSettings &) const;
+        Channel(const QSettings &);
 
 signals:
         void updated();

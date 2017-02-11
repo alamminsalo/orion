@@ -226,8 +226,7 @@ Item {
             _menu.items[0].enabled = _menu.item.online
 
             var item = _menu.items[2]
-            item.text = !_menu.item.favourite ? "Add favourite" : "Remove favourite"
-            //item.text = !_menu.item.favourite ? "Add favourite;fav" : "Remove favourite;remove"
+            item.text = !_menu.item.favourite ? "Follow" : "Unfollow"
             _menu.state = !_menu.item.favourite ? 1 : 2
 
             _menu.popup()

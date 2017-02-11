@@ -35,7 +35,7 @@
 #include "model/ircchat.h"
 
 #ifdef MPV_PLAYER
-    #include "player/mpvrenderer.h"
+#include "player/mpvrenderer.h"
 #endif
 
 inline void noisyFailureMsgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
@@ -62,9 +62,9 @@ int main(int argc, char *argv[])
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
     app.setFont(QFont("qrc:/fonts/NotoSans-Regular.ttf"));
-    #ifndef  QT_DEBUG
-        qInstallMessageHandler(noisyFailureMsgHandler);
-    #endif
+#ifndef  QT_DEBUG
+    qInstallMessageHandler(noisyFailureMsgHandler);
+#endif
     app.setWindowIcon(appIcon);
 
     SysTray *tray = new SysTray();
@@ -78,14 +78,14 @@ int main(int argc, char *argv[])
 
     //Create channels manager
     ChannelManager *cman = new ChannelManager(netman);
-    cman->checkResources();
+    //cman->checkResources();
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
 
     //Create vods manager
     VodManager *vod = new VodManager(netman);
-//-------------------------------------------------------------------------------------------------------------------//
+    //-------------------------------------------------------------------------------------------------------------------//
 
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
 
@@ -144,7 +144,7 @@ int main(int argc, char *argv[])
 
     app.exec();
 
-//-------------------------------------------------------------------------------------------------------------------//
+    //-------------------------------------------------------------------------------------------------------------------//
 
     //Cleanup
     delete vod;
