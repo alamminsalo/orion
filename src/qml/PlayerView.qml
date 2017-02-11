@@ -736,20 +736,6 @@ Item {
         }
     }
 
-    MouseArea {
-        anchors.fill: playerArea
-        onWheel: {
-            if (wheel.angleDelta.y > 0)
-            {
-                vol.value = renderer.volume + 10
-            }
-            else
-            {
-                vol.value = renderer.volume - 10
-            }
-        }
-    }
-
     ChatView {
         id: chatview
 

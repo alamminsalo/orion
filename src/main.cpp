@@ -119,6 +119,7 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_tray", tray);
     rootContext->setContextProperty("g_vodmgr", vod);
     rootContext->setContextProperty("vodsModel", vod->getModel());
+    rootContext->setContextProperty("app_version", APP_VERSION);
 
 #ifdef MPV_PLAYER
     rootContext->setContextProperty("player_backend", "mpv");

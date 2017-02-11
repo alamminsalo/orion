@@ -145,4 +145,16 @@ Item{
             }
         }
     }
+
+    Text {
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            margins: dp(10)
+        }
+
+        font.pixelSize: dp(14)
+        color: Styles.white
+        text: app_version
+    }
 }
