@@ -81,6 +81,11 @@ Item {
             onCountChanged: {
                 if (list.lock)
                     list.positionViewAtEnd()
+
+                //Limit msg count in list
+                if (chatModel.count > 300) {
+                    chatModel.remove(0, 1)
+                }
             }
         }
 
@@ -194,12 +199,6 @@ Item {
 
             chatModel.append({"user": user, "message": message})
             list.scrollbuf = 6
-
-            var max = 500
-            //Limit msg count in list
-            if (chatModel.count > max) {
-                chatModel.remove(0, chatModel.count - max)
-            }
         }
 
         onClear: {
