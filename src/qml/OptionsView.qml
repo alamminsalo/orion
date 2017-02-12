@@ -49,6 +49,21 @@ Item{
             text: "Enable notifications"
         }
 
+
+        OptionCheckbox {
+            id: notificationsOption
+            anchors {
+                top: alertOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.notifications
+            onClicked: {
+                g_cman.notifications = !g_cman.notifications
+            }
+            text: "Notifications for offline"
+        }
+
         OptionCombo {
             id: alertPosition
             selection: g_cman.getAlertPosition()
@@ -58,7 +73,7 @@ Item{
             }
 
             anchors {
-                top: alertOption.bottom
+                top: notificationsOption.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -107,25 +122,11 @@ Item{
             text: "Swap Chat Side"
         }
 
-        OptionCheckbox {
-            id: notificationsOption
-            anchors {
-                top: chatSwapOption.bottom
-                left: parent.left
-                right: parent.right
-            }
-            checked: g_cman.notifications
-            onClicked: {
-                g_cman.notifications = !g_cman.notifications
-            }
-            text: "Notifications"
-        }
-
         OptionEntry {
             id: loginOption
             text: "Twitch account"
             anchors {
-                top: notificationsOption.bottom
+                top: chatSwapOption.bottom
                 left: parent.left
                 right: parent.right
             }

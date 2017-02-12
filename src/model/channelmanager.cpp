@@ -520,10 +520,17 @@ void ChannelManager::addGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-    if (alert && channel && _notifications){
+    if (alert && channel){
+      if(_notifications) {
         emit pushNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                               channel->getInfo(),
                               channel->getLogourl());
+      }
+      else if(channel->isOnline()) {
+        emit pushNotification(channel->getName() + " is now streaming",
+                              channel->getInfo(),
+                              channel->getLogourl());
+      }
     }
 }
 
