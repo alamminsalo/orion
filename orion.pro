@@ -8,7 +8,7 @@ QT     += gui qml quick network widgets webengine
 
 TARGET = orion
 
-VERSION = 1.4.2
+VERSION = 1.4.3
 DEFINES += APP_VERSION=\\\"v$$VERSION\\\"
 
 DEFINES += APP_NAME=\\\"Orion\\\"
