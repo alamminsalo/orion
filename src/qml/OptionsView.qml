@@ -107,11 +107,25 @@ Item{
             text: "Swap Chat Side"
         }
 
+        OptionCheckbox {
+            id: notificationsOption
+            anchors {
+                top: chatSwapOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.notifications
+            onClicked: {
+                g_cman.notifications = !g_cman.notifications
+            }
+            text: "Notifications"
+        }
+
         OptionEntry {
             id: loginOption
             text: "Twitch account"
             anchors {
-                top: chatSwapOption.bottom
+                top: notificationsOption.bottom
                 left: parent.left
                 right: parent.right
             }

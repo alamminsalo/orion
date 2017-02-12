@@ -288,6 +288,10 @@ void ChannelManager::load(){
     if(!settings.value("swapChat").isNull()) {
         _swapChat = settings.value("swapChat").toBool();
     }
+
+    if(!settings.value("notifications").isNull()) {
+        _notifications = settings.value("notifications").toBool();
+    }
 }
 
 void ChannelManager::save()
@@ -310,6 +314,7 @@ void ChannelManager::save()
     settings.setValue("volumeLevel", volumeLevel);
     settings.setValue("minimizeOnStartup", minimizeOnStartup);
     settings.setValue("swapChat", _swapChat);
+    settings.setValue("notifications", _notifications);
 
     //Write channels
     settings.beginWriteArray("channels");
@@ -515,7 +520,7 @@ void ChannelManager::addGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-    if (alert && channel){
+    if (alert && channel && _notifications){
         emit pushNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                               channel->getInfo(),
                               channel->getLogourl());
@@ -602,4 +607,13 @@ void ChannelManager::setSwapChat(bool value) {
 
 bool ChannelManager::getSwapChat() {
     return _swapChat;
+}
+
+void ChannelManager::setNotifications(bool value) {
+    _notifications = value;
+    emit notificationsChanged();
+}
+
+bool ChannelManager::getNotifications() {
+    return _notifications;
 }

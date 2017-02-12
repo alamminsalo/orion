@@ -37,6 +37,7 @@ class ChannelManager: public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat NOTIFY swapChatChanged)
+    Q_PROPERTY(bool notifications READ getNotifications WRITE setNotifications NOTIFY notificationsChanged)
 
 //    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
 //    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
@@ -64,6 +65,7 @@ protected:
     int volumeLevel;
     bool minimizeOnStartup;
     bool _swapChat;
+    bool _notifications;
 
     //Oauth
     QString user_name;
@@ -119,6 +121,9 @@ public:
     void setSwapChat(bool value);
     bool getSwapChat();
 
+    void setNotifications(bool value);
+    bool getNotifications();
+    
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
     void resultsUpdated();
@@ -131,6 +136,7 @@ signals:
     void gamesUpdated();
     void followedUpdated();
     void swapChatChanged();
+    void notificationsChanged();
 
     //oauth methods
     void accessTokenUpdated();
