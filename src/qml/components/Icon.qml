@@ -45,5 +45,6 @@ Rectangle {
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
         text: FontAwesome.fromText(icon)
+        font.bold: false
     }
 }

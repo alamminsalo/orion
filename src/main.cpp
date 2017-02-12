@@ -33,6 +33,7 @@
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
 #include "model/ircchat.h"
+#include <QFont>
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
@@ -61,7 +62,13 @@ int main(int argc, char *argv[])
     QtWebEngine::initialize();
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
-    app.setFont(QFont("qrc:/fonts/NotoSans-Regular.ttf"));
+
+    //Setup default font
+    if (QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf") == -1)
+        qDebug() << "Can't open application font!";
+    else
+        app.setFont(QFont(":/fonts/NotoSans-Regular.ttf", 16, QFont::Bold, false));
+
 #ifndef  QT_DEBUG
     qInstallMessageHandler(noisyFailureMsgHandler);
 #endif
