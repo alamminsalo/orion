@@ -288,8 +288,8 @@ Item {
         id: playerArea
         anchors {
             top: parent.top
-            left: parent.left
-            right: chatview.status < 2 ? chatview.left : parent.right
+            right: g_cman.swapChat ? parent.right : chatview.status < 2 ? chatview.left : parent.right
+            left: g_cman.swapChat ? chatview.status < 2 ? chatview.right : parent.left : parent.left
             bottom: parent.bottom
         }
 
@@ -330,8 +330,8 @@ Item {
         anchors {
             top: parent.top
             bottom: parent.bottom
-            left: parent.left
-            right: chatview.left
+            left: g_cman.swapChat ? chatview.right : parent.left
+            right: g_cman.swapChat ? parent.right : chatview.left
         }
 
         MouseArea{
@@ -482,7 +482,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        //chatview.visible = !chatview.visible
+                        chatview.visible = !chatview.visible
                         chatview.status++
 
                         if (chatview.status > 2)
@@ -717,7 +717,7 @@ Item {
                 rightMargin: dp(5)
             }
 
-            visible: root.smallMode
+            visible: smallMode
             width: dp(50)
             height: width
 
@@ -735,14 +735,14 @@ Item {
             }
         }
     }
-
     ChatView {
         id: chatview
 
         anchors {
             top: parent.top
             bottom: parent.bottom
-            right: parent.right
+            left: g_cman.swapChat ? parent.left : undefined
+            right: !g_cman.swapChat ? parent.right : undefined
         }
 
         width: visible ? dp(250) : 0

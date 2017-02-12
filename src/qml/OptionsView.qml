@@ -49,6 +49,21 @@ Item{
             text: "Enable notifications"
         }
 
+
+        OptionCheckbox {
+            id: notificationsOption
+            anchors {
+                top: alertOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.notifications
+            onClicked: {
+                g_cman.notifications = !g_cman.notifications
+            }
+            text: "Notifications for offline"
+        }
+
         OptionCombo {
             id: alertPosition
             selection: g_cman.getAlertPosition()
@@ -58,7 +73,7 @@ Item{
             }
 
             anchors {
-                top: alertOption.bottom
+                top: notificationsOption.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -92,12 +107,26 @@ Item{
             }
             text: "Close to tray"
         }
+	
+        OptionCheckbox {
+            id: chatSwapOption
+            anchors {
+                top: closeToTrayOption.bottom
+                left: parent.left
+                right: parent.right
+            }
+            checked: g_cman.swapChat
+            onClicked: {
+                g_cman.swapChat = !g_cman.swapChat
+            }
+            text: "Swap Chat Side"
+        }
 
         OptionEntry {
             id: loginOption
             text: "Twitch account"
             anchors {
-                top: closeToTrayOption.bottom
+                top: chatSwapOption.bottom
                 left: parent.left
                 right: parent.right
             }
