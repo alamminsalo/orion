@@ -28,8 +28,9 @@ Item {
 
     Text {
         id: text
-        color: Styles.textColor
+        color: root.enabled ? Styles.textColor : Styles.disabled
         font.pixelSize: Styles.titleFont.bigger
+        fontSizeMode: Text.Fit
         text: root.text
         anchors {
             left: parent.left

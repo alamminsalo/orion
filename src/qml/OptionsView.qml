@@ -25,20 +25,19 @@ Item{
         text: "Settings"
     }
 
-    Item {
-        height: parent.height
+    Column {
         width: dp(360)
+
+        spacing: 1
 
         anchors {
             top: header.bottom
-            bottom: parent.bottom
             horizontalCenter: parent.horizontalCenter
         }
 
         OptionCheckbox {
             id: alertOption
             anchors {
-                top: parent.top
                 left: parent.left
                 right: parent.right
             }
@@ -52,8 +51,8 @@ Item{
 
         OptionCheckbox {
             id: notificationsOption
+            enabled: alertOption.checked
             anchors {
-                top: alertOption.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -61,7 +60,7 @@ Item{
             onClicked: {
                 g_cman.notifications = !g_cman.notifications
             }
-            text: "Notifications for offline"
+            text: "Show offline notifications"
         }
 
         OptionCombo {
@@ -73,7 +72,6 @@ Item{
             }
 
             anchors {
-                top: notificationsOption.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -83,7 +81,6 @@ Item{
         OptionCheckbox {
             id: minStartupOption
             anchors {
-                top: alertPosition.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -97,7 +94,6 @@ Item{
         OptionCheckbox {
             id: closeToTrayOption
             anchors {
-                top: minStartupOption.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -111,7 +107,6 @@ Item{
         OptionCheckbox {
             id: chatSwapOption
             anchors {
-                top: closeToTrayOption.bottom
                 left: parent.left
                 right: parent.right
             }
@@ -126,7 +121,6 @@ Item{
             id: loginOption
             text: "Twitch account"
             anchors {
-                top: chatSwapOption.bottom
                 left: parent.left
                 right: parent.right
             }

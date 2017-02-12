@@ -23,13 +23,6 @@ Item {
         bottom: parent.bottom
     }
 
-    //Quality values:
-    //  4 - source
-    //  3 - high
-    //  2 - medium
-    //  1 - low
-    //  0 - mobile
-    //property alias quality: sourcesBox.selectedItem
     property int duration: -1
     property var currentChannel
     property var streamMap
@@ -288,8 +281,8 @@ Item {
         id: playerArea
         anchors {
             top: parent.top
-            right: g_cman.swapChat ? parent.right : chatview.status < 2 ? chatview.left : parent.right
-            left: g_cman.swapChat ? chatview.status < 2 ? chatview.right : parent.left : parent.left
+            left: g_cman.swapChat ? (chatview.status == 1 ? chatview.right : parent.left) : parent.left
+            right: g_cman.swapChat ? (parent.right) : (chatview.status == 1 ? chatview.left : parent.right)
             bottom: parent.bottom
         }
 
@@ -325,6 +318,7 @@ Item {
     }
 
     Item {
+        //Player controls overlay
         z: playerArea.z + 1
 
         anchors {
@@ -362,8 +356,6 @@ Item {
 
         PlayerHeader {
             id: header
-            //z: playerArea.z + 1
-
             visible: !smallMode
 
             MouseArea {
@@ -482,11 +474,7 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        chatview.visible = !chatview.visible
                         chatview.status++
-
-                        if (chatview.status > 2)
-                            chatview.status = 0
                     }
                     hoverEnabled: true
 
@@ -661,7 +649,6 @@ Item {
                 id: sourcesBox
                 width: dp(90)
                 height: dp(40)
-                //names: ["Mobile","Low","Medium","High","Source"]
 
                 anchors {
                     right: parent.right
@@ -735,6 +722,7 @@ Item {
             }
         }
     }
+
     ChatView {
         id: chatview
 

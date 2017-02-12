@@ -18,16 +18,17 @@ import "../styles.js" as Styles
 Item {
     id: root
 
-    implicitHeight: dp(400)
-    implicitWidth: dp(200)
-
     //Visibity status:
     //0 - hidden
     //1 - solid visible
     //2 - opaque
     property int status: 0
+    onStatusChanged: {
+        if (status > 2)
+            status = 0
+    }
 
-    visible: root.status > 0
+    visible: status > 0
 
     property real _opacity: root.status > 1 ? 0.6 : 1.0
 
