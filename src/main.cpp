@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     if (QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf") == -1)
         qDebug() << "Can't open application font!";
     else
-        app.setFont(QFont(":/fonts/NotoSans-Regular.ttf", 16, QFont::Bold, false));
+        app.setFont(QFont(":/fonts/NotoSans-Regular.ttf", 10, QFont::Normal, false));
 
 #ifndef  QT_DEBUG
     qInstallMessageHandler(noisyFailureMsgHandler);

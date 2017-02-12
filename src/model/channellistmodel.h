@@ -36,7 +36,7 @@ public:
     void updateChannel(Channel*);
     void updateChannels(const QList<Channel*>&);
     void updateStreams(const QList<Channel*>&);
-    void updateStream(Channel*);
+    bool updateStream(Channel*);
     void checkStreams();
 
     void setAllChannelsOffline();
@@ -72,6 +72,7 @@ public slots:
 
 signals:
     void channelOnlineStateChanged(Channel*);
+    void multipleChannelsChangedOnline(const QList<Channel*> &);
 
 private:
     Q_DISABLE_COPY(ChannelListModel)

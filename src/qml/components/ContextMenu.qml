@@ -42,34 +42,16 @@ Menu {
 
 //        itemDelegate {
 
-//            label: Item {
-//                height: dp(33)
-//                width: _icon.width + _label.width
-
-//                Icon {
-//                    id: _icon
-//                    icon: styleData.text.split(";")[1]
-//                    iconSize: dp(12)
-//                    iconColor: styleData.enabled ? Styles.iconColor : Styles.disabled
-//                    anchors {
-//                        top: parent.top
-//                        bottom: parent.bottom
-//                        left: parent.left
-//                    }
-//                }
-
-//                Text {
-//                    id:_label
-//                    text: styleData.text.split(";")[0]
-//                    color: styleData.enabled ? Styles.textColor : Styles.disabled
-//                    font.pixelSize: Styles.titleFont.smaller
-//                    verticalAlignment: Text.AlignVCenter
-//                    anchors {
-//                        top: _icon.top
-//                        bottom: _icon.bottom
-//                        left: _icon.right
-//                    }
-//                    //renderType: Text.NativeRendering
+//            label: Text {
+//                id:_label
+//                text: styleData.text.split(";")[0]
+//                color: styleData.enabled ? Styles.textColor : Styles.disabled
+//                font.pixelSize: Styles.titleFont.smaller
+//                verticalAlignment: Text.AlignVCenter
+//                anchors {
+////                    top: _icon.top
+////                    bottom: _icon.bottom
+////                    left: _icon.right
 //                }
 //            }
 
@@ -79,6 +61,5 @@ Menu {
 //                visible: styleData.selected && styleData.enabled
 //            }
 //        }
-
 //    }
 }

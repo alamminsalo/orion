@@ -120,7 +120,7 @@ const QJsonObject Channel::getJSON() const{
     return QJsonObject::fromVariantMap(map);
 }
 
-const void Channel::writeToSettings(QSettings &settings) const
+void Channel::writeToSettings(QSettings &settings) const
 {
     settings.setValue("name", name);
     settings.setValue("serviceName", serviceName);

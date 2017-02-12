@@ -117,9 +117,6 @@ ApplicationWindow {
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root)
 
-        g_cman.checkFavourites()
-        pollTimer.start()
-
         //Initial view
         g_toolBox.setView(2)
 
@@ -131,6 +128,9 @@ ApplicationWindow {
         console.log("Pixel ratio", Screen.devicePixelRatio)
         console.log("Logical pixel density", Screen.logicalPixelDensity)
         console.log("Orientation", Screen.orientation)
+
+        g_cman.checkFavourites()
+        pollTimer.start()
     }
 
     Timer {

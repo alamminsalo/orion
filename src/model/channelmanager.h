@@ -24,23 +24,16 @@
 #include <QSettings>
 #include <QSortFilterProxyModel>
 
-#define DATA_FILE           "settings.json"
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
-#define DIALOG_FILE         "resources/scripts/dialog.sh"
-#define PLAY_FILE           "resources/scripts/play.sh"
 
-class NetworkManager;
-
-QString appPath();
+//class NetworkManager;
 
 class ChannelManager: public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat NOTIFY swapChatChanged)
-    Q_PROPERTY(bool notifications READ getNotifications WRITE setNotifications NOTIFY notificationsChanged)
 
-//    Q_PROPERTY (QString username READ username NOTIFY userNameUpdated)
-//    Q_PROPERTY (QString accesstoken READ accessToken NOTIFY accessTokenUpdated)
+    Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat NOTIFY swapChatChanged)
+    Q_PROPERTY(bool offlineNotifications READ getOfflineNotifications WRITE setOfflineNotifications NOTIFY notificationsChanged)
 
 protected:
     NetworkManager* netman;
@@ -65,11 +58,18 @@ protected:
     int volumeLevel;
     bool minimizeOnStartup;
     bool _swapChat;
-    bool _notifications;
+    bool offlineNotifications;
 
     //Oauth
     QString user_name;
     QString access_token;
+
+    /**
+     * @brief createFollowedChannelsModel
+     * Creates ready-to-use followed channels model
+     * @return
+     */
+    ChannelListModel *createFollowedChannelsModel();
 
 public:
     ChannelManager(NetworkManager *netman);
@@ -121,8 +121,8 @@ public:
     void setSwapChat(bool value);
     bool getSwapChat();
 
-    void setNotifications(bool value);
-    bool getNotifications();
+    void setOfflineNotifications(bool value);
+    bool getOfflineNotifications();
     
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
@@ -150,6 +150,8 @@ public slots:
     void searchChannels(QString, const quint32&, const quint32&, bool);
 
     void notify(Channel*);
+    void notifyMultipleChannelsOnline(const QList<Channel*> &);
+
     void getFeatured();
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);

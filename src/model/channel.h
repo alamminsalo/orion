@@ -93,7 +93,7 @@ class Channel: public QObject{
 
         //Saving and serializing
         const QJsonObject getJSON() const;
-        const void writeToSettings(QSettings &) const;
+        void writeToSettings(QSettings &) const;
         Channel(const QSettings &);
 
 signals:

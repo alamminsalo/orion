@@ -47,6 +47,7 @@ Rectangle {
             font.pixelSize: Style.titleFont.bigger
             text: root.text
             z: root.z + 1
+            font.bold: true
             //renderType: Text.NativeRendering
         }
     }

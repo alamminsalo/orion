@@ -32,6 +32,11 @@ Item {
         gamesCount += 100
     }
 
+    function searchChannels(item) {
+        searchView.search(":game " + item.title)
+        requestSelectionChange(0)
+    }
+
     Connections {
         target: g_cman
 
@@ -196,8 +201,7 @@ Item {
         }
 
         onItemClicked: {
-            searchView.search(":game " + currentItem.title)
-            requestSelectionChange(0)
+            root.searchChannels(currentItem)
         }
 
         onItemRightClicked: {
@@ -218,8 +222,7 @@ Item {
                 text: "Search streams"
                 //text: "Find streams;search"
                 onTriggered: {
-                    search.search(":game " + _menu.item.title)   
-                    requestSelectionChange(0)
+                    root.searchChannels(_menu.item)
                 }
             }
         }

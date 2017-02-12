@@ -145,6 +145,7 @@ Rectangle {
             horizontalAlignment: Text.AlignHCenter
             font.pixelSize: Styles.titleFont.smaller
             wrapMode: Text.WordWrap
+            font.bold: true
         }
     }
 

@@ -56,9 +56,9 @@ Item{
                 left: parent.left
                 right: parent.right
             }
-            checked: g_cman.notifications
+            checked: g_cman.offlineNotifications
             onClicked: {
-                g_cman.notifications = !g_cman.notifications
+                g_cman.offlineNotifications = !g_cman.offlineNotifications
             }
             text: "Show offline notifications"
         }

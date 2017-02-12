@@ -118,7 +118,7 @@ Item {
                     focus: true
                     selectByMouse: true
                     font.pixelSize: Styles.titleFont.smaller
-
+                    font.bold: true
 
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter

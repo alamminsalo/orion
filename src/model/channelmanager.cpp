@@ -21,6 +21,16 @@
 #include <QApplication>
 #include <QStandardPaths>
 
+ChannelListModel *ChannelManager::createFollowedChannelsModel()
+{
+    ChannelListModel *model = new ChannelListModel();
+
+    connect(model, SIGNAL(channelOnlineStateChanged(Channel*)), this, SLOT(notify(Channel*)));
+    connect(model, SIGNAL(multipleChannelsChangedOnline(const QList<Channel*> &)), this, SLOT(notifyMultipleChannelsOnline(const QList<Channel*> &)));
+
+    return model;
+}
+
 ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     access_token = "";
     tempFavourites = 0;
@@ -30,21 +40,20 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     alertPosition = 1;
     minimizeOnStartup = false;
 
-    favouritesModel = new ChannelListModel();
-
     resultsModel = new ChannelListModel();
 
     featuredModel = new ChannelListModel();
 
     gamesModel = new GameListModel();
 
-    connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
+    //Setup followed channels model and it's signal chain
+    favouritesModel = createFollowedChannelsModel();
 
     favouritesProxy = new QSortFilterProxyModel();
-    favouritesProxy->setSourceModel(favouritesModel);
+
     favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
     favouritesProxy->sort(0, Qt::DescendingOrder);
-
+    favouritesProxy->setSourceModel(favouritesModel);
     featuredProxy = new QSortFilterProxyModel();
     featuredProxy->setSourceModel(featuredModel);
     featuredProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
@@ -76,17 +85,6 @@ ChannelManager::~ChannelManager(){
     delete gamesModel;
     delete favouritesProxy;
     delete featuredProxy;
-}
-
-QString appPath(){
-    QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
-    if (!dir.mkpath(".")) {
-        qDebug() << "Error creating data dir!";
-    }
-
-    qDebug() << dir.absoluteFilePath(DATA_FILE);
-
-    return dir.absoluteFilePath(DATA_FILE);
 }
 
 QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
@@ -199,8 +197,7 @@ void ChannelManager::setAccessToken(const QString &arg)
         if (!tempFavourites) {
             tempFavourites = favouritesModel;
 
-            favouritesModel = new ChannelListModel();
-            connect(favouritesModel,SIGNAL(channelOnlineStateChanged(Channel*)),this,SLOT(notify(Channel*)));
+            favouritesModel = createFollowedChannelsModel();
             favouritesProxy->setSourceModel(favouritesModel);
         }
     }
@@ -290,7 +287,7 @@ void ChannelManager::load(){
     }
 
     if(!settings.value("notifications").isNull()) {
-        _notifications = settings.value("notifications").toBool();
+        offlineNotifications = settings.value("notifications").toBool();
     }
 }
 
@@ -314,7 +311,7 @@ void ChannelManager::save()
     settings.setValue("volumeLevel", volumeLevel);
     settings.setValue("minimizeOnStartup", minimizeOnStartup);
     settings.setValue("swapChat", _swapChat);
-    settings.setValue("notifications", _notifications);
+    settings.setValue("notifications", offlineNotifications);
 
     //Write channels
     settings.beginWriteArray("channels");
@@ -521,16 +518,41 @@ void ChannelManager::addGames(const QList<Game*> &list)
 void ChannelManager::notify(Channel *channel)
 {
     if (alert && channel){
-      if(_notifications) {
+
+        if (!channel->isOnline() && !offlineNotifications)
+            //Skip offline notifications if set
+            return;
+
         emit pushNotification(channel->getName() + (channel->isOnline() ? " is now streaming" : " has gone offline"),
                               channel->getInfo(),
                               channel->getLogourl());
-      }
-      else if(channel->isOnline()) {
-        emit pushNotification(channel->getName() + " is now streaming",
-                              channel->getInfo(),
-                              channel->getLogourl());
-      }
+    }
+}
+
+void ChannelManager::notifyMultipleChannelsOnline(const QList<Channel*> &channels)
+{
+    if (channels.size() == 1) {
+        //Only one channel, send the usual notification
+        notify(channels.at(0));
+    }
+
+    else {
+        //Send multi-notification
+        QString str;
+
+        foreach (Channel *c, channels) {
+
+            //Omit channels after enough characters in message body
+            if (str.size() > 80) {
+                str.append("...");
+                break;
+            }
+
+            str.append(!str.isEmpty() ? ", " : "");
+            str.append(c->getName());
+        }
+
+        emit pushNotification("Channels are streaming", str, DEFAULT_LOGO_URL);
     }
 }
 
@@ -616,11 +638,11 @@ bool ChannelManager::getSwapChat() {
     return _swapChat;
 }
 
-void ChannelManager::setNotifications(bool value) {
-    _notifications = value;
+void ChannelManager::setOfflineNotifications(bool value) {
+    offlineNotifications = value;
     emit notificationsChanged();
 }
 
-bool ChannelManager::getNotifications() {
-    return _notifications;
+bool ChannelManager::getOfflineNotifications() {
+    return offlineNotifications;
 }

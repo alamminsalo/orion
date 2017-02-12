@@ -232,8 +232,10 @@ void ChannelListModel::updateChannels(const QList<Channel *> &list)
     }
 }
 
-void ChannelListModel::updateStream(Channel *item)
+bool ChannelListModel::updateStream(Channel *item)
 {
+    bool onlineStateChanged = false;
+
     if (item && !item->getServiceName().isEmpty()){
 
         if (Channel *channel = find(item->getServiceName())){
@@ -251,10 +253,15 @@ void ChannelListModel::updateStream(Channel *item)
             if (channel->isOnline() != item->isOnline()){
                 channel->setOnline(item->isOnline());
                 updateChannelForView(channel);
-                emit channelOnlineStateChanged(channel);
+
+                onlineStateChanged = true;
+
+                //emit channelOnlineStateChanged(channel);
             }
         }
     }
+
+    return onlineStateChanged;
 }
 
 void ChannelListModel::setAllChannelsOffline()
@@ -270,10 +277,28 @@ void ChannelListModel::setAllChannelsOffline()
 
 void ChannelListModel::updateStreams(const QList<Channel *> &list)
 {
+    QList<Channel*> onlineChannels;
+    QList<Channel*> offlineChannels;
+
     if (!channels.isEmpty()){
         foreach(Channel *channel, list){
-            updateStream(channel);
+            if (updateStream(channel)) {
+                //Channel online status has changed
+
+                if (channel->isOnline())
+                    //Channel is up, add to changed online channels
+                    onlineChannels << channel;
+
+                else
+                    emit channelOnlineStateChanged(channel);
+            }
         }
+    }
+
+    //Handle online channels
+    if (!onlineChannels.isEmpty()) {
+        qDebug() << "Multiple channels online!";
+        emit multipleChannelsChangedOnline(onlineChannels);
     }
 
     //emit channelsUpdated();
