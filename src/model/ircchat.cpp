@@ -187,6 +187,14 @@ void IrcChat::parseCommand(QString cmd) {
         // Structure of message: '@color=#HEX;display-name=NicK;emotes=id:start-end,start-end/id:start-end;subscriber=0or1;turbo=0or1;user-type=type :nick!nick@nick.tmi.twitch.tv PRIVMSG #channel :message'
         QString params = cmd.left(cmd.indexOf("PRIVMSG"));
         QString nickname = params.left(params.lastIndexOf('!')).remove(0, params.lastIndexOf(':') + 1);
+        int displayNamePos = params.indexOf(";display-name=");
+        if (displayNamePos != -1) {
+            displayNamePos += 14;
+            int displayNameEnd = params.indexOf(";", displayNamePos);
+            if (displayNameEnd > displayNamePos) {
+                nickname = params.mid(displayNamePos, displayNameEnd - displayNamePos);
+            }
+        }
         QString message = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("PRIVMSG")) + 1);
         emit messageReceived(nickname, message);
         return;
