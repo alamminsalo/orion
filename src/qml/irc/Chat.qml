@@ -20,7 +20,7 @@ import aldrog.twitchtube.ircchat 1.0
 Item {
     id: root
 
-    signal messageReceived(string user, string message)
+    signal messageReceived(string user, string message, string chatColor, bool subscriber, bool turbo)
     signal notify(string message)
     signal clear()
 
@@ -75,7 +75,7 @@ Item {
         }
 
         onMessageReceived: {
-            root.messageReceived(user, message)
+            root.messageReceived(user, message, chatColor, subscriber, turbo)
         }
 
         onNoticeReceived: {

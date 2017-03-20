@@ -68,7 +68,7 @@ signals:
     void errorOccured(QString errorDescription);
     void connectedChanged();
     void anonymousChanged();
-    void messageReceived(QString user, QString message);
+    void messageReceived(QString user, QString message, QString chatColor, bool subscriber, bool turbo);
     void noticeReceived(QString message);
 public slots:
     void sendMessage(const QString &msg);

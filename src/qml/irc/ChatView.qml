@@ -194,6 +194,10 @@ Item {
         }
 
         onMessageReceived: {
+            if (chatColor != "") {
+                colors[user] = chatColor;
+            }
+
             if (!colors[user]) {
                 colors[user] = getRandomColor()
             }
