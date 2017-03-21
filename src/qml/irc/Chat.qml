@@ -43,7 +43,7 @@ Item {
     function joinChannel(channelName) {
         chat.join(channelName)
         root.channel = channelName
-        messageReceived("Joined channel #" + channelName, null)
+        messageReceived("Joined channel #" + channelName, null, "", false, false)
     }
 
     function leaveChannel() {
@@ -79,7 +79,7 @@ Item {
         }
 
         onNoticeReceived: {
-            root.messageReceived("--NOTIFICATION--", message)
+            root.messageReceived("--NOTIFICATION--", message, null, null, false, false)
         }
     }
 }
