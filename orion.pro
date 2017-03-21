@@ -145,7 +145,7 @@ win32: {
 
     EXTRA_BINFILES_WIN = $${EXTRA_BINFILES}
     EXTRA_BINFILES_WIN ~= s,/,\\,g
-    DESTDIR_WIN = $$OUT_PWD/release
+    DESTDIR_WIN = $$OUT_PWD/$(OBJECTS_DIR)
     DESTDIR_WIN ~= s,/,\\,g
     for(FILE,EXTRA_BINFILES_WIN){
                 QMAKE_POST_LINK +=$$quote(cmd /c copy /y \"$${FILE}\" \"$${DESTDIR_WIN}\"$$escape_expand(\n\t))
