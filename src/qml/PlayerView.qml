@@ -30,6 +30,8 @@ Item {
     property bool isVod: false
     property bool streamOnline: true
 
+    property bool cursorHidden: false
+
     //Minimode, bit ugly
     property bool smallMode: false
     property alias enableSmallMode: miniModeCheckBox.checked
@@ -328,6 +330,9 @@ Item {
             anchors.fill: parent
             hoverEnabled: true
             propagateComposedEvents: false
+
+            //Hide cursor when headers hide
+            cursorShape: cursorHidden ? Qt.BlankCursor : Qt.ArrowCursor
 
             onClicked: {
                 if (sourcesBox.open){
@@ -728,10 +733,17 @@ Item {
                 if (canHideHeaders()) {
                     header.hide()
                     footer.hide()
+
+                    cursorHidden = true
                 }
 
                 else
                     restart()
+            }
+            onRunningChanged: {
+                if (running) {
+                    cursorHidden = false
+                }
             }
         }
 
