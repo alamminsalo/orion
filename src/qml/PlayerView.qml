@@ -13,6 +13,7 @@
  */
 
 import QtQuick 2.5
+import QtQuick.Controls 2.1
 import "components"
 import "irc"
 import "styles.js" as Styles
@@ -400,6 +401,12 @@ Item {
 
                     anchors.centerIn: parent
                 }
+
+                ToolTip {
+                    visible: miniModeCheckBox.mouseArea.containsMouse
+                    delay: 666
+                    text: "Toggle floating player"
+                }
             }
 
             Item {
@@ -427,6 +434,7 @@ Item {
                 }
 
                 MouseArea {
+                    id: favArea
                     anchors.fill: parent
                     hoverEnabled: true
                     onHoveredChanged: {
@@ -451,6 +459,12 @@ Item {
                             }
                         }
                     }
+
+                    ToolTip {
+                        visible: parent.containsMouse
+                        delay: 666
+                        text: "Toggle followed"
+                    }
                 }
             }
 
@@ -467,6 +481,7 @@ Item {
                 height: width
 
                 MouseArea {
+                    id: chatButtonArea
                     anchors.fill: parent
                     onClicked: {
                         chatview.status++
@@ -475,6 +490,12 @@ Item {
 
                     onHoveredChanged: {
                         parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                    }
+
+                    ToolTip {
+                        visible: parent.containsMouse
+                        delay: 666
+                        text: "Toggle chat"
                     }
                 }
             }
@@ -527,6 +548,12 @@ Item {
                     onHoveredChanged: {
                         togglePause.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
                     }
+
+                    ToolTip {
+                        visible: parent.containsMouse
+                        delay: 666
+                        text: "Toggle playback"
+                    }
                 }
             }
 
@@ -547,6 +574,12 @@ Item {
 
                     onHoveredChanged: {
                         reloadButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                    }
+
+                    ToolTip {
+                        visible: parent.containsMouse
+                        delay: 666
+                        text: "Reload stream"
                     }
                 }
             }
@@ -579,6 +612,7 @@ Item {
                 visible: !g_fullscreen
 
                 MouseArea {
+                    id: fitButtonArea
                     anchors.fill: parent
                     onClicked: {
                         if (!g_fullscreen) {
@@ -589,6 +623,12 @@ Item {
 
                     onHoveredChanged: {
                         parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                    }
+
+                    ToolTip {
+                        visible: parent.containsMouse
+                        delay: 666
+                        text: "Fit to 16:9 aspect ratio"
                     }
                 }
             }
@@ -629,6 +669,7 @@ Item {
                 height: width
 
                 MouseArea {
+                    id: fsButtonArea
                     anchors.fill: parent
                     onClicked: g_fullscreen = !g_fullscreen
                     hoverEnabled: true
@@ -636,7 +677,13 @@ Item {
                     onHoveredChanged: {
                         parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
                     }
-                }
+
+                    ToolTip {
+                        visible: parent.containsMouse
+                        delay: 666
+                        text: "Toggle fullscreen"
+                    }
+                }   
             }
 
             ComboBox {
@@ -752,6 +799,18 @@ Item {
         if (seekBar.containsMouse)
             return false
         if (reloadArea.containsMouse)
+            return false
+        if (chatButtonArea.containsMouse)
+            return false
+        if (fsButtonArea.containsMouse)
+            return false
+        if (miniModeCheckBox.mouseArea.containsMouse)
+            return false
+        if (fitButtonArea.containsMouse)
+            return false
+        if (favArea.containsMouse)
+            return false
+        if (sourcesBox.mouseArea.containsMouse)
             return false
 
         return true

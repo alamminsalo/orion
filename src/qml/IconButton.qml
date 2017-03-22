@@ -20,6 +20,7 @@ Icon {
     id: root
     property bool checked: false
     property bool checkable: false
+    property alias mouseArea: mArea
 
     signal clicked()
 
@@ -28,12 +29,12 @@ Icon {
     }
     
     MouseArea {
+        id: mArea
         anchors.fill: parent
         hoverEnabled: true
         
         onHoveredChanged: {
-            if (!root.checked)
-                root.iconColor = containsMouse ? Styles.white : Styles.iconColor
+            root.iconColor = containsMouse ? Styles.white : (root.checked ? Styles.purple : Styles.iconColor)
         }
 
         onClicked: {

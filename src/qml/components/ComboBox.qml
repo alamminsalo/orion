@@ -20,6 +20,7 @@ import "../styles.js" as Styles
 Rectangle {
     property var entries: []
     property alias open: list.visible
+    property alias mouseArea: mArea
 
     id: root
 
@@ -118,6 +119,7 @@ Rectangle {
 
 
     MouseArea {
+        id: mArea
         anchors.fill: parent
         hoverEnabled: true
 
