@@ -391,7 +391,7 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
     if (list.size() == 0)
         return;
 
-	int overall_index = 0;
+    int overall_index = 0;
     int c_index = 0;
     QString channelsUrl = "";
 
