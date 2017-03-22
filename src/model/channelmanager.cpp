@@ -391,6 +391,7 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
     if (list.size() == 0)
         return;
 
+	int overall_index = 0;
     int c_index = 0;
     QString channelsUrl = "";
 
@@ -399,7 +400,7 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
             channelsUrl += ",";
         channelsUrl += channel->getServiceName();
 
-        if (c_index >= list.size() || c_index >= 50){
+        if (++overall_index >= list.size() || c_index >= 50){
             QString url = KRAKEN_API
                     + QString("/streams?limit=%1&channel=").arg(c_index)
                     + channelsUrl;
