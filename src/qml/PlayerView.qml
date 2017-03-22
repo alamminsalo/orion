@@ -31,6 +31,7 @@ Item {
     property bool streamOnline: true
 
     property bool cursorHidden: false
+    property string currentQualityName
 
     //Minimode, bit ugly
     property bool smallMode: false
@@ -142,6 +143,8 @@ Item {
         console.debug("Loading: ", url)
 
         renderer.load(url, start)
+
+        currentQualityName = streamName
     }
 
     function getStreams(channel, vod){
@@ -205,16 +208,19 @@ Item {
         console.log("DEBUG STREAMS")
         var sourceNames = []
         for (var k in streams) {
-            console.log(k + " => " + streams[k])
+            //console.log(k + " => " + streams[k])
             sourceNames.push(k)
         }
 
         streamMap = streams
 
-        //TODO: sort sourceNames => [source , ... , mobile/smallest reso]
         sourcesBox.entries = sourceNames
 
-        sourcesBox.selectFirst()
+        if (currentQualityName && streamMap[currentQualityName])
+            loadAndPlay(currentQualityName)
+
+        else
+            sourcesBox.selectFirst()
     }
 
     function seekTo(position) {
