@@ -45,11 +45,6 @@ Item {
     width: smallMode ? parent.width / 3 : parent.width
     height: smallMode ? width * 0.5625 : parent.height
 
-    onSmallModeChanged: {
-        if (smallMode)
-            chatview.status = 0
-    }
-
     //Renderer interface
     property alias renderer: loader.item
 
@@ -733,7 +728,7 @@ Item {
             right: !g_cman.swapChat ? parent.right : undefined
         }
 
-        width: visible ? dp(250) : 0
+        width: visible && !smallMode ? dp(250) : 0
 
         Behavior on width {
             NumberAnimation {
