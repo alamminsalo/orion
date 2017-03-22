@@ -388,28 +388,32 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
 
 void ChannelManager::checkStreams(const QList<Channel *> &list)
 {
-    if (list.size() == 0)
-        return;
+    //Divide list to sublists for sanity
+    int pos = 0;
 
-    int overall_index = 0;
-    int c_index = 0;
-    QString channelsUrl = "";
+    while(pos < list.length()) {
 
-    foreach(Channel* channel, list){
-        if (c_index++ > 0)
-            channelsUrl += ",";
-        channelsUrl += channel->getServiceName();
+        //Take sublist, max 50 items
+        QList<Channel*> sublist = list.mid(pos, 50);
 
-        if (++overall_index >= list.size() || c_index >= 50){
-            QString url = KRAKEN_API
-                    + QString("/streams?limit=%1&channel=").arg(c_index)
-                    + channelsUrl;
+        //Create comma-separated list of channels
+        QString channelsUrl = "";
+        foreach(Channel* channel, sublist){
+            if (!channelsUrl.isEmpty())
+                channelsUrl += ",";
 
-            netman->getStreams(url);
-
-            channelsUrl = "";
-            c_index = 0;
+            channelsUrl += channel->getServiceName();
         }
+
+        //Fetch channels
+        QString url = KRAKEN_API
+                + QString("/streams?")
+                + QString("limit=%1").arg(50) //Important!
+                + QString("&channel=") + channelsUrl;
+        netman->getStreams(url);
+
+        //Shift pos by 50
+        pos += sublist.length();
     }
 }
 
