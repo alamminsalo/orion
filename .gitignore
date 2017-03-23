@@ -2,11 +2,3 @@
 
 .DS_Store
 
-release/
-libs/
-Makefile
-Makefile.Debug
-Makefile.Release
-.qmake.stash
-orion_resource.rc
-debug/
