@@ -541,7 +541,7 @@ void ChannelManager::notifyMultipleChannelsOnline(const QList<Channel*> &channel
         notify(channels.at(0));
     }
 
-    else {
+    else if (alert) {
         //Send multi-notification
         QString str;
 
