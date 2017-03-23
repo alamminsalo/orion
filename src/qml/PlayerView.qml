@@ -13,7 +13,7 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.0
 import "components"
 import "irc"
 import "styles.js" as Styles
