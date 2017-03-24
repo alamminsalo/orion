@@ -115,7 +115,7 @@ void IrcChat::sendMessage(const QString &msg) {
     if (inRoom() && connected()) {
         sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
         //TODO need the user's status info to show here
-        emit messageReceived(username, msg, "", false, false);
+        emit messageReceived(username, msg.toHtmlEscaped(), "", false, false);
     }
 }
 
@@ -224,7 +224,7 @@ void IrcChat::parseCommand(QString cmd) {
         }
 
         QString message = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("PRIVMSG")) + 1);
-        emit messageReceived(nickname, message, color, subscriber, turbo);
+        emit messageReceived(nickname, message.toHtmlEscaped(), color, subscriber, turbo);
         return;
     }
     if(cmd.contains("NOTICE")) {
