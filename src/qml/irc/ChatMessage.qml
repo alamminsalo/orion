@@ -24,12 +24,26 @@ Item {
     height: childrenRect.height
 
     Component.onCompleted: {
+        var ACTION_PREFIX = "\u0001ACTION";
+        var ACTION_SUFFIX = "\u0001";
 
+        function startswith(s, a) {
+            return s.length >= a.length && s.substring(0, a.length) == a;
+        }
+
+        function endswith(s, a) {
+            return s.length >= a.length && s.substring(s.length - a.length) == a;
+        }
 
         if (msg)
         {
-            _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (msg ? ": " : "")
-            parseMsg(msg)
+            if (startswith(msg, ACTION_PREFIX) && endswith(msg, ACTION_SUFFIX)) {
+                var action = msg.substring(ACTION_PREFIX.length, msg.length - ACTION_SUFFIX.length);
+                _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a> %2</font>".arg(user).arg(action);
+            } else {
+                _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (msg ? ": " : "");
+                parseMsg(msg)
+            }
         }
         else
             _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user) + (msg ? ": " : "")
