@@ -199,7 +199,7 @@ Item {
 
     function setWatchingTitle(){
         setHeaderText(currentChannel.title
-                      + " playing " + currentChannel.game
+                      + (currentChannel.game ? " playing " + currentChannel.game : "")
                       + (isVod ? " (VOD)" : ""))
     }
 
