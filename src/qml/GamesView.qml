@@ -173,7 +173,7 @@ Item {
         }
     }
 
-    ChannelGrid {
+    CommonGrid {
         id: games
         tooltipEnabled: true
 

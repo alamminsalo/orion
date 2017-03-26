@@ -148,6 +148,17 @@ Item {
     }
 
     function getStreams(channel, vod){
+        getChannel(channel, vod, true);
+    }
+
+    function getChat(channel) {
+        getChannel(channel, null, false);
+        if (chatview.status == 0) {
+            chatview.status++;
+        }
+    }
+
+    function getChannel(channel, vod, wantVideo){
 
         if (!channel){
             return
@@ -155,21 +166,23 @@ Item {
 
         renderer.stop()
 
-        if (!vod || typeof vod === "undefined") {
-            g_cman.findPlaybackStream(channel.name)
-            isVod = false
+        if (wantVideo) {
+            if (!vod || typeof vod === "undefined") {
+                g_cman.findPlaybackStream(channel.name)
+                isVod = false
 
-            duration = -1
-        }
-        else {
-            g_vodmgr.getBroadcasts(vod._id)
-            isVod = true
+                duration = -1
+            }
+            else {
+                g_vodmgr.getBroadcasts(vod._id)
+                isVod = true
 
-            duration = vod.duration
+                duration = vod.duration
 
-            console.log("Setting up VOD, duration " + vod.duration)
+                console.log("Setting up VOD, duration " + vod.duration)
 
-            seekBar.setPosition(0, duration)
+                seekBar.setPosition(0, duration)
+            }
         }
 
         currentChannel = {
