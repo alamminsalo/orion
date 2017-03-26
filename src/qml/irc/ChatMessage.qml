@@ -13,60 +13,80 @@
  */
 
 import QtQuick 2.0
+import QtQuick.Layouts 1.0
 import "../styles.js" as Styles
 
 Item {
     id: root
     property string user
-    property string msg
+    property var msg
+    property bool isAction
+    property string emoteDirPath
     property int fontSize: Styles.titleFont.smaller
+    property var pmsg: JSON.parse(msg)
 
     height: childrenRect.height
 
+    /*
     Component.onCompleted: {
-        var ACTION_PREFIX = "\u0001ACTION";
-        var ACTION_SUFFIX = "\u0001";
+        console.log("Got: " + msg);
+        console.log("Got toString: " + msg.toString());
+        var rmsg = JSON.parse(msg);
 
-        function startswith(s, a) {
-            return s.length >= a.length && s.substring(0, a.length) == a;
-        }
-
-        function endswith(s, a) {
-            return s.length >= a.length && s.substring(s.length - a.length) == a;
-        }
-
-        if (msg)
+        if (rmsg)
         {
-            if (startswith(msg, ACTION_PREFIX) && endswith(msg, ACTION_SUFFIX)) {
-                var action = msg.substring(ACTION_PREFIX.length, msg.length - ACTION_SUFFIX.length);
-                _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a> %2</font>".arg(user).arg(action);
+            if (isAction) {
             } else {
-                _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (msg ? ": " : "");
-                parseMsg(msg)
+            _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a>".arg(user);
+            if (isAction) {
+                _text.text += " ";
+                parseMsg(rmsg);
+            }
+            _text.text += "</font>";
+            if (!isAction) {
+                _text.text += ": ";
+                parseMsg(rmsg)
             }
         }
         else
-            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user) + (msg ? ": " : "")
+            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user) + (rmsg ? ": " : "")
         _text.user = user
     }
+    */
 
     function parseMsg(msg) {
+        console.log("We are in parseMsg()");
+        console.log("msg typeof is " + typeof(msg));
+        //console.log("msg length is " + msg.length.toString());
+        console.log("msg tostring is " + msg.toString());
 
-        var mlist = msg.split(" ")
-        var textStr = ""
+        console.log("typeof msg.length " + typeof(msg.length));
+        console.log("msg.length " + msg.length.toString());
 
-        for (var i=0; i < mlist.length; i++) {
-            var str = mlist[i]
+        for (var j=0; j < msg.length; j++) {
+            var mlist = msg[j];
+            console.log("cur mlist entry " + j.toString() + " typeof is " + typeof(mlist));
+            if (typeof(mlist) == "number") {
+                // it's an emote
+                var imgUrl = emoteDirPath + "/" + mlist.toString();
 
-            if (!str)
-                continue
+                _text.text += "<img src=\"" + imgUrl + "\"></img>";
 
-            textStr += "%1 ".arg(!isUrl(str) ? str : makeUrl(str))
+            } else {
+                mlist = mlist.split(" ")
+                var textParts = [];
+
+                for (var i=0; i < mlist.length; i++) {
+                    var str = mlist[i]
+
+                    textParts.push(!isUrl(str) ? str : makeUrl(str))
+                }
+                _text.text += textParts.join(" ");
+            }
+
         }
 
-        _text.text += textStr.trim()
-
-        //console.log("Created text object: " + textStr)
+        console.log("Created text object: " + _text.text);
     }
 
     function makeUrl(str) {
@@ -79,6 +99,59 @@ Item {
         return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
     }
 
+    Flow {
+      anchors {
+          left: parent.left
+          right: parent.right
+      }
+
+      Text {
+        id: userName
+        verticalAlignment: Text.AlignVCenter
+        color: Styles.textColor
+        font.pixelSize: fontSize
+        text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
+      }
+
+      Repeater {
+        model: pmsg
+
+        Loader {
+          height: typeof pmsg[index] == "string" ? 
+                    fontSize : 25
+          width: if(typeof pmsg[index] != "string")
+                    return 25
+          property var msgItem: pmsg[index]
+          sourceComponent: {
+            if(typeof pmsg[index] == "string") {
+              return msgText
+            }
+            else {
+              return imgThing
+            }
+          }
+        }
+      }
+    }
+
+    property Component msgText: Component {
+      Text {
+        verticalAlignment: Text.AlignVCenter
+        color: isAction? chat.colors[user] : Styles.textColor
+        font.pixelSize: fontSize
+        text: msgItem
+        wrapMode: Text.WordWrap
+      }
+    }
+    property Component imgThing: Component {
+      Image {
+        Component.onCompleted: {
+          source = "image://emote/" + msgItem.toString();
+        }
+        asynchronous: true
+      }
+    }
+    /*
     Text {
         id: _text
         property string user: ""
@@ -112,4 +185,5 @@ Item {
         }
 
     }
+    */
 }

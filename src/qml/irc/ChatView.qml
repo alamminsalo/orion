@@ -98,6 +98,8 @@ Item {
         delegate: ChatMessage {
             user: model.user
             msg: model.message
+            isAction: model.isAction
+            emoteDirPath: chat.emoteDirPath
 
             anchors {
                 left: parent.left
@@ -184,6 +186,8 @@ Item {
         id: chat
 
         property variant colors:[]
+        property string emoteDirPath
+
         function getRandomColor() {
             var letters = '0123456789ABCDEF';
             var color = '#';
@@ -193,7 +197,13 @@ Item {
             return color;
         }
 
+        onSetEmotePath: {
+            emoteDirPath = value
+        }
+
         onMessageReceived: {
+            //console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString())
+
             if (chatColor != "") {
                 colors[user] = chatColor;
             }
@@ -202,7 +212,10 @@ Item {
                 colors[user] = getRandomColor()
             }
 
-            chatModel.append({"user": user, "message": message})
+            // ListElement doesn't support putting in an array value, ugh.
+            var serializedMessage = JSON.stringify(message);
+            //console.log("Sending: " + serializedMessage);
+            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction})
             list.scrollbuf = 6
         }
 

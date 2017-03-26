@@ -20,13 +20,18 @@ import aldrog.twitchtube.ircchat 1.0
 Item {
     id: root
 
-    signal messageReceived(string user, string message, string chatColor, bool subscriber, bool turbo)
+    signal messageReceived(string user, variant message, string chatColor, bool subscriber, bool turbo, bool isAction)
+    signal setEmotePath(string value)
     signal notify(string message)
     signal clear()
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
     property var singleShot: undefined
+
+    Component.onCompleted: {
+        chat.initProviders()
+    }
 
     Connections {
         target: g_cman
@@ -43,7 +48,7 @@ Item {
     function joinChannel(channelName) {
         chat.join(channelName)
         root.channel = channelName
-        messageReceived("Joined channel #" + channelName, null, "", false, false)
+        messageReceived("Joined channel #" + channelName, null, "", false, false, false)
     }
 
     function leaveChannel() {
@@ -75,7 +80,8 @@ Item {
         }
 
         onMessageReceived: {
-            root.messageReceived(user, message, chatColor, subscriber, turbo)
+            root.setEmotePath(emoteDirPath)
+            root.messageReceived(user, message, chatColor, subscriber, turbo, isAction)
         }
 
         onNoticeReceived: {
