@@ -157,7 +157,6 @@ private:
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
     QString room;
-    QMap<QString, QString> badges;
     bool logged_in;
     int activeDownloadCount;
 };
