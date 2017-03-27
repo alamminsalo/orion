@@ -149,7 +149,7 @@ signals:
     void accessTokenUpdated();
     void userNameUpdated(const QString name);
     void login(const QString &username, const QString &password);
-    void emoteSetsLoaded(const QMap<int, QMap<int, QString>> emoteSets);
+    void emoteSetsLoaded(QVariantMap emoteSets);
 
 public slots:
     void checkFavourites();

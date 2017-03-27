@@ -366,9 +366,11 @@ void IrcChat::parseCommand(QString cmd) {
 					}
 				}
 				else if (key == "emote-sets") {
-					for (auto entry : key.split(',')) {
+                    qDebug() << "GLOBALUSERSTATE emote-sets" << value;
+					for (auto entry : value.split(',')) {
 						_emoteSetIDs.append(entry.toInt());
 					}
+                    emit emoteSetIDsChanged();
 				}
 
 			}
@@ -418,6 +420,24 @@ bool IrcChat::downloadEmotes(QString key) {
 		this, &IrcChat::individualDownloadComplete);
 
     return true;
+}
+
+bool IrcChat::bulkDownloadEmotes(QList<QString> emoteIDs) {
+    bool waitForDownloadComplete = false;
+    for (auto key : emoteIDs) {
+        if (emotesCurrentlyDownloading.contains(key)) {
+            // download of this emote in progress
+            waitForDownloadComplete = true;
+        } else if (downloadEmotes(key)) {
+            // if this emote isn't already downloading, it's safe to load the cache file or download if not in the cache
+            emotesCurrentlyDownloading.insert(key);
+            activeDownloadCount += 1;
+            waitForDownloadComplete = true;
+        } else {
+            // we already had the emote locally and don't need to wait for it to download
+        }
+    }
+    return waitForDownloadComplete;
 }
 
 CachedImageProvider::CachedImageProvider(QHash<QString, QImage*> & imageTable) : QQuickImageProvider(QQuickImageProvider::Image), imageTable(imageTable) {

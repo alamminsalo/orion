@@ -13,7 +13,9 @@
  */
 
 import QtQuick 2.0
+import QtQuick.Controls 1.4
 import "../styles.js" as Styles
+import "../components"
 
 Item {
     id: root
@@ -39,8 +41,11 @@ Item {
     }
 
     onVisibleChanged: {
-        if (visible)
+        if (visible) {
             _input.forceActiveFocus()
+        } else {
+            _emotePicker.visible = false;
+        }
     }
 
     function joinChannel(channel) {
@@ -157,6 +162,7 @@ Item {
             opacity: root._opacity
         }
 
+        Row {
         MouseArea {
             cursorShape: Qt.IBeamCursor
             anchors {
@@ -167,6 +173,7 @@ Item {
                 id: _input
                 anchors {
                     fill: parent
+                    //left: parent.left
                     margins: dp(5)
                 }
                 color: "#ffffff"
@@ -180,35 +187,149 @@ Item {
                 Keys.onReturnPressed: sendMessage()
             }
 
-        }
-
-        MouseArea {
-            id: _emoteButtonArea
-            anchors {
-                right: parent.right
-            }
-            onClicked: {
-                console.log("current emote set ids")
-                console.log(chat.lastEmoteSetIDs)
-            }
-            //hoverEnabled: true
-
-            //onHoveredChanged: {
-            //    _emoteButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-            //}
-
-            Text {
+            Button{
                 id: _emoteButton
-                anchors.centerIn: parent
-                font.family: "FontAwesome"
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                text: FontAwesome.fromText("smile-o")
-                font.bold: false
+                property bool emotePickerDownloadsInProgress : false
+                property var setsToDownload
+                property var lastSet
+                property var lastEmoteSets
+                property int curDownloading
+                property var setsVisible
+
+                property bool pickerLoaded: false
+
+                GridPicker {
+                    id: _emotePicker
+                    source: setsVisible
+                    visible: false
+                    text: "Emote Picker"
+                }
+
+                text:"emotes"
+                onClicked: {
+                    var newVisible = !_emotePicker.visible;
+
+                    if (newVisible && !pickerLoaded) {
+                        console.log("current emote set ids")
+                        console.log(chat.lastEmoteSetIDs)
+                        if (chat.lastEmoteSetIDs) {
+                            // load the emote sets so that we know what icons to display
+                            g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
+                            pickerLoaded = true;
+                        }
+                    }
+                    _emotePicker.visible = newVisible;
+                }
+
+                function showLastSet() {
+                    console.log("showing last set", lastSet);
+                    var lastSetMap = lastEmoteSets[lastSet];
+                    for (var i in lastSetMap) {
+                        setsVisible.push([i, lastSetMap[i]]);
+                    }
+                }
+
+                function nextDownload() {
+                    if (emotePickerDownloadsInProgress) {
+                        if (curDownloading < setsToDownload.length) {
+                            var curSetID = setsToDownload[curDownloading];
+                            lastSet = curSetID;
+                            var curSetMap = lastEmoteSets[curSetID];
+                            var curSetList = [];
+                            for (var i in curSetMap) {
+                                curSetList.push(i);
+                            }
+                            curDownloading ++;
+                            console.log("Downloading emote set #", curDownloading, curSetID, curSetList);
+                            var waitForDownload = chat.bulkDownloadEmotes(curSetList);
+
+                            if (!waitForDownload) {
+                                showLastSet();
+                                nextDownload();
+                            }
+                        } else {
+                            emotePickerDownloadsInProgress = false;
+                            _emotePicker.loading = false;
+                        }
+                    }
+                }
+
+                function startDownload(emoteSets) {
+                    curDownloading = 0;
+                    lastEmoteSets = emoteSets;
+                    setsToDownload = [];
+                    setsVisible = [];
+                    for (var i in emoteSets) {
+                        setsToDownload.push(i);
+                    }
+                    console.log("Starting download of emote sets", setsToDownload);
+                    emotePickerDownloadsInProgress = true;
+
+                    nextDownload();
+                }
+
+                Connections {
+                    target: g_cman
+                    onEmoteSetsLoaded: {
+                        console.log("emote sets loaded:");
+                        //console.log(emoteSets);
+
+                        if (emoteSets) {
+                            _emoteButton.startDownload(emoteSets);
+                        }
+
+                    }
+                }
+
+                Connections {
+                    target: chat
+                    onDownloadComplete: {
+                        console.log("outer download complete");
+                        if (_emoteButton.emotePickerDownloadsInProgress) {
+                            console.log("handling emote picker set finished");
+                            _emoteButton.showLastSet();
+                            _emoteButton.nextDownload();
+                        }
+                    }
+                }
             }
+
+        }
         }
 
     }
+
+    /*
+    Item {
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
+    MouseArea {
+        id: _emoteButtonArea
+        onClicked: {
+            console.log("current emote set ids")
+            console.log(chat.lastEmoteSetIDs)
+        }
+        //hoverEnabled: true
+
+        //onHoveredChanged: {
+        //    _emoteButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+        //}
+
+        Text {
+            id: _emoteButton
+            //anchors.centerIn: parent
+            //font.family: "FontAwesome"
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            text: "yes, i am the emote button" //FontAwesome.fromText("smile-o")
+            font.bold: false
+        }
+    }
+    }
+    */
 
     Chat {
         id: chat

@@ -577,6 +577,19 @@ void ChannelManager::onUserNameUpdated(const QString &name)
     }
 }
 
+QVariantMap convertEmoteSets(const QMap<int, QMap<int, QString>> emoteSets) {
+    QVariantMap out;
+    for (auto setEntry = emoteSets.begin(); setEntry != emoteSets.end(); setEntry++) {
+        QVariantMap cur;
+        auto set = setEntry.value();
+        for (auto emote = set.begin(); emote != set.end(); emote++) {
+            cur.insert(QString::number(emote.key()), emote.value());
+        }
+        out.insert(QString::number(setEntry.key()), cur);
+    }
+    return out;
+}
+
 bool ChannelManager::loadEmoteSets(bool reload, const QList<int> &emoteSetIDs) {
     if (!haveEmoteSets || (emoteSetIDs != lastRequestedEmoteSetIDs)) {
         reload = true;
@@ -595,7 +608,7 @@ bool ChannelManager::loadEmoteSets(bool reload, const QList<int> &emoteSetIDs) {
     }
     else {
         // ok to deliver cached emote sets
-        emit emoteSetsLoaded(lastEmoteSets);
+        emit emoteSetsLoaded(convertEmoteSets(lastEmoteSets));
     }
 }
 
@@ -603,7 +616,10 @@ void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> upda
 {
     lastEmoteSets = updatedEmoteSets;
     haveEmoteSets = true;
-    emit emoteSetsLoaded(updatedEmoteSets);
+
+    //qDebug() << "emitting updated emote set" << updatedEmoteSets;
+
+    emit emoteSetsLoaded(convertEmoteSets(updatedEmoteSets));
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)

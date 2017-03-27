@@ -25,6 +25,7 @@ Item {
     signal notify(string message)
     signal clear()
     signal emoteSetIDsChanged(var emoteSetIDs)
+    signal downloadComplete()
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
@@ -60,6 +61,10 @@ Item {
         chat.sendMessage(message)
     }
 
+    function bulkDownloadEmotes(emotes) {
+        return chat.bulkDownloadEmotes(emotes);
+    }
+
     function reconnect() {
         leaveChannel()
         if (root.channel)
@@ -91,6 +96,11 @@ Item {
 
         onEmoteSetIDsChanged: {
             root.emoteSetIDsChanged(emoteSetIDs)
+        }
+
+        onDownloadComplete: {
+            console.log("inner download complete");
+            root.downloadComplete();
         }
     }
 }

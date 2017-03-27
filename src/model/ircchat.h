@@ -125,7 +125,7 @@ public:
     void RegisterEngineProviders(QQmlEngine & engine);
 
 signals:
-    void errorOccured(QString errorDescription);
+    void errorOccured(QString errorDescription);    
     void connectedChanged();
     void emoteSetIDsChanged();
     void anonymousChanged();
@@ -142,6 +142,7 @@ public slots:
     void onSockStateChanged();
     void login();
     void individualDownloadComplete(QString filename, bool hadError);
+    bool bulkDownloadEmotes(QList<QString> emoteIDs);
 
 private slots:
     void createConnection();

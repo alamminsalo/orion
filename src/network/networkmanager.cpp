@@ -338,12 +338,14 @@ void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset,
 void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs) {
     QList<QString> emoteSetsIDsStr;
     for (auto id : emoteSetIDs) {
-        emoteSetsIDsStr.append(QString(id));
+        emoteSetsIDsStr.append(QString::number(id));
     }
 
     QString url = QString(KRAKEN_API) + "/chat/emoticon_images"
         + QString("?emotesets=") + emoteSetsIDsStr.join(',');
     QString auth = "OAuth " + access_token;
+
+    qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
     request.setRawHeader("Client-ID", getClientId().toUtf8());

@@ -420,6 +420,8 @@ QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
 
+    //qDebug() << "parsing emote sets response" << data;
+
     if (error.error == QJsonParseError::NoError) {
         QJsonObject json = doc.object();
         if (!json["emoticon_sets"].isNull()) {
@@ -427,11 +429,18 @@ QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data)
             for (auto emoticonSetEntry = emoticon_sets.begin(); emoticonSetEntry != emoticon_sets.end(); emoticonSetEntry++) {
                 auto emoticonSetID = emoticonSetEntry.key();
                 QMap<int, QString> curSetEmoticons;
-                auto emoticons = emoticonSetEntry.value().toObject();
+                auto emoticons = emoticonSetEntry.value().toArray();
                 for (auto emoticonEntry = emoticons.begin(); emoticonEntry != emoticons.end(); emoticonEntry++) {
-                    curSetEmoticons.insert(emoticonEntry.key().toInt(), emoticonEntry.value().toString());
+                    auto emoticonObj = emoticonEntry->toObject();
+                    auto id = emoticonObj["id"];
+                    auto code = emoticonObj["code"];
+                    if (id.isDouble() && code.isString()) {
+                        curSetEmoticons.insert(id.toInt(), code.toString());
+                    }
                 }
-                out.insert(emoticonSetID.toInt(), curSetEmoticons);
+                int setId = emoticonSetID.toInt();
+                //qDebug() << "saving set id" << setId;
+                out.insert(setId, curSetEmoticons);
             }
         }
     }

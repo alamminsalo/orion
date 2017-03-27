@@ -54,5 +54,6 @@
         <file>irc/ChatMessage.qml</file>
         <file>MpvBackend.qml</file>
         <file>IconButton.qml</file>
+        <file>components/GridPicker.qml</file>
     </qresource>
 </RCC>

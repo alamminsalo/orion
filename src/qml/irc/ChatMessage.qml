@@ -28,8 +28,8 @@ Item {
     height: childrenRect.height
 
     Component.onCompleted: {
-        console.log("Got: " + msg);
-        console.log("Got toString: " + msg.toString());
+        //console.log("Got: " + msg);
+        //console.log("Got toString: " + msg.toString());
         var rmsg = JSON.parse(msg);
 
         if (rmsg)
