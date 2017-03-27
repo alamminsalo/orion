@@ -200,9 +200,14 @@ Item {
 
                 GridPicker {
                     id: _emotePicker
-                    source: setsVisible
+                    source: _emoteButton.setsVisible
                     visible: false
                     text: "Emote Picker"
+
+                    onItemClicked: {
+                        var item = setsVisible[index];
+                        addEmoteToChat(item.emoteName);
+                    }
                 }
 
                 text:"emotes"
@@ -221,11 +226,20 @@ Item {
                     _emotePicker.visible = newVisible;
                 }
 
+                function addEmoteToChat(emoteName) {
+                    var textToAdd = emoteName + " ";
+                    var existingText = _input.text;
+                    if (existingText == "" || existingText.charAt(existingText.length - 1) == " ") {
+                       textToAdd = " " + textToAdd;
+                    }
+                    _input.text += textToAdd;
+                }
+
                 function showLastSet() {
                     console.log("showing last set", lastSet);
                     var lastSetMap = lastEmoteSets[lastSet];
                     for (var i in lastSetMap) {
-                        setsVisible.push([i, lastSetMap[i]]);
+                        setsVisible.push({"imageUrl": "image://emote/" + i, "emoteName": lastSetMap[i]});
                     }
                 }
 

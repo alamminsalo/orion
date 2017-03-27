@@ -29,6 +29,8 @@ Window {
 
     property var source
 
+    signal itemClicked(int index)
+
     Rectangle {
         id: rootRect
         anchors.fill: parent
@@ -44,52 +46,28 @@ Window {
         //Container for text
         Rectangle {
             id: header
-            anchors.fill: text
+            //anchors.fill: text
             color: Styles.shadeColor
             opacity: 0.7
             height: text.height
         }
 
-        Flow {
-            /*
-            anchors: {
-                fill: parent
-            }
-            */
-            Repeater {
-              model: source
-
-              Loader {
+        GridView {
+            id: _emotesGrid
+            anchors.fill: parent
+            model: source
+            delegate: MouseArea {
                 height: 25
                 width: 25
-                property var msgItem: source[index]
-                sourceComponent: imgThing
-              }
-            }
-        }
+                Image {
+                    source: imageUrl
+                    asynchronous: true
+                }
 
-
-        Text {
-            id: text
-            color: Styles.textColor
-            text: root.text
-            font.pixelSize: Styles.titleFont.smaller
-            anchors{
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
+                onClicked: {
+                    itemClicked(index);
+                }
             }
-            wrapMode: Text.WordWrap
-            //renderType: Text.NativeRendering
-        }
-
-        property Component imgThing: Component {
-          Image {
-            Component.onCompleted: {
-              source = "image://emote/" + msgItem[0];
-            }
-            asynchronous: true
-          }
         }
 
     }
