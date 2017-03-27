@@ -346,7 +346,33 @@ void IrcChat::parseCommand(QString cmd) {
         emit noticeReceived(text);
     }
     if(cmd.contains("GLOBALUSERSTATE")) {
-        // We are not interested in this one, it only exists because otherwise USERSTATE would be trigged instead
+		// Structure of message: @badges=turbo/1;color=#4100CC;display-name=user_name;emote-sets=0,1,22,345;user-id=12345678;user-type= :tmi.twitch.tv GLOBALUSERSTATE
+		// We want this for the emote ids
+		if (cmd.at(0) == QChar('@')) {
+			int tagsEnd = cmd.indexOf(' ');
+			QString tags = cmd.mid(1, tagsEnd - 1);
+            foreach(const QString & tag, tags.split(";")) {
+                int assignPos = tag.indexOf("=");
+                if (assignPos == -1) continue;
+				QString key = tag.left(assignPos);
+				QString value = tag.mid(assignPos + 1);
+				if (key == "badges") {
+					for (auto badge : value.split(',')) {
+						auto badgePair = badge.split('/');
+						if (badgePair.length() < 2) continue;
+						QString badgeName = badgePair[0];
+						QString badgeNum = badgePair[1];
+						badges.insert(badgeName, badgeNum);
+					}
+				}
+				else if (key == "emote-sets") {
+					for (auto entry : key.split(',')) {
+						_emoteSetIDs.append(entry.toInt());
+					}
+				}
+
+			}
+		}
         return;
     }
     //qDebug() << "Unrecognized chat command:" << cmd;
@@ -449,6 +475,10 @@ void IrcChat::loadEmoteImageFile(QString emoteKey, QString filename) {
     QImage* emoteImg = new QImage();
     emoteImg->load(filename);
     _emoteTable.insert(emoteKey, emoteImg);
+}
+
+QList<int> IrcChat::emoteSetIDs() {
+    return _emoteSetIDs;
 }
 
 void IrcChat::individualDownloadComplete(QString filename, bool hadError) {

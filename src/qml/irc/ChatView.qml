@@ -179,7 +179,35 @@ Item {
 
                 Keys.onReturnPressed: sendMessage()
             }
+
         }
+
+        MouseArea {
+            id: _emoteButtonArea
+            anchors {
+                right: parent.right
+            }
+            onClicked: {
+                console.log("current emote set ids")
+                console.log(chat.lastEmoteSetIDs)
+            }
+            //hoverEnabled: true
+
+            //onHoveredChanged: {
+            //    _emoteButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+            //}
+
+            Text {
+                id: _emoteButton
+                anchors.centerIn: parent
+                font.family: "FontAwesome"
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                text: FontAwesome.fromText("smile-o")
+                font.bold: false
+            }
+        }
+
     }
 
     Chat {
@@ -187,6 +215,7 @@ Item {
 
         property variant colors:[]
         property string emoteDirPath
+        property variant lastEmoteSetIDs
 
         function getRandomColor() {
             var letters = '0123456789ABCDEF';
@@ -217,6 +246,10 @@ Item {
             //console.log("Sending: " + serializedMessage);
             chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction})
             list.scrollbuf = 6
+        }
+
+        onEmoteSetIDsChanged: {
+            lastEmoteSetIDs = emoteSetIDs
         }
 
         onClear: {

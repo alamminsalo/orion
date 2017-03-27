@@ -335,6 +335,26 @@ void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset,
     connect(reply, SIGNAL(finished()), this, SLOT(favouritesReply()));
 }
 
+void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs) {
+    QList<QString> emoteSetsIDsStr;
+    for (auto id : emoteSetIDs) {
+        emoteSetsIDsStr.append(QString(id));
+    }
+
+    QString url = QString(KRAKEN_API) + "/chat/emoticon_images"
+        + QString("?emotesets=") + emoteSetsIDsStr.join(',');
+    QString auth = "OAuth " + access_token;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(emoteSetsReply()));
+}
+
 void NetworkManager::editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add)
 {
     QString url = QString(KRAKEN_API) + "/users/" + user
@@ -645,6 +665,20 @@ void NetworkManager::userReply()
     QByteArray data = reply->readAll();
 
     emit userNameOperationFinished(JsonParser::parseUserName(data));
+
+    reply->deleteLater();
+}
+
+void NetworkManager::emoteSetsReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+    
+    emit getEmoteSetsOperationFinished(JsonParser::parseEmoteSets(data));
 
     reply->deleteLater();
 }

@@ -24,6 +24,7 @@ Item {
     signal setEmotePath(string value)
     signal notify(string message)
     signal clear()
+    signal emoteSetIDsChanged(var emoteSetIDs)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
@@ -86,6 +87,10 @@ Item {
 
         onNoticeReceived: {
             root.messageReceived("--NOTIFICATION--", message, null, null, false, false)
+        }
+
+        onEmoteSetIDsChanged: {
+            root.emoteSetIDsChanged(emoteSetIDs)
         }
     }
 }

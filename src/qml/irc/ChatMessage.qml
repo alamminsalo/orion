@@ -23,11 +23,10 @@ Item {
     property bool isAction
     property string emoteDirPath
     property int fontSize: Styles.titleFont.smaller
-    property var pmsg: JSON.parse(msg)
+    //property var pmsg: JSON.parse(msg)
 
     height: childrenRect.height
 
-    /*
     Component.onCompleted: {
         console.log("Got: " + msg);
         console.log("Got toString: " + msg.toString());
@@ -35,8 +34,6 @@ Item {
 
         if (rmsg)
         {
-            if (isAction) {
-            } else {
             _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a>".arg(user);
             if (isAction) {
                 _text.text += " ";
@@ -49,9 +46,12 @@ Item {
             }
         }
         else
-            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user) + (rmsg ? ": " : "")
+        {
+            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user)
+        }
         _text.user = user
     }
+        /*
     */
 
     function parseMsg(msg) {
@@ -99,6 +99,7 @@ Item {
         return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
     }
 
+    /*
     Flow {
       anchors {
           left: parent.left
@@ -133,6 +134,7 @@ Item {
         }
       }
     }
+    */
 
     property Component msgText: Component {
       Text {
@@ -143,6 +145,7 @@ Item {
         wrapMode: Text.WordWrap
       }
     }
+    /*
     property Component imgThing: Component {
       Image {
         Component.onCompleted: {
@@ -151,7 +154,7 @@ Item {
         asynchronous: true
       }
     }
-    /*
+    */
     Text {
         id: _text
         property string user: ""
@@ -185,5 +188,6 @@ Item {
         }
 
     }
+    /*
     */
 }

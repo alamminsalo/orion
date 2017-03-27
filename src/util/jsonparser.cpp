@@ -414,6 +414,31 @@ QString JsonParser::parseUserName(const QByteArray &data)
     return displayName;
 }
 
+QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data) {
+    QMap<int, QMap<int, QString>> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+        if (!json["emoticon_sets"].isNull()) {
+            auto emoticon_sets = json["emoticon_sets"].toObject();
+            for (auto emoticonSetEntry = emoticon_sets.begin(); emoticonSetEntry != emoticon_sets.end(); emoticonSetEntry++) {
+                auto emoticonSetID = emoticonSetEntry.key();
+                QMap<int, QString> curSetEmoticons;
+                auto emoticons = emoticonSetEntry.value().toObject();
+                for (auto emoticonEntry = emoticons.begin(); emoticonEntry != emoticons.end(); emoticonEntry++) {
+                    curSetEmoticons.insert(emoticonEntry.key().toInt(), emoticonEntry.value().toString());
+                }
+                out.insert(emoticonSetID.toInt(), curSetEmoticons);
+            }
+        }
+    }
+
+    return out;
+}
+
 int JsonParser::parseTotal(const QByteArray &data)
 {
     int total = 0;

@@ -49,6 +49,7 @@ public:
     static QString parseVodExtractionInfo(const QByteArray&);
     static QString parseUserName(const QByteArray&);
     static int parseTotal(const QByteArray&);
+    static QMap<int, QMap<int, QString>> parseEmoteSets(const QByteArray&);
 };
 
 #endif // JSONPARSER_H

@@ -92,6 +92,7 @@ public:
     Q_PROPERTY(bool inRoom READ inRoom)
     Q_PROPERTY(QHash<QString, QImage*> emoteTable READ emoteTable NOTIFY emoteTableChanged)
     Q_PROPERTY(QString emoteDirPath MEMBER emoteDirPathImpl)
+    Q_PROPERTY(QList<int> emoteSetIDs READ emoteSetIDs NOTIFY emoteSetIDsChanged)
 
     Q_INVOKABLE void join(const QString channel);
     Q_INVOKABLE void leave();
@@ -118,12 +119,15 @@ public:
     QHash<QString, QImage*> emoteTable();
     QSet<QString> emotesCurrentlyDownloading;
     void loadEmoteImageFile(QString key, QString filename);
+    QList<int> _emoteSetIDs;
+    QList<int> emoteSetIDs();
 
     void RegisterEngineProviders(QQmlEngine & engine);
 
 signals:
     void errorOccured(QString errorDescription);
     void connectedChanged();
+    void emoteSetIDsChanged();
     void anonymousChanged();
     void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction);
     void noticeReceived(QString message);
@@ -157,6 +161,7 @@ private:
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
     QString room;
+    QMap<QString, QString> badges;
     bool logged_in;
     int activeDownloadCount;
 };
