@@ -227,7 +227,7 @@ Item {
 
                 property bool pickerLoaded: false
 
-                width: height
+                width: dp(38)
 
                 anchors {
                     right: parent.right
@@ -238,13 +238,19 @@ Item {
                 text: "emotes"
 
                 style: ButtonStyle {
+                    background: Rectangle {
+                        color: "#000000"
+                    }
+
                     label: Text {
                         text: FontAwesome.fromText("smile")
+                        color: "#ffffff"
                         font.family: "FontAwesome"
                         font.pointSize: 18
                         anchors.fill: parent
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignHCenter
+
                     }
                 }
 
