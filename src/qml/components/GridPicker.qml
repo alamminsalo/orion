@@ -14,62 +14,190 @@
 
 
 import QtQuick 2.5
-import QtQuick.Window 2.0
+import QtQuick.Controls 2.0
 import "../styles.js" as Styles
 
-Window {
+Rectangle {
     id: root
-    flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
-
-    height: dp(320)
-    width: dp(512)
 
     property string text: "Picker"
     property bool loading: false
+    property string filterTextProperty
 
-    property var source
+    property ListModel model
+    property ListModel _innerModel
+    property ListModel _filteredModel: ListModel {}
+
+    property var _filterIndexMap
 
     signal itemClicked(int index)
 
-    Rectangle {
-        id: rootRect
+    SpinnerIcon {
+        id:_spinner
         anchors.fill: parent
-        color: "#000000"
+        iconSize: 60
+        visible: root.loading
+        z: 2
+    }
 
-        SpinnerIcon {
-            id:_spinner
-            anchors.fill: parent
-            iconSize: 60
-            visible: loading
+    Text {
+        id: text
+        color: Styles.textColor
+        text: root.text
+        font.pixelSize: Styles.titleFont.smaller
+        anchors{
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
         }
+        wrapMode: Text.WordWrap
+        //renderType: Text.NativeRendering
+    }
 
-        //Container for text
-        Rectangle {
-            id: header
-            //anchors.fill: text
-            color: Styles.shadeColor
-            opacity: 0.7
-            height: text.height
-        }
-
-        GridView {
-            id: _emotesGrid
-            anchors.fill: parent
-            model: source
-            delegate: MouseArea {
-                height: 25
-                width: 25
-                Image {
-                    source: imageUrl
-                    asynchronous: true
-                }
-
-                onClicked: {
-                    itemClicked(index);
+    function updateFilter() {
+        if (_filterTextInput.text == "") {
+            _innerModel = model;
+            _filterIndexMap = null;
+        } else {
+            _filteredModel.clear();
+            _innerModel = _filteredModel;
+            _filterIndexMap = [];
+            var filterText = _filterTextInput.text.toLowerCase();
+            for (var i = 0; i < model.count; i++) {
+                var obj = model.get(i);
+                var text = obj[filterTextProperty].toLowerCase();
+                var io = text.indexOf(filterText);
+                var visible = io != -1;
+                //console.log("updating filter", text, filterText, io, visible);
+                if (visible) {
+                    _innerModel.append(obj);
+                    _filterIndexMap.push(i);
                 }
             }
         }
 
+    }
+
+    GridView {
+        id: _emotesGrid
+
+        anchors {
+            top: spacer.bottom
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+
+            topMargin: dp(5)
+            bottomMargin: dp(5)
+            leftMargin: dp(17)
+            rightMargin: dp(17)
+        }
+        model: root._innerModel
+
+        cellWidth: dp(42)
+        cellHeight: dp(42)
+
+        delegate: Item {
+            height: dp(42)
+            width: dp(42)
+
+            anchors.margins: dp(1)
+
+            MouseArea {
+                id: _imageMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+
+                Rectangle {
+                    color: _imageMouseArea.containsMouse? "#dddddd" : "#ffffff"
+                    anchors.fill: parent
+                }
+
+                Image {
+                    id: _itemImage
+                    source: model.imageUrl
+                    anchors.fill: parent
+                    fillMode: Image.Pad
+                    //asynchronous: true
+                }
+
+                /*
+                Text {
+                    text: model.imageUrl
+                }
+                */
+
+                ToolTip {
+                    visible: _imageMouseArea.containsMouse && root.filterTextProperty != null
+                    //delay: 666
+                    text: model[root.filterTextProperty]
+                }
+
+                onClicked: {
+                    var actualIndex = index;
+                    if (_filterIndexMap != null) {
+                        actualIndex = _filterIndexMap[index];
+                    }
+                    itemClicked(actualIndex);
+                }
+            }
+        }
+    }
+
+    MouseArea {
+        id: _filterTextInputArea
+
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+            leftMargin: dp(5)
+            rightMargin: dp(5)
+        }
+
+        height: dp(40)
+
+        cursorShape: Qt.IBeamCursor
+
+        TextInput {
+            id: _filterTextInput
+
+            z: 1
+
+            anchors {
+                fill: parent
+            }
+
+            onTextChanged: {
+                updateFilter();
+            }
+            visible: root.filterTextProperty != null
+
+            clip:true
+            selectionColor: Styles.purple
+            focus: true
+            selectByMouse: true
+            font.pixelSize: Styles.titleFont.smaller
+            verticalAlignment: Text.AlignVCenter
+        }
+
+        Rectangle {
+            anchors.fill: _filterTextInput
+            color: "#ffffff"
+        }
+    }
+
+    Rectangle {
+        id: spacer
+        anchors {
+            left: parent.left
+            right: parent.right
+            bottom: _filterTextInputArea.bottom
+        }
+        height: inputArea.visible ? dp(1) : 0
+        color: "#777777"
+
+        opacity: root._opacity
     }
 
     function display(mX, mY){

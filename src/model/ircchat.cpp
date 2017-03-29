@@ -398,7 +398,7 @@ bool IrcChat::downloadEmotes(QString key) {
     QString filename = emoteDir.absoluteFilePath(key + ".png");
 
     if(emoteDir.exists(key + ".png")) {
-        qDebug() << "local file already exists";
+        //qDebug() << "local file already exists";
 		loadEmoteImageFile(key, filename);
         return false;
     }
@@ -493,6 +493,7 @@ void DownloadHandler::replyFinished() {
 
 void IrcChat::loadEmoteImageFile(QString emoteKey, QString filename) {
     QImage* emoteImg = new QImage();
+    //qDebug() << "loading" << filename;
     emoteImg->load(filename);
     _emoteTable.insert(emoteKey, emoteImg);
 }
@@ -521,16 +522,14 @@ void IrcChat::individualDownloadComplete(QString filename, bool hadError) {
 	emotesCurrentlyDownloading.remove(emoteKey);
 
 	if (activeDownloadCount == 0) {
-		//qDebug() << "Download queue complete; posting pending messages";
+        emit downloadComplete();
+        //qDebug() << "Download queue complete; posting pending messages";
 		while (!msgQueue.empty()) {
 			ChatMessage tmpMsg = msgQueue.first();
 			emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.isAction);
 			msgQueue.pop_front();
 		}
 	}
-
-	//msgQueue.pop_front();
-	emit downloadComplete();
 }
 
 QHash<QString, QImage*> IrcChat::emoteTable() {
