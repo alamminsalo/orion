@@ -101,6 +101,7 @@ Item {
     }
 
     CustomFlow {
+      ySpacing: 1
       anchors {
           left: parent.left
           right: parent.right
