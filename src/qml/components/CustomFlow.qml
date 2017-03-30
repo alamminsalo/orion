@@ -52,10 +52,6 @@ Item {
         updatePositions();
     }
 
-    onHeightChanged: {
-        updatePositions();
-    }
-
     function updatePositions() {
         if (!cComplete) {
             return;
