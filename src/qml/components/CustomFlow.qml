@@ -48,6 +48,14 @@ Item {
         updatePositions();
     }
 
+    onWidthChanged: {
+        updatePositions();
+    }
+
+    onHeightChanged: {
+        updatePositions();
+    }
+
     function updatePositions() {
         if (!cComplete) {
             return;
