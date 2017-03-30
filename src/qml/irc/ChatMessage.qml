@@ -23,10 +23,11 @@ Item {
     property bool isAction
     property string emoteDirPath
     property int fontSize: Styles.titleFont.smaller
-    //property var pmsg: JSON.parse(msg)
+    property var pmsg: JSON.parse(msg)
 
     height: childrenRect.height
 
+    /*
     Component.onCompleted: {
         //console.log("Got: " + msg);
         //console.log("Got toString: " + msg.toString());
@@ -51,7 +52,6 @@ Item {
         }
         _text.user = user
     }
-        /*
     */
 
     function parseMsg(msg) {
@@ -99,7 +99,6 @@ Item {
         return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
     }
 
-    /*
     Flow {
       anchors {
           left: parent.left
@@ -134,7 +133,6 @@ Item {
         }
       }
     }
-    */
 
     property Component msgText: Component {
       Text {
@@ -145,7 +143,6 @@ Item {
         wrapMode: Text.WordWrap
       }
     }
-    /*
     property Component imgThing: Component {
       Image {
         Component.onCompleted: {
@@ -154,7 +151,7 @@ Item {
         asynchronous: true
       }
     }
-    */
+    /*
     Text {
         id: _text
         property string user: ""
@@ -188,6 +185,5 @@ Item {
         }
 
     }
-    /*
     */
 }
