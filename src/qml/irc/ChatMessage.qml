@@ -117,10 +117,12 @@ Item {
         model: pmsg
 
         Loader {
+            /*
           height: typeof pmsg[index] == "string" ? 
                     fontSize : 25
           width: if(typeof pmsg[index] != "string")
                     return 25
+                    */
           property var msgItem: pmsg[index]
           sourceComponent: {
             if(typeof pmsg[index] == "string") {
