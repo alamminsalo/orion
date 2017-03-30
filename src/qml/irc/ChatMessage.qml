@@ -15,6 +15,7 @@
 import QtQuick 2.0
 import QtQuick.Layouts 1.0
 import "../styles.js" as Styles
+import "../components"
 
 Item {
     id: root
@@ -99,11 +100,13 @@ Item {
         return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
     }
 
-    Flow {
+    CustomFlow {
       anchors {
           left: parent.left
           right: parent.right
       }
+
+      vAlign: vAlignCenter
 
       Text {
         id: userName
@@ -145,7 +148,7 @@ Item {
         Component.onCompleted: {
           source = "image://emote/" + msgItem.toString();
         }
-        asynchronous: true
+        // synchronous to simplify CustomFlow
       }
     }
     /*
