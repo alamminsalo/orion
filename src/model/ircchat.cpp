@@ -142,7 +142,7 @@ void IrcChat::sendMessage(const QString &msg) {
 			isAction = true;
 			displayMessage = displayMessage.mid(ME_PREFIX.length());
 		}
-		addWordSplit(displayMessage.toHtmlEscaped(), ' ', message);
+		addWordSplit(displayMessage, ' ', message);
         //TODO need the user's status info to show here
         emit messageReceived(username, message, "", false, false, isAction);
     }
@@ -316,7 +316,7 @@ void IrcChat::parseCommand(QString cmd) {
         for (auto i = emotePositionsMap.constBegin(); i != emotePositionsMap.constEnd(); i++) {
             auto emoteStart = i.key();
             if (emoteStart > cur) {
-				addWordSplit(message.mid(cur, emoteStart - cur).toHtmlEscaped(), ' ', messageList);
+				addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
             }
             auto emoteEnd = i.value().first;
             auto emoteId = i.value().second;
@@ -324,7 +324,7 @@ void IrcChat::parseCommand(QString cmd) {
             cur = emoteEnd + 1;
         }
         if (cur < message.length()) {
-			addWordSplit(message.mid(cur, message.length() - cur).toHtmlEscaped(), ' ', messageList);
+			addWordSplit(message.mid(cur, message.length() - cur), ' ', messageList);
         }
 
         //qDebug() << "messageList " << messageList;

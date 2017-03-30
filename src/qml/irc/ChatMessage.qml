@@ -137,6 +137,7 @@ Item {
         font.pixelSize: fontSize
         text: msgItem
         wrapMode: Text.WordWrap
+        textFormat: Text.PlainText
       }
     }
     property Component imgThing: Component {
