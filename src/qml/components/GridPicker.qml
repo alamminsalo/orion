@@ -28,9 +28,25 @@ Rectangle {
     property ListModel _innerModel
     property ListModel _filteredModel: ListModel {}
 
+    property bool focusOnVisible: false
+
     property var _filterIndexMap
 
-    signal itemClicked(int index)
+    signal itemClicked(int index);
+    signal closeRequested();
+
+    function focusFilterInput() {
+        if (_filterTextInput.visible) {
+            _filterTextInput.selectAll();
+            _filterTextInput.focus = true;
+        }
+    }
+
+    onVisibleChanged: {
+        if (focusOnVisible && visible) {
+            focusFilterInput();
+        }
+    }
 
     SpinnerIcon {
         id:_spinner
@@ -76,6 +92,18 @@ Rectangle {
             }
         }
 
+    }
+
+    function _visibleItemClicked(index) {
+        var actualIndex = index;
+        if (_filterIndexMap != null) {
+            if (index >= _filterIndexMap.length) {
+                // index out of range
+                return;
+            }
+            actualIndex = _filterIndexMap[index];
+        }
+        itemClicked(actualIndex);
     }
 
     GridView {
@@ -134,11 +162,7 @@ Rectangle {
                 }
 
                 onClicked: {
-                    var actualIndex = index;
-                    if (_filterIndexMap != null) {
-                        actualIndex = _filterIndexMap[index];
-                    }
-                    itemClicked(actualIndex);
+                    root._visibleItemClicked(index);
                 }
             }
         }
@@ -179,6 +203,16 @@ Rectangle {
             selectByMouse: true
             font.pixelSize: Styles.titleFont.smaller
             verticalAlignment: Text.AlignVCenter
+
+            Keys.onReturnPressed: {
+                console.log("filterTextInput enter pressed");
+                root._visibleItemClicked(0);
+            }
+
+            Keys.onEscapePressed: {
+                console.log("filterTextInput escape pressed");
+                root.closeRequested();
+            }
         }
 
         Rectangle {

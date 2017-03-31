@@ -165,9 +165,16 @@ Item {
 
         filterTextProperty: "emoteName"
 
+        focusOnVisible: true
+
         onItemClicked: {
             var item = _emoteButton.setsVisible.get(index);
             _emoteButton.addEmoteToChat(item.emoteName);
+        }
+
+        onCloseRequested: {
+            visible = false;
+            _input.focus = true;
         }
     }
 
@@ -214,6 +221,9 @@ Item {
                 verticalAlignment: Text.AlignVCenter
 
                 Keys.onReturnPressed: sendMessage()
+                Keys.onUpPressed: {
+                    _emotePicker.visible = true
+                }
             }
 
             Button{
@@ -254,19 +264,23 @@ Item {
                     }
                 }
 
-                onClicked: {
-                    var newVisible = !_emotePicker.visible;
-
-                    if (newVisible && !pickerLoaded) {
-                        console.log("current emote set ids")
-                        console.log(chat.lastEmoteSetIDs)
-                        if (chat.lastEmoteSetIDs) {
-                            // load the emote sets so that we know what icons to display
-                            g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
-                            pickerLoaded = true;
+                Connections {
+                    target: _emotePicker
+                    onVisibleChanged: {
+                        if (_emotePicker.visible && !_emoteButton.pickerLoaded) {
+                            console.log("current emote set ids")
+                            console.log(chat.lastEmoteSetIDs)
+                            if (chat.lastEmoteSetIDs) {
+                                // load the emote sets so that we know what icons to display
+                                g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
+                                _emoteButton.pickerLoaded = true;
+                            }
                         }
                     }
-                    _emotePicker.visible = newVisible;
+                }
+
+                onClicked: {
+                    _emotePicker.visible = !_emotePicker.visible;
                 }
 
                 function addEmoteToChat(emoteName) {
