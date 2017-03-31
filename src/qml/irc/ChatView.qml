@@ -165,8 +165,6 @@ Item {
 
         filterTextProperty: "emoteName"
 
-        focusOnVisible: true
-
         onItemClicked: {
             var item = _emoteButton.setsVisible.get(index);
             _emoteButton.addEmoteToChat(item.emoteName);
@@ -174,6 +172,10 @@ Item {
 
         onCloseRequested: {
             visible = false;
+            _input.focus = true;
+        }
+
+        onMoveFocusDown: {
             _input.focus = true;
         }
     }
@@ -222,7 +224,11 @@ Item {
 
                 Keys.onReturnPressed: sendMessage()
                 Keys.onUpPressed: {
-                    _emotePicker.visible = true
+                    if (_emotePicker.visible) {
+                        _emotePicker.focusEntersFromBottom();
+                    } else {
+                        _emotePicker.visible = true
+                    }
                 }
             }
 
@@ -275,6 +281,9 @@ Item {
                                 g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
                                 _emoteButton.pickerLoaded = true;
                             }
+                        }
+                        if (_emotePicker.visible) {
+                            _emotePicker.focusFilterInput();
                         }
                     }
                 }

@@ -28,23 +28,23 @@ Rectangle {
     property ListModel _innerModel
     property ListModel _filteredModel: ListModel {}
 
-    property bool focusOnVisible: false
-
     property var _filterIndexMap
 
     signal itemClicked(int index);
     signal closeRequested();
+    signal moveFocusDown();
+
+    function focusEntersFromBottom() {
+        if (_emotesGrid.rowNum(_emotesGrid.currentIndex) != _emotesGrid.lastRowNum()) {
+            _emotesGrid.currentIndex = _emotesGrid.lastRowNum() * _emotesGrid.rowSize();
+        }
+        _emotesGrid.focus = true;
+    }
 
     function focusFilterInput() {
         if (_filterTextInput.visible) {
             _filterTextInput.selectAll();
             _filterTextInput.focus = true;
-        }
-    }
-
-    onVisibleChanged: {
-        if (focusOnVisible && visible) {
-            focusFilterInput();
         }
     }
 
@@ -106,6 +106,21 @@ Rectangle {
         itemClicked(actualIndex);
     }
 
+    Component {
+        id: highlight
+        Rectangle {
+            width: _emotesGrid.cellWidth; height: _emotesGrid.cellHeight
+            color: "lightsteelblue"; radius: 5
+            x: _emotesGrid.currentItem.x
+            y: _emotesGrid.currentItem.y
+            z: 10
+            opacity: 0.5
+            visible: _emotesGrid.focus
+            Behavior on x { SpringAnimation { spring: 3; damping: 0.2 } }
+            Behavior on y { SpringAnimation { spring: 3; damping: 0.2 } }
+        }
+    }
+
     GridView {
         id: _emotesGrid
 
@@ -124,6 +139,59 @@ Rectangle {
 
         cellWidth: dp(42)
         cellHeight: dp(42)
+
+        highlight: highlight
+        highlightFollowsCurrentItem: true
+
+        Keys.onReturnPressed: {
+            root._visibleItemClicked(_emotesGrid.currentIndex);
+        }
+
+        function rowSize() {
+            return Math.floor(width / cellWidth);
+        }
+
+        function rowNum(i) {
+            return Math.floor(i / rowSize());
+        }
+
+        function lastRowNum() {
+            return rowNum(_emotesGrid.count - 1);
+        }
+
+        Keys.onUpPressed: {
+            //console.log("item", currentIndex, "current row", rowNum(currentIndex));
+            if (_emotesGrid.count == 0 || (rowNum(currentIndex) == 0) && _filterTextInput.visible) {
+                _filterTextInput.focus = true;
+            } else {
+                event.accepted = false;
+            }
+        }
+
+        Keys.onDownPressed: {
+            if (_emotesGrid.count == 0 || (rowNum(currentIndex) == lastRowNum())) {
+                moveFocusDown();
+            } else {
+                event.accepted = false;
+            }
+        }
+
+        Keys.onEscapePressed: {
+            root.closeRequested();
+        }
+
+        Keys.onPressed: {
+            switch (event.key) {
+            case Qt.Key_Home:
+                _emotesGrid.currentIndex = 0;
+                event.accepted = true;
+                break;
+            case Qt.Key_End:
+                _emotesGrid.currentIndex = _emotesGrid.count - 1;
+                event.accepted = true;
+                break;
+            }
+        }
 
         delegate: Item {
             height: dp(42)
@@ -156,7 +224,7 @@ Rectangle {
                 */
 
                 ToolTip {
-                    visible: _imageMouseArea.containsMouse && root.filterTextProperty != null
+                    visible: (_imageMouseArea.containsMouse || (_emotesGrid.focus && index == _emotesGrid.currentIndex)) && root.filterTextProperty != null
                     //delay: 666
                     text: model[root.filterTextProperty]
                 }
@@ -205,13 +273,20 @@ Rectangle {
             verticalAlignment: Text.AlignVCenter
 
             Keys.onReturnPressed: {
-                console.log("filterTextInput enter pressed");
+                //console.log("filterTextInput enter pressed");
                 root._visibleItemClicked(0);
             }
 
             Keys.onEscapePressed: {
-                console.log("filterTextInput escape pressed");
+                //console.log("filterTextInput escape pressed");
                 root.closeRequested();
+            }
+
+            Keys.onDownPressed: {
+                _emotesGrid.focus = true;
+                if (_emotesGrid.rowNum(_emotesGrid.currentIndex) != 0) {
+                    _emotesGrid.currentIndex = 0;
+                }
             }
         }
 
