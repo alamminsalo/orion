@@ -100,13 +100,13 @@ Item {
         var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
         var out = pref + str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
 
-        console.log("makeUrl", str, out);
+        //console.log("makeUrl", str, out);
         return out;
     }
 
     function isUrl(str) {
         var result = str.match(/^ ?(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/);
-        console.log("isUrl", str, result);
+        //console.log("isUrl", str, result);
         return result
     }
 
@@ -196,10 +196,10 @@ Item {
 
     function externalLinkActivation(link)
     {
-        console.log("externalLinkActivation", link, "passed");
+        //console.log("externalLinkActivation", link, "passed");
         if (link.substr(0,5) !== "user:")
         {
-            console.log("opening link")
+            //console.log("opening link")
             Qt.openUrlExternally(link)
         }
     }
