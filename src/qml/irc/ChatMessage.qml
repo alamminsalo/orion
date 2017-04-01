@@ -90,13 +90,24 @@ Item {
     }
 
     function makeUrl(str) {
-        var urlPattern = /\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+        var pref = "";
+        if (str.length && (str.charAt(0) === " ")) {
+            pref = "&nbsp;";
+            str = str.substring(1);
+        }
+
+        var urlPattern = / ?\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
         var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-        return str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
+        var out = pref + str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
+
+        console.log("makeUrl", str, out);
+        return out;
     }
 
     function isUrl(str) {
-        return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
+        var result = str.match(/^ ?(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/);
+        console.log("isUrl", str, result);
+        return result
     }
 
     Flow {
@@ -111,6 +122,7 @@ Item {
         color: Styles.textColor
         font.pixelSize: fontSize
         text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
+        onLinkActivated: userLinkActivation(link)
       }
 
       Repeater {
@@ -154,6 +166,7 @@ Item {
         text: makeUrl(msgItem)
         textFormat: Text.RichText
         wrapMode: Text.WordWrap
+        onLinkActivated: externalLinkActivation(link)
       }
     }
     property Component imgThing: Component {
@@ -164,6 +177,33 @@ Item {
         asynchronous: true
       }
     }
+
+    function userLinkActivation(link)
+    {
+        if (link.substr(0,5) === "user:")
+        {
+            var value = "@"+link.replace('user:',"")+', '
+            if (_input.text === "")
+            {
+                _input.text = value
+            }
+            else {
+                _input.text = _input.text + ' '+ value
+            }
+
+        }
+    }
+
+    function externalLinkActivation(link)
+    {
+        console.log("externalLinkActivation", link, "passed");
+        if (link.substr(0,5) !== "user:")
+        {
+            console.log("opening link")
+            Qt.openUrlExternally(link)
+        }
+    }
+
     /*
     Text {
         id: _text
