@@ -165,6 +165,9 @@ private:
     QMap<QString, QString> badges;
     bool logged_in;
     int activeDownloadCount;
+    void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction);
+    bool makeEmoteAvailable(QString key);
+    QVariantList substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes);
 };
 
 #endif // IRCCHAT_H
