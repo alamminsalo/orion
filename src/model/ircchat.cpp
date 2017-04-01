@@ -151,7 +151,7 @@ void IrcChat::sendMessage(const QString &msg) {
 			isAction = true;
 			displayMessage = displayMessage.mid(ME_PREFIX.length());
 		}
-		addWordSplit(displayMessage.toHtmlEscaped(), ' ', message);
+		addWordSplit(displayMessage, ' ', message);
         //TODO need the user's status info to show here
         emit messageReceived(username, message, "", false, false, isAction);
     }
@@ -325,7 +325,7 @@ void IrcChat::parseCommand(QString cmd) {
         for (auto i = emotePositionsMap.constBegin(); i != emotePositionsMap.constEnd(); i++) {
             auto emoteStart = i.key();
             if (emoteStart > cur) {
-				addWordSplit(message.mid(cur, emoteStart - cur).toHtmlEscaped(), ' ', messageList);
+				addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
             }
             auto emoteEnd = i.value().first;
             auto emoteId = i.value().second;
@@ -337,7 +337,7 @@ void IrcChat::parseCommand(QString cmd) {
             cur = emoteEnd + 1;
         }
         if (cur < message.length()) {
-			addWordSplit(message.mid(cur, message.length() - cur).toHtmlEscaped(), ' ', messageList);
+			addWordSplit(message.mid(cur, message.length() - cur), ' ', messageList);
         }
 
         //qDebug() << "messageList " << messageList;
@@ -359,7 +359,35 @@ void IrcChat::parseCommand(QString cmd) {
         emit noticeReceived(text);
     }
     if(cmd.contains("GLOBALUSERSTATE")) {
-        // We are not interested in this one, it only exists because otherwise USERSTATE would be trigged instead
+		// Structure of message: @badges=turbo/1;color=#4100CC;display-name=user_name;emote-sets=0,1,22,345;user-id=12345678;user-type= :tmi.twitch.tv GLOBALUSERSTATE
+		// We want this for the emote ids
+		if (cmd.at(0) == QChar('@')) {
+			int tagsEnd = cmd.indexOf(' ');
+			QString tags = cmd.mid(1, tagsEnd - 1);
+            foreach(const QString & tag, tags.split(";")) {
+                int assignPos = tag.indexOf("=");
+                if (assignPos == -1) continue;
+				QString key = tag.left(assignPos);
+				QString value = tag.mid(assignPos + 1);
+				if (key == "badges") {
+					for (auto badge : value.split(',')) {
+						auto badgePair = badge.split('/');
+						if (badgePair.length() < 2) continue;
+						QString badgeName = badgePair[0];
+						QString badgeNum = badgePair[1];
+						badges.insert(badgeName, badgeNum);
+					}
+				}
+				else if (key == "emote-sets") {
+                    qDebug() << "GLOBALUSERSTATE emote-sets" << value;
+					for (auto entry : value.split(',')) {
+						_emoteSetIDs.append(entry.toInt());
+					}
+                    emit emoteSetIDsChanged();
+				}
+
+			}
+		}
         return;
     }
     //qDebug() << "Unrecognized chat command:" << cmd;
@@ -383,7 +411,7 @@ bool IrcChat::downloadEmotes(QString key) {
     QString filename = emoteDir.absoluteFilePath(key + ".png");
 
     if(emoteDir.exists(key + ".png")) {
-        qDebug() << "local file already exists";
+        //qDebug() << "local file already exists";
 		loadEmoteImageFile(key, filename);
         return false;
     }
@@ -405,6 +433,24 @@ bool IrcChat::downloadEmotes(QString key) {
 		this, &IrcChat::individualDownloadComplete);
 
     return true;
+}
+
+bool IrcChat::bulkDownloadEmotes(QList<QString> emoteIDs) {
+    bool waitForDownloadComplete = false;
+    for (auto key : emoteIDs) {
+        if (emotesCurrentlyDownloading.contains(key)) {
+            // download of this emote in progress
+            waitForDownloadComplete = true;
+        } else if (downloadEmotes(key)) {
+            // if this emote isn't already downloading, it's safe to load the cache file or download if not in the cache
+            emotesCurrentlyDownloading.insert(key);
+            activeDownloadCount += 1;
+            waitForDownloadComplete = true;
+        } else {
+            // we already had the emote locally and don't need to wait for it to download
+        }
+    }
+    return waitForDownloadComplete;
 }
 
 CachedImageProvider::CachedImageProvider(QHash<QString, QImage*> & imageTable) : QQuickImageProvider(QQuickImageProvider::Image), imageTable(imageTable) {
@@ -460,8 +506,13 @@ void DownloadHandler::replyFinished() {
 
 void IrcChat::loadEmoteImageFile(QString emoteKey, QString filename) {
     QImage* emoteImg = new QImage();
+    //qDebug() << "loading" << filename;
     emoteImg->load(filename);
     _emoteTable.insert(emoteKey, emoteImg);
+}
+
+QList<int> IrcChat::emoteSetIDs() {
+    return _emoteSetIDs;
 }
 
 void IrcChat::individualDownloadComplete(QString filename, bool hadError) {
@@ -484,16 +535,14 @@ void IrcChat::individualDownloadComplete(QString filename, bool hadError) {
 	emotesCurrentlyDownloading.remove(emoteKey);
 
 	if (activeDownloadCount == 0) {
-		//qDebug() << "Download queue complete; posting pending messages";
+        emit downloadComplete();
+        //qDebug() << "Download queue complete; posting pending messages";
 		while (!msgQueue.empty()) {
 			ChatMessage tmpMsg = msgQueue.first();
 			emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.isAction);
 			msgQueue.pop_front();
 		}
 	}
-
-	//msgQueue.pop_front();
-	emit downloadComplete();
 }
 
 QHash<QString, QImage*> IrcChat::emoteTable() {

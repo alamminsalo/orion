@@ -27,6 +27,7 @@ var icons = {
     "crop":         "\uf125",
     "chat":         "\uf086",
     "reload":       "\uf021",
-	"minimode":		"\uf2d2"
+    "minimode":	    "\uf2d2",
+    "smile":        "\uf118"
 }
 

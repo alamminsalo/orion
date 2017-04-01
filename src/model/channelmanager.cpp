@@ -68,6 +68,7 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
 
     connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
+    connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
 
     connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
@@ -574,6 +575,51 @@ void ChannelManager::onUserNameUpdated(const QString &name)
         //Start using user followed channels
         getFollowedChannels(FOLLOWED_FETCH_LIMIT, 0);
     }
+}
+
+QVariantMap convertEmoteSets(const QMap<int, QMap<int, QString>> emoteSets) {
+    QVariantMap out;
+    for (auto setEntry = emoteSets.begin(); setEntry != emoteSets.end(); setEntry++) {
+        QVariantMap cur;
+        auto set = setEntry.value();
+        for (auto emote = set.begin(); emote != set.end(); emote++) {
+            cur.insert(QString::number(emote.key()), emote.value());
+        }
+        out.insert(QString::number(setEntry.key()), cur);
+    }
+    return out;
+}
+
+bool ChannelManager::loadEmoteSets(bool reload, const QList<int> &emoteSetIDs) {
+    if (!haveEmoteSets || (emoteSetIDs != lastRequestedEmoteSetIDs)) {
+        reload = true;
+    }
+
+    if (reload) {
+        if (isAccessTokenAvailable()) {
+            haveEmoteSets = false;
+            lastRequestedEmoteSetIDs = emoteSetIDs;
+            netman->getEmoteSets(access_token, emoteSetIDs);
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        // ok to deliver cached emote sets
+        emit emoteSetsLoaded(convertEmoteSets(lastEmoteSets));
+    }
+}
+
+void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> updatedEmoteSets)
+{
+    lastEmoteSets = updatedEmoteSets;
+    haveEmoteSets = true;
+
+    //qDebug() << "emitting updated emote set" << updatedEmoteSets;
+
+    emit emoteSetsLoaded(convertEmoteSets(updatedEmoteSets));
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)
