@@ -124,10 +124,13 @@ Item {
           property var msgItem: pmsg[index]
           sourceComponent: {
             if(typeof pmsg[index] == "string") {
-              return msgText
-            }
-            else {
-              return imgThing
+              if (isUrl(pmsg[index])) {
+                return msgLink;
+              } else {
+                return msgText;
+              }
+            } else {
+              return imgThing;
             }
           }
         }
@@ -140,6 +143,16 @@ Item {
         color: isAction? chat.colors[user] : Styles.textColor
         font.pixelSize: fontSize
         text: msgItem
+        wrapMode: Text.WordWrap
+      }
+    }
+    property Component msgLink: Component {
+      Text {
+        verticalAlignment: Text.AlignVCenter
+        color: isAction? chat.colors[user] : Styles.textColor
+        font.pixelSize: fontSize
+        text: makeUrl(msgItem)
+        textFormat: Text.RichText
         wrapMode: Text.WordWrap
       }
     }
