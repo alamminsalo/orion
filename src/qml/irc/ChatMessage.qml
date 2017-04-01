@@ -14,6 +14,7 @@
 
 import QtQuick 2.0
 import QtQuick.Layouts 1.0
+import QtQuick.Controls 2.0
 import "../styles.js" as Styles
 
 Item {
@@ -66,9 +67,12 @@ Item {
         for (var j=0; j < msg.length; j++) {
             var mlist = msg[j];
             console.log("cur mlist entry " + j.toString() + " typeof is " + typeof(mlist));
-            if (typeof(mlist) == "number") {
+            if (typeof(mlist) == "object") {
                 // it's an emote
-                var imgUrl = emoteDirPath + "/" + mlist.toString();
+                var emoteId = mlist.emoteId;
+                var emoteText = mlist.emoteText;
+
+                var imgUrl = emoteDirPath + "/" + emoteId.toString();
 
                 _text.text += "<img src=\"" + imgUrl + "\"></img>";
 
@@ -170,11 +174,23 @@ Item {
       }
     }
     property Component imgThing: Component {
-      Image {
-        Component.onCompleted: {
-          source = "image://emote/" + msgItem.toString();
-        }
-        asynchronous: true
+      MouseArea {
+          id: _emoteImgMouseArea
+          hoverEnabled: true
+          width: _emoteImg.width
+          height: _emoteImg.height
+          Image {
+            id: _emoteImg
+            asynchronous: true
+            Component.onCompleted: {
+              source = "image://emote/" + msgItem.emoteId.toString();
+            }
+
+            ToolTip {
+                visible: _emoteImgMouseArea.containsMouse && msgItem.emoteText != null
+                text: msgItem.emoteText
+            }
+          }
       }
     }
 

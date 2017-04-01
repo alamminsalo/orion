@@ -329,7 +329,11 @@ void IrcChat::parseCommand(QString cmd) {
             }
             auto emoteEnd = i.value().first;
             auto emoteId = i.value().second;
-            messageList.append(emoteId);
+            QString emoteText = message.mid(emoteStart, emoteEnd - emoteStart + 1);
+            QVariantMap emoteObj;
+            emoteObj.insert("emoteId", emoteId);
+            emoteObj.insert("emoteText", emoteText);
+            messageList.append(emoteObj);
             cur = emoteEnd + 1;
         }
         if (cur < message.length()) {
