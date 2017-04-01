@@ -68,7 +68,16 @@ void IrcChat::RegisterEngineProviders(QQmlEngine & engine) {
 	engine.addImageProvider(IMAGE_PROVIDER_EMOTE, provider);
 }
 
-IrcChat::~IrcChat() { disconnect(); }
+IrcChat::~IrcChat() {
+    disconnect();
+    for (auto i = _emoteTable.begin(); i != _emoteTable.end(); i++ ) {
+        QImage * image = i.value();
+        i.value() = NULL;
+        if (image != NULL) {
+            delete image;
+        }
+    }
+}
 
 void IrcChat::join(const QString channel) {
 
