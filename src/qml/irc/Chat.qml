@@ -57,8 +57,8 @@ Item {
         chat.leave()
     }
 
-    function sendChatMessage(message) {
-        chat.sendMessage(message)
+    function sendChatMessage(message, relevantEmotes) {
+        chat.sendMessage(message, relevantEmotes)
     }
 
     function bulkDownloadEmotes(emotes) {

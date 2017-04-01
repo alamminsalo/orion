@@ -63,9 +63,57 @@ Item {
     }
 
     function sendMessage() {
-        chat.sendChatMessage(_input.text)
+        var message = _input.text;
+        var relevantEmotes = {};
+        var words = message.split(" ");
+        for (var i = 0; i < words.length; i++) {
+            var word = words[i];
+            var emoteId = chat.lookupEmote(word);
+            if (emoteId != null) {
+                //console.log("Adding relevant emote", word, emoteId);
+                relevantEmotes[word] = emoteId;
+            }
+        }
+        chat.sendChatMessage(message, relevantEmotes)
         _input.text = ""
         list.positionViewAtEnd()
+    }
+
+    function loadEmoteSets() {
+        //console.log("current emote set ids")
+        //console.log(chat.lastEmoteSetIDs)
+        if (chat.lastEmoteSetIDs) {
+            // load the emote sets so that we know what icons to display
+            g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
+        }
+    }
+
+    function loadEmotes() {
+        //console.log("loadEmotes()", chat.lastEmoteSets);
+        if (chat.lastEmoteSets) {
+            //console.log("downloading chat.lastEmoteSets", chat.lastEmoteSets);
+            _emoteButton.startDownload(chat.lastEmoteSets);
+        }
+        _emoteButton.pickerLoaded = true;
+    }
+
+    Connections {
+        target: g_cman
+        onEmoteSetsLoaded: {
+            //console.log("emote sets loaded:");
+            for (var i in emoteSets) {
+                //console.log("  ", i);
+                var entry = emoteSets[i];
+                for (var j in entry) {
+                    //console.log("    ", j, entry[j]);
+                }
+            }
+
+            if (emoteSets) {
+                chat.lastEmoteSets = emoteSets;
+            }
+
+        }
     }
 
     Connections {
@@ -274,13 +322,7 @@ Item {
                     target: _emotePicker
                     onVisibleChanged: {
                         if (_emotePicker.visible && !_emoteButton.pickerLoaded) {
-                            console.log("current emote set ids")
-                            console.log(chat.lastEmoteSetIDs)
-                            if (chat.lastEmoteSetIDs) {
-                                // load the emote sets so that we know what icons to display
-                                g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
-                                _emoteButton.pickerLoaded = true;
-                            }
+                            loadEmotes();
                         }
                         if (_emotePicker.visible) {
                             _emotePicker.focusFilterInput();
@@ -483,35 +525,21 @@ Item {
                     curDownloading = 0;
                     lastEmoteSets = emoteSets;
                     setsToDownload = [];
-                    //setsVisible = [];
                     for (var i in emoteSets) {
                         setsToDownload.push(i);
                     }
-                    console.log("Starting download of emote sets", setsToDownload);
+                    //console.log("Starting download of emote sets", setsToDownload);
                     emotePickerDownloadsInProgress = true;
 
                     nextDownload();
                 }
 
                 Connections {
-                    target: g_cman
-                    onEmoteSetsLoaded: {
-                        console.log("emote sets loaded:");
-                        //console.log(emoteSets);
-
-                        if (emoteSets) {
-                            _emoteButton.startDownload(emoteSets);
-                        }
-
-                    }
-                }
-
-                Connections {
                     target: chat
                     onDownloadComplete: {
-                        console.log("outer download complete");
+                        //console.log("outer download complete");
                         if (_emoteButton.emotePickerDownloadsInProgress) {
-                            console.log("handling emote picker set finished");
+                            //console.log("handling emote picker set finished");
                             _emoteButton.showLastSet();
                             _emoteButton.nextDownload();
                         }
@@ -529,6 +557,50 @@ Item {
         property variant colors:[]
         property string emoteDirPath
         property variant lastEmoteSetIDs
+        property variant lastEmoteSets
+
+        property variant _textEmotesMap
+        property variant _regexEmotesList
+
+        onLastEmoteSetsChanged: {
+            initEmotesMaps();
+        }
+
+        function initEmotesMaps() {
+            var plainText = /^[\da-z]+$/i;
+            _textEmotesMap = {};
+            _regexEmotesList = [];
+            var emoteSets = lastEmoteSets;
+            for (var i in emoteSets) {
+                //console.log("  ", i);
+                var entry = emoteSets[i];
+                for (var emoteIdStr in entry) {
+                    var emoteId = parseInt(emoteIdStr);
+                    var emoteText = entry[emoteIdStr];
+                    if (plainText.exec(emoteText)) {
+                        //console.log("adding plain text emote", emoteText, emoteId);
+                        _textEmotesMap[emoteText] = emoteId;
+                    } else {
+                        //console.log("adding regex emote", emoteText, emoteId);
+                        _regexEmotesList.push({"regex": new RegExp(emoteText), "emoteId": emoteId});
+                    }
+                }
+            }
+        }
+
+        function lookupEmote(word) {
+            var emoteId = _textEmotesMap[word];
+            if (emoteId != null) {
+                return emoteId;
+            }
+            for (var i = 0; i < _regexEmotesList.length; i++) {
+                var entry = _regexEmotesList[i];
+                if (entry.regex.exec(word)) {
+                    return entry.emoteId;
+                }
+            }
+            return null;
+        }
 
         function getRandomColor() {
             var letters = '0123456789ABCDEF';
@@ -563,6 +635,7 @@ Item {
 
         onEmoteSetIDsChanged: {
             lastEmoteSetIDs = emoteSetIDs
+            loadEmoteSets()
         }
 
         onClear: {

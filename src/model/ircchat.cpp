@@ -146,7 +146,29 @@ QVariantMap createEmoteEntry(int emoteId, QString emoteText) {
     return emoteObj;
 }
 
-void IrcChat::sendMessage(const QString &msg) {
+QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes) {
+    QVariantList output;
+
+    for (auto word = message.begin(); word != message.end(); word++) {
+        bool spacePrefix = word != message.begin();
+        QString emoteText = spacePrefix ? word->toString().mid(1) : word->toString();
+        auto entry = relevantEmotes.find(emoteText);
+        if (entry != relevantEmotes.end()) {
+            int emoteId = entry.value().toInt();
+            makeEmoteAvailable(QString::number(emoteId));
+            if (spacePrefix) {
+                output.append(" ");
+            }
+            output.append(createEmoteEntry(emoteId, emoteText));
+        }
+        else {
+            output.append(*word);
+        }
+    }
+    return output;
+}
+
+void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes) {
     if (inRoom() && connected()) {
         sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
 
@@ -159,8 +181,9 @@ void IrcChat::sendMessage(const QString &msg) {
 			displayMessage = displayMessage.mid(ME_PREFIX.length());
 		}
 		addWordSplit(displayMessage, ' ', message);
+        message = substituteEmotesInMessage(message, relevantEmotes);
         //TODO need the user's status info to show here
-        emit messageReceived(username, message, "", false, false, isAction);
+        disposeOfMessage(username, message, "", false, false, isAction);
     }
 }
 

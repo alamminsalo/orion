@@ -138,7 +138,7 @@ signals:
     bool downloadError();
     
 public slots:
-    void sendMessage(const QString &msg);
+    void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);
     void onSockStateChanged();
     void login();
     void individualDownloadComplete(QString filename, bool hadError);
