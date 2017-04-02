@@ -47,6 +47,7 @@ struct ChatMessage {
     bool subscriber;
     bool turbo;
     bool isAction;
+    QVariantMap badges;
 };
 
 // Handles state for an individual download
@@ -129,8 +130,9 @@ signals:
     void connectedChanged();
     void emoteSetIDsChanged();
     void anonymousChanged();
-    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction);
+    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction, QVariantMap badges);
     void noticeReceived(QString message);
+    void myBadgesForChannel(QString channel, QMap<QString, QString> badges);
     void emoteTableChanged();
 
     //emotes
@@ -162,12 +164,13 @@ private:
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
     QString room;
-    QMap<QString, QString> badges;
+    QMap<QString, QMap<QString, QString>> badgesByChannel;
     bool logged_in;
     int activeDownloadCount;
-    void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction);
+    void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction, QVariantMap badges);
     bool makeEmoteAvailable(QString key);
     QVariantList substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes);
+    void addBadges(QVariantMap & badges, const QString channel);
 };
 
 #endif // IRCCHAT_H

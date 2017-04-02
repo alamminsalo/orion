@@ -448,6 +448,29 @@ QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data)
     return out;
 }
 
+QMap<QString, QMap<QString, QString>> JsonParser::parseChannelBadgeUrls(const QByteArray &data) {
+    QMap<QString, QMap<QString, QString>> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+        for (auto badgeEntry = json.begin(); badgeEntry != json.end(); badgeEntry++) {
+            if (badgeEntry.value().isNull()) continue;
+            QMap<QString, QString> urls;
+            QJsonObject badgeEntryJson = badgeEntry.value().toObject();
+            for (auto urlEntry = badgeEntryJson.begin(); urlEntry != badgeEntryJson.end(); urlEntry++) {
+                urls.insert(urlEntry.key(), urlEntry.value().toString());
+            }
+            out.insert(badgeEntry.key(), urls);
+        }
+    }
+            
+    return out;
+}
+
+
 int JsonParser::parseTotal(const QByteArray &data)
 {
     int total = 0;

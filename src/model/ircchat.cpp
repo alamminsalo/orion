@@ -168,6 +168,17 @@ QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, co
     return output;
 }
 
+void IrcChat::addBadges(QVariantMap &badges, QString channel) {
+    auto channelEntry = badgesByChannel.find(channel);
+    if (channelEntry != badgesByChannel.end()) {
+        auto curBadges = channelEntry.value();
+        for (auto badge = curBadges.constBegin(); badge != curBadges.constEnd(); badge++) {
+            badges.remove(badge.key());
+            badges.insert(badge.key(), badge.value());
+        }
+    }
+}
+
 void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes) {
     if (inRoom() && connected()) {
         sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
@@ -182,8 +193,13 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 		}
 		addWordSplit(displayMessage, ' ', message);
         message = substituteEmotesInMessage(message, relevantEmotes);
+
+        QVariantMap userBadges;
+        addBadges(userBadges, "GLOBAL");
+        addBadges(userBadges, room);
+
         //TODO need the user's status info to show here
-        disposeOfMessage(username, message, "", false, false, isAction);
+        disposeOfMessage(username, message, "", false, false, isAction, userBadges);
     }
 }
 
@@ -260,14 +276,55 @@ void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & 
 	}
 }
 
-void IrcChat::disposeOfMessage(QString nickname, QVariantList messageList, QString color, bool subscriber, bool turbo, bool isAction) {
+void IrcChat::disposeOfMessage(QString nickname, QVariantList messageList, QString color, bool subscriber, bool turbo, bool isAction, QVariantMap badges) {
     if (activeDownloadCount == 0) {
-        emit messageReceived(nickname, messageList, color, subscriber, turbo, isAction);
+        emit messageReceived(nickname, messageList, color, subscriber, turbo, isAction, badges);
     }
     else {
         // queue message to be shown when downloads are complete
-        msgQueue.push_back({ nickname, messageList, color, subscriber, turbo, isAction });
+        msgQueue.push_back({ nickname, messageList, color, subscriber, turbo, isAction, badges });
     }
+}
+
+QList<QString> getTags(const QString cmd) {
+    if (cmd.at(0) == QChar('@')) {
+        // tags are present
+        int tagsEnd = cmd.indexOf(" ");
+        QString tags = cmd.mid(1, tagsEnd - 1);
+        return tags.split(";");
+    }
+    else {
+        return QList<QString>();
+    }
+}
+
+class Tag {
+public:
+    Tag(const QString tag) {
+        int assignPos = tag.indexOf("=");
+        if (assignPos == -1) {
+            valid = false;
+        }
+        else {
+            valid = true;
+            key = tag.left(assignPos);
+            value = tag.mid(assignPos + 1);
+        }
+    }
+public:
+    QString key;
+    QString value;
+    bool valid;
+};
+
+QMap<QString, QString> parseBadges(const QString badgesStr) {
+    QMap<QString, QString> badges;
+    foreach(const QString & badgeStr, badgesStr.split(",")) {
+        int splitPos = badgeStr.indexOf('/');
+        if (splitPos == -1) continue;
+        badges.insert(badgeStr.left(splitPos), badgeStr.mid(splitPos + 1));
+    }
+    return badges;
 }
 
 void IrcChat::parseCommand(QString cmd) {
@@ -284,31 +341,28 @@ void IrcChat::parseCommand(QString cmd) {
         bool subscriber = false;
         bool turbo = false;
         QString emotes = "";
+        QMap<QString, QString> badgesMap;
 
-        if (cmd.at(0) == QChar('@')) {
-            // tags are present
-            int tagsEnd = cmd.indexOf(" ");
-            QString tags = cmd.mid(1, tagsEnd - 1);
-            foreach(const QString & tag, tags.split(";")) {
-                int assignPos = tag.indexOf("=");
-                if (assignPos == -1) continue;
-                QString key = tag.left(assignPos);
-                QString value = tag.mid(assignPos + 1);
-                if (key == "display-name") {
-                    displayName = value;
-                }
-                else if (key == "color") {
-                    color = value;
-                }
-                else if (key == "subscriber") {
-                    subscriber = (value == "1");
-                }
-                else if (key == "turbo") {
-                    turbo = (value == "1");
-                }
-				else if (key == "emotes") {
-					emotes = value;
-				}
+        foreach(const QString & tagStr, getTags(cmd)) {
+            Tag tag(tagStr);
+            if (!tag.valid) continue;
+            if (tag.key == "display-name") {
+                displayName = tag.value;
+            }
+            else if (tag.key == "color") {
+                color = tag.value;
+            }
+            else if (tag.key == "subscriber") {
+                subscriber = (tag.value == "1");
+            }
+            else if (tag.key == "turbo") {
+                turbo = (tag.value == "1");
+            }
+			else if (tag.key == "emotes") {
+				emotes = tag.value;
+			}
+            else if (tag.key == "badges") {
+                badgesMap = parseBadges(tag.value);
             }
         }
 
@@ -375,7 +429,11 @@ void IrcChat::parseCommand(QString cmd) {
             nickname = displayName;
         }
 
-        disposeOfMessage(nickname, messageList, color, subscriber, turbo, isAction);
+        QVariantMap badges;
+        for (auto entry = badgesMap.constBegin(); entry != badgesMap.constEnd(); entry++) {
+            badges.insert(entry.key(), entry.value());
+        }
+        disposeOfMessage(nickname, messageList, color, subscriber, turbo, isAction, badges);
         return;
     }
     if(cmd.contains("NOTICE")) {
@@ -385,33 +443,41 @@ void IrcChat::parseCommand(QString cmd) {
     if(cmd.contains("GLOBALUSERSTATE")) {
 		// Structure of message: @badges=turbo/1;color=#4100CC;display-name=user_name;emote-sets=0,1,22,345;user-id=12345678;user-type= :tmi.twitch.tv GLOBALUSERSTATE
 		// We want this for the emote ids
-		if (cmd.at(0) == QChar('@')) {
-			int tagsEnd = cmd.indexOf(' ');
-			QString tags = cmd.mid(1, tagsEnd - 1);
-            foreach(const QString & tag, tags.split(";")) {
-                int assignPos = tag.indexOf("=");
-                if (assignPos == -1) continue;
-				QString key = tag.left(assignPos);
-				QString value = tag.mid(assignPos + 1);
-				if (key == "badges") {
-					for (auto badge : value.split(',')) {
-						auto badgePair = badge.split('/');
-						if (badgePair.length() < 2) continue;
-						QString badgeName = badgePair[0];
-						QString badgeNum = badgePair[1];
-						badges.insert(badgeName, badgeNum);
-					}
-				}
-				else if (key == "emote-sets") {
-                    qDebug() << "GLOBALUSERSTATE emote-sets" << value;
-					for (auto entry : value.split(',')) {
-						_emoteSetIDs.append(entry.toInt());
-					}
-                    emit emoteSetIDsChanged();
-				}
-
+        foreach(const QString & tagStr, getTags(cmd)) {
+            Tag tag(tagStr);
+            if (!tag.valid) continue;
+			if (tag.key == "badges") {
+                badgesByChannel.remove("GLOBAL");
+                auto badges = parseBadges(tag.value);
+                badgesByChannel.insert("GLOBAL", badges);
+                emit myBadgesForChannel("GLOBAL", badges);
 			}
+			else if (tag.key == "emote-sets") {
+                qDebug() << "GLOBALUSERSTATE emote-sets" << tag.value;
+				for (auto entry : tag.value.split(',')) {
+					_emoteSetIDs.append(entry.toInt());
+				}
+                emit emoteSetIDsChanged();
+			}
+
 		}
+        return;
+    }
+    const QString USERSTATE_CMD = " USERSTATE ";
+    if (cmd.contains(USERSTATE_CMD)) {
+        //@badges=global_mod/1,turbo/1;color=#0D4200;display-name=TWITCH_UserNaME :tmi.twitch.tv USERSTATE #channel
+        QString channel = cmd.mid(cmd.indexOf(USERSTATE_CMD) + USERSTATE_CMD.length());
+        foreach(const QString & tagStr, getTags(cmd)) {
+            Tag tag(tagStr);
+            if (!tag.valid) continue;
+            if (tag.key == "badges") {
+                badgesByChannel.remove(channel);
+                auto badges = parseBadges(tag.value);
+                badgesByChannel.insert(channel, badges);
+                emit myBadgesForChannel(channel, badges);
+            }
+        }
+        QString text = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("NOTICE")) + 1);
         return;
     }
     //qDebug() << "Unrecognized chat command:" << cmd;
@@ -574,7 +640,7 @@ void IrcChat::individualDownloadComplete(QString filename, bool hadError) {
         //qDebug() << "Download queue complete; posting pending messages";
 		while (!msgQueue.empty()) {
 			ChatMessage tmpMsg = msgQueue.first();
-			emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.isAction);
+			emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.isAction, tmpMsg.badges);
 			msgQueue.pop_front();
 		}
 	}

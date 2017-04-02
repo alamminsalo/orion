@@ -153,6 +153,7 @@ Item {
         delegate: ChatMessage {
             user: model.user
             msg: model.message
+            jsonBadgeEntries: model.jsonBadgeEntries
             isAction: model.isAction
             emoteDirPath: chat.emoteDirPath
 
@@ -562,6 +563,8 @@ Item {
         property variant _textEmotesMap
         property variant _regexEmotesList
 
+        property var lastBadgeUrls: {}
+
         onLastEmoteSetsChanged: {
             initEmotesMaps();
         }
@@ -628,14 +631,51 @@ Item {
 
             // ListElement doesn't support putting in an array value, ugh.
             var serializedMessage = JSON.stringify(message);
-            //console.log("Sending: " + serializedMessage);
-            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction})
+            console.log("onMessageReceived: passing: " + serializedMessage);
+
+            var badgeEntries = [];
+            var imageFormatToUse = "image";
+
+            console.log("badges for this message:")
+            for (var i in badges) {
+                console.log("  badge", i, badges[i]);
+
+                console.log("  badge urls:")
+                var badgeUrls = lastBadgeUrls[i];
+                if (badgeUrls == null) {
+                    console.log("No badge urls for channel for", i);
+                    continue;
+                }
+
+                for (var j in badgeUrls) {
+                    console.log("    key", j, "value", badgeUrls[j]);
+                }
+                var url = badgeUrls[imageFormatToUse];
+                var entry = {"name": i, "url": url};
+                console.log("adding entry", JSON.stringify(entry));
+                badgeEntries.push(entry);
+            }
+
+            var jsonBadgeEntries = JSON.stringify(badgeEntries);
+
+            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries})
             list.scrollbuf = 6
         }
 
         onEmoteSetIDsChanged: {
             lastEmoteSetIDs = emoteSetIDs
             loadEmoteSets()
+        }
+
+        onChannelBadgeUrlsLoaded: {
+            console.log("onChannelBadgeUrlsLoaded for channel", channel, "current channel is", chat.channel);
+            if (channel == chat.channel) {
+                console.log("saving lastBadgeUrls", badgeUrls)
+                for (var i in badgeUrls) {
+                    console.log("  ", i, badgeUrls[i]);
+                }
+                lastBadgeUrls = badgeUrls;
+            }
         }
 
         onClear: {

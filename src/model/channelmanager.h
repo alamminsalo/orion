@@ -75,6 +75,7 @@ protected:
     QList<int> lastRequestedEmoteSetIDs;
 
     QMap<int, QMap<int, QString>> lastEmoteSets;
+    QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
 
 public:
     ChannelManager(NetworkManager *netman);
@@ -124,6 +125,7 @@ public:
     Q_INVOKABLE void setMinimizeOnStartup(bool value);
 
     Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
+    Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
 
     void setSwapChat(bool value);
     bool getSwapChat();
@@ -150,6 +152,7 @@ signals:
     void userNameUpdated(const QString name);
     void login(const QString &username, const QString &password);
     void emoteSetsLoaded(QVariantMap emoteSets);
+    void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
 
 public slots:
     void checkFavourites();
@@ -172,6 +175,7 @@ private slots:
     void addGames(const QList<Game*>&);
     void onUserNameUpdated(const QString &name);
     void onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>);
+    void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
 };

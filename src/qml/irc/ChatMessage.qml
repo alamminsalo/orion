@@ -23,9 +23,11 @@ Item {
     property string user
     property var msg
     property bool isAction
+    property string jsonBadgeEntries
     property string emoteDirPath
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
+    property var badgeEntries: JSON.parse(jsonBadgeEntries)
 
     height: childrenRect.height
 
@@ -116,6 +118,7 @@ Item {
     }
 
     CustomFlow {
+      id: _messageLineFlow
       ySpacing: 1
       anchors {
           left: parent.left
@@ -123,6 +126,17 @@ Item {
       }
 
       vAlign: vAlignCenter
+
+      Repeater {
+        model: badgeEntries
+
+        Loader {
+          property var badgeEntry: badgeEntries[index]
+          sourceComponent: {
+            return badgeItem
+          }
+        }
+      }
 
       Text {
         id: userName
@@ -190,6 +204,33 @@ Item {
             ToolTip {
                 visible: _emoteImgMouseArea.containsMouse && msgItem.emoteText != null
                 text: msgItem.emoteText
+            }
+          }
+      }
+    }
+
+    property Component badgeItem: Component {
+      MouseArea {
+          id: _badgeImgMouseArea
+          hoverEnabled: true
+          width: _badgeImg.width + dp(2)
+          height: _badgeImg.height
+          Image {
+            id: _badgeImg
+            // synchronous to simplify CustomFlow
+            Component.onCompleted: {
+              source = badgeEntry.url;
+            }
+
+            onStatusChanged: {
+                if (status == Image.Ready) {
+                    _messageLineFlow.updatePositions();
+                }
+            }
+
+            ToolTip {
+                visible: _badgeImgMouseArea.containsMouse && badgeEntry.name != null
+                text: badgeEntry.name
             }
           }
       }

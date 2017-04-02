@@ -357,6 +357,25 @@ void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> 
     connect(reply, SIGNAL(finished()), this, SLOT(emoteSetsReply()));
 }
 
+const QString CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
+const QString CHANNEL_BADGES_URL_SUFFIX = "/badges";
+
+void NetworkManager::getChannelBadgeUrls(const QString &access_token, const QString &channel) {
+    QString url = CHANNEL_BADGES_URL_PREFIX + channel + CHANNEL_BADGES_URL_SUFFIX;
+    QString auth = "OAuth " + access_token;
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(channelBadgeUrlsReply()));
+}
+
 void NetworkManager::editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add)
 {
     QString url = QString(KRAKEN_API) + "/users/" + user
@@ -681,6 +700,34 @@ void NetworkManager::emoteSetsReply()
     QByteArray data = reply->readAll();
     
     emit getEmoteSetsOperationFinished(JsonParser::parseEmoteSets(data));
+
+    reply->deleteLater();
+}
+
+void NetworkManager::channelBadgeUrlsReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QString urlString = reply->url().toString();
+
+    qDebug() << "url was" << urlString;
+
+    if (urlString.startsWith(CHANNEL_BADGES_URL_PREFIX) && urlString.endsWith(CHANNEL_BADGES_URL_SUFFIX)) {
+        QString channel = urlString.mid(CHANNEL_BADGES_URL_PREFIX.length(), urlString.length() - CHANNEL_BADGES_URL_PREFIX.length() - CHANNEL_BADGES_URL_SUFFIX.length());
+        qDebug() << "badges for channel" << channel << "loaded";
+        auto badges = JsonParser::parseChannelBadgeUrls(data);
+
+        emit getChannelBadgeUrlsOperationFinished(channel, badges);
+    }
+    else {
+        qDebug() << "can't determine channel from badges request url";
+    }
+
 
     reply->deleteLater();
 }

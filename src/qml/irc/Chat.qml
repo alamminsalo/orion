@@ -20,12 +20,13 @@ import aldrog.twitchtube.ircchat 1.0
 Item {
     id: root
 
-    signal messageReceived(string user, variant message, string chatColor, bool subscriber, bool turbo, bool isAction)
+    signal messageReceived(string user, variant message, string chatColor, bool subscriber, bool turbo, bool isAction, var badges)
     signal setEmotePath(string value)
     signal notify(string message)
     signal clear()
     signal emoteSetIDsChanged(var emoteSetIDs)
     signal downloadComplete()
+    signal channelBadgeUrlsLoaded(string channel, var badgeUrls)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
@@ -45,12 +46,18 @@ Item {
 
             chat.reopenSocket()
         }
+
+        onChannelBadgeUrlsLoaded: {
+            console.log("onChannelBadgeUrlsLoaded", "channel", channel, "badgeUrls", badgeUrls);
+            root.channelBadgeUrlsLoaded(channel, badgeUrls);
+        }
     }
 
     function joinChannel(channelName) {
         chat.join(channelName)
         root.channel = channelName
-        messageReceived("Joined channel #" + channelName, null, "", false, false, false)
+        messageReceived("Joined channel #" + channelName, null, "", false, false, false, {})
+        g_cman.loadChannelBadgeUrls(channelName);
     }
 
     function leaveChannel() {
@@ -87,11 +94,12 @@ Item {
 
         onMessageReceived: {
             root.setEmotePath(emoteDirPath)
-            root.messageReceived(user, message, chatColor, subscriber, turbo, isAction)
+            root.messageReceived(user, message, chatColor, subscriber, turbo, isAction, badges)
         }
 
         onNoticeReceived: {
-            root.messageReceived("--NOTIFICATION--", message, null, null, false, false)
+            console.log("Notification received", message);
+            root.messageReceived("--NOTIFICATION--", [message], null, null, false, false, {})
         }
 
         onEmoteSetIDsChanged: {

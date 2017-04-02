@@ -71,6 +71,7 @@ public:
     void getUserFavourites(const QString &user_name, quint32 offset, quint32 limit);
     void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
     void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
+    void getChannelBadgeUrls(const QString &access_token, const QString &channel);
 
     QNetworkAccessManager *getManager() const;
 
@@ -99,6 +100,7 @@ signals:
     void userNameOperationFinished(const QString&);
     void userEditFollowsOperationFinished();
     void getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>);
+    void getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>);
 
     void networkAccessChanged(bool up);
 
@@ -123,6 +125,7 @@ private slots:
     //Oauth slots
     void userReply();
     void emoteSetsReply();
+    void channelBadgeUrlsReply();
 
 private:
     QNetworkAccessManager *operation;

@@ -69,6 +69,7 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
 
     connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
     connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
+    connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>>)));
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
 
     connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
@@ -609,6 +610,33 @@ bool ChannelManager::loadEmoteSets(bool reload, const QList<int> &emoteSetIDs) {
     else {
         // ok to deliver cached emote sets
         emit emoteSetsLoaded(convertEmoteSets(lastEmoteSets));
+        return true;
+    }
+}
+
+QVariantMap convertBadges(const QMap<QString, QMap<QString, QString>> &badges) {
+    QVariantMap out;
+    for (auto x = badges.constBegin(); x != badges.constEnd(); x++) {
+        QVariantMap cur;
+        auto badgeEntries = x.value();
+        for (auto y = badgeEntries.constBegin(); y != badgeEntries.constEnd(); y++) {
+            cur.insert(y.key(), y.value());
+        }
+        out.insert(x.key(), cur);
+    }
+    return out;
+}
+
+bool ChannelManager::loadChannelBadgeUrls(const QString channel) {
+    auto result = channelBadgeUrls.find(channel);
+    if (result != channelBadgeUrls.end()) {
+        // deliver cached channel badge URLs
+        emit channelBadgeUrlsLoaded(channel, convertBadges(result.value()));
+        return false;
+    }
+    else {
+        netman->getChannelBadgeUrls(access_token, channel);
+        return true;
     }
 }
 
@@ -620,6 +648,14 @@ void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> upda
     //qDebug() << "emitting updated emote set" << updatedEmoteSets;
 
     emit emoteSetsLoaded(convertEmoteSets(updatedEmoteSets));
+}
+
+void ChannelManager::innerChannelBadgeUrlsLoaded(const QString channel, const QMap<QString, QMap<QString, QString>> badgeUrls)
+{
+    channelBadgeUrls.remove(channel);
+    channelBadgeUrls.insert(channel, badgeUrls);
+
+    emit channelBadgeUrlsLoaded(channel, convertBadges(badgeUrls));
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)
