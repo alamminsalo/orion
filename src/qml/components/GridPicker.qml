@@ -20,7 +20,6 @@ import "../styles.js" as Styles
 Rectangle {
     id: root
 
-    property string text: "Picker"
     property bool loading: false
     property string filterTextProperty
 
@@ -54,20 +53,6 @@ Rectangle {
         iconSize: 60
         visible: root.loading
         z: 2
-    }
-
-    Text {
-        id: text
-        color: Styles.textColor
-        text: root.text
-        font.pixelSize: Styles.titleFont.smaller
-        anchors{
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
-        }
-        wrapMode: Text.WordWrap
-        //renderType: Text.NativeRendering
     }
 
     function updateFilter() {

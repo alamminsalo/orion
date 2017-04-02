@@ -243,7 +243,6 @@ Item {
         }
 
         model: _emoteButton.setsVisible
-        text: "Emote Picker"
 
         filterTextProperty: "emoteName"
 
