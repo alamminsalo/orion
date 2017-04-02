@@ -198,7 +198,41 @@ Item {
     GridPicker {
         id: _emotePicker
 
-        height: dp(320)
+        visible: false
+        height: 0
+
+        onVisibleChanged: {
+            if (visible) {
+                height = dp(320);
+            }
+        }
+
+        function startClosing() {
+            //visible = false;
+            height = 0;
+            _emotePickerCloseTimer.start();
+        }
+
+        onCloseRequested: {
+            startClosing();
+            _input.focus = true;
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        Timer {
+            id: _emotePickerCloseTimer
+            interval: 200
+            repeat: false
+            onTriggered: {
+                _emotePicker.visible = false
+            }
+        }
 
         color: "#ffffff"
 
@@ -209,7 +243,6 @@ Item {
         }
 
         model: _emoteButton.setsVisible
-        visible: false
         text: "Emote Picker"
 
         filterTextProperty: "emoteName"
@@ -217,11 +250,6 @@ Item {
         onItemClicked: {
             var item = _emoteButton.setsVisible.get(index);
             _emoteButton.addEmoteToChat(item.emoteName);
-        }
-
-        onCloseRequested: {
-            visible = false;
-            _input.focus = true;
         }
 
         onMoveFocusDown: {
@@ -332,7 +360,11 @@ Item {
                 }
 
                 onClicked: {
-                    _emotePicker.visible = !_emotePicker.visible;
+                    if (_emotePicker.visible) {
+                        _emotePicker.startClosing();
+                    } else {
+                        _emotePicker.visible = true;
+                    }
                 }
 
                 function addEmoteToChat(emoteName) {
