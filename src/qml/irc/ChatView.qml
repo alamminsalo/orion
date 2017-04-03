@@ -652,6 +652,14 @@ Item {
             emoteDirPath = value
         }
 
+        function keysStr(obj) {
+            var parts = [];
+            for (var i in obj) {
+                parts.push(i);
+            }
+            return parts.join(", ");
+        }
+
         onMessageReceived: {
             //console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString())
 
@@ -682,6 +690,7 @@ Item {
                     var versionObj = badgeSetData[versionStr];
                     if (versionObj == null) {
                         console.log("  beta badge set for", i, "has no version entry for", versionStr);
+                        console.log("  available versions are", keysStr(badgeSetData))
                     } else {
                         var entry = {"name": versionObj.title, "url": versionObj.image_url_1x, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
                         console.log("adding entry", JSON.stringify(entry));
@@ -744,8 +753,8 @@ Item {
         }
 
         onChannelBadgeBetaUrlsLoaded: {
-            console.log("onChannelBadgeBetaUrlsLoaded for channel", channel, "current channel is", chat.channel);
-            if (channel == chat.channel) {
+            console.log("onChannelBadgeBetaUrlsLoaded for channel", channel, "current channel is", chat.channelId.toString());
+            if (channel == chat.channelId.toString()) {
                 console.log("saving lastBetaBadgeUrls", badgeSetData)
                 lastChannelBetaBadgeSetData = badgeSetData;
             }
