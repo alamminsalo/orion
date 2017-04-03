@@ -50,10 +50,10 @@ Item {
         }
     }
 
-    function joinChannel(channel) {
+    function joinChannel(channel, channelId) {
         if ("#" + channel != chat.channel) {
             chatModel.clear()
-            chat.joinChannel(channel)
+            chat.joinChannel(channel, channelId)
         }
     }
 
@@ -595,6 +595,9 @@ Item {
         property variant _regexEmotesList
 
         property var lastBadgeUrls: {}
+        property var lastChannelBetaBadgeSetData: {}
+        property var globalBetaBadgeSetData: {}
+        property var lastBetaBadgeSetData: {}
 
         onLastEmoteSetsChanged: {
             initEmotesMaps();
@@ -670,21 +673,39 @@ Item {
             console.log("badges for this message:")
             for (var i in badges) {
                 console.log("  badge", i, badges[i]);
+                var versionStr = badges[i];
 
-                console.log("  badge urls:")
+                var curBadgeAdded = false;
+
+                var badgeSetData = lastBetaBadgeSetData[i];
+                if (badgeSetData != null) {
+                    var versionObj = badgeSetData[versionStr];
+                    if (versionObj == null) {
+                        console.log("  beta badge set for", i, "has no version entry for", versionStr);
+                    } else {
+                        var entry = {"name": versionObj.title, "url": versionObj.image_url_1x, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
+                        console.log("adding entry", JSON.stringify(entry));
+                        badgeEntries.push(entry);
+                        curBadgeAdded = true;
+                    }
+                }
+
                 var badgeUrls = lastBadgeUrls[i];
-                if (badgeUrls == null) {
-                    console.log("No badge urls for channel for", i);
-                    continue;
+                if (!curBadgeAdded && badgeUrls != null) {
+                    console.log("  badge urls:")
+                    for (var j in badgeUrls) {
+                        console.log("    key", j, "value", badgeUrls[j]);
+                    }
+                    var url = badgeUrls[imageFormatToUse];
+                    var entry = {"name": i, "url": url};
+                    console.log("adding entry", JSON.stringify(entry));
+                    badgeEntries.push(entry);
+                    curBadgeAdded = true;
                 }
 
-                for (var j in badgeUrls) {
-                    console.log("    key", j, "value", badgeUrls[j]);
+                if (!curBadgeAdded) {
+                    console.log("  Unknown badge", i);
                 }
-                var url = badgeUrls[imageFormatToUse];
-                var entry = {"name": i, "url": url};
-                console.log("adding entry", JSON.stringify(entry));
-                badgeEntries.push(entry);
             }
 
             var jsonBadgeEntries = JSON.stringify(badgeEntries);
@@ -707,6 +728,39 @@ Item {
                 }
                 lastBadgeUrls = badgeUrls;
             }
+        }
+
+        function objectAssign() {
+            var target = arguments[0];
+            for (var i = 1; i < arguments.length; i++) {
+                var source = arguments[i];
+                for (var key in source) {
+                    if (source.hasOwnProperty(key)) {
+                        target[key] = source[key];
+                    }
+                }
+            }
+            return target;
+        }
+
+        onChannelBadgeBetaUrlsLoaded: {
+            console.log("onChannelBadgeBetaUrlsLoaded for channel", channel, "current channel is", chat.channel);
+            if (channel == chat.channel) {
+                console.log("saving lastBetaBadgeUrls", badgeSetData)
+                lastChannelBetaBadgeSetData = badgeSetData;
+            }
+            else if (channel == "GLOBAL") {
+                console.log("saving globalBetaBadgeUrls", badgeSetData)
+                globalBetaBadgeSetData = badgeSetData;
+            }
+            else return;
+
+            for (var i in badgeSetData) {
+                console.log("  ", i, badgeSetData[i]);
+            }
+
+            // assemble
+            lastBetaBadgeSetData = objectAssign({}, globalBetaBadgeSetData, lastChannelBetaBadgeSetData);
         }
 
         onClear: {

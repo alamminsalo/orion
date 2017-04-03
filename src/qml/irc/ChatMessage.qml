@@ -233,6 +233,15 @@ Item {
                 text: badgeEntry.name
             }
           }
+
+          onClicked: {
+              console.log("badge clicked, action", badgeEntry.click_action);
+              if (badgeEntry.click_action == "visit_url") {
+                  var link = badgeEntry.click_url;
+                  console.log("Launching url", link);
+                  Qt.openUrlExternally(link);
+              }
+          }
       }
     }
 

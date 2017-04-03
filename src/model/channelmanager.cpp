@@ -70,6 +70,8 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
     connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
     connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
     connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>>)));
+    connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
+    connect(netman, SIGNAL(getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
 
     connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
@@ -627,6 +629,14 @@ QVariantMap convertBadges(const QMap<QString, QMap<QString, QString>> &badges) {
     return out;
 }
 
+QVariantMap convertBetaBadges(const QMap<QString, QMap<QString, QMap<QString, QString>>> &badges) {
+    QVariantMap out;
+    for (auto x = badges.constBegin(); x != badges.constEnd(); x++) {
+        out.insert(x.key(), convertBadges(x.value()));
+    }
+    return out;
+}
+
 bool ChannelManager::loadChannelBadgeUrls(const QString channel) {
     auto result = channelBadgeUrls.find(channel);
     if (result != channelBadgeUrls.end()) {
@@ -638,6 +648,34 @@ bool ChannelManager::loadChannelBadgeUrls(const QString channel) {
         netman->getChannelBadgeUrls(access_token, channel);
         return true;
     }
+}
+
+bool ChannelManager::loadChannelBetaBadgeUrls(int channel) {
+    bool out = false;
+
+    const QString channelKey = QString::number(channel);
+    auto result = channelBadgeBetaUrls.find(channelKey);
+    if (result != channelBadgeBetaUrls.end()) {
+        // deliver cached channel beta badge URLS
+        emit channelBadgeBetaUrlsLoaded(channelKey, convertBetaBadges(result.value()));
+    }
+    else {
+        netman->getChannelBadgeUrlsBeta(channel);
+        out = true;
+    }
+
+    const QString GLOBAL_BADGES_IDENTIFIER = "GLOBAL";
+    result = channelBadgeBetaUrls.find(GLOBAL_BADGES_IDENTIFIER);
+    if (result != channelBadgeBetaUrls.end()) {
+        // deliver cached channel beta badge URLS
+        emit channelBadgeBetaUrlsLoaded(GLOBAL_BADGES_IDENTIFIER, convertBetaBadges(result.value()));
+    }
+    else {
+        netman->getGlobalBadgesUrlsBeta();
+        out = true;
+    }
+
+    return out;
 }
 
 void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> updatedEmoteSets)
@@ -656,6 +694,24 @@ void ChannelManager::innerChannelBadgeUrlsLoaded(const QString channel, const QM
     channelBadgeUrls.insert(channel, badgeUrls);
 
     emit channelBadgeUrlsLoaded(channel, convertBadges(badgeUrls));
+}
+
+void ChannelManager::innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData)
+{
+    QString channelKey = QString::number(channelId);
+    channelBadgeBetaUrls.remove(channelKey);
+    channelBadgeBetaUrls.insert(channelKey, badgeData);
+
+    emit channelBadgeBetaUrlsLoaded(channelKey, convertBetaBadges(badgeData));
+}
+
+void ChannelManager::innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData)
+{
+    const QString GLOBAL_BADGES_KEY = "GLOBAL";
+    channelBadgeBetaUrls.remove(GLOBAL_BADGES_KEY);
+    channelBadgeBetaUrls.insert(GLOBAL_BADGES_KEY, badgeData);
+
+    emit channelBadgeBetaUrlsLoaded(GLOBAL_BADGES_KEY, convertBetaBadges(badgeData));
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)

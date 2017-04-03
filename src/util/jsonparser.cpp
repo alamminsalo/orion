@@ -470,6 +470,57 @@ QMap<QString, QMap<QString, QString>> JsonParser::parseChannelBadgeUrls(const QB
     return out;
 }
 
+QMap<QString, QString> convertJsonStringMap(const QJsonObject & obj) {
+    QMap<QString, QString> out;
+
+    for (auto entry = obj.constBegin(); entry != obj.constEnd(); entry++) {
+        if (entry.value().isString()) {
+            out.insert(entry.key(), entry.value().toString());
+        }
+    }
+
+    return out;
+}
+
+QMap<QString, QMap<QString, QMap<QString, QString>>> JsonParser::parseBadgeUrlsBetaFormat(const QByteArray &data) {
+    QMap<QString, QMap<QString, QMap<QString, QString>>> out;
+    
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+        if (!json["badge_sets"].isNull()) {
+            auto badge_sets = json["badge_sets"].toObject();
+            for (auto badge_set_entry = badge_sets.constBegin(); badge_set_entry != badge_sets.end(); badge_set_entry++) {
+                QString badge_set_name = badge_set_entry.key();
+
+                if (!badge_set_entry.value().isNull()) {
+                    auto badge_set_json = badge_set_entry.value().toObject();
+                    if (!badge_set_json["versions"].isNull()) {
+
+                        QMap<QString, QMap<QString, QString>> loadedBadgeSet;
+
+                        auto versions_json = badge_set_json["versions"].toObject();
+                        for (auto version_entry = versions_json.constBegin(); version_entry != versions_json.constEnd(); version_entry++) {
+                            QString version_str = version_entry.key();
+                            
+                            if (version_entry.value().isObject()) {
+                                loadedBadgeSet.insert(version_str, convertJsonStringMap(version_entry.value().toObject()));
+                            }
+                        }
+
+                        out.insert(badge_set_name, loadedBadgeSet);
+
+                    }
+
+                }
+            }
+        }
+    }
+
+    return out;
+}
 
 int JsonParser::parseTotal(const QByteArray &data)
 {
@@ -485,9 +536,3 @@ int JsonParser::parseTotal(const QByteArray &data)
 
     return total;
 }
-
-/*void JsonParser::parseEmotes(const QByteArray &data)
-{
-
-}
-*/

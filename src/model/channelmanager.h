@@ -76,6 +76,7 @@ protected:
 
     QMap<int, QMap<int, QString>> lastEmoteSets;
     QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
+    QMap<QString, QMap<QString, QMap<QString, QMap<QString, QString>>>> channelBadgeBetaUrls;
 
 public:
     ChannelManager(NetworkManager *netman);
@@ -126,6 +127,7 @@ public:
 
     Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
     Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
+    Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
 
     void setSwapChat(bool value);
     bool getSwapChat();
@@ -153,6 +155,7 @@ signals:
     void login(const QString &username, const QString &password);
     void emoteSetsLoaded(QVariantMap emoteSets);
     void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
+    void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
 
 public slots:
     void checkFavourites();
@@ -176,6 +179,8 @@ private slots:
     void onUserNameUpdated(const QString &name);
     void onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>);
     void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
+    void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
+    void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
 };

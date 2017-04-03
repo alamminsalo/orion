@@ -27,9 +27,11 @@ Item {
     signal emoteSetIDsChanged(var emoteSetIDs)
     signal downloadComplete()
     signal channelBadgeUrlsLoaded(string channel, var badgeUrls)
+    signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
+    property var channelId: undefined
     property var singleShot: undefined
 
     Component.onCompleted: {
@@ -51,13 +53,20 @@ Item {
             console.log("onChannelBadgeUrlsLoaded", "channel", channel, "badgeUrls", badgeUrls);
             root.channelBadgeUrlsLoaded(channel, badgeUrls);
         }
+
+        onChannelBadgeBetaUrlsLoaded: {
+            console.log("onChannelBadgeBetaUrlsLoaded", "channel", channel, "badgeSetData", badgeSetData);
+            root.channelBadgeBetaUrlsLoaded(channel, badgeSetData);
+        }
     }
 
-    function joinChannel(channelName) {
+    function joinChannel(channelName, channelId) {
         chat.join(channelName)
         root.channel = channelName
+        root.channelId = channelId
         messageReceived("Joined channel #" + channelName, null, "", false, false, false, {})
         g_cman.loadChannelBadgeUrls(channelName);
+        g_cman.loadChannelBetaBadgeUrls(channelId);
     }
 
     function leaveChannel() {
@@ -75,7 +84,7 @@ Item {
     function reconnect() {
         leaveChannel()
         if (root.channel)
-            joinChannel(root.channel)
+            joinChannel(root.channel, root.channelId)
     }
 
     IrcChat {
@@ -85,7 +94,7 @@ Item {
             if (connected) {
                 console.log("Connected to chat")
                 if (root.channel) {
-                    joinChannel(root.channel)
+                    joinChannel(root.channel, root.channelId)
                 }
             } else {
                 console.log("Disconnected from chat")
