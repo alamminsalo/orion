@@ -169,10 +169,12 @@ QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, co
 }
 
 void IrcChat::addBadges(QVariantMap &badges, QString channel) {
+    qDebug() << "addBadges" << channel;
     auto channelEntry = badgesByChannel.find(channel);
     if (channelEntry != badgesByChannel.end()) {
         auto curBadges = channelEntry.value();
         for (auto badge = curBadges.constBegin(); badge != curBadges.constEnd(); badge++) {
+            qDebug() << "badge" << channel << badge.key() << badge.value();
             badges.remove(badge.key());
             badges.insert(badge.key(), badge.value());
         }
@@ -196,7 +198,7 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 
         QVariantMap userBadges;
         addBadges(userBadges, "GLOBAL");
-        addBadges(userBadges, room);
+        addBadges(userBadges, "#" + room);
 
         //TODO need the user's status info to show here
         disposeOfMessage(username, message, "", false, false, isAction, userBadges);
@@ -449,6 +451,12 @@ void IrcChat::parseCommand(QString cmd) {
 			if (tag.key == "badges") {
                 badgesByChannel.remove("GLOBAL");
                 auto badges = parseBadges(tag.value);
+
+                qDebug() << "Updating user global badges from GLOBALUSERSTATE:";
+                for (auto entry = badges.constBegin(); entry != badges.constEnd(); entry++) {
+                    qDebug() << "  " << entry.key() << ":" << entry.value();
+                }
+
                 badgesByChannel.insert("GLOBAL", badges);
                 emit myBadgesForChannel("GLOBAL", badges);
 			}
@@ -473,6 +481,12 @@ void IrcChat::parseCommand(QString cmd) {
             if (tag.key == "badges") {
                 badgesByChannel.remove(channel);
                 auto badges = parseBadges(tag.value);
+
+                qDebug() << "Updating user badges for" << channel << "from USERSTATE:";
+                for (auto entry = badges.constBegin(); entry != badges.constEnd(); entry++) {
+                    qDebug() << "  " << entry.key() << ":" << entry.value();
+                }
+
                 badgesByChannel.insert(channel, badges);
                 emit myBadgesForChannel(channel, badges);
             }
