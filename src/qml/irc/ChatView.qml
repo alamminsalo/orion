@@ -505,7 +505,8 @@ Item {
 
                     try {
                         var r = new RegExp(s);
-                        testFailed = r.exec(out) == null;
+                        var match = r.exec(out);
+                        testFailed = match == null || match[0] != out;
                     } catch (e) {
                         console.log(e, out);
                         testFailed = true;
@@ -614,7 +615,8 @@ Item {
                 for (var emoteIdStr in entry) {
                     var emoteId = parseInt(emoteIdStr);
                     var emoteText = entry[emoteIdStr];
-                    if (plainText.exec(emoteText)) {
+                    var match = plainText.exec(emoteText);
+                    if (match && match[0] == emoteText) {
                         //console.log("adding plain text emote", emoteText, emoteId);
                         _textEmotesMap[emoteText] = emoteId;
                     } else {
@@ -632,7 +634,8 @@ Item {
             }
             for (var i = 0; i < _regexEmotesList.length; i++) {
                 var entry = _regexEmotesList[i];
-                if (entry.regex.exec(word)) {
+                var match = entry.regex.exec(word);
+                if (match && match[0] == word) {
                     return entry.emoteId;
                 }
             }
