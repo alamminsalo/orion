@@ -145,6 +145,12 @@ Item {
         font.pixelSize: fontSize
         text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
         onLinkActivated: userLinkActivation(link)
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            acceptedButtons: Qt.NoButton
+        }
       }
 
       Repeater {
@@ -186,6 +192,12 @@ Item {
         textFormat: Text.RichText
         wrapMode: Text.WordWrap
         onLinkActivated: externalLinkActivation(link)
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            acceptedButtons: Qt.NoButton
+        }
       }
     }
     property Component imgThing: Component {
@@ -233,6 +245,10 @@ Item {
                 text: badgeEntry.name
             }
           }
+
+          property bool clickable: badgeEntry.click_action == "visit_url"
+
+          cursorShape: clickable ? Qt.PointingHandCursor : Qt.ArrowCursor
 
           onClicked: {
               console.log("badge clicked, action", badgeEntry.click_action);
