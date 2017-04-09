@@ -682,17 +682,18 @@ Item {
             var imageFormatToUse = "image";
 
             console.log("badges for this message:")
-            for (var i in badges) {
-                console.log("  badge", i, badges[i]);
-                var versionStr = badges[i];
+            for (var k = 0; k < badges.length; k++) {
+                var badgeName = badges[k][0];
+                var versionStr = badges[k][1];
+                console.log("  badge", badgeName, versionStr);
 
                 var curBadgeAdded = false;
 
-                var badgeSetData = lastBetaBadgeSetData[i];
+                var badgeSetData = lastBetaBadgeSetData[badgeName];
                 if (badgeSetData != null) {
                     var versionObj = badgeSetData[versionStr];
                     if (versionObj == null) {
-                        console.log("  beta badge set for", i, "has no version entry for", versionStr);
+                        console.log("  beta badge set for", badgeName, "has no version entry for", versionStr);
                         console.log("  available versions are", keysStr(badgeSetData))
                     } else {
                         var entry = {"name": versionObj.title, "url": versionObj.image_url_1x, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
@@ -702,21 +703,21 @@ Item {
                     }
                 }
 
-                var badgeUrls = lastBadgeUrls[i];
+                var badgeUrls = lastBadgeUrls[badgeName];
                 if (!curBadgeAdded && badgeUrls != null) {
                     console.log("  badge urls:")
                     for (var j in badgeUrls) {
                         console.log("    key", j, "value", badgeUrls[j]);
                     }
                     var url = badgeUrls[imageFormatToUse];
-                    var entry = {"name": i, "url": url};
+                    var entry = {"name": badgeName, "url": url};
                     console.log("adding entry", JSON.stringify(entry));
                     badgeEntries.push(entry);
                     curBadgeAdded = true;
                 }
 
                 if (!curBadgeAdded) {
-                    console.log("  Unknown badge", i);
+                    console.log("  Unknown badge", badgeName);
                 }
             }
 

@@ -168,15 +168,32 @@ QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, co
     return output;
 }
 
-void IrcChat::addBadges(QVariantMap &badges, QString channel) {
+void removeVariantListPairByFirstValue(QVariantList list, const QVariant value) {
+    for (auto it = list.begin(); it != list.end();) {
+
+        if (!it->canConvert<QVariantList>() || it->toList().length() < 1) {
+            ++it;
+            continue;
+        }
+
+        if (it->toList()[0] == value) {
+            list.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+void IrcChat::addBadges(QVariantList &badges, QString channel) {
     qDebug() << "addBadges" << channel;
     auto channelEntry = badgesByChannel.find(channel);
     if (channelEntry != badgesByChannel.end()) {
         auto curBadges = channelEntry.value();
         for (auto badge = curBadges.constBegin(); badge != curBadges.constEnd(); badge++) {
-            qDebug() << "badge" << channel << badge.key() << badge.value();
-            badges.remove(badge.key());
-            badges.insert(badge.key(), badge.value());
+            qDebug() << "badge" << channel << badge->first << badge->second;
+            removeVariantListPairByFirstValue(badges, badge->first);
+            badges.push_back(QVariantList({ badge->first, badge->second }));
         }
     }
 }
@@ -196,7 +213,7 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 		addWordSplit(displayMessage, ' ', message);
         message = substituteEmotesInMessage(message, relevantEmotes);
 
-        QVariantMap userBadges;
+        QVariantList userBadges;
         addBadges(userBadges, "GLOBAL");
         addBadges(userBadges, "#" + room);
 
@@ -278,7 +295,7 @@ void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & 
 	}
 }
 
-void IrcChat::disposeOfMessage(QString nickname, QVariantList messageList, QString color, bool subscriber, bool turbo, bool isAction, QVariantMap badges) {
+void IrcChat::disposeOfMessage(QString nickname, QVariantList messageList, QString color, bool subscriber, bool turbo, bool isAction, QVariantList badges) {
     if (activeDownloadCount == 0) {
         emit messageReceived(nickname, messageList, color, subscriber, turbo, isAction, badges);
     }
@@ -319,12 +336,12 @@ public:
     bool valid;
 };
 
-QMap<QString, QString> parseBadges(const QString badgesStr) {
-    QMap<QString, QString> badges;
+QList<QPair<QString, QString>> parseBadges(const QString badgesStr) {
+    QList<QPair<QString, QString>> badges;
     foreach(const QString & badgeStr, badgesStr.split(",")) {
         int splitPos = badgeStr.indexOf('/');
         if (splitPos == -1) continue;
-        badges.insert(badgeStr.left(splitPos), badgeStr.mid(splitPos + 1));
+        badges.append(QPair<QString, QString>(badgeStr.left(splitPos), badgeStr.mid(splitPos + 1)));
     }
     return badges;
 }
@@ -343,7 +360,7 @@ void IrcChat::parseCommand(QString cmd) {
         bool subscriber = false;
         bool turbo = false;
         QString emotes = "";
-        QMap<QString, QString> badgesMap;
+        QList<QPair<QString, QString>> badgesMap;
 
         foreach(const QString & tagStr, getTags(cmd)) {
             Tag tag(tagStr);
@@ -431,9 +448,9 @@ void IrcChat::parseCommand(QString cmd) {
             nickname = displayName;
         }
 
-        QVariantMap badges;
+        QVariantList badges;
         for (auto entry = badgesMap.constBegin(); entry != badgesMap.constEnd(); entry++) {
-            badges.insert(entry.key(), entry.value());
+            badges.push_back(QVariantList({ entry->first, entry->second }));
         }
         disposeOfMessage(nickname, messageList, color, subscriber, turbo, isAction, badges);
         return;
@@ -454,7 +471,7 @@ void IrcChat::parseCommand(QString cmd) {
 
                 qDebug() << "Updating user global badges from GLOBALUSERSTATE:";
                 for (auto entry = badges.constBegin(); entry != badges.constEnd(); entry++) {
-                    qDebug() << "  " << entry.key() << ":" << entry.value();
+                    qDebug() << "  " << entry->first << ":" << entry->second;
                 }
 
                 badgesByChannel.insert("GLOBAL", badges);
@@ -484,7 +501,7 @@ void IrcChat::parseCommand(QString cmd) {
 
                 qDebug() << "Updating user badges for" << channel << "from USERSTATE:";
                 for (auto entry = badges.constBegin(); entry != badges.constEnd(); entry++) {
-                    qDebug() << "  " << entry.key() << ":" << entry.value();
+                    qDebug() << "  " << entry->first << ":" << entry->second;
                 }
 
                 badgesByChannel.insert(channel, badges);
