@@ -680,12 +680,19 @@ Item {
 
             var badgeEntries = [];
             var imageFormatToUse = "image";
+            var badgesSeen = {};
 
             console.log("badges for this message:")
             for (var k = 0; k < badges.length; k++) {
                 var badgeName = badges[k][0];
                 var versionStr = badges[k][1];
                 console.log("  badge", badgeName, versionStr);
+
+                if (badgesSeen[badgeName]) {
+                    continue;
+                } else {
+                    badgesSeen[badgeName] = true;
+                }
 
                 var curBadgeAdded = false;
 
