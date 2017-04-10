@@ -171,7 +171,7 @@ private:
     void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction, QVariantList badges);
     bool makeEmoteAvailable(QString key);
     QVariantList substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes);
-    void addBadges(QVariantList & badges, const QString channel);
+    bool addBadges(QVariantList & badges, const QString channel);
 };
 
 #endif // IRCCHAT_H

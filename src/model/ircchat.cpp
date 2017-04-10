@@ -185,7 +185,7 @@ void removeVariantListPairByFirstValue(QVariantList list, const QVariant value) 
     }
 }
 
-void IrcChat::addBadges(QVariantList &badges, QString channel) {
+bool IrcChat::addBadges(QVariantList &badges, QString channel) {
     qDebug() << "addBadges" << channel;
     auto channelEntry = badgesByChannel.find(channel);
     if (channelEntry != badgesByChannel.end()) {
@@ -195,6 +195,10 @@ void IrcChat::addBadges(QVariantList &badges, QString channel) {
             removeVariantListPairByFirstValue(badges, badge->first);
             badges.push_back(QVariantList({ badge->first, badge->second }));
         }
+        return true;
+    }
+    else {
+        return false;
     }
 }
 
@@ -213,9 +217,12 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 		addWordSplit(displayMessage, ' ', message);
         message = substituteEmotesInMessage(message, relevantEmotes);
 
+        const QString channelName = "#" + room;
+
         QVariantList userBadges;
-        addBadges(userBadges, "GLOBAL");
-        addBadges(userBadges, "#" + room);
+        if (!addBadges(userBadges, channelName)) {
+            addBadges(userBadges, "GLOBAL");
+        }
 
         //TODO need the user's status info to show here
         disposeOfMessage(username, message, "", false, false, isAction, userBadges);
