@@ -46,6 +46,7 @@ struct ChatMessage {
     QString color;
     bool subscriber;
     bool turbo;
+    bool mod;
     bool isAction;
     QVariantList badges;
 };
@@ -107,7 +108,8 @@ public:
     void setAnonymous(bool newAnonymous);
     bool anonym;
     QStringList userSpecs;
-    QString userDisplayName;
+    QString userGlobalDisplayName;
+    QMap<QString, QString> userChannelDisplayName;
 
     //# Network
     bool connected();
@@ -130,7 +132,7 @@ signals:
     void connectedChanged();
     void emoteSetIDsChanged();
     void anonymousChanged();
-    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction, QVariantList badges);
+    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges);
     void noticeReceived(QString message);
     void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
     void emoteTableChanged();
@@ -168,10 +170,14 @@ private:
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
     int activeDownloadCount;
-    void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool isAction, QVariantList badges);
+    void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges);
     bool makeEmoteAvailable(QString key);
     QVariantList substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes);
     bool addBadges(QVariantList & badges, const QString channel);
+    QString userGlobalColor;
+    QMap<QString, QString> userChannelColors;
+    QMap<QString, bool> userChannelMod;
+    QMap<QString, bool> userChannelSubscriber;
 };
 
 #endif // IRCCHAT_H
