@@ -261,7 +261,7 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
             displayName = userGlobalDisplayName;
         }
 
-        disposeOfMessage(displayName, message, color, subscriber, turbo, mod, isAction, userBadges);
+        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges });
     }
 }
 
@@ -338,13 +338,13 @@ void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & 
 	}
 }
 
-void IrcChat::disposeOfMessage(QString nickname, QVariantList messageList, QString color, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges) {
+void IrcChat::disposeOfMessage(ChatMessage m) {
     if (activeDownloadCount == 0) {
-        emit messageReceived(nickname, messageList, color, subscriber, turbo, mod, isAction, badges);
+        emit messageReceived(m.name, m.messageList, m.color, m.subscriber, m.turbo, m.mod, m.isAction, m.badges, m.isChannelNotice, m.systemMessage);
     }
     else {
         // queue message to be shown when downloads are complete
-        msgQueue.push_back({ nickname, messageList, color, subscriber, turbo, mod, isAction, badges });
+        msgQueue.push_back(m);
     }
 }
 
@@ -389,120 +389,193 @@ QList<QPair<QString, QString>> parseBadges(const QString badgesStr) {
     return badges;
 }
 
+QMap<int, QPair<int, int>> IrcChat::parseEmotesTag(const QString emotes) {
+    QMap<int, QPair<int, int>> emotePositionsMap;
+    if (emotes != "") {
+        auto emoteList = emotes.split('/');
+
+        for (auto emote : emoteList) {
+            auto key = emote.left(emote.indexOf(':'));
+            auto positions = emote.remove(0, emote.indexOf(':') + 1);
+            //qDebug() << "key " << key;
+
+            makeEmoteAvailable(key);
+
+            for (auto emotePlc : positions.split(',')) {
+                auto firstAndLast = emotePlc.split('-');
+                int first = firstAndLast[0].toInt();
+                int last = firstAndLast.length() > 1 ? firstAndLast[1].toInt() : first;
+
+                emotePositionsMap.insert(first, qMakePair(last, key.toInt()));
+            }
+        }
+    }
+    return emotePositionsMap;
+}
+
+void IrcChat::createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message) {
+    // cut up message into an ordered list of text fragments and emotes
+    int cur = 0;
+    for (auto i = emotePositionsMap.constBegin(); i != emotePositionsMap.constEnd(); i++) {
+        auto emoteStart = i.key();
+        if (emoteStart > cur) {
+            addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
+        }
+        auto emoteEnd = i.value().first;
+        auto emoteId = i.value().second;
+        QString emoteText = message.mid(emoteStart, emoteEnd - emoteStart + 1);
+        messageList.append(createEmoteEntry(emoteId, emoteText));
+        cur = emoteEnd + 1;
+    }
+    if (cur < message.length()) {
+        addWordSplit(message.mid(cur, message.length() - cur), ' ', messageList);
+    }
+}
+
+struct CommandParse {
+    ChatMessage chatMessage;
+    QString params;
+    bool haveMessage;
+    QString message;
+    QList<QString> tags;
+    QString emotesStr;
+};
+
+void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse) {
+    QString displayName = "";
+    /*
+    QString color = "";
+    bool subscriber = false;
+    bool turbo = false;
+    bool mod = false;
+    */
+
+    QString & emotesStr = commandParse.emotesStr;
+    emotesStr = "";
+
+    commandParse.tags = getTags(cmd);
+
+    ChatMessage & chatMessage = commandParse.chatMessage;
+
+    chatMessage.isAction = false;
+    chatMessage.isChannelNotice = false;
+
+    foreach(const QString & tagStr, commandParse.tags) {
+        Tag tag(tagStr);
+        if (!tag.valid) continue;
+        if (tag.key == "display-name") {
+            displayName = tag.value;
+        }
+        else if (tag.key == "color") {
+            chatMessage.color = tag.value;
+        }
+        else if (tag.key == "subscriber") {
+            chatMessage.subscriber = (tag.value == "1");
+        }
+        else if (tag.key == "turbo") {
+            chatMessage.turbo = (tag.value == "1");
+        }
+        else if (tag.key == "mod") {
+            chatMessage.mod = (tag.value == "1");
+        }
+        else if (tag.key == "badges") {
+            QList<QPair<QString, QString>> badgesMap = parseBadges(tag.value);
+
+            for (auto entry = badgesMap.constBegin(); entry != badgesMap.constEnd(); entry++) {
+                chatMessage.badges.push_back(QVariantList({ entry->first, entry->second }));
+            }
+        }
+        else if (tag.key == "emotes") {
+            emotesStr = tag.value;
+        }
+        else {
+            //qDebug() << "Unused " << cmdKeyword << " tag" << tag.key;
+        }
+    }
+
+    int cmdKeywordPos = cmd.indexOf(cmdKeyword);
+
+    commandParse.params = cmd.left(cmdKeywordPos);
+    QString nickname = commandParse.params.left(commandParse.params.lastIndexOf('!')).remove(0, commandParse.params.lastIndexOf(':') + 1);
+    commandParse.haveMessage = false;
+
+    commandParse.message = "";
+    int messageSepPos = cmd.indexOf(':', cmdKeywordPos + cmdKeyword.length());
+    if (messageSepPos != -1) {
+        commandParse.haveMessage = true;
+        commandParse.message = cmd.mid(messageSepPos + 1);
+    }
+
+    if (displayName.length() > 0) {
+        chatMessage.name = displayName;
+    }
+    else {
+        chatMessage.name = nickname;
+    }
+
+    //qDebug() << "emotes " << emotes;
+}
+
 void IrcChat::parseCommand(QString cmd) {
     if(cmd.startsWith("PING ")) {
         sock->write("PONG\r\n");
         return;
     }
+
     if(cmd.contains("PRIVMSG")) {
 
         // Structure of message: '@color=#HEX;display-name=NicK;emotes=id:start-end,start-end/id:start-end;subscriber=0or1;turbo=0or1;user-type=type :nick!nick@nick.tmi.twitch.tv PRIVMSG #channel :message'
 
-        QString displayName = "";
-        QString color = "";
-        bool subscriber = false;
-        bool turbo = false;
-        bool mod = false;
-        QString emotes = "";
-        QList<QPair<QString, QString>> badgesMap;
+        CommandParse parse;
 
-        foreach(const QString & tagStr, getTags(cmd)) {
-            Tag tag(tagStr);
-            if (!tag.valid) continue;
-            if (tag.key == "display-name") {
-                displayName = tag.value;
-            }
-            else if (tag.key == "color") {
-                color = tag.value;
-            }
-            else if (tag.key == "subscriber") {
-                subscriber = (tag.value == "1");
-            }
-            else if (tag.key == "turbo") {
-                turbo = (tag.value == "1");
-            }
-            else if (tag.key == "mod") {
-                mod = (tag.value == "1");
-            }
-			else if (tag.key == "emotes") {
-				emotes = tag.value;
-			}
-            else if (tag.key == "badges") {
-                badgesMap = parseBadges(tag.value);
-            }
-            else {
-                qDebug() << "Unused PRIVMSG tag" << tag.key;
-            }
-        }
+        parseMessageCommand(cmd, "PRIVMSG", parse);
 
-        QString params = cmd.left(cmd.indexOf("PRIVMSG"));
-        QString nickname = params.left(params.lastIndexOf('!')).remove(0, params.lastIndexOf(':') + 1);
-        QString message = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("PRIVMSG")) + 1);
-        QString oldmessage = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("PRIVMSG")) + 1);
-        //qDebug() << "emotes " << emotes;
-        //qDebug() << "oldmessage " << oldmessage;
-
-        QMap<int, QPair<int, int>> emotePositionsMap;
-
-        if(emotes != "") {
-          auto emoteList = emotes.split('/');
-
-          for(auto emote : emoteList) {
-            auto key = emote.left(emote.indexOf(':'));
-            auto positions = emote.remove(0, emote.indexOf(':')+1);
-            //qDebug() << "key " << key;
-
-            makeEmoteAvailable(key);
-
-			for(auto emotePlc : positions.split(',')) {
-              auto firstAndLast = emotePlc.split('-');
-              int first = firstAndLast[0].toInt();
-              int last = firstAndLast.length() > 1 ? firstAndLast[1].toInt() : first;
-
-              emotePositionsMap.insert(first, qMakePair(last, key.toInt()));
-            }
-          }
-        }
-
-		bool isAction = false;
-		
 		// parse IRC action before applying emotes, as emote indices are relative to the content of the action
 		const QString ACTION_PREFIX = QString(QChar(1)) + "ACTION ";
 		const QString ACTION_SUFFIX = QString(QChar(1));
-		if (message.startsWith(ACTION_PREFIX) && message.endsWith(ACTION_SUFFIX)) {
-			isAction = true;
-			message = message.mid(ACTION_PREFIX.length(), message.length() - ACTION_SUFFIX.length() - ACTION_PREFIX.length());
+		if (parse.message.startsWith(ACTION_PREFIX) && parse.message.endsWith(ACTION_SUFFIX)) {
+			parse.chatMessage.isAction = true;
+            parse.message = parse.message.mid(ACTION_PREFIX.length(), parse.message.length() - ACTION_SUFFIX.length() - ACTION_PREFIX.length());
 		}
 
-		// cut up message into an ordered list of text fragments and emotes
-        QVariantList messageList;
-
-        int cur = 0;
-        for (auto i = emotePositionsMap.constBegin(); i != emotePositionsMap.constEnd(); i++) {
-            auto emoteStart = i.key();
-            if (emoteStart > cur) {
-				addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
-            }
-            auto emoteEnd = i.value().first;
-            auto emoteId = i.value().second;
-            QString emoteText = message.mid(emoteStart, emoteEnd - emoteStart + 1);
-            messageList.append(createEmoteEntry(emoteId, emoteText));
-            cur = emoteEnd + 1;
-        }
-        if (cur < message.length()) {
-			addWordSplit(message.mid(cur, message.length() - cur), ' ', messageList);
-        }
+        createEmoteMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.messageList, parse.message);
 
         //qDebug() << "messageList " << messageList;
-        if (displayName.length() > 0) {
-            nickname = displayName;
+
+        disposeOfMessage(parse.chatMessage);
+        return;
+    }
+    if (cmd.contains("USERNOTICE")) {
+        // Structure of message: 
+        // @badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;msg-id=resub;msg-param-months=6;room-id=1337;subscriber=1;system-msg=TWITCH_UserName\shas\ssubscribed\sfor\s6\smonths!;login=twitch_username;turbo=1;user-id=1337;user-type=staff :tmi.twitch.tv USERNOTICE #channel :Great stream -- keep it up!
+        // when there is no message, last part is omitted
+        // @badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;msg-id=resub;msg-param-months=6;room-id=1337;subscriber=1;system-msg=TWITCH_UserName\shas\ssubscribed\sfor\s6\smonths!;login=twitch_username;turbo=1;user-id=1337;user-type=staff :tmi.twitch.tv USERNOTICE #channel
+
+        CommandParse parse;
+
+        parseMessageCommand(cmd, "USERNOTICE", parse);
+
+        parse.chatMessage.isChannelNotice = true;
+
+        foreach(const QString & tagStr, parse.tags) {
+            Tag tag(tagStr);
+            if (tag.key == "system-msg") {
+                QString systemMessage = tag.value;
+
+                // \s -> space
+                systemMessage.replace("\\s", " ");
+                // \\ -> \ 
+                systemMessage.replace("\\\\", "\\");
+
+                parse.chatMessage.systemMessage = systemMessage;
+            }
         }
 
-        QVariantList badges;
-        for (auto entry = badgesMap.constBegin(); entry != badgesMap.constEnd(); entry++) {
-            badges.push_back(QVariantList({ entry->first, entry->second }));
-        }
-        disposeOfMessage(nickname, messageList, color, subscriber, turbo, mod, isAction, badges);
+        createEmoteMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.messageList, parse.message);
+
+        //qDebug() << "messageList " << messageList;
+
+        disposeOfMessage(parse.chatMessage);
         return;
     }
     if(cmd.contains("NOTICE")) {
@@ -750,7 +823,7 @@ void IrcChat::individualDownloadComplete(QString filename, bool hadError) {
         //qDebug() << "Download queue complete; posting pending messages";
 		while (!msgQueue.empty()) {
 			ChatMessage tmpMsg = msgQueue.first();
-			emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.mod, tmpMsg.isAction, tmpMsg.badges);
+			emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.mod, tmpMsg.isAction, tmpMsg.badges, tmpMsg.isChannelNotice, tmpMsg.systemMessage);
 			msgQueue.pop_front();
 		}
 	}

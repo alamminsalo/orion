@@ -25,9 +25,13 @@ Item {
     property bool isAction
     property string jsonBadgeEntries
     property string emoteDirPath
+    property bool isChannelNotice
+    property string systemMessage
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
+
+    property string systemMessageBackgroundColor: "#333333"
 
     height: childrenRect.height
 
@@ -117,12 +121,54 @@ Item {
         return result
     }
 
+    Rectangle {
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: _systemMessageLine.top
+            bottom: _messageLineFlow.bottom
+        }
+
+        visible: isChannelNotice
+        color: root.systemMessageBackgroundColor
+    }
+
+    Text {
+        id: _systemMessageLine
+        anchors {
+            left: parent.left
+            right: parent.right
+        }
+
+        visible: root.isChannelNotice && root.systemMessage != ""
+        color: Styles.textColor
+        text: root.systemMessage
+        font.pixelSize: fontSize
+        wrapMode: Text.WordWrap
+
+        Component.onCompleted: {
+            if (!_systemMessageLine.visible) {
+                _systemMessageLine.height = 0;
+            }
+        }
+    }
+
     CustomFlow {
       id: _messageLineFlow
       ySpacing: 1
       anchors {
+          top: _systemMessageLine.bottom
           left: parent.left
           right: parent.right
+      }
+
+      Component.onCompleted: {
+          // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
+          if (root.isChannelNotice && root.systemMessage && pmsg.length == 0) {
+              userName.visible = false;
+              userName.height = 0;
+              badgeEntries = [];
+          }
       }
 
       vAlign: vAlignCenter

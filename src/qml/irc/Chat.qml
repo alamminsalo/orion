@@ -20,7 +20,7 @@ import aldrog.twitchtube.ircchat 1.0
 Item {
     id: root
 
-    signal messageReceived(string user, variant message, string chatColor, bool subscriber, bool turbo, bool isAction, var badges)
+    signal messageReceived(string user, variant message, string chatColor, bool subscriber, bool turbo, bool isAction, var badges, bool isChannelNotice, string systemMessage)
     signal setEmotePath(string value)
     signal notify(string message)
     signal clear()
@@ -64,7 +64,7 @@ Item {
         chat.join(channelName)
         root.channel = channelName
         root.channelId = channelId
-        messageReceived("Joined channel #" + channelName, null, "", false, false, false, {})
+        messageReceived("Joined channel #" + channelName, null, "", false, false, false, {}, true, "")
         g_cman.loadChannelBadgeUrls(channelName);
         g_cman.loadChannelBetaBadgeUrls(channelId);
     }
@@ -103,12 +103,12 @@ Item {
 
         onMessageReceived: {
             root.setEmotePath(emoteDirPath)
-            root.messageReceived(user, message, chatColor, subscriber, turbo, isAction, badges)
+            root.messageReceived(user, message, chatColor, subscriber, turbo, isAction, badges, isChannelNotice, systemMessage)
         }
 
         onNoticeReceived: {
             console.log("Notification received", message);
-            root.messageReceived("--NOTIFICATION--", [message], null, null, false, false, {})
+            root.messageReceived("--NOTIFICATION--", [message], null, null, false, false, {}, true, "")
         }
 
         onEmoteSetIDsChanged: {

@@ -49,6 +49,8 @@ struct ChatMessage {
     bool mod;
     bool isAction;
     QVariantList badges;
+    bool isChannelNotice;
+    QString systemMessage;
 };
 
 // Handles state for an individual download
@@ -132,7 +134,7 @@ signals:
     void connectedChanged();
     void emoteSetIDsChanged();
     void anonymousChanged();
-    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges);
+    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage);
     void noticeReceived(QString message);
     void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
     void emoteTableChanged();
@@ -162,6 +164,8 @@ private:
     QList<ChatMessage> msgQueue;
 
     void parseCommand(QString cmd);
+    QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
+    void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
@@ -170,7 +174,7 @@ private:
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
     int activeDownloadCount;
-    void disposeOfMessage(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges);
+    void disposeOfMessage(ChatMessage m);
     bool makeEmoteAvailable(QString key);
     QVariantList substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes);
     bool addBadges(QVariantList & badges, const QString channel);

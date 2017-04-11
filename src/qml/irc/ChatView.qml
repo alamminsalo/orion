@@ -156,6 +156,8 @@ Item {
             jsonBadgeEntries: model.jsonBadgeEntries
             isAction: model.isAction
             emoteDirPath: chat.emoteDirPath
+            isChannelNotice: model.isChannelNotice
+            systemMessage: model.systemMessage
 
             anchors {
                 left: parent.left
@@ -730,7 +732,7 @@ Item {
 
             var jsonBadgeEntries = JSON.stringify(badgeEntries);
 
-            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries})
+            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage})
             list.scrollbuf = 6
         }
 
