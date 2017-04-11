@@ -30,10 +30,14 @@ Item {
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
-    property var visibleBadgeEntries: userName.visible? badgeEntries : []
     property var highlightOpacity: 1.0
 
     property string systemMessageBackgroundColor: "#333333"
+
+    property bool showUsernameLine: !isChannelNotice || !systemMessage || (pmsg && pmsg.length > 0)
+    property bool showSystemMessageLine: isChannelNotice && systemMessage != ""
+
+    property var visibleBadgeEntries: showUsernameLine? badgeEntries : []
 
     height: childrenRect.height
 
@@ -143,13 +147,13 @@ Item {
             right: parent.right
         }
 
-        visible: root.isChannelNotice && root.systemMessage != ""
+        visible: showSystemMessageLine
         color: Styles.textColor
         text: root.systemMessage
         font.pixelSize: fontSize
         wrapMode: Text.WordWrap
 
-        height: visible? contentHeight : 0
+        height: showSystemMessageLine? contentHeight : 0
     }
 
     CustomFlow {
@@ -177,14 +181,14 @@ Item {
       Text {
         id: userName
         // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
-        visible: !root.isChannelNotice || !root.systemMessage || (pmsg && pmsg.length > 0)
+        visible: showUsernameLine
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
         font.pixelSize: fontSize
         text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
         onLinkActivated: userLinkActivation(link)
 
-        height: visible? contentHeight : 0
+        height: showUsernameLine? contentHeight : 0
 
         MouseArea {
             anchors.fill: parent
