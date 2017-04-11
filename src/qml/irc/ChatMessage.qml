@@ -180,7 +180,7 @@ Item {
       Text {
         id: userName
         // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
-        visible: !root.isChannelNotice || !root.systemMessage || pmsg.length > 0
+        visible: !root.isChannelNotice || !root.systemMessage || (pmsg && pmsg.length > 0)
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
         font.pixelSize: fontSize

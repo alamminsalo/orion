@@ -64,7 +64,7 @@ Item {
         chat.join(channelName)
         root.channel = channelName
         root.channelId = channelId
-        messageReceived("Joined channel #" + channelName, null, "", false, false, false, {}, true, "")
+        messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName)
         g_cman.loadChannelBadgeUrls(channelName);
         g_cman.loadChannelBetaBadgeUrls(channelId);
     }
