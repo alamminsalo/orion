@@ -30,6 +30,7 @@ Item {
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
+    property var visibleBadgeEntries: visible? badgeEntries : []
     property var highlightOpacity: 1.0
 
     property string systemMessageBackgroundColor: "#333333"
@@ -148,11 +149,7 @@ Item {
         font.pixelSize: fontSize
         wrapMode: Text.WordWrap
 
-        Component.onCompleted: {
-            if (!_systemMessageLine.visible) {
-                _systemMessageLine.height = 0;
-            }
-        }
+        height: visible? contentHeight : 0
     }
 
     CustomFlow {
@@ -167,10 +164,10 @@ Item {
       vAlign: vAlignCenter
 
       Repeater {
-        model: badgeEntries
+        model: visibleBadgeEntries
 
         Loader {
-          property var badgeEntry: badgeEntries[index]
+          property var badgeEntry: visibleBadgeEntries[index]
           sourceComponent: {
             return badgeItem
           }
@@ -187,13 +184,7 @@ Item {
         text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
         onLinkActivated: userLinkActivation(link)
 
-        Component.onCompleted: {
-            console.log("username complete", isChannelNotice, systemMessage, pmsg, pmsg.length)
-            if (!userName.visible) {
-                userName.height = 0;
-                badgeEntries = [];
-            }
-        }
+        height: visible? contentHeight : 0
 
         MouseArea {
             anchors.fill: parent
