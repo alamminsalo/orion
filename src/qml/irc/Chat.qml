@@ -108,7 +108,7 @@ Item {
 
         onNoticeReceived: {
             console.log("Notification received", message);
-            root.messageReceived("--NOTIFICATION--", [message], null, null, false, false, {}, true, "")
+            root.messageReceived("channel", [], null, null, false, false, {}, true, message)
         }
 
         onEmoteSetIDsChanged: {

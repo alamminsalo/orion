@@ -162,15 +162,6 @@ Item {
           right: parent.right
       }
 
-      Component.onCompleted: {
-          // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
-          if (root.isChannelNotice && root.systemMessage && pmsg.length == 0) {
-              userName.visible = false;
-              userName.height = 0;
-              badgeEntries = [];
-          }
-      }
-
       vAlign: vAlignCenter
 
       Repeater {
@@ -186,11 +177,21 @@ Item {
 
       Text {
         id: userName
+        // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
+        visible: !root.isChannelNotice || !root.systemMessage || pmsg.length > 0
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
         font.pixelSize: fontSize
         text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
         onLinkActivated: userLinkActivation(link)
+
+        Component.onCompleted: {
+            console.log("username complete", isChannelNotice, systemMessage, pmsg, pmsg.length)
+            if (!userName.visible) {
+                userName.height = 0;
+                badgeEntries = [];
+            }
+        }
 
         MouseArea {
             anchors.fill: parent
