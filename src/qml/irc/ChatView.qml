@@ -35,6 +35,7 @@ Item {
     visible: status > 0
 
     property real _opacity: root.status > 1 ? 0.6 : 1.0
+    property int chatWidth: width
 
     Rectangle {
         anchors.fill: parent
@@ -166,10 +167,11 @@ Item {
             }
         }
 
+        width: chatWidth
+
         anchors {
             top: parent.top
             left: parent.left
-            right: parent.right
             bottom: spacer.top
         }
 
