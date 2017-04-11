@@ -32,7 +32,7 @@ Item {
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
     property var highlightOpacity: 1.0
 
-    property string systemMessageBackgroundColor: "#333333"
+    property string channelNoticeBackgroundColor: "#444444"
 
     property bool showUsernameLine: !isChannelNotice || !systemMessage || (pmsg && pmsg.length > 0)
     property bool showSystemMessageLine: isChannelNotice && systemMessage != ""
@@ -136,7 +136,7 @@ Item {
         }
 
         visible: isChannelNotice
-        color: root.systemMessageBackgroundColor
+        color: root.channelNoticeBackgroundColor
         opacity: root.highlightOpacity
     }
 
