@@ -30,7 +30,7 @@ Item {
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
-    property var visibleBadgeEntries: visible? badgeEntries : []
+    property var visibleBadgeEntries: userName.visible? badgeEntries : []
     property var highlightOpacity: 1.0
 
     property string systemMessageBackgroundColor: "#333333"
