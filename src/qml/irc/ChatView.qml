@@ -158,6 +158,7 @@ Item {
             emoteDirPath: chat.emoteDirPath
             isChannelNotice: model.isChannelNotice
             systemMessage: model.systemMessage
+            highlightOpacity: root._opacity
 
             anchors {
                 left: parent.left

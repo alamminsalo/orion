@@ -30,6 +30,7 @@ Item {
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
+    property var highlightOpacity: 1.0
 
     property string systemMessageBackgroundColor: "#333333"
 
@@ -131,6 +132,7 @@ Item {
 
         visible: isChannelNotice
         color: root.systemMessageBackgroundColor
+        opacity: root.highlightOpacity
     }
 
     Text {
