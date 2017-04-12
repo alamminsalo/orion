@@ -13,7 +13,8 @@
  */
 
 import QtQuick 2.0
-import QtWebEngine 1.1
+import QtWebEngine 1.2
+import QtQml 2.0
 import "components"
 
 Item {
@@ -32,6 +33,16 @@ Item {
         }
     }
 
+    function getHttpAcceptLanguage() {
+        var localeStr = Qt.locale().name;
+        console.log("using locale", localeStr);
+        var languageCountry = localeStr.replace("_", "-");
+        var languageOnly = localeStr.split("_")[0];
+        var out = languageCountry + "," + languageOnly;
+        console.log("using httpAcceptLanguage setting", out);
+        return out;
+    }
+
     function logout() {
         g_cman.setAccessToken("")
         g_cman.checkFavourites()
@@ -41,6 +52,10 @@ Item {
     WebEngineView {
         id: web
         anchors.fill: parent
+
+        profile: WebEngineProfile {
+            httpAcceptLanguage: getHttpAcceptLanguage()
+        }
 
         onLoadingChanged: {
             if (!loading) {
