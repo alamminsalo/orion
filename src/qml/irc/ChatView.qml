@@ -421,6 +421,16 @@ Item {
                     return parts.join("");
                 }
 
+                function encodeHtml(unsafe) {
+                    // per https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+                    return unsafe
+                         .replace(/&/g, "&amp;")
+                         .replace(/</g, "&lt;")
+                         .replace(/>/g, "&gt;")
+                         .replace(/"/g, "&quot;")
+                         .replace(/'/g, "&#039;");
+                 }
+
                 function inverseRegex(s) {
                     var out = [];
                     var unconfirmed = "";
@@ -609,6 +619,11 @@ Item {
             initEmotesMaps();
         }
 
+        function regexExactMatch(regex, text) {
+            var match = regex.exec(text);
+            return match && match[0] === text;
+        }
+
         function initEmotesMaps() {
             var plainText = /^[\da-z]+$/i;
             _textEmotesMap = {};
@@ -620,13 +635,17 @@ Item {
                 for (var emoteIdStr in entry) {
                     var emoteId = parseInt(emoteIdStr);
                     var emoteText = entry[emoteIdStr];
-                    var match = plainText.exec(emoteText);
-                    if (match && match[0] == emoteText) {
+                    if (regexExactMatch(plainText, emoteText)) {
                         //console.log("adding plain text emote", emoteText, emoteId);
                         _textEmotesMap[emoteText] = emoteId;
                     } else {
-                        //console.log("adding regex emote", emoteText, emoteId);
-                        _regexEmotesList.push({"regex": new RegExp(emoteText), "emoteId": emoteId});
+                        //Just checking whether our invert text has entities is fine for all the existing global emotes
+                        //TODO actually parse the entire regex so we don't miss any cases that match html entities
+                        var htmlText = _emoteButton.inverseRegex(emoteText);
+                        var decodedText = _emoteButton.decodeHtml(htmlText);
+                        var useHtmlDomain = htmlText != decodedText;
+                        //console.log("adding regex emote", emoteText, emoteId, "useHtmlDomain:", useHtmlDomain);
+                        _regexEmotesList.push({"regex": new RegExp(emoteText), "emoteId": emoteId, "useHtmlDomain": useHtmlDomain});
                     }
                 }
             }
@@ -639,8 +658,14 @@ Item {
             }
             for (var i = 0; i < _regexEmotesList.length; i++) {
                 var entry = _regexEmotesList[i];
-                var match = entry.regex.exec(word);
-                if (match && match[0] == word) {
+
+                var matchInput = word;
+                if (entry.useHtmlDomain) {
+                    //console.log("using html domain for", entry.regex);
+                    matchInput = _emoteButton.encodeHtml(word);
+                    //console.log(matchInput)
+                }
+                if (regexExactMatch(entry.regex, matchInput)) {
                     return entry.emoteId;
                 }
             }
