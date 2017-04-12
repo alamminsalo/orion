@@ -41,71 +41,6 @@ Item {
 
     height: childrenRect.height
 
-    /*
-    Component.onCompleted: {
-        //console.log("Got: " + msg);
-        //console.log("Got toString: " + msg.toString());
-        var rmsg = JSON.parse(msg);
-
-        if (rmsg)
-        {
-            _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a>".arg(user);
-            if (isAction) {
-                _text.text += " ";
-                parseMsg(rmsg);
-            }
-            _text.text += "</font>";
-            if (!isAction) {
-                _text.text += ": ";
-                parseMsg(rmsg)
-            }
-        }
-        else
-        {
-            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user)
-        }
-        _text.user = user
-    }
-    */
-
-    function parseMsg(msg) {
-        console.log("We are in parseMsg()");
-        console.log("msg typeof is " + typeof(msg));
-        //console.log("msg length is " + msg.length.toString());
-        console.log("msg tostring is " + msg.toString());
-
-        console.log("typeof msg.length " + typeof(msg.length));
-        console.log("msg.length " + msg.length.toString());
-
-        for (var j=0; j < msg.length; j++) {
-            var mlist = msg[j];
-            console.log("cur mlist entry " + j.toString() + " typeof is " + typeof(mlist));
-            if (typeof(mlist) == "object") {
-                // it's an emote
-                var emoteId = mlist.emoteId;
-                var emoteText = mlist.emoteText;
-
-                var imgUrl = emoteDirPath + "/" + emoteId.toString();
-
-                _text.text += "<img src=\"" + imgUrl + "\"></img>";
-
-            } else {
-                mlist = mlist.split(" ")
-                var textParts = [];
-
-                for (var i=0; i < mlist.length; i++) {
-                    var str = mlist[i]
-
-                    textParts.push(!isUrl(str) ? str : makeUrl(str))
-                }
-                _text.text += textParts.join(" ");
-            }
-
-        }
-
-        console.log("Created text object: " + _text.text);
-    }
-
     function makeUrl(str) {
         var pref = "";
         if (str.length && (str.charAt(0) === " ")) {
@@ -330,40 +265,4 @@ Item {
             Qt.openUrlExternally(link)
         }
     }
-
-    /*
-    Text {
-        id: _text
-        property string user: ""
-        anchors {
-            left: parent.left
-            right: parent.right
-        }
-        verticalAlignment: Text.AlignVCenter
-        color: Styles.textColor
-        font.pixelSize: fontSize
-        linkColor: Styles.purple
-        wrapMode: Text.WordWrap
-        onLinkActivated: function(link)
-        {
-            if (link.substr(0,5) === "user:")
-            {
-                var value = "@"+link.replace('user:',"")+', '
-                if (_input.text === "")
-                {
-                    _input.text = value
-                }
-                else {
-                    _input.text = _input.text + ' '+ value
-                }
-
-            }
-            else
-            {
-                Qt.openUrlExternally(link)
-            }
-        }
-
-    }
-    */
 }
