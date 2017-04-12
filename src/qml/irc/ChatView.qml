@@ -92,6 +92,7 @@ Item {
     function loadEmotes() {
         //console.log("loadEmotes()", chat.lastEmoteSets);
         if (chat.lastEmoteSets) {
+            _emotePicker.loading = true;
             //console.log("downloading chat.lastEmoteSets", chat.lastEmoteSets);
             _emoteButton.startDownload(chat.lastEmoteSets);
         }

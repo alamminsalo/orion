@@ -52,6 +52,7 @@ Rectangle {
         anchors.fill: parent
         iconSize: 60
         visible: root.loading
+        opacity: 0.5
         z: 2
     }
 
