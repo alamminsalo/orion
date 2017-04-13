@@ -23,7 +23,7 @@ install:
          $libmpv_download_filename | Out-File "${env:mpvdir}\version.txt"
          Start-FileDownload "https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/${libmpv_download_filename}" -FileName "${env:mpvdir}\mpv-dev-${env:platform}.7z" 
       }
-  - type %MPV_DIR%\version.txt
+  - type %MPVDIR%\version.txt
   - if %platform%==x86 set QTDIR=C:\Qt\5.8\msvc2015
   - if %platform%==x64 set QTDIR=C:\Qt\5.8\msvc2015_64
   - if %platform%==x86 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
