@@ -1,0 +1,47 @@
+install:
+  - set MPVDIR=c:\mpv
+  - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
+  - ps: if (!(Test-Path 'c:\mpv\mpv-dev.7z')) { Start-FileDownload 'https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/mpv-dev-i686-20170305-git-85c8556ee.7z' -FileName 'c:\mpv\mpv-dev.7z' }
+  - set QTDIR=C:\Qt\5.8\msvc2015
+  - set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
+  - cd "%MPVDIR%"
+  - 7z x -y mpv-dev.7z
+  - if not exist include\mpv mkdir include\mpv
+  - move include\*.* include\mpv
+  - dir /s
+  - set INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt;%MPVDIR%\include
+  - set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;%MPVDIR%
+
+cache:
+  - c:\mpv\mpv-dev.7z -> appveyor.yml
+
+build_script:
+- cmd: >-
+    echo APPVEYOR_BUILD_FOLDER=%APPVEYOR_BUILD_FOLDER%
+
+    cd %APPVEYOR_BUILD_FOLDER%
+
+    qmake orion.pro
+
+    mkdir libs
+
+    copy /y "%MPVDIR%\mpv-1.dll" libs
+
+    copy /y "C:\OpenSSL-Win32\ssleay32.dll" libs
+
+    copy /y "C:\OpenSSL-Win32\libeay32.dll" libs
+
+    lib /def:%MPVDIR%\mpv.def /name:%MPVDIR%\mpv-1.dll /out:%MPVDIR%\mpv.lib /MACHINE:X86
+
+    nmake release
+
+    %QTDIR%\bin\windeployqt --qmldir src\qml release\orion.exe
+
+    dir /s
+
+after_build:
+  - 7z a orion.zip release
+
+artifacts:
+  - path: orion.zip
+    name: orion windows 32-bit zip
