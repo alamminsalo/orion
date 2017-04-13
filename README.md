@@ -15,7 +15,7 @@ Features:
 
 ![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/5.png)
+![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/9.png)
 
 ![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/8.jpeg)
 
