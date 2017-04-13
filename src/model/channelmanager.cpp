@@ -595,11 +595,11 @@ void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quin
     if (list.size() == FOLLOWED_FETCH_LIMIT)
         getFollowedChannels(FOLLOWED_FETCH_LIMIT, offset);
 
+    checkStreams(list);
+
     qDeleteAll(list);
 
     emit followedUpdated();
-
-    checkFavourites();
 }
 
 void ChannelManager::onNetworkAccessChanged(bool up)
