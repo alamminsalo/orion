@@ -1,19 +1,39 @@
+environment:
+
+  matrix:
+    - platform: x86
+      configuration: release
+    - platform: x64
+      configuration: release
+    - platform: x86
+      configuration: debug
+    - platform: x64
+      configuration: debug
+
 install:
-  - set MPVDIR=c:\mpv
+  - set libmpv_version=20170401-git-1d2910af9
+  - if %platform%==x86 set mpv_platform=i686
+  - if %platform%==x64 set mpv_platform=x86_64
+  - if %platform%==x86 set MPVDIR=c:\mpv_x86
+  - if %platform%==x64 set MPVDIR=c:\mpv_x64
   - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
-  - ps: if (!(Test-Path 'c:\mpv\mpv-dev.7z')) { Start-FileDownload 'https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/mpv-dev-i686-20170305-git-85c8556ee.7z' -FileName 'c:\mpv\mpv-dev.7z' }
-  - set QTDIR=C:\Qt\5.8\msvc2015
-  - set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
+  - ps: if (!(Test-Path "${env:mpvdir}\mpv-dev-${env:platform}.7z")) { Start-FileDownload "https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/mpv-dev-${env:mpv_platform}-${env:libmpv_version}.7z" -FileName "${env:mpvdir}\mpv-dev-${env:platform}.7z" }
+  - if %platform%==x86 set QTDIR=C:\Qt\5.8\msvc2015
+  - if %platform%==x64 set QTDIR=C:\Qt\5.8\msvc2015_64
+  - if %platform%==x86 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
+  - if %platform%==x64 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
   - cd "%MPVDIR%"
-  - 7z x -y mpv-dev.7z
+  - 7z x -y mpv-dev-%platform%.7z
   - if not exist include\mpv mkdir include\mpv
   - move include\*.* include\mpv
   - dir /s
   - set INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt;%MPVDIR%\include
-  - set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;%MPVDIR%
+  - if %platform%==x86 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;%MPVDIR%
+  - if %platform%==x64 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x64;%MPVDIR%
 
 cache:
-  - c:\mpv\mpv-dev.7z -> appveyor.yml
+  - c:\mpv_x86\mpv-dev-x86.7z -> appveyor.yml
+  - c:\mpv_x64\mpv-dev-x64.7z -> appveyor.yml
 
 build_script:
 - cmd: >-
@@ -31,17 +51,17 @@ build_script:
 
     copy /y "C:\OpenSSL-Win32\libeay32.dll" libs
 
-    lib /def:%MPVDIR%\mpv.def /name:%MPVDIR%\mpv-1.dll /out:%MPVDIR%\mpv.lib /MACHINE:X86
+    lib /def:%MPVDIR%\mpv.def /name:%MPVDIR%\mpv-1.dll /out:%MPVDIR%\mpv.lib /MACHINE:%platform%
 
-    nmake release
+    nmake %configuration%
 
-    %QTDIR%\bin\windeployqt --qmldir src\qml release\orion.exe
+    %QTDIR%\bin\windeployqt --qmldir src\qml %configuration%\orion.exe
 
     dir /s
 
 after_build:
-  - 7z a orion.zip release
+  - 7z a orion_%configuration%_%platform%.zip %configuration%
 
 artifacts:
-  - path: orion.zip
-    name: orion windows 32-bit zip
+  - path: orion_$(configuration)_$(platform).zip
+    name: orion windows $(configuration) $(platform) zip
