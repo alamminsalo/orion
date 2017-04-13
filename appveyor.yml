@@ -62,8 +62,8 @@ build_script:
     dir /s
 
 after_build:
-  - 7z a orion_%configuration%_%platform%.zip %configuration%
+  - 7z a orion_%configuration%_%platform%_snapshot.zip . -x.git
 
 artifacts:
-  - path: orion_$(configuration)_$(platform).zip
-    name: orion windows $(configuration) $(platform) zip
+  - path: orion_$(configuration)_$(platform)_snapshot.zip
+    name: orion windows $(configuration) $(platform) snapshot zip
