@@ -20,13 +20,23 @@ import aldrog.twitchtube.ircchat 1.0
 Item {
     id: root
 
-    signal messageReceived(string user, string message, string chatColor, bool subscriber, bool turbo)
+    signal messageReceived(string user, variant message, string chatColor, bool subscriber, bool turbo, bool isAction, var badges, bool isChannelNotice, string systemMessage)
+    signal setEmotePath(string value)
     signal notify(string message)
     signal clear()
+    signal emoteSetIDsChanged(var emoteSetIDs)
+    signal downloadComplete()
+    signal channelBadgeUrlsLoaded(string channel, var badgeUrls)
+    signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
+    property var channelId: undefined
     property var singleShot: undefined
+
+    Component.onCompleted: {
+        chat.initProviders()
+    }
 
     Connections {
         target: g_cman
@@ -38,26 +48,43 @@ Item {
 
             chat.reopenSocket()
         }
+
+        onChannelBadgeUrlsLoaded: {
+            console.log("onChannelBadgeUrlsLoaded", "channel", channel, "badgeUrls", badgeUrls);
+            root.channelBadgeUrlsLoaded(channel, badgeUrls);
+        }
+
+        onChannelBadgeBetaUrlsLoaded: {
+            console.log("onChannelBadgeBetaUrlsLoaded", "channel", channel, "badgeSetData", badgeSetData);
+            root.channelBadgeBetaUrlsLoaded(channel, badgeSetData);
+        }
     }
 
-    function joinChannel(channelName) {
+    function joinChannel(channelName, channelId) {
         chat.join(channelName)
         root.channel = channelName
-        messageReceived("Joined channel #" + channelName, null, "", false, false)
+        root.channelId = channelId
+        messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName)
+        g_cman.loadChannelBadgeUrls(channelName);
+        g_cman.loadChannelBetaBadgeUrls(channelId);
     }
 
     function leaveChannel() {
         chat.leave()
     }
 
-    function sendChatMessage(message) {
-        chat.sendMessage(message)
+    function sendChatMessage(message, relevantEmotes) {
+        chat.sendMessage(message, relevantEmotes)
+    }
+
+    function bulkDownloadEmotes(emotes) {
+        return chat.bulkDownloadEmotes(emotes);
     }
 
     function reconnect() {
         leaveChannel()
         if (root.channel)
-            joinChannel(root.channel)
+            joinChannel(root.channel, root.channelId)
     }
 
     IrcChat {
@@ -67,7 +94,7 @@ Item {
             if (connected) {
                 console.log("Connected to chat")
                 if (root.channel) {
-                    joinChannel(root.channel)
+                    joinChannel(root.channel, root.channelId)
                 }
             } else {
                 console.log("Disconnected from chat")
@@ -75,11 +102,22 @@ Item {
         }
 
         onMessageReceived: {
-            root.messageReceived(user, message, chatColor, subscriber, turbo)
+            root.setEmotePath(emoteDirPath)
+            root.messageReceived(user, message, chatColor, subscriber, turbo, isAction, badges, isChannelNotice, systemMessage)
         }
 
         onNoticeReceived: {
-            root.messageReceived("--NOTIFICATION--", message, null, null, false, false)
+            console.log("Notification received", message);
+            root.messageReceived("channel", [], null, null, false, false, {}, true, message)
+        }
+
+        onEmoteSetIDsChanged: {
+            root.emoteSetIDsChanged(emoteSetIDs)
+        }
+
+        onDownloadComplete: {
+            console.log("inner download complete");
+            root.downloadComplete();
         }
     }
 }

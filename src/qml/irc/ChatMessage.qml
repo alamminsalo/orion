@@ -13,103 +13,256 @@
  */
 
 import QtQuick 2.0
+import QtQuick.Layouts 1.0
+import QtQuick.Controls 2.0
 import "../styles.js" as Styles
+import "../components"
 
 Item {
     id: root
     property string user
-    property string msg
+    property var msg
+    property bool isAction
+    property string jsonBadgeEntries
+    property string emoteDirPath
+    property bool isChannelNotice
+    property string systemMessage
     property int fontSize: Styles.titleFont.smaller
+    property var pmsg: JSON.parse(msg)
+    property var badgeEntries: JSON.parse(jsonBadgeEntries)
+    property var highlightOpacity: 1.0
+
+    property string channelNoticeBackgroundColor: "#444444"
+
+    property bool showUsernameLine: !isChannelNotice || !systemMessage || (pmsg && pmsg.length > 0)
+    property bool showSystemMessageLine: isChannelNotice && systemMessage != ""
+
+    property var visibleBadgeEntries: showUsernameLine? badgeEntries : []
 
     height: childrenRect.height
 
-    Component.onCompleted: {
-        var ACTION_PREFIX = "\u0001ACTION";
-        var ACTION_SUFFIX = "\u0001";
-
-        function startswith(s, a) {
-            return s.length >= a.length && s.substring(0, a.length) == a;
-        }
-
-        function endswith(s, a) {
-            return s.length >= a.length && s.substring(s.length - a.length) == a;
-        }
-
-        if (msg)
-        {
-            if (startswith(msg, ACTION_PREFIX) && endswith(msg, ACTION_SUFFIX)) {
-                var action = msg.substring(ACTION_PREFIX.length, msg.length - ACTION_SUFFIX.length);
-                _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a> %2</font>".arg(user).arg(action);
-            } else {
-                _text.text = "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (msg ? ": " : "");
-                parseMsg(msg)
-            }
-        }
-        else
-            _text.text = "<font color=\"#FFFFFF\"><b>%1</b></font>".arg(user) + (msg ? ": " : "")
-        _text.user = user
-    }
-
-    function parseMsg(msg) {
-
-        var mlist = msg.split(" ")
-        var textStr = ""
-
-        for (var i=0; i < mlist.length; i++) {
-            var str = mlist[i]
-
-            if (!str)
-                continue
-
-            textStr += "%1 ".arg(!isUrl(str) ? str : makeUrl(str))
-        }
-
-        _text.text += textStr.trim()
-
-        //console.log("Created text object: " + textStr)
-    }
-
     function makeUrl(str) {
-        var urlPattern = /\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+        var pref = "";
+        if (str.length && (str.charAt(0) === " ")) {
+            pref = "&nbsp;";
+            str = str.substring(1);
+        }
+
+        var urlPattern = / ?\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
         var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-        return str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
+        var out = pref + str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
+
+        //console.log("makeUrl", str, out);
+        return out;
     }
 
     function isUrl(str) {
-        return str.match(/^(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/)
+        var result = str.match(/^ ?(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/);
+        //console.log("isUrl", str, result);
+        return result
+    }
+
+    Rectangle {
+        anchors {
+            left: parent.left
+            right: parent.right
+            top: _systemMessageLine.top
+            bottom: _messageLineFlow.bottom
+        }
+
+        visible: isChannelNotice
+        color: root.channelNoticeBackgroundColor
+        opacity: root.highlightOpacity
     }
 
     Text {
-        id: _text
-        property string user: ""
+        id: _systemMessageLine
         anchors {
             left: parent.left
             right: parent.right
         }
+
+        visible: showSystemMessageLine
+        color: Styles.textColor
+        text: root.systemMessage
+        font.pixelSize: fontSize
+        wrapMode: Text.WordWrap
+
+        height: showSystemMessageLine? contentHeight : 0
+    }
+
+    CustomFlow {
+      id: _messageLineFlow
+      ySpacing: 1
+      anchors {
+          top: _systemMessageLine.bottom
+          left: parent.left
+          right: parent.right
+      }
+
+      vAlign: vAlignCenter
+
+      Repeater {
+        model: visibleBadgeEntries
+
+        Loader {
+          property var badgeEntry: visibleBadgeEntries[index]
+          sourceComponent: {
+            return badgeItem
+          }
+        }
+      }
+
+      Text {
+        id: userName
+        // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
+        visible: showUsernameLine
         verticalAlignment: Text.AlignVCenter
         color: Styles.textColor
         font.pixelSize: fontSize
-        linkColor: Styles.purple
-        wrapMode: Text.WordWrap
-        onLinkActivated: function(link)
-        {
-            if (link.substr(0,5) === "user:")
-            {
-                var value = "@"+link.replace('user:',"")+', '
-                if (_input.text === "")
-                {
-                    _input.text = value
-                }
-                else {
-                    _input.text = _input.text + ' '+ value
-                }
+        text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
+        onLinkActivated: userLinkActivation(link)
 
-            }
-            else
-            {
-                Qt.openUrlExternally(link)
-            }
+        height: showUsernameLine? contentHeight : 0
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            acceptedButtons: Qt.NoButton
         }
+      }
 
+      Repeater {
+        model: pmsg
+
+        Loader {
+          property var msgItem: pmsg[index]
+          sourceComponent: {
+            if(typeof pmsg[index] == "string") {
+              if (isUrl(pmsg[index])) {
+                return msgLink;
+              } else {
+                return msgText;
+              }
+            } else {
+              return imgThing;
+            }
+          }
+        }
+      }
+    }
+
+    property Component msgText: Component {
+      Text {
+        verticalAlignment: Text.AlignVCenter
+        color: isAction? chat.colors[user] : Styles.textColor
+        font.pixelSize: fontSize
+        text: msgItem
+        wrapMode: Text.WordWrap
+        textFormat: Text.PlainText
+      }
+    }
+    property Component msgLink: Component {
+      Text {
+        verticalAlignment: Text.AlignVCenter
+        color: isAction? chat.colors[user] : Styles.textColor
+        font.pixelSize: fontSize
+        text: makeUrl(msgItem)
+        textFormat: Text.RichText
+        wrapMode: Text.WordWrap
+        onLinkActivated: externalLinkActivation(link)
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            acceptedButtons: Qt.NoButton
+        }
+      }
+    }
+    property Component imgThing: Component {
+      MouseArea {
+          id: _emoteImgMouseArea
+          hoverEnabled: true
+          width: _emoteImg.width
+          height: _emoteImg.height
+          Image {
+            id: _emoteImg
+            // synchronous to simplify CustomFlow
+            Component.onCompleted: {
+              source = "image://emote/" + msgItem.emoteId.toString();
+            }
+
+            ToolTip {
+                visible: _emoteImgMouseArea.containsMouse && msgItem.emoteText != null
+                text: msgItem.emoteText
+            }
+          }
+      }
+    }
+
+    property Component badgeItem: Component {
+      MouseArea {
+          id: _badgeImgMouseArea
+          hoverEnabled: true
+          width: _badgeImg.width + dp(2)
+          height: _badgeImg.height
+          Image {
+            id: _badgeImg
+            // synchronous to simplify CustomFlow
+            Component.onCompleted: {
+              source = badgeEntry.url;
+            }
+
+            onStatusChanged: {
+                if (status == Image.Ready) {
+                    _messageLineFlow.updatePositions();
+                }
+            }
+
+            ToolTip {
+                visible: _badgeImgMouseArea.containsMouse && badgeEntry.name != null
+                text: badgeEntry.name
+            }
+          }
+
+          property bool clickable: badgeEntry.click_action == "visit_url"
+
+          cursorShape: clickable ? Qt.PointingHandCursor : Qt.ArrowCursor
+
+          onClicked: {
+              console.log("badge clicked, action", badgeEntry.click_action);
+              if (badgeEntry.click_action == "visit_url") {
+                  var link = badgeEntry.click_url;
+                  console.log("Launching url", link);
+                  Qt.openUrlExternally(link);
+              }
+          }
+      }
+    }
+
+    function userLinkActivation(link)
+    {
+        if (link.substr(0,5) === "user:")
+        {
+            var value = "@"+link.replace('user:',"")+', '
+            if (_input.text === "")
+            {
+                _input.text = value
+            }
+            else {
+                _input.text = _input.text + ' '+ value
+            }
+
+        }
+    }
+
+    function externalLinkActivation(link)
+    {
+        //console.log("externalLinkActivation", link, "passed");
+        if (link.substr(0,5) !== "user:")
+        {
+            //console.log("opening link")
+            Qt.openUrlExternally(link)
+        }
     }
 }

@@ -71,6 +71,13 @@ protected:
      */
     ChannelListModel *createFollowedChannelsModel();
 
+    bool haveEmoteSets;
+    QList<int> lastRequestedEmoteSetIDs;
+
+    QMap<int, QMap<int, QString>> lastEmoteSets;
+    QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
+    QMap<QString, QMap<QString, QMap<QString, QMap<QString, QString>>>> channelBadgeBetaUrls;
+
 public:
     ChannelManager(NetworkManager *netman);
     ~ChannelManager();
@@ -118,6 +125,10 @@ public:
     Q_INVOKABLE bool isMinimizeOnStartup() const;
     Q_INVOKABLE void setMinimizeOnStartup(bool value);
 
+    Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
+    Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
+    Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
+
     void setSwapChat(bool value);
     bool getSwapChat();
 
@@ -142,6 +153,9 @@ signals:
     void accessTokenUpdated();
     void userNameUpdated(const QString name);
     void login(const QString &username, const QString &password);
+    void emoteSetsLoaded(QVariantMap emoteSets);
+    void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
+    void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
 
 public slots:
     void checkFavourites();
@@ -163,6 +177,10 @@ private slots:
     void updateStreams(const QList<Channel*>&);
     void addGames(const QList<Game*>&);
     void onUserNameUpdated(const QString &name);
+    void onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>);
+    void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
+    void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
+    void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
 };

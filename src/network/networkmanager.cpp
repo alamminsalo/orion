@@ -335,6 +335,79 @@ void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset,
     connect(reply, SIGNAL(finished()), this, SLOT(favouritesReply()));
 }
 
+void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs) {
+    QList<QString> emoteSetsIDsStr;
+    for (auto id : emoteSetIDs) {
+        emoteSetsIDsStr.append(QString::number(id));
+    }
+
+    QString url = QString(KRAKEN_API) + "/chat/emoticon_images"
+        + QString("?emotesets=") + emoteSetsIDsStr.join(',');
+    QString auth = "OAuth " + access_token;
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(emoteSetsReply()));
+}
+
+const QString CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
+const QString CHANNEL_BADGES_URL_SUFFIX = "/badges";
+
+void NetworkManager::getChannelBadgeUrls(const QString &access_token, const QString &channel) {
+    QString url = CHANNEL_BADGES_URL_PREFIX + channel + CHANNEL_BADGES_URL_SUFFIX;
+    QString auth = "OAuth " + access_token;
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(channelBadgeUrlsReply()));
+}
+
+const QString CHANNEL_BADGES_BETA_URL_PREFIX = "https://badges.twitch.tv/v1/badges/channels/";
+const QString CHANNEL_BADGES_BETA_URL_SUFFIX = "/display?language=en";
+const QString GLOBAL_BADGES_BETA_URL = "https://badges.twitch.tv/v1/badges/global/display?language=en";
+
+void NetworkManager::getChannelBadgeUrlsBeta(const int channelID) {
+    QString url = CHANNEL_BADGES_BETA_URL_PREFIX + QString::number(channelID) + CHANNEL_BADGES_BETA_URL_SUFFIX;
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(channelBadgeUrlsBetaReply()));
+}
+
+void NetworkManager::getGlobalBadgesUrlsBeta() {
+    QString url = GLOBAL_BADGES_BETA_URL;
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(globalBadgeUrlsBetaReply()));
+}
+
 void NetworkManager::editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add)
 {
     QString url = QString(KRAKEN_API) + "/users/" + user
@@ -648,3 +721,95 @@ void NetworkManager::userReply()
 
     reply->deleteLater();
 }
+
+void NetworkManager::emoteSetsReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+    
+    emit getEmoteSetsOperationFinished(JsonParser::parseEmoteSets(data));
+
+    reply->deleteLater();
+}
+
+void NetworkManager::channelBadgeUrlsReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QString urlString = reply->url().toString();
+
+    qDebug() << "url was" << urlString;
+
+    if (urlString.startsWith(CHANNEL_BADGES_URL_PREFIX) && urlString.endsWith(CHANNEL_BADGES_URL_SUFFIX)) {
+        QString channel = urlString.mid(CHANNEL_BADGES_URL_PREFIX.length(), urlString.length() - CHANNEL_BADGES_URL_PREFIX.length() - CHANNEL_BADGES_URL_SUFFIX.length());
+        qDebug() << "badges for channel" << channel << "loaded";
+        auto badges = JsonParser::parseChannelBadgeUrls(data);
+
+        emit getChannelBadgeUrlsOperationFinished(channel, badges);
+    }
+    else {
+        qDebug() << "can't determine channel from badges request url";
+    }
+
+
+    reply->deleteLater();
+}
+
+void NetworkManager::channelBadgeUrlsBetaReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QString urlString = reply->url().toString();
+
+    qDebug() << "url was" << urlString;
+
+    if (urlString.startsWith(CHANNEL_BADGES_BETA_URL_PREFIX) && urlString.endsWith(CHANNEL_BADGES_BETA_URL_SUFFIX)) {
+        QString channelIDStr = urlString.mid(CHANNEL_BADGES_BETA_URL_PREFIX.length(), urlString.length() - CHANNEL_BADGES_BETA_URL_PREFIX.length() - CHANNEL_BADGES_BETA_URL_SUFFIX.length());
+        int channelID = channelIDStr.toInt();
+        qDebug() << "beta badges for channel" << channelID << "loaded";
+        auto badges = JsonParser::parseBadgeUrlsBetaFormat(data);
+
+        emit getChannelBadgeBetaUrlsOperationFinished(channelID, badges);
+    }
+    else {
+        qDebug() << "can't determine channel from badges request url";
+    }
+
+    reply->deleteLater();
+}
+
+void NetworkManager::globalBadgeUrlsBetaReply()
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QString urlString = reply->url().toString();
+
+    qDebug() << "url was" << urlString;
+
+    qDebug() << "global beta badges loaded";
+    auto badges = JsonParser::parseBadgeUrlsBetaFormat(data);
+
+    emit getGlobalBadgeBetaUrlsOperationFinished(badges);
+
+    reply->deleteLater();
+}
+

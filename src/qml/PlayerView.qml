@@ -187,7 +187,7 @@ Item {
         _favIcon.update()
         _label.visible = false
         setWatchingTitle()
-        chatview.joinChannel(currentChannel.name)
+        chatview.joinChannel(currentChannel.name, currentChannel._id)
         pollTimer.restart()
 
         requestSelectionChange(5)
@@ -794,6 +794,7 @@ Item {
         }
 
         width: visible && !smallMode ? dp(250) : 0
+        chatWidth: dp(250)
 
         Behavior on width {
             NumberAnimation {

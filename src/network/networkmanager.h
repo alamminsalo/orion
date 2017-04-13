@@ -70,6 +70,10 @@ public:
     void getUser(const QString &access_token);
     void getUserFavourites(const QString &user_name, quint32 offset, quint32 limit);
     void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
+    void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
+    void getChannelBadgeUrls(const QString &access_token, const QString &channel);
+    void getChannelBadgeUrlsBeta(const int channelID);
+    void getGlobalBadgesUrlsBeta();
 
     QNetworkAccessManager *getManager() const;
 
@@ -97,6 +101,10 @@ signals:
     //oauth
     void userNameOperationFinished(const QString&);
     void userEditFollowsOperationFinished();
+    void getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>);
+    void getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>);
+    void getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>);
+    void getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>);
 
     void networkAccessChanged(bool up);
 
@@ -120,6 +128,10 @@ private slots:
 
     //Oauth slots
     void userReply();
+    void emoteSetsReply();
+    void channelBadgeUrlsReply();
+    void channelBadgeUrlsBetaReply();
+    void globalBadgeUrlsBetaReply();
 
 private:
     QNetworkAccessManager *operation;

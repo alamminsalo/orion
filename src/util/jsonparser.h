@@ -49,6 +49,9 @@ public:
     static QString parseVodExtractionInfo(const QByteArray&);
     static QString parseUserName(const QByteArray&);
     static int parseTotal(const QByteArray&);
+    static QMap<int, QMap<int, QString>> parseEmoteSets(const QByteArray&);
+    static QMap<QString, QMap<QString, QString>> parseChannelBadgeUrls(const QByteArray &data);
+    static QMap<QString, QMap<QString, QMap<QString, QString>>> parseBadgeUrlsBetaFormat(const QByteArray &data);
 };
 
 #endif // JSONPARSER_H
