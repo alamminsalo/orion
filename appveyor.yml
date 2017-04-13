@@ -1,4 +1,7 @@
 environment:
+  # This configuration depends on the mpv-player-windows project's libmpv build snapshots on sourceforge.
+  # As they do not keep old snapshots around, this will need to be bumped occasionally.
+  libmpv_version: 20170401-git-1d2910af9
 
   matrix:
     - platform: x86
@@ -11,7 +14,6 @@ environment:
       configuration: debug
 
 install:
-  - set libmpv_version=20170401-git-1d2910af9
   - if %platform%==x86 set mpv_platform=i686
   - if %platform%==x64 set mpv_platform=x86_64
   - if %platform%==x86 set MPVDIR=c:\mpv_x86
