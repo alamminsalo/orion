@@ -1,8 +1,4 @@
 environment:
-  # This configuration depends on the mpv-player-windows project's libmpv build snapshots on sourceforge.
-  # As they do not keep old snapshots around, this will need to be bumped occasionally.
-  libmpv_version: 20170401-git-1d2910af9
-
   matrix:
     - platform: x86
       configuration: release
@@ -19,7 +15,15 @@ install:
   - if %platform%==x86 set MPVDIR=c:\mpv_x86
   - if %platform%==x64 set MPVDIR=c:\mpv_x64
   - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
-  - ps: if (!(Test-Path "${env:mpvdir}\mpv-dev-${env:platform}.7z")) { Start-FileDownload "https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/mpv-dev-${env:mpv_platform}-${env:libmpv_version}.7z" -FileName "${env:mpvdir}\mpv-dev-${env:platform}.7z" }
+  - ps: |
+      if (!(Test-Path "${env:mpvdir}\mpv-dev-${env:platform}.7z")) {
+         $libmpv_downloads_page = Invoke-WebRequest "https://sourceforge.net/projects/mpv-player-windows/files/libmpv/"
+         $libmpv_download_filename = $libmpv_downloads_page.AllElements | Where {$_.Class -eq "file " -and $_.title -like "mpv-dev-${env:mpv_platform}-*.7z"} | sort -Property title -Descending | select -First 1 -ExpandProperty title
+         echo "Downloading ${libmpv_download_filename} to mpv-dev-${env:platform}.7z"
+         $libmpv_download_filename | Out-File "${env:mpvdir}\version.txt"
+         Start-FileDownload "https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/${libmpv_download_filename}" -FileName "${env:mpvdir}\mpv-dev-${env:platform}.7z" 
+      }
+  - type %MPV_DIR%\version.txt
   - if %platform%==x86 set QTDIR=C:\Qt\5.8\msvc2015
   - if %platform%==x64 set QTDIR=C:\Qt\5.8\msvc2015_64
   - if %platform%==x86 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
@@ -35,7 +39,9 @@ install:
 
 cache:
   - c:\mpv_x86\mpv-dev-x86.7z -> appveyor.yml
+  - c:\mpv_x86\version.txt -> appveyor.yml
   - c:\mpv_x64\mpv-dev-x64.7z -> appveyor.yml
+  - c:\mpv_x64\version.txt -> appveyor.yml
 
 build_script:
 - cmd: >-
