@@ -213,6 +213,9 @@ Item {
               source = badgeEntry.url;
             }
 
+            width: sourceSize.width/badgeEntry.devicePixelRatio
+            height: sourceSize.height/badgeEntry.devicePixelRatio
+
             onStatusChanged: {
                 if (status == Image.Ready) {
                     _messageLineFlow.updatePositions();

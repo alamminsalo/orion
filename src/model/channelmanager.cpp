@@ -29,7 +29,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
     /** Resolve a key with just a badge name and version, specific to the current room, to a globally unique key for an official API or beta API badge */
     QString url;
 
-    const QString betaImageFormat = "image_url_1x";
+    const QString betaImageFormat = "image_url_2x";
     const QString officialImageFormat = "image";
 
     int splitPos = key.indexOf("-");

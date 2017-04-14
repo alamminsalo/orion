@@ -36,3 +36,7 @@ function getTime(totalSec){
 
     return result
 }
+
+function endsWith(s, suffix) {
+    return s.length >= suffix.length && s.substring(s.length - suffix.length) === suffix;
+}
