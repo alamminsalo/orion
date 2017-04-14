@@ -34,6 +34,7 @@
 #include <QQuickImageProvider>
 //#include "messagelistmodel.h"
 //#include "message.h"
+#include "imageprovider.h"
 
 const qint16 PORT = 6667;
 const QString HOST = "irc.twitch.tv";
@@ -53,34 +54,6 @@ struct ChatMessage {
     QString systemMessage;
 };
 
-// Handles state for an individual download
-class DownloadHandler : public QObject
-{
-    Q_OBJECT
-public:
-    DownloadHandler(QString filename);
-private:
-    QString filename;
-    QFile _file;
-    bool hadError;
-
-signals:
-    void downloadComplete(QString filename, bool hadError);
-
-public slots:
-    void dataAvailable();
-    void replyFinished();
-    void error(QNetworkReply::NetworkError code);
-};
-
-class CachedImageProvider : public QQuickImageProvider {
-public:
-    CachedImageProvider(QHash<QString, QImage*> & imageTable);
-    QImage requestImage(const QString &id, QSize * size, const QSize & requestedSize);
-private:
-    QHash<QString, QImage*> & imageTable;
-};
-
 // Backend for chat
 class IrcChat : public QObject
 {
@@ -94,7 +67,6 @@ public:
     Q_PROPERTY(bool anonymous READ anonymous WRITE setAnonymous NOTIFY anonymousChanged)
     Q_PROPERTY(bool connected READ connected NOTIFY connectedChanged)
     Q_PROPERTY(bool inRoom READ inRoom)
-    Q_PROPERTY(QHash<QString, QImage*> emoteTable READ emoteTable NOTIFY emoteTableChanged)
     Q_PROPERTY(QString emoteDirPath MEMBER emoteDirPathImpl)
     Q_PROPERTY(QList<int> emoteSetIDs READ emoteSetIDs NOTIFY emoteSetIDsChanged)
 
@@ -120,10 +92,6 @@ public:
     //emote download
     QDir emoteDir;
     QString emoteDirPathImpl;
-    bool downloadEmotes(QString);
-    QHash<QString, QImage*> emoteTable();
-    QSet<QString> emotesCurrentlyDownloading;
-    void loadEmoteImageFile(QString key, QString filename);
     QList<int> _emoteSetIDs;
     QList<int> emoteSetIDs();
 
@@ -137,9 +105,7 @@ signals:
     void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage);
     void noticeReceived(QString message);
     void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
-    void emoteTableChanged();
 
-    //emotes
     void downloadComplete();
     bool downloadError();
     
@@ -147,20 +113,18 @@ public slots:
     void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);
     void onSockStateChanged();
     void login();
-    void individualDownloadComplete(QString filename, bool hadError);
-    bool bulkDownloadEmotes(QList<QString> emoteIDs);
+
+    bool bulkDownloadEmotes(QList<QString> keys);
 
 private slots:
     void createConnection();
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
+    void handleDownloadComplete();
 
 private:
-    //some kind of emote table
-    //downloader for emotes
-    QNetworkAccessManager _manager;
+    ImageProvider _emoteProvider;
     
-    QHash<QString, QImage*> _emoteTable;
     QList<ChatMessage> msgQueue;
 
     void parseCommand(QString cmd);
@@ -173,15 +137,15 @@ private:
     // map of channel name -> list of pairs (badge name, badge version)
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
-    int activeDownloadCount;
     void disposeOfMessage(ChatMessage m);
-    bool makeEmoteAvailable(QString key);
     QVariantList substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes);
     bool addBadges(QVariantList & badges, const QString channel);
+    void makeBadgeAvailable(const QString badgeName, const QString version);
     QString userGlobalColor;
     QMap<QString, QString> userChannelColors;
     QMap<QString, bool> userChannelMod;
     QMap<QString, bool> userChannelSubscriber;
+    bool allDownloadsComplete();
 };
 
 #endif // IRCCHAT_H
