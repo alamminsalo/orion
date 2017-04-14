@@ -30,12 +30,12 @@
 #include <QImage>
 
 const QString IMAGE_PROVIDER_EMOTE = "emote";
-const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
+const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
 const QString IMAGE_PROVIDER_BADGE_OFFICIAL = "";
 
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
-    _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes"),
+    _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes_2x"),
     _badgeProvider(nullptr)
     {
 

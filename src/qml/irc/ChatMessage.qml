@@ -187,6 +187,10 @@ Item {
           height: _emoteImg.height
           Image {
             id: _emoteImg
+
+            width: sourceSize.width/2.0
+            height: sourceSize.height/2.0
+
             // synchronous to simplify CustomFlow
             Component.onCompleted: {
               source = "image://emote/" + msgItem.emoteId.toString();

@@ -208,6 +208,8 @@ Item {
         visible: false
         height: 0
 
+        devicePixelRatio: 2.0
+
         onVisibleChanged: {
             if (visible) {
                 height = dp(320);

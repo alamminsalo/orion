@@ -23,6 +23,8 @@ Rectangle {
     property bool loading: false
     property string filterTextProperty
 
+    property real devicePixelRatio: 1.0
+
     property ListModel model
     property ListModel _innerModel
     property ListModel _filteredModel: ListModel {}
@@ -199,8 +201,11 @@ Rectangle {
                     id: _itemImage
                     source: model.imageUrl
                     anchors.fill: parent
-                    fillMode: Image.Pad
+                    fillMode: Image.PreserveAspectFit
                     //asynchronous: true
+
+                    width: sourceSize.width / root.devicePixelRatio
+                    height: sourceSize.height / root.devicePixelRatio
                 }
 
                 /*
