@@ -414,19 +414,48 @@ QMap<int, QPair<int, int>> IrcChat::parseEmotesTag(const QString emotes) {
     return emotePositionsMap;
 }
 
+class UnicodeCharacterCounter {
+public:
+    UnicodeCharacterCounter(const QString s) : s(s) { }
+    int toUtf16Offset(int unicodeOffset) {
+        if (unicodeOffset < curUnicodeOffset) {
+            curUnicodeOffset = 0;
+            curQStringOffset = 0;
+        }
+        
+        while (curUnicodeOffset < unicodeOffset) {
+            if (curQStringOffset >= s.length()) return s.length();
+            const QChar ch = s.at(curQStringOffset++);
+            if ((0xd800 <= ch) && (ch <= 0xdbff)) {
+                if (curQStringOffset >= s.length()) return s.length();
+                curQStringOffset++; // consume another QString char
+            }
+            curUnicodeOffset++;
+        }
+
+        return curQStringOffset;
+    }
+private:
+    int curUnicodeOffset = 0;
+    int curQStringOffset = 0;
+    const QString s;
+};
+
 void IrcChat::createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message) {
     // cut up message into an ordered list of text fragments and emotes
     int cur = 0;
+    UnicodeCharacterCounter counter(message);
     for (auto i = emotePositionsMap.constBegin(); i != emotePositionsMap.constEnd(); i++) {
-        auto emoteStart = i.key();
+        auto emoteStart = counter.toUtf16Offset(i.key());
         if (emoteStart > cur) {
             addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
         }
-        auto emoteEnd = i.value().first;
+        auto emoteFinalUnicode = i.value().first;
+        auto emoteAfterEnd = counter.toUtf16Offset(emoteFinalUnicode + 1);
         auto emoteId = i.value().second;
-        QString emoteText = message.mid(emoteStart, emoteEnd - emoteStart + 1);
+        QString emoteText = message.mid(emoteStart, emoteAfterEnd - emoteStart);
         messageList.append(createEmoteEntry(emoteId, emoteText));
-        cur = emoteEnd + 1;
+        cur = emoteAfterEnd;
     }
     if (cur < message.length()) {
         addWordSplit(message.mid(cur, message.length() - cur), ' ', messageList);
