@@ -41,11 +41,11 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
         if (_channelManager->getChannelBadgeBetaUrl(_channelId, badge, version, betaImageFormat, url)) {
             return QList<QString>({ _channelId, badge, version, betaImageFormat }).join("-");
         }
-        if (_channelManager->getChannelBadgeUrl(_channelName, badge, officialImageFormat, url)) {
-            return QList<QString>({ _channelName, badge, officialImageFormat }).join("-");
-        }
         if (_channelManager->getChannelBadgeBetaUrl("GLOBAL", badge, version, betaImageFormat, url)) {
             return QList<QString>({ "GLOBAL", badge, version, betaImageFormat }).join("-");
+        }
+        if (_channelManager->getChannelBadgeUrl(_channelName, badge, officialImageFormat, url)) {
+            return QList<QString>({ _channelName, badge, officialImageFormat }).join("-");
         }
         if (_channelManager->getChannelBadgeUrl("GLOBAL", badge, officialImageFormat, url)) {
             return QList<QString>({ "GLOBAL", badge, officialImageFormat }).join("-");
