@@ -325,6 +325,8 @@ Item {
 
                 property bool pickerLoaded: false
 
+                visible: root.width > 0
+
                 width: dp(38)
 
                 anchors {
