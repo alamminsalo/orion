@@ -18,12 +18,16 @@
 #include <QtGlobal>
 #include <QDebug>
 #include <QNetworkRequest>
+#include <QStandardPaths>
 #include "imageprovider.h"
 
-ImageProvider::ImageProvider(const QString imageProviderName, const QString urlFormat, const QDir cacheDir, const QString extension) : 
-    _imageProviderName(imageProviderName), _urlFormat(urlFormat), _cacheDir(cacheDir), _extension(extension) {
+ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
+    _imageProviderName(imageProviderName), _extension(extension) {
 
     activeDownloadCount = 0;
+
+    QString useCacheDirName = cacheDirName != "" ? cacheDirName : imageProviderName;
+    _cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QString("/" + useCacheDirName);
 }
 
 ImageProvider::~ImageProvider() {
@@ -31,8 +35,8 @@ ImageProvider::~ImageProvider() {
 }
 
 bool ImageProvider::makeAvailable(QString key) {
-    /* Make emote available by downloading it or loading it from cache if not already loaded.
-    * Returns true if caller should wait for a downloadComplete event before using the emote */
+    key = getCanonicalKey(key);
+
     if (currentlyDownloading.contains(key)) {
         // download of this emote in progress
         return true;
@@ -55,7 +59,7 @@ bool ImageProvider::download(QString key) {
         return false;
     }
 
-    QUrl url = _urlFormat.arg(key);
+    const QUrl url = getUrlForKey(key);
     _cacheDir.mkpath(".");
 
     QString filename = _cacheDir.absoluteFilePath(key + _extension);
@@ -138,6 +142,21 @@ QQmlImageProviderBase * ImageProvider::getQMLImageProvider() {
 
 bool ImageProvider::downloadsInProgress() {
     return activeDownloadCount > 0;
+}
+
+
+URLFormatImageProvider::URLFormatImageProvider(const QString imageProviderName, const QString urlFormat, const QString extension, const QString cacheDir) :
+    ImageProvider(imageProviderName, extension, cacheDir), _urlFormat(urlFormat)
+{
+
+}
+
+const QUrl URLFormatImageProvider::getUrlForKey(QString & key) {
+    return _urlFormat.arg(key);
+}
+
+QString ImageProvider::getCanonicalKey(const QString key) {
+    return key;
 }
 
 // DownloadHandler

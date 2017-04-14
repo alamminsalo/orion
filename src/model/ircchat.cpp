@@ -31,9 +31,13 @@
 
 const QString IMAGE_PROVIDER_EMOTE = "emote";
 const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
+const QString IMAGE_PROVIDER_BADGE_OFFICIAL = "";
 
 IrcChat::IrcChat(QObject *parent) :
-    QObject(parent), _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QString("/emotes"), ".png") {
+    QObject(parent),
+    _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes"),
+    _badgeProvider(nullptr)
+    {
 
     logged_in = false;
 
@@ -54,7 +58,7 @@ IrcChat::IrcChat(QObject *parent) :
 
     room = "";
 
-	emoteDirPathImpl = "image://" + IMAGE_PROVIDER_EMOTE;
+	emoteDirPathImpl = _emoteProvider.getBaseUrl();
 }
 
 void IrcChat::initProviders() {
@@ -64,19 +68,44 @@ void IrcChat::initProviders() {
 
 void IrcChat::RegisterEngineProviders(QQmlEngine & engine) {
 	engine.addImageProvider(IMAGE_PROVIDER_EMOTE, _emoteProvider.getQMLImageProvider());
+    if (_badgeProvider) {
+        engine.addImageProvider(_badgeProvider->getImageProviderName(), _badgeProvider->getQMLImageProvider());
+    }
+    else {
+        qDebug() << "couldn't hook up badge provider as it was not available";
+    }
 }
+
+void IrcChat::hookupChannelProviders(ChannelManager * cman) {
+    if (cman) {
+        _badgeProvider = cman->getBadgeImageProvider();
+        connect(_badgeProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+    }
+    else {
+        qDebug() << "hookupChannelProviders got null";
+    }
+}
+
+void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
+void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
 
 IrcChat::~IrcChat() {
     disconnect();
 }
 
-void IrcChat::join(const QString channel) {
+void IrcChat::join(const QString channel, const QString channelId) {
 
     if (inRoom())
         leave();
 
     // Save channel name for later use
     room = channel;
+    roomChannelId = channelId;
+
+    if (_badgeProvider) {
+        _badgeProvider->setChannelName(channel);
+        _badgeProvider->setChannelId(channelId);
+    }
 
     if (!connected()) {
         reopenSocket();
@@ -176,6 +205,25 @@ void removeVariantListPairByFirstValue(QVariantList list, const QVariant value) 
     }
 }
 
+void IrcChat::makeBadgeAvailable(const QString badgeName, const QString version) {
+    if (_badgeProvider) {
+        _badgeProvider->makeAvailable(badgeName + "-" + version);
+    }
+    else {
+        qDebug() << "can't make badge" << badgeName << version << "available because there is no _badgeProvider";
+    }
+}
+
+QString IrcChat::getBadgeLocalUrl(QString key) {
+    if (_badgeProvider) {
+        return _badgeProvider->getBaseUrl() + "/" + _badgeProvider->getCanonicalKey(key);
+    }
+    else {
+        qDebug() << "can't get badge url because there is no _badgeProvider";
+        return "";
+    }
+}
+
 bool IrcChat::addBadges(QVariantList &badges, QString channel) {
     qDebug() << "addBadges" << channel;
     auto channelEntry = badgesByChannel.find(channel);
@@ -184,7 +232,10 @@ bool IrcChat::addBadges(QVariantList &badges, QString channel) {
         for (auto badge = curBadges.constBegin(); badge != curBadges.constEnd(); badge++) {
             qDebug() << "badge" << channel << badge->first << badge->second;
             removeVariantListPairByFirstValue(badges, badge->first);
-            badges.push_back(QVariantList({ badge->first, badge->second }));
+            const QString badgeName = badge->first;
+            const QString badgeVersion = badge->second;
+            makeBadgeAvailable(badgeName, badgeVersion);
+            badges.push_back(QVariantList({ badgeName, badgeVersion }));
         }
         return true;
     }
@@ -285,7 +336,7 @@ void IrcChat::login()
 
     //Join room automatically, if given
     if (!room.isEmpty())
-        join(room);
+        join(room, roomChannelId);
 }
 
 void IrcChat::receive() {
@@ -330,11 +381,11 @@ void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & 
 }
 
 bool IrcChat::allDownloadsComplete() {
-    return !_emoteProvider.downloadsInProgress();
+    return !_emoteProvider.downloadsInProgress() && _badgeProvider && !_badgeProvider->downloadsInProgress();
 }
 
 void IrcChat::disposeOfMessage(ChatMessage m) {
-    if (!_emoteProvider.downloadsInProgress()) {
+    if (allDownloadsComplete()) {
         emit messageReceived(m.name, m.messageList, m.color, m.subscriber, m.turbo, m.mod, m.isAction, m.badges, m.isChannelNotice, m.systemMessage);
     }
     else {
@@ -427,23 +478,8 @@ void IrcChat::createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePos
     }
 }
 
-struct CommandParse {
-    ChatMessage chatMessage;
-    QString params;
-    bool haveMessage;
-    QString message;
-    QList<QString> tags;
-    QString emotesStr;
-};
-
-void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse) {
+void IrcChat::parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse) {
     QString displayName = "";
-    /*
-    QString color = "";
-    bool subscriber = false;
-    bool turbo = false;
-    bool mod = false;
-    */
 
     QString & emotesStr = commandParse.emotesStr;
     emotesStr = "";
@@ -477,6 +513,7 @@ void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandPar
             QList<QPair<QString, QString>> badgesMap = parseBadges(tag.value);
 
             for (auto entry = badgesMap.constBegin(); entry != badgesMap.constEnd(); entry++) {
+                makeBadgeAvailable(entry->first, entry->second);
                 chatMessage.badges.push_back(QVariantList({ entry->first, entry->second }));
             }
         }

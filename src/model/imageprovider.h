@@ -59,11 +59,13 @@ private:
 class ImageProvider : public QObject {
     Q_OBJECT
 public:
-    ImageProvider(const QString imageProviderName, const QString urlFormat, const QDir cacheDir, const QString extension);
+    ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName = "");
     ~ImageProvider();
 
     QString getImageProviderName() { return _imageProviderName;  }
     QString getBaseUrl() { return "image://" + _imageProviderName; }
+    /* Make emote available by downloading it or loading it from cache if not already loaded.
+    * Returns true if caller should wait for a downloadComplete event before using the emote */
     bool makeAvailable(QString key);
     bool download(QString key);
     bool downloadsInProgress();
@@ -72,6 +74,10 @@ public:
     void loadImageFile(QString key, QString filename);
 
     QQmlImageProviderBase * getQMLImageProvider();
+    /** Take an image key specific to the current context (e.g. channel), and determine a 
+    service-wide unique key that we can use as an image provider key and cache filename */
+    virtual QString getCanonicalKey(QString key);
+
 signals:
     void downloadComplete();
 
@@ -79,16 +85,27 @@ public slots:
     bool bulkDownload(QList<QString> keys);
     void individualDownloadComplete(QString filename, bool hadError);
 
+protected:
+    virtual const QUrl getUrlForKey(QString & key) = 0;
+
 private:
     QNetworkAccessManager _manager;
 
     QHash<QString, QImage*> _imageTable;
     QString _imageProviderName;
-    QString _urlFormat;
     QDir _cacheDir;
     int activeDownloadCount;
     QString _extension;
     QSet<QString> currentlyDownloading;
+};
+
+class URLFormatImageProvider : public ImageProvider {
+public:
+    URLFormatImageProvider(const QString imageProviderName, const QString urlFormat, const QString extension, const QString cacheDirName = "");
+protected:
+    virtual const QUrl getUrlForKey(QString & key);
+private:
+    QString _urlFormat;
 };
 
 #endif

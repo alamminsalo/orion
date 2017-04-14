@@ -35,6 +35,7 @@
 //#include "messagelistmodel.h"
 //#include "message.h"
 #include "imageprovider.h"
+#include "channelmanager.h"
 
 const qint16 PORT = 6667;
 const QString HOST = "irc.twitch.tv";
@@ -70,11 +71,13 @@ public:
     Q_PROPERTY(QString emoteDirPath MEMBER emoteDirPathImpl)
     Q_PROPERTY(QList<int> emoteSetIDs READ emoteSetIDs NOTIFY emoteSetIDsChanged)
 
-    Q_INVOKABLE void join(const QString channel);
+    Q_INVOKABLE void join(const QString channel, const QString channelId);
     Q_INVOKABLE void leave();
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void reopenSocket();
     Q_INVOKABLE void initProviders();
+    Q_INVOKABLE void hookupChannelProviders(ChannelManager * cman);
+    Q_INVOKABLE QString getBadgeLocalUrl(QString key);
 
     //# User
     QString username, userpass;
@@ -123,17 +126,30 @@ private slots:
     void handleDownloadComplete();
 
 private:
-    ImageProvider _emoteProvider;
+    URLFormatImageProvider _emoteProvider;
+    BadgeImageProvider * _badgeProvider;
     
     QList<ChatMessage> msgQueue;
 
     void parseCommand(QString cmd);
+
+    struct CommandParse {
+        ChatMessage chatMessage;
+        QString params;
+        bool haveMessage;
+        QString message;
+        QList<QString> tags;
+        QString emotesStr;
+    };
+
+    void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse);
     QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
     void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
     QString room;
+    QString roomChannelId;
     // map of channel name -> list of pairs (badge name, badge version)
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
