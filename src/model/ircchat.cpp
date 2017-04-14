@@ -28,6 +28,7 @@
 #include <QDir>
 #include <QStandardPaths>
 #include <QImage>
+#include <qqml.h>
 
 const QString IMAGE_PROVIDER_EMOTE = "emote";
 const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
