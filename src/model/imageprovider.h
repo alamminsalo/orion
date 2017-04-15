@@ -15,12 +15,13 @@
 #ifndef IMAGEPROVIDER_H
 #define IMAGEPROVIDER_H
 
+#include <QObject>
+#include <QSaveFile>
 #include <QString>
 #include <QDir>
 #include <QHash>
 #include <QImage>
 #include <QSet>
-#include <QObject>
 #include <QQuickImageProvider>
 #include <QNetworkReply>
 
@@ -33,7 +34,7 @@ public:
 private:
     const QString filename;
     const QString key;
-    QFile _file;
+    QSaveFile _file;
     bool hadError;
 
 signals:
