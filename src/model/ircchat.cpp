@@ -100,6 +100,7 @@ void IrcChat::join(const QString channel) {
 
 void IrcChat::leave()
 {
+    msgQueue.clear();
     sock->write(("PART #" + room + "\r\n").toStdString().c_str());
     room = "";
 }
