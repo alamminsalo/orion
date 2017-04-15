@@ -164,6 +164,19 @@ private:
     QList<ChatMessage> msgQueue;
 
     void parseCommand(QString cmd);
+
+    struct CommandParse {
+        QString channel;
+        bool wrongChannel;
+        ChatMessage chatMessage;
+        QString params;
+        bool haveMessage;
+        QString message;
+        QList<QString> tags;
+        QString emotesStr;
+    };
+
+    void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse);
     QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
     void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
