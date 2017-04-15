@@ -183,7 +183,7 @@ void DownloadHandler::replyFinished() {
     QNetworkReply* _reply = qobject_cast<QNetworkReply*>(sender());
     if (_reply) {
         _reply->deleteLater();
-        _file.close();
+        _file.commit();
         //qDebug() << _file.fileName();
         //might need something for windows for the forwardslash..
         qDebug() << "download of" << _file.fileName() << "complete";
