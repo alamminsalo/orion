@@ -20,8 +20,9 @@ GridView {
     property bool tooltipEnabled: false
     property string title
 
-    signal itemClicked(int index)
-    signal itemRightClicked(int index)
+    signal itemClicked(int index, Item clickedItem)
+    signal itemRightClicked(int index, Item clickedItem)
+    signal itemTooltipHover(int index, real mX, real mY)
 
     id: root
 
@@ -100,7 +101,8 @@ GridView {
 
         Timer {
             id: tooltipTimer
-            interval: 800
+            // this is longer than the 800ms QML press and hold time so that a press and hold will take precedence
+            interval: 900
             running: false
             repeat: false
             onTriggered: {
@@ -113,40 +115,38 @@ GridView {
 
                     var index = root.indexAt(mX + root.contentX, mY + root.contentY)
 
-                    if (mArea.containsMouse && selectedItem && selectedItem.online){
-
-                        g_tooltip.text = ""
-
-                        if (selectedItem.game){
-                            g_tooltip.text += "Playing <b>" + selectedItem.game + "</b>"
-                        } else if (selectedItem.title){
-                            g_tooltip.text += selectedItem.title
-                        }
-
-                        if (selectedItem.viewers){
-                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                            g_tooltip.text += selectedItem.viewers + " viewers"
-                        }
-
-                        if (selectedItem.info){
-                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                            g_tooltip.text += selectedItem.info
-                        }
-
-                        g_tooltip.img = selectedItem.preview
-                        g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
+                    if (mArea.containsMouse && selectedItem){
+                        root.itemTooltipHover(index, mX, mY);
                     }
                 }
             }
         }
 
         onClicked: {
-            if (currentItem){
+            // Note that click/press doesn't necessarily set grid's current item so we shouldn't use currentIndex
+            // TODO: rework this if something better than a single-point click solution is available for touchscreens
+            var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
+            if (clickedIndex !== -1){
+                var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
                 if (mouse.button === Qt.LeftButton)
-                    itemClicked(currentIndex)
+                    itemClicked(clickedIndex, clickedItem)
                 else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(currentIndex)
+                    itemRightClicked(clickedIndex, clickedItem)
                 }
+            }
+        }
+
+        onPressed: {
+            //console.log("pressed");
+            tooltipTimer.restart();
+        }
+
+        onPressAndHold: {
+            //console.log("pressed and held");
+            var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
+            if (clickedIndex !== -1){
+                var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
+                itemRightClicked(clickedIndex, clickedItem);
             }
         }
     }
