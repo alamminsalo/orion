@@ -729,6 +729,8 @@ Item {
 
                 var curBadgeAdded = false;
 
+                var badgeLocalUrl = chat.getBadgeLocalUrl(badgeName + "-" + versionStr);
+
                 var badgeSetData = lastBetaBadgeSetData[badgeName];
                 if (badgeSetData != null) {
                     var versionObj = badgeSetData[versionStr];
@@ -736,7 +738,7 @@ Item {
                         console.log("  beta badge set for", badgeName, "has no version entry for", versionStr);
                         console.log("  available versions are", keysStr(badgeSetData))
                     } else {
-                        var entry = {"name": versionObj.title, "url": versionObj.image_url_1x, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
+                        var entry = {"name": versionObj.title, "url": badgeLocalUrl, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
                         console.log("adding entry", JSON.stringify(entry));
                         badgeEntries.push(entry);
                         curBadgeAdded = true;
@@ -749,8 +751,7 @@ Item {
                     for (var j in badgeUrls) {
                         console.log("    key", j, "value", badgeUrls[j]);
                     }
-                    var url = badgeUrls[imageFormatToUse];
-                    var entry = {"name": badgeName, "url": url};
+                    var entry = {"name": badgeName, "url": badgeLocalUrl};
                     console.log("adding entry", JSON.stringify(entry));
                     badgeEntries.push(entry);
                     curBadgeAdded = true;

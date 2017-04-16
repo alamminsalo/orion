@@ -21,6 +21,60 @@
 #include <QApplication>
 #include <QStandardPaths>
 
+BadgeImageProvider::BadgeImageProvider(ChannelManager * channelManager) : ImageProvider("badge", ".png"), _channelManager(channelManager) {
+    
+}
+
+QString BadgeImageProvider::getCanonicalKey(QString key) {
+    /** Resolve a key with just a badge name and version, specific to the current room, to a globally unique key for an official API or beta API badge */
+    QString url;
+
+    const QString betaImageFormat = "image_url_1x";
+    const QString officialImageFormat = "image";
+
+    int splitPos = key.indexOf("-");
+    if (splitPos != -1) {
+        const QString badge = key.left(splitPos);
+        const QString version = key.mid(splitPos + 1);
+        qDebug() << "badge hunt: channel name" << _channelName << "channel id" << _channelId << "badge" << badge << "version" << version;
+
+        if (_channelManager->getChannelBadgeBetaUrl(_channelId, badge, version, betaImageFormat, url)) {
+            return QList<QString>({ _channelId, badge, version, betaImageFormat }).join("-");
+        }
+        if (_channelManager->getChannelBadgeBetaUrl("GLOBAL", badge, version, betaImageFormat, url)) {
+            return QList<QString>({ "GLOBAL", badge, version, betaImageFormat }).join("-");
+        }
+        if (_channelManager->getChannelBadgeUrl(_channelName, badge, officialImageFormat, url)) {
+            return QList<QString>({ _channelName, badge, officialImageFormat }).join("-");
+        }
+        if (_channelManager->getChannelBadgeUrl("GLOBAL", badge, officialImageFormat, url)) {
+            return QList<QString>({ "GLOBAL", badge, officialImageFormat }).join("-");
+        }
+    }
+
+    qDebug() << "getCanonicalKey for badge" << key << "could not find a badge";
+}
+
+const QUrl BadgeImageProvider::getUrlForKey(QString & key) {
+    QString url;
+
+    QList<QString> parts = key.split("-");
+    if (parts.length() == 3) {
+        if (_channelManager->getChannelBadgeUrl(parts[0], parts[1], parts[2], url)) {
+            return url;
+        }
+    }
+    else if (parts.length() == 4) {
+        if (_channelManager->getChannelBadgeBetaUrl(parts[0], parts[1], parts[2], parts[3], url)) {
+            return url;
+        }
+    }
+    else {
+        qDebug() << "Invalid badge cache key" << key;
+        return QUrl();
+    }
+}
+
 ChannelListModel *ChannelManager::createFollowedChannelsModel()
 {
     ChannelListModel *model = new ChannelListModel();
@@ -31,7 +85,7 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
     return model;
 }
 
-ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman){
+ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeImageProvider(this) {
     access_token = "";
     tempFavourites = 0;
 

@@ -35,6 +35,7 @@ Item {
     property var singleShot: undefined
 
     Component.onCompleted: {
+        chat.hookupChannelProviders(g_cman)
         chat.initProviders()
     }
 
@@ -61,7 +62,7 @@ Item {
     }
 
     function joinChannel(channelName, channelId) {
-        chat.join(channelName)
+        chat.join(channelName, channelId)
         root.channel = channelName
         root.channelId = channelId
         messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName)
@@ -85,6 +86,10 @@ Item {
         leaveChannel()
         if (root.channel)
             joinChannel(root.channel, root.channelId)
+    }
+
+    function getBadgeLocalUrl(key) {
+        return chat.getBadgeLocalUrl(key);
     }
 
     IrcChat {

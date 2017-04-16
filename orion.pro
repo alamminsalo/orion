@@ -30,7 +30,8 @@ SOURCES += src/main.cpp\
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
     src/notification/notificationmanager.cpp \
-    src/model/ircchat.cpp
+    src/model/ircchat.cpp \
+    src/model/imageprovider.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -51,7 +52,8 @@ HEADERS  += src/model/channel.h \
     src/model/vodmanager.h \
     src/network/urls.h \
     src/notification/notificationmanager.h \
-    src/model/ircchat.h
+    src/model/ircchat.h \
+    src/model/imageprovider.h
 
 #Backend for player, uses mpv as default
 !qtav: !multimedia {
