@@ -134,6 +134,8 @@ private:
     void parseCommand(QString cmd);
 
     struct CommandParse {
+        QString channel;
+        bool wrongChannel;
         ChatMessage chatMessage;
         QString params;
         bool haveMessage;
