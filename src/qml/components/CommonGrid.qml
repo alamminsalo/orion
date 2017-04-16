@@ -141,11 +141,14 @@ GridView {
         }
 
         onClicked: {
-            if (currentItem){
+            // Note that click/press doesn't necessarily set grid's current item so we shouldn't use currentIndex
+            // TODO: rework this if something better than a single-point click solution is available for touchscreens
+            var clickedIndex = indexAt(mouse.x, mouse.y);
+            if (clickedIndex !== -1){
                 if (mouse.button === Qt.LeftButton)
-                    itemClicked(currentIndex)
+                    itemClicked(clickedIndex)
                 else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(currentIndex)
+                    itemRightClicked(clickedIndex)
                 }
             }
         }
