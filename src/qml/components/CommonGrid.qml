@@ -125,9 +125,9 @@ GridView {
         onClicked: {
             // Note that click/press doesn't necessarily set grid's current item so we shouldn't use currentIndex
             // TODO: rework this if something better than a single-point click solution is available for touchscreens
-            var clickedIndex = indexAt(mouse.x, mouse.y);
+            var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
             if (clickedIndex !== -1){
-                var clickedItem = itemAt(mouse.x, mouse.y);
+                var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
                 if (mouse.button === Qt.LeftButton)
                     itemClicked(clickedIndex, clickedItem)
                 else if (mouse.button === Qt.RightButton){
@@ -143,9 +143,9 @@ GridView {
 
         onPressAndHold: {
             //console.log("pressed and held");
-            var clickedIndex = indexAt(mouse.x, mouse.y);
+            var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
             if (clickedIndex !== -1){
-                var clickedItem = itemAt(mouse.x, mouse.y);
+                var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
                 itemRightClicked(clickedIndex, clickedItem);
             }
         }
