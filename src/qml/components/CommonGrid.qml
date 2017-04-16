@@ -100,7 +100,8 @@ GridView {
 
         Timer {
             id: tooltipTimer
-            interval: 800
+            // this is longer than the 800ms QML press and hold time so that a press and hold will take precedence
+            interval: 900
             running: false
             repeat: false
             onTriggered: {
@@ -151,6 +152,20 @@ GridView {
                 else if (mouse.button === Qt.RightButton){
                     itemRightClicked(clickedIndex, clickedItem)
                 }
+            }
+        }
+
+        onPressed: {
+            //console.log("pressed");
+            tooltipTimer.restart();
+        }
+
+        onPressAndHold: {
+            //console.log("pressed and held");
+            var clickedIndex = indexAt(mouse.x, mouse.y);
+            if (clickedIndex !== -1){
+                var clickedItem = itemAt(mouse.x, mouse.y);
+                itemRightClicked(clickedIndex, clickedItem);
             }
         }
     }
