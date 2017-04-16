@@ -120,6 +120,7 @@ void IrcChat::join(const QString channel, const QString channelId) {
 
 void IrcChat::leave()
 {
+    msgQueue.clear();
     sock->write(("PART #" + room + "\r\n").toStdString().c_str());
     room = "";
 }
@@ -568,6 +569,16 @@ void IrcChat::parseMessageCommand(const QString cmd, const QString cmdKeyword, C
         commandParse.message = cmd.mid(messageSepPos + 1);
     }
 
+    int channelEnd = messageSepPos == -1 ? cmd.length() : messageSepPos - 1;
+    int channelStart = cmdKeywordPos + cmdKeyword.length() + 1;
+    commandParse.channel = cmd.mid(channelStart, channelEnd - channelStart);
+
+    bool isHashChannel = (commandParse.channel.length() > 0) && (commandParse.channel.at(0) == '#');
+    commandParse.wrongChannel = isHashChannel && inRoom() && ((QString("#") + room) != commandParse.channel);
+    if (commandParse.wrongChannel) {
+        qDebug() << "message is for" << commandParse.channel.mid(1) << "and we are in" << room;
+    }
+
     if (displayName.length() > 0) {
         chatMessage.name = displayName;
     }
@@ -591,6 +602,10 @@ void IrcChat::parseCommand(QString cmd) {
         CommandParse parse;
 
         parseMessageCommand(cmd, "PRIVMSG", parse);
+
+        if (parse.wrongChannel) {
+            return;
+        }
 
 		// parse IRC action before applying emotes, as emote indices are relative to the content of the action
 		const QString ACTION_PREFIX = QString(QChar(1)) + "ACTION ";
@@ -616,6 +631,10 @@ void IrcChat::parseCommand(QString cmd) {
         CommandParse parse;
 
         parseMessageCommand(cmd, "USERNOTICE", parse);
+
+        if (parse.wrongChannel) {
+            return;
+        }
 
         parse.chatMessage.isChannelNotice = true;
 
