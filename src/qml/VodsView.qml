@@ -83,11 +83,11 @@ Item{
         }
 
         onItemClicked: {
-            playerView.getStreams(selectedChannel, selectedItem)
+            playerView.getStreams(selectedChannel, clickedItem)
         }
 
         onItemRightClicked: {
-            _menu.item = selectedItem
+            _menu.item = clickedItem
             _menu.popup()
         }
 

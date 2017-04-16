@@ -22,14 +22,14 @@ CommonGrid {
 
     onItemClicked: {
         if (currentItem.online){
-            playerView.getStreams(currentItem)
+            playerView.getStreams(clickedItem)
         } else {
-            playerView.getChat(currentItem)
+            playerView.getChat(clickedItem)
         }
     }
 
     onItemRightClicked: {
-        _menu.item = currentItem
+        _menu.item = clickedItem
 
         _watchLive.enabled = _menu.item.online
 

@@ -201,11 +201,11 @@ Item {
         }
 
         onItemClicked: {
-            root.searchChannels(currentItem)
+            root.searchChannels(clickedItem)
         }
 
         onItemRightClicked: {
-            _menu.item = currentItem
+            _menu.item = clickedItem
             _menu.popup()
         }
 

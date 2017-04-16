@@ -20,8 +20,8 @@ GridView {
     property bool tooltipEnabled: false
     property string title
 
-    signal itemClicked(int index)
-    signal itemRightClicked(int index)
+    signal itemClicked(int index, Item clickedItem)
+    signal itemRightClicked(int index, Item clickedItem)
 
     id: root
 
@@ -145,10 +145,11 @@ GridView {
             // TODO: rework this if something better than a single-point click solution is available for touchscreens
             var clickedIndex = indexAt(mouse.x, mouse.y);
             if (clickedIndex !== -1){
+                var clickedItem = itemAt(mouse.x, mouse.y);
                 if (mouse.button === Qt.LeftButton)
-                    itemClicked(clickedIndex)
+                    itemClicked(clickedIndex, clickedItem)
                 else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(clickedIndex)
+                    itemRightClicked(clickedIndex, clickedItem)
                 }
             }
         }
