@@ -39,7 +39,7 @@
 #include "player/mpvrenderer.h"
 #endif
 
-inline void noisyFailureMsgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+inline void noisyFailureMsgHandler(QtMsgType /*type*/, const QMessageLogContext &/*context*/, const QString &/*msg*/)
 {
 
 }

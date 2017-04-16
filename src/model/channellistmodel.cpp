@@ -24,7 +24,7 @@ ChannelListModel::~ChannelListModel()
     clear();
 }
 
-Qt::ItemFlags ChannelListModel::flags(const QModelIndex &index) const
+Qt::ItemFlags ChannelListModel::flags(const QModelIndex &/*index*/) const
 {
     //int row = index.row();
     //    Channel* channel = source.at(index);
@@ -89,7 +89,7 @@ QVariant ChannelListModel::data(const QModelIndex &index, int role) const
     return var;
 }
 
-int ChannelListModel::rowCount(const QModelIndex &parent) const
+int ChannelListModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return channels.size();
 }
