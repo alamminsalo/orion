@@ -39,6 +39,31 @@ CommonGrid {
         _menu.popup()
     }
 
+    onItemTooltipHover: {
+        if (selectedItem.online) {
+            g_tooltip.text = ""
+
+            if (selectedItem.game){
+                g_tooltip.text += "Playing <b>" + selectedItem.game + "</b>"
+            } else if (selectedItem.title){
+                g_tooltip.text += selectedItem.title
+            }
+
+            if (selectedItem.viewers){
+                g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
+                g_tooltip.text += selectedItem.viewers + " viewers"
+            }
+
+            if (selectedItem.info){
+                g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
+                g_tooltip.text += selectedItem.info
+            }
+
+            g_tooltip.img = selectedItem.preview
+            g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
+        }
+    }
+
     ContextMenu {
         id: _menu
 

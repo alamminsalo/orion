@@ -15,6 +15,7 @@
 import QtQuick.Controls 1.4
 import QtQuick 2.5
 import "components"
+import "util.js" as Util
 
 Item{
     anchors.fill: parent
@@ -60,7 +61,7 @@ Item{
         }
     }
 
-    VodGrid {
+    CommonGrid {
         id: vods
         tooltipEnabled: true
 
@@ -89,6 +90,21 @@ Item{
         onItemRightClicked: {
             _menu.item = clickedItem
             _menu.popup()
+        }
+
+        onItemTooltipHover: {
+            g_tooltip.text = ""
+
+            g_tooltip.text += "<b>" + selectedItem.title + "</b><br/>";
+
+            g_tooltip.text += "Playing " + selectedItem.game + "<br/>"
+            if (selectedItem.duration)
+                g_tooltip.text += "Duration " + Util.getTime(selectedItem.duration) + "<br/>"
+
+            g_tooltip.text += selectedItem.views + " views<br/>"
+
+            g_tooltip.img = selectedItem.preview
+            g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
         }
 
         ContextMenu {

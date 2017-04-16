@@ -22,6 +22,7 @@ GridView {
 
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem)
+    signal itemTooltipHover(int index, real mX, real mY)
 
     id: root
 
@@ -114,28 +115,8 @@ GridView {
 
                     var index = root.indexAt(mX + root.contentX, mY + root.contentY)
 
-                    if (mArea.containsMouse && selectedItem && selectedItem.online){
-
-                        g_tooltip.text = ""
-
-                        if (selectedItem.game){
-                            g_tooltip.text += "Playing <b>" + selectedItem.game + "</b>"
-                        } else if (selectedItem.title){
-                            g_tooltip.text += selectedItem.title
-                        }
-
-                        if (selectedItem.viewers){
-                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                            g_tooltip.text += selectedItem.viewers + " viewers"
-                        }
-
-                        if (selectedItem.info){
-                            g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                            g_tooltip.text += selectedItem.info
-                        }
-
-                        g_tooltip.img = selectedItem.preview
-                        g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
+                    if (mArea.containsMouse && selectedItem){
+                        root.itemTooltipHover(index, mX, mY);
                     }
                 }
             }
