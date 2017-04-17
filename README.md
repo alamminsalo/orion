@@ -15,7 +15,7 @@ Features:
 
 ![mac](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
 
-![linux](https://cloud.githubusercontent.com/assets/5585454/25102036/4ad4ea84-23bf-11e7-9c43-ffe82ed3256e.png)
+![linux](https://cloud.githubusercontent.com/assets/5585454/25102163/dc5b1dac-23bf-11e7-9285-d8234ab9d12b.png)
 
 ![android](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/8.jpeg)
 
