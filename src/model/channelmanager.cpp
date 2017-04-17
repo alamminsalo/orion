@@ -53,6 +53,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
     }
 
     qDebug() << "getCanonicalKey for badge" << key << "could not find a badge";
+    return key;
 }
 
 const QUrl BadgeImageProvider::getUrlForKey(QString & key) {
@@ -69,10 +70,8 @@ const QUrl BadgeImageProvider::getUrlForKey(QString & key) {
             return url;
         }
     }
-    else {
-        qDebug() << "Invalid badge cache key" << key;
-        return QUrl();
-    }
+    qDebug() << "Invalid badge cache key" << key;
+    return QUrl();
 }
 
 ChannelListModel *ChannelManager::createFollowedChannelsModel()
