@@ -18,6 +18,7 @@ import QtQuick.Controls.Styles 1.4
 import "../fonts/fontAwesome.js" as FontAwesome
 import "../styles.js" as Styles
 import "../components"
+import "../"
 
 Item {
     id: root
@@ -314,7 +315,7 @@ Item {
                 }
             }
 
-            Button{
+            IconButton{
                 id: _emoteButton
                 property bool emotePickerDownloadsInProgress : false
                 property var setsToDownload
@@ -327,7 +328,7 @@ Item {
 
                 visible: root.width > 0
 
-                width: dp(38)
+                width: height
 
                 anchors {
                     right: parent.right
@@ -335,24 +336,7 @@ Item {
                     bottom: parent.bottom
                 }
 
-                text: "emotes"
-
-                style: ButtonStyle {
-                    background: Rectangle {
-                        color: "#000000"
-                    }
-
-                    label: Text {
-                        text: FontAwesome.fromText("smile")
-                        color: "#ffffff"
-                        font.family: "FontAwesome"
-                        font.pointSize: 18
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-
-                    }
-                }
+                icon: "smile"
 
                 Connections {
                     target: _emotePicker
