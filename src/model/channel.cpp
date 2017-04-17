@@ -49,7 +49,7 @@ void Channel::setFavourite(bool value)
     favourite = value;
 }
 
-Channel::Channel() : QObject() {
+Channel::Channel(){
     alert = true;
     timestamp = 0;
     online = false;
