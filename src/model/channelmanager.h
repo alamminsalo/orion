@@ -138,7 +138,6 @@ public:
     Q_INVOKABLE QString username() const;
     Q_INVOKABLE QString accessToken() const;
 
-    Q_INVOKABLE void setAccessToken(const QString &arg);
     Q_INVOKABLE bool isAccessTokenAvailable() { return !access_token.isEmpty(); }
 
     Q_INVOKABLE bool isMinimizeOnStartup() const;
@@ -225,6 +224,7 @@ public slots:
     void getFeatured();
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);
+    void setAccessToken(const QString &arg);
 
 private slots:
     void addSearchResults(const QList<Channel*>&);
