@@ -169,15 +169,23 @@ Rectangle {
         }
     }
 
+    function updateForNetworkAccess(up) {
+        if (up) {
+            connectionErrorRectangle.height = 0
+        }
+        else {
+            connectionErrorRectangle.height = dp(50)
+        }
+    }
+
+    Component.onCompleted: {
+        updateForNetworkAccess(netman.networkAccess());
+    }
+
     Connections {
         target: netman
         onNetworkAccessChanged: {
-            if (up) {
-                connectionErrorRectangle.height = 0
-            }
-            else {
-                connectionErrorRectangle.height = dp(50)
-            }
+            updateForNetworkAccess(up);
         }
     }
 }
