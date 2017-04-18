@@ -121,6 +121,10 @@ void NetworkManager::testNetworkInterface()
     }
 }
 
+bool NetworkManager::networkAccess() {
+    return connectionOK;
+}
+
 void NetworkManager::testConnection()
 {
     QNetworkRequest request;
