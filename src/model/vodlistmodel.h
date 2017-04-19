@@ -35,7 +35,8 @@ public:
         Id,
         Game,
         Duration,
-        Views
+        Views,
+        CreatedAt
     };
 
     Qt::ItemFlags flags(const QModelIndex &index) const;

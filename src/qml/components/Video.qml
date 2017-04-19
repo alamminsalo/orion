@@ -22,6 +22,7 @@ Rectangle {
     property int views
     property int duration
     property string game
+    property string createdAt
 
     property int imgSize: dp(148)
     property int containerSize: dp(200)

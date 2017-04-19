@@ -252,6 +252,9 @@ Vod *JsonParser::parseVod(const QJsonObject &json)
     if (!json["views"].isNull())
         vod->setViews(json["views"].toInt());
 
+    if (!json["created_at"].isNull())
+        vod->setCreatedAt(json["created_at"].toString());
+
     return vod;
 }
 
