@@ -22,6 +22,7 @@ Vod::Vod()
     duration = 0;
     views = 0;
     preview = "";
+    createdAt = "";
 }
 
 Vod::Vod(Vod &other)
@@ -32,6 +33,7 @@ Vod::Vod(Vod &other)
     views = other.views;
     preview = other.preview;
     duration = other.duration;
+    createdAt = other.createdAt;
 }
 
 QString Vod::getPreview() const
@@ -92,4 +94,14 @@ QString Vod::getTitle() const
 void Vod::setTitle(const QString &value)
 {
     title = value;
+}
+
+QString Vod::getCreatedAt() const
+{
+    return createdAt;
+}
+
+void Vod::setCreatedAt(const QString &value)
+{
+    createdAt = value;
 }

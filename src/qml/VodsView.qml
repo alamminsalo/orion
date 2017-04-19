@@ -81,6 +81,7 @@ Item{
             preview: model.preview
             duration: model.duration
             game: model.game
+            createdAt: model.createdAt
         }
 
         onItemClicked: {
@@ -100,6 +101,9 @@ Item{
             g_tooltip.text += "Playing " + selectedItem.game + "<br/>"
             if (selectedItem.duration)
                 g_tooltip.text += "Duration " + Util.getTime(selectedItem.duration) + "<br/>"
+
+            if (selectedItem.createdAt)
+                g_tooltip.text += (new Date(selectedItem.createdAt)).toLocaleString() + "<br/>";
 
             g_tooltip.text += selectedItem.views + " views<br/>"
 
