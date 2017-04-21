@@ -183,6 +183,8 @@ Item {
 
                 seekBar.setPosition(0, duration)
             }
+        } else {
+            isVod = false;
         }
 
         currentChannel = {
