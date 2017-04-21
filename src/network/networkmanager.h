@@ -33,6 +33,8 @@
 #include "../model/game.h"
 #include "../model/vod.h"
 
+#include "replaychat.h"
+
 #define ONLY_BROADCASTS true
 #define USE_HLS true
 #define FOLLOWED_FETCH_LIMIT 25
@@ -75,6 +77,9 @@ public:
     void getChannelBadgeUrlsBeta(const int channelID);
     void getGlobalBadgesUrlsBeta();
 
+    Q_INVOKABLE void getVodStartTime(quint64 vodId);
+    Q_INVOKABLE void getVodChatPiece(quint64 vodId, quint64 offset);
+
     QNetworkAccessManager *getManager() const;
 
     //TODO: move to new class if more operations need to be added
@@ -106,6 +111,9 @@ signals:
     void getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>);
     void getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>);
 
+    void vodStartGetOperationFinished(double);
+    void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
+
     void networkAccessChanged(bool up);
 
 private slots:
@@ -125,6 +133,8 @@ private slots:
     void favouritesReply();
     void editUserFavouritesReply();
     void streamReply();
+    void vodStartReply();
+    void vodChatPieceReply();
 
     //Oauth slots
     void userReply();
@@ -137,6 +147,16 @@ private:
     QNetworkAccessManager *operation;
     bool connectionOK;
     QTimer offlinePoller;
+
+    const int REPLAY_CHAT_DEDUPE_SWAP_ITERATIONS = 5;
+    int replayChatPartNum = 0;
+
+    QSet<QString> * curChatReplayDedupeBatch;
+    QSet<QString> * prevChatReplayDedupeBatch;
+
+    void initReplayChat();
+    void teardownReplayChat();
+    void filterReplayChat(QList<ReplayChatMessage> & replayChat);
 };
 
 #endif // NETWORKMANAGER_H

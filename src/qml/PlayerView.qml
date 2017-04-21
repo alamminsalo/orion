@@ -200,7 +200,23 @@ Item {
         _favIcon.update()
         _label.visible = false
         setWatchingTitle()
-        chatview.joinChannel(currentChannel.name, currentChannel._id)
+
+        if (isVod) {
+            var startEpochTime = (new Date(vod.createdAt)).getTime() / 1000.0;
+
+            console.log("typeof vod._id is", typeof(vod._id))
+
+            if (vod._id.charAt(0) !== "v") {
+                console.log("unknown vod id format in", vod._id);
+            } else {
+                var vodIdNum = parseInt(vod._id.substring(1));
+                console.log("replaying chat for vod", vodIdNum, "starting at", startEpochTime);
+                chatview.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime);
+            }
+        } else {
+            chatview.joinChannel(currentChannel.name, currentChannel._id);
+        }
+
         pollTimer.restart()
 
         requestSelectionChange(5)
@@ -239,6 +255,7 @@ Item {
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
+            chatview.replaySeek(position)
             renderer.seekTo(position)
         }
     }
@@ -275,6 +292,7 @@ Item {
         }
 
         onPositionChanged: {
+            chatview.replayUpdate(renderer.position);
             seekBar.setPosition(renderer.position, duration)
         }
 

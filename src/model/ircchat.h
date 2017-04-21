@@ -72,6 +72,9 @@ public:
     Q_PROPERTY(QList<int> emoteSetIDs READ emoteSetIDs NOTIFY emoteSetIDsChanged)
 
     Q_INVOKABLE void join(const QString channel, const QString channelId);
+    Q_INVOKABLE void replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset);
+    Q_INVOKABLE void replaySeek(double newOffset);
+    Q_INVOKABLE void replayUpdate(double newOffset);
     Q_INVOKABLE void leave();
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void reopenSocket();
@@ -124,10 +127,13 @@ private slots:
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
     void handleDownloadComplete();
+    void handleVodStartTime(double);
+    void handleDownloadedReplayChat(QList<ReplayChatMessage>);
 
 private:
     URLFormatImageProvider _emoteProvider;
     BadgeImageProvider * _badgeProvider;
+    ChannelManager * _cman;
     
     QList<ChatMessage> msgQueue;
 
@@ -164,6 +170,22 @@ private:
     QMap<QString, bool> userChannelMod;
     QMap<QString, bool> userChannelSubscriber;
     bool allDownloadsComplete();
+
+    bool replayChatRequestInProgress;
+    
+    bool replayChatMessageTimestampOffsetCalibrated;
+    double replayChatMessageTimestampOffset;
+    double replayChatVodStartTime;
+    double replayChatFirstChunkTime;
+    double replayChatCurrentSeekOffset;
+    double replayChatCurrentTime; // the position that playback is currently at in chat
+    double nextChatChunkTimestamp;
+    
+    quint64 replayVodId;
+    QList<ReplayChatMessage> replayChatMessagesPending;
+
+    void replayChatMessage(const ReplayChatMessage &);
+    void replayUpdateCommon();
 };
 
 #endif // IRCCHAT_H
