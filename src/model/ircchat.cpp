@@ -199,7 +199,7 @@ void removeVariantListPairByFirstValue(QVariantList list, const QVariant value) 
         }
 
         if (it->toList()[0] == value) {
-            list.erase(it);
+            it = list.erase(it);
         }
         else {
             ++it;
