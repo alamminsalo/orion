@@ -92,9 +92,6 @@ void IrcChat::hookupChannelProviders(ChannelManager * cman) {
     }
 }
 
-void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
-void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
-
 IrcChat::~IrcChat() {
     disconnect();
 }
