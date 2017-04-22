@@ -33,6 +33,7 @@ Item {
     property var channel: undefined
     property var channelId: undefined
     property var singleShot: undefined
+    property var replayMode: false
 
     Component.onCompleted: {
         chat.hookupChannelProviders(g_cman)
@@ -65,9 +66,40 @@ Item {
         chat.join(channelName, channelId)
         root.channel = channelName
         root.channelId = channelId
+        root.replayMode = false;
         messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName)
         g_cman.loadChannelBadgeUrls(channelName);
         g_cman.loadChannelBetaBadgeUrls(channelId);
+    }
+
+    function replayChat(channelName, channelId, vodId, startEpochTime) {
+        chat.replay(channelName, channelId, vodId, startEpochTime, 0)
+        root.channel = channelName
+        root.channelId = channelId
+        root.replayMode = true
+        messageReceived("notice", null, "", false, false, false, [], true, "Starting chat replay #" + channelName + " v" + vodId)
+        g_cman.loadChannelBadgeUrls(channelName);
+        g_cman.loadChannelBetaBadgeUrls(channelId);
+    }
+
+    function durationStr(duration) {
+        var hours = Math.floor(duration / 3600);
+        var mins = Math.floor((duration % 3600) / 60);
+        var secs = Math.floor(duration % 60);
+        var out = mins.toString() + ":" + (secs < 10 ? "0" : "") + secs.toString();
+        if (hours > 0) {
+            out = hours.toString() + ":" + (mins < 10 ? "0" : "") + out;
+        }
+        return out;
+    }
+
+    function replaySeek(newOffset) {
+        messageReceived("notice", null, "", false, false, false, [], true, "Seeking to " + durationStr(newOffset));
+        chat.replaySeek(newOffset);
+    }
+
+    function replayUpdate(newOffset) {
+        chat.replayUpdate(newOffset);
     }
 
     function leaveChannel() {

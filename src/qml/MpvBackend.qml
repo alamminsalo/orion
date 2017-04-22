@@ -52,6 +52,9 @@ Item {
         if (start >= 0) {
             position = start
             renderer.setOption("start", "+" + position)
+            lastStartPosition = position;
+            streamOffsetCalibrated = false;
+            streamOffset = 0;
         }
 
         renderer.command(["loadfile", src])
@@ -80,8 +83,12 @@ Item {
     }
 
     function seekTo(sec) {
-        renderer.setProperty("playback-time", sec)
-        root.position = sec
+        var adjustedSec = sec;
+        if (streamOffsetCalibrated) {
+            adjustedSec += streamOffset;
+        }
+        renderer.setProperty("playback-time", adjustedSec)
+        root.position = sec;
     }
 
     function setVolume(vol) {
@@ -113,6 +120,10 @@ Item {
         //console.log("Position", position)
 
     }
+
+    property int lastStartPosition;
+    property bool streamOffsetCalibrated: false;
+    property int streamOffset: 0;
 
     property double volume: 100
     onVolumeChanged: {
@@ -146,8 +157,20 @@ Item {
         }
 
         onPositionChanged: {
-            if (root.position !== position)
-                root.position = position
+            var adjustedPosition = position;
+
+            if (!root.streamOffsetCalibrated && status == "PLAYING") {
+                root.streamOffset = position - lastStartPosition;
+                root.streamOffsetCalibrated = true;
+                console.log("MpvBackend stream offset", root.streamOffset);
+            }
+
+            if (root.streamOffsetCalibrated) {
+                adjustedPosition -= root.streamOffset;
+            }
+
+            if (root.position !== adjustedPosition)
+                root.position = adjustedPosition
         }
 
         Component.onCompleted: {

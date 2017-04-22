@@ -539,3 +539,73 @@ int JsonParser::parseTotal(const QByteArray &data)
 
     return total;
 }
+
+ReplayChatMessage parseVodChatEntry(const QJsonValueRef &entry) {
+    ReplayChatMessage out;
+    
+    const QJsonObject & entryObj = entry.toObject();
+
+    const QJsonObject & attributes = entryObj["attributes"].toObject();
+
+    out.from = attributes["from"].toString();
+    out.deleted = attributes["deleted"].toBool();
+    out.message = attributes["message"].toString();
+    out.room = attributes["room"].toString();
+    out.timestamp = attributes["timestamp"].toDouble();
+    out.videoOffset = attributes["video-offset"].toDouble();
+    out.command = attributes["command"].toString();
+
+    auto tags = attributes["tags"].toObject();
+    for (auto tagEntry = tags.constBegin(); tagEntry != tags.constEnd(); tagEntry++) {
+        auto tagName = tagEntry.key();
+        if (tagName == "emotes") {
+            auto emotes = tagEntry.value().toObject();
+            for (auto emoteEntry = emotes.constBegin(); emoteEntry != emotes.constEnd(); emoteEntry++) {
+                int emoteId = emoteEntry.key().toInt();
+
+                out.emoteList.append(emoteId);
+
+                auto emotePairs = emoteEntry.value().toArray();
+                for (auto emotePair : emotePairs) {
+                    auto emotePairArray = emotePair.toArray();
+                    if (emotePairArray.size() == 2) {
+                        auto first = emotePairArray[0].toInt();
+                        auto last = emotePairArray[1].toInt();
+                        out.emotePositionsMap.insert(first, qMakePair(last, emoteId));
+                    }
+                }
+            }
+
+        }
+        else if (tagName == "mod" || tagName == "subscriber" || tagName == "turbo") {
+            out.tags.insert(tagName, tagEntry.value().toBool());
+        }
+        else {
+            out.tags.insert(tagName, tagEntry.value().toString());
+        }
+    }
+
+    out.id = entryObj["id"].toString();
+        
+    return out;
+}
+
+QList<ReplayChatMessage> JsonParser::parseVodChatPiece(const QByteArray &data)
+{
+    QList<ReplayChatMessage> out;
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        if (!json["data"].isNull() && json["data"].isArray()) {
+            for (auto entry : json["data"].toArray()) {
+
+                out.append(parseVodChatEntry(entry));
+            }
+        }
+    }
+
+    return out;
+}
