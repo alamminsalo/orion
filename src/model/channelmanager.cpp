@@ -741,6 +741,10 @@ void ChannelManager::getVodChatPiece(quint64 vodId, quint64 offset) {
     netman->getVodChatPiece(vodId, offset);
 }
 
+void ChannelManager::cancelLastVodChatRequest() {
+    netman->cancelLastVodChatRequest();
+}
+
 void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> updatedEmoteSets)
 {
     lastEmoteSets = updatedEmoteSets;

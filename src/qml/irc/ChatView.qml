@@ -70,12 +70,16 @@ Item {
         chat.replayChat(channelName, channelId, vodId, startEpochTime);
     }
 
-    function replaySeek(newOffset) {
-        chat.replaySeek(newOffset);
+    function playerSeek(newOffset) {
+        if (chat.replayMode) {
+            chat.replaySeek(newOffset);
+        }
     }
 
-    function replayUpdate(newOffset) {
-        chat.replayUpdate(newOffset);
+    function playerPositionUpdate(newOffset) {
+        if (chat.replayMode) {
+            chat.replayUpdate(newOffset);
+        }
     }
 
     function sendMessage() {
