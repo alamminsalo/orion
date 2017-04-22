@@ -80,6 +80,10 @@ Item {
         anchors {
             left: parent.left
             right: parent.right
+            margins: {
+                leftMargin: dp(2)
+                rightMargin: dp(2)
+            }
         }
 
         visible: showSystemMessageLine
@@ -98,6 +102,10 @@ Item {
           top: _systemMessageLine.bottom
           left: parent.left
           right: parent.right
+          margins: {
+              leftMargin: dp(2)
+              rightMargin: dp(2)
+          }
       }
 
       vAlign: vAlignCenter
