@@ -159,6 +159,7 @@ void IrcChat::replaySeek(double newOffset) {
     if (replayChatRequestInProgress) {
         _cman->cancelLastVodChatRequest();
     }
+    _cman->resetVodChat();
     replayChatRequestInProgress = true;
     // we save the offset as the current time
     replayChatCurrentTime = replayChatVodStartTime + newOffset;
@@ -309,6 +310,7 @@ void IrcChat::replayStop() {
         _cman->cancelLastVodChatRequest();
         replayChatRequestInProgress = false;
     }
+    _cman->resetVodChat();
     replayChatMessagesPending.clear();
 }
 
