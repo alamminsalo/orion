@@ -402,6 +402,12 @@ void NetworkManager::cancelLastVodChatRequest() {
     }
 }
 
+void NetworkManager::resetVodChat() {
+    replayChatPartNum = 0;
+    curChatReplayDedupeBatch->clear();
+    prevChatReplayDedupeBatch->clear();
+}
+
 void NetworkManager::initReplayChat() {
     curChatReplayDedupeBatch = new QSet<QString>();
     prevChatReplayDedupeBatch = new QSet<QString>();

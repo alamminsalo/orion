@@ -745,6 +745,10 @@ void ChannelManager::cancelLastVodChatRequest() {
     netman->cancelLastVodChatRequest();
 }
 
+void ChannelManager::resetVodChat() {
+    netman->resetVodChat();
+}
+
 void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> updatedEmoteSets)
 {
     lastEmoteSets = updatedEmoteSets;
