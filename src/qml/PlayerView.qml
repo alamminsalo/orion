@@ -91,7 +91,7 @@ Item {
         onNetworkAccessChanged: {
             if (up && currentChannel && !renderer.status !== "PAUSED") {
                 //console.log("Network up. Resuming playback...")
-                loadAndPlay()
+                loadAndPlay(currentQualityName)
             }
         }
 
@@ -100,7 +100,7 @@ Item {
             if (channelName === currentChannel.name) {
                 if (online && !root.streamOnline) {
                     console.log("Stream back online, resuming playback")
-                    loadAndPlay()
+                    loadAndPlay(currentQualityName)
                 }
                 root.streamOnline = online
             }
@@ -264,7 +264,7 @@ Item {
 
     function reloadStream() {
         renderer.stop()
-        loadAndPlay()
+        loadAndPlay(currentQualityName)
     }
 
     Connections {
