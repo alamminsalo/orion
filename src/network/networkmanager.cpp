@@ -38,6 +38,8 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man)
     //Set up offline poller
     offlinePoller.setInterval(2000);
     connect(&offlinePoller, SIGNAL(timeout()), this, SLOT(testNetworkInterface()));
+
+    lastVodChatRequest = nullptr;
 }
 
 NetworkManager::~NetworkManager()
@@ -387,8 +389,17 @@ void NetworkManager::getVodChatPiece(quint64 vodId, quint64 offset) {
     request.setUrl(url);
 
     QNetworkReply *reply = operation->get(request);
+
+    lastVodChatRequest = reply;
     
     connect(reply, SIGNAL(finished()), this, SLOT(vodChatPieceReply()));
+}
+
+void NetworkManager::cancelLastVodChatRequest() {
+    if (lastVodChatRequest != nullptr) {
+        lastVodChatRequest->abort();
+        lastVodChatRequest = nullptr;
+    }
 }
 
 void NetworkManager::initReplayChat() {
@@ -475,6 +486,10 @@ void NetworkManager::vodStartReply() {
 
 void NetworkManager::vodChatPieceReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (lastVodChatRequest == reply) {
+        lastVodChatRequest = nullptr;
+    }
 
     if (!handleNetworkError(reply)) {
         return;

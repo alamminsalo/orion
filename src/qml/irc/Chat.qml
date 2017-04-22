@@ -66,6 +66,9 @@ Item {
         chat.join(channelName, channelId)
         root.channel = channelName
         root.channelId = channelId
+        if (root.replayMode) {
+            chat.replayStop();
+        }
         root.replayMode = false;
         messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName)
         g_cman.loadChannelBadgeUrls(channelName);

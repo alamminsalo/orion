@@ -147,6 +147,7 @@ public:
     Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
     Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
 
+    Q_INVOKABLE void cancelLastVodChatRequest();
     Q_INVOKABLE void getVodStartTime(quint64 vodId);
     Q_INVOKABLE void getVodChatPiece(quint64 vodId, quint64 offset);
 

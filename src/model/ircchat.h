@@ -75,6 +75,7 @@ public:
     Q_INVOKABLE void replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset);
     Q_INVOKABLE void replaySeek(double newOffset);
     Q_INVOKABLE void replayUpdate(double newOffset);
+    Q_INVOKABLE void replayStop();
     Q_INVOKABLE void leave();
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void reopenSocket();
