@@ -23,6 +23,8 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man)
 {
     operation = man;
 
+    initReplayChat();
+
     //Select interface
     connectionOK = false;
     testNetworkInterface();
@@ -43,6 +45,7 @@ NetworkManager::~NetworkManager()
     offlinePoller.stop();
     qDebug() << "Destroyer: NetworkManager";
     //operation->deleteLater();
+    teardownReplayChat();
 }
 
 void NetworkManager::testNetworkInterface()
@@ -358,6 +361,136 @@ void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> 
     QNetworkReply *reply = operation->get(request);
 
     connect(reply, SIGNAL(finished()), this, SLOT(emoteSetsReply()));
+}
+
+void NetworkManager::getVodStartTime(quint64 vodId) {
+    QString url = QString(TWITCH_RECHAT_API) + QString("?start=0&video_id=v%1").arg(vodId);
+
+    qDebug() << "Failing request to get offset";
+    qDebug() << "Request" << url;
+
+    QNetworkRequest request;
+    request.setUrl(url);
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(vodStartReply()));
+
+}
+
+void NetworkManager::getVodChatPiece(quint64 vodId, quint64 offset) {
+    QString url = QString(TWITCH_RECHAT_API) + QString("?start=%1&video_id=v%2").arg(offset).arg(vodId);
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setUrl(url);
+
+    QNetworkReply *reply = operation->get(request);
+    
+    connect(reply, SIGNAL(finished()), this, SLOT(vodChatPieceReply()));
+}
+
+void NetworkManager::initReplayChat() {
+    curChatReplayDedupeBatch = new QSet<QString>();
+    prevChatReplayDedupeBatch = new QSet<QString>();
+}
+
+void NetworkManager::teardownReplayChat() {
+    delete curChatReplayDedupeBatch;
+    delete prevChatReplayDedupeBatch;
+}
+
+void NetworkManager::filterReplayChat(QList<ReplayChatMessage> & replayChat) {
+    if (replayChatPartNum % REPLAY_CHAT_DEDUPE_SWAP_ITERATIONS == 0) {
+        auto oldPrev = prevChatReplayDedupeBatch;
+        prevChatReplayDedupeBatch = curChatReplayDedupeBatch;
+        oldPrev->clear();
+        curChatReplayDedupeBatch = oldPrev;
+    }
+
+    for (auto entry = replayChat.begin(); entry != replayChat.end(); ) {
+        if (entry->deleted || curChatReplayDedupeBatch->contains(entry->id) || prevChatReplayDedupeBatch->contains(entry->id)) {
+            qDebug() << "DUPE" << entry->from << ":" << entry->id << entry->message;
+            entry = replayChat.erase(entry);
+        }
+        else {
+            //qDebug() << "GOOD" << entry->from << ":" << entry->id << entry->message;
+            curChatReplayDedupeBatch->insert(entry->id);
+            entry++;
+        }
+    }
+
+    replayChatPartNum++;
+}
+
+void NetworkManager::vodStartReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute) != 400) {
+        if (!handleNetworkError(reply)) {
+            return;
+        }
+    }
+
+    QByteArray data = reply->readAll();
+
+    //qDebug() << data;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    double startTime = 0.0;
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        //error_text = d['errors'][0]['detail']
+        QString chatReplayErrorMessage = json["errors"].toArray()[0].toObject()["detail"].toString();
+        // "not between (\d +) and (\d+)
+
+        const QString START_MARKER = "not between ";
+
+        int startMarkerPos = chatReplayErrorMessage.indexOf(START_MARKER);
+        if (startMarkerPos == -1) {
+            qDebug() << "chat replay error message in unexpected format:" << chatReplayErrorMessage;
+            return;
+        }
+
+        int timePos = startMarkerPos + START_MARKER.length();
+        QString timeStr = chatReplayErrorMessage.mid(timePos);
+        int timeEnd = timeStr.indexOf(' ');
+        if (timeEnd != -1) {
+            timeStr = timeStr.left(timeEnd);
+        }
+        qDebug() << "timeStr" << timeStr;
+        startTime = timeStr.toDouble();
+    }
+
+    emit vodStartGetOperationFinished(startTime);
+
+    reply->deleteLater();
+
+}
+
+void NetworkManager::vodChatPieceReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+
+    //qDebug() << data;
+
+    QList<ReplayChatMessage> ret = JsonParser::parseVodChatPiece(data);
+
+    filterReplayChat(ret);
+
+    emit vodChatPieceGetOperationFinished(ret);
+
+    reply->deleteLater();
 }
 
 const QString CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
