@@ -30,6 +30,7 @@
 #include <QImage>
 #include <qqml.h>
 #include <QtMath>
+#include <QDateTime>
 
 const QString IMAGE_PROVIDER_EMOTE = "emote";
 const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
@@ -163,9 +164,9 @@ void IrcChat::replaySeek(double newOffset) {
     replayChatRequestInProgress = true;
     // we save the offset as the current time
     replayChatCurrentTime = replayChatVodStartTime + newOffset;
-    qDebug() << "original vod playback start time" << QDateTime::fromSecsSinceEpoch(replayChatCurrentTime, Qt::UTC);
+    qDebug() << "original vod playback start time" << QDateTime::fromMSecsSinceEpoch(replayChatCurrentTime * 1000.0, Qt::UTC);
     nextChatChunkTimestamp = quantize(replayChatCurrentTime, replayChatFirstChunkTime, CHAT_CHUNK_TIME);
-    qDebug() << "quantized vod playback start time for chat chunk" << QDateTime::fromSecsSinceEpoch(nextChatChunkTimestamp, Qt::UTC);
+    qDebug() << "quantized vod playback start time for chat chunk" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC);
     // we dump any pending messages from other stuff
     replayChatMessagesPending.clear();
     // we'll do an initial request for starting offset chat right now.
@@ -296,7 +297,7 @@ void IrcChat::handleDownloadedReplayChat(QList<ReplayChatMessage> messages) {
 
     replayChatMessagesPending.append(messages);
 
-    qDebug() << "CHAT REPLAY PART; t=" << QDateTime::fromSecsSinceEpoch(nextChatChunkTimestamp, Qt::UTC) << messages.length() << "records";
+    qDebug() << "CHAT REPLAY PART; t=" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC) << messages.length() << "records";
     
     nextChatChunkTimestamp += CHAT_CHUNK_TIME;
 
