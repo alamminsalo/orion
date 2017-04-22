@@ -257,7 +257,7 @@ Item {
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
-            chatview.replaySeek(position)
+            chatview.playerSeek(position)
             renderer.seekTo(position)
         }
     }
@@ -294,7 +294,7 @@ Item {
         }
 
         onPositionChanged: {
-            chatview.replayUpdate(renderer.position);
+            chatview.playerPositionUpdate(renderer.position);
             seekBar.setPosition(renderer.position, duration)
         }
 
