@@ -173,8 +173,6 @@ private:
 
     bool replayChatRequestInProgress;
     
-    bool replayChatMessageTimestampOffsetCalibrated;
-    double replayChatMessageTimestampOffset;
     double replayChatVodStartTime;
     double replayChatFirstChunkTime;
     double replayChatCurrentSeekOffset;

@@ -134,9 +134,6 @@ void IrcChat::replay(const QString channel, const QString channelId, const quint
 
     replayVodId = vodId;
 
-    replayChatMessageTimestampOffsetCalibrated = false;
-    replayChatMessageTimestampOffset = 0.0;
-
     replayChatVodStartTime = vodStartEpochTime;
 
     replayChatCurrentSeekOffset = playbackOffset;
@@ -163,7 +160,7 @@ void IrcChat::replaySeek(double newOffset) {
     // we save the offset as the current time
     replayChatCurrentTime = replayChatVodStartTime + newOffset;
     qDebug() << "original vod playback start time" << QDateTime::fromSecsSinceEpoch(replayChatCurrentTime, Qt::UTC);
-    nextChatChunkTimestamp = quantize(replayChatCurrentTime - replayChatMessageTimestampOffset, replayChatFirstChunkTime, CHAT_CHUNK_TIME);
+    nextChatChunkTimestamp = quantize(replayChatCurrentTime, replayChatFirstChunkTime, CHAT_CHUNK_TIME);
     qDebug() << "quantized vod playback start time for chat chunk" << QDateTime::fromSecsSinceEpoch(nextChatChunkTimestamp, Qt::UTC);
     // we dump any pending messages from other stuff
     replayChatMessagesPending.clear();
@@ -174,18 +171,6 @@ void IrcChat::replaySeek(double newOffset) {
 
 void IrcChat::replayUpdate(double newOffset) {
     // every so often the front end will find that time has passed and update our time and do our timestamp update
-    if (!replayChatMessageTimestampOffsetCalibrated) {
-        if (newOffset == 0)
-            return;
-
-        qDebug() << "Calibrating replay chat message timestamp offset...";
-        double expectedInitialOffset = replayChatCurrentTime - replayChatVodStartTime;
-        qDebug() << "Expected initial playback offset" << expectedInitialOffset << "s; got first playback offset value" << newOffset << "s";
-
-        replayChatMessageTimestampOffset = newOffset - expectedInitialOffset;
-        replayChatMessageTimestampOffsetCalibrated = true;
-        qDebug() << "Using replay chat message timestamp offset" << replayChatMessageTimestampOffset << "s";
-    }
     double newCurrentTime = replayChatVodStartTime + newOffset;
     replayChatCurrentTime = newCurrentTime;
     replayUpdateCommon();
@@ -274,14 +259,13 @@ void IrcChat::replayChatMessage(const ReplayChatMessage & replayMessage) {
 void IrcChat::replayUpdateCommon() {
     // time to start fetching chat in advance by
     const double CHAT_TIME_MARGIN = 5.0;
-    const double chatTimestampOffsetMS = replayChatMessageTimestampOffset * 1000.0;
 
     double curVideoOffsetMS = (replayChatCurrentTime - replayChatVodStartTime) * 1000.0;
 
     // in a chat update check, we look at the current time emit whatever chat's timestamps are up
-    while (!replayChatMessagesPending.empty() && (replayChatMessagesPending.first().videoOffset + chatTimestampOffsetMS) <= curVideoOffsetMS) {
+    while (!replayChatMessagesPending.empty() && (replayChatMessagesPending.first().videoOffset) <= curVideoOffsetMS) {
         auto message = replayChatMessagesPending.first();
-        auto delay = (curVideoOffsetMS - (replayChatMessagesPending.first().videoOffset + chatTimestampOffsetMS)) / 1000.0;
+        auto delay = (curVideoOffsetMS - (replayChatMessagesPending.first().videoOffset)) / 1000.0;
 
         if (delay > 1.0 || delay < -1.0) {
             qDebug() << "**********************************************************";
