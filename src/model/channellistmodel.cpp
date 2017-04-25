@@ -144,7 +144,7 @@ Channel *ChannelListModel::find(const QString &q)
             return channel;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 Channel *ChannelListModel::find(const quint32 &id)
@@ -154,7 +154,7 @@ Channel *ChannelListModel::find(const quint32 &id)
             return channel;
         }
     }
-    return 0;
+    return nullptr;
 }
 
 void ChannelListModel::clearView()

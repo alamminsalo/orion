@@ -558,7 +558,7 @@ void ChannelManager::updateFavourites(const QList<Channel*> &list)
 
 bool ChannelManager::containsFavourite(const quint32 &q)
 {
-    return favouritesModel->find(q) > 0;
+    return favouritesModel->find(q) != nullptr;
 }
 
 //Updates channel streams in all models
