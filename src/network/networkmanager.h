@@ -146,6 +146,12 @@ private slots:
     void globalBadgeUrlsBetaReply();
 
 private:
+    static const QString CHANNEL_BADGES_URL_PREFIX;
+    static const QString CHANNEL_BADGES_URL_SUFFIX;
+    static const QString CHANNEL_BADGES_BETA_URL_PREFIX;
+    static const QString CHANNEL_BADGES_BETA_URL_SUFFIX;
+    static const QString GLOBAL_BADGES_BETA_URL;
+
     QNetworkAccessManager *operation;
     bool connectionOK;
     QTimer offlinePoller;

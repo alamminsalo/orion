@@ -74,7 +74,7 @@ void NetworkManager::testNetworkInterface()
     else {
         qDebug() << "Failure on default configuration, attempt to choose another interaface..";
 
-        foreach (QNetworkInterface interface, QNetworkInterface::allInterfaces())
+        foreach (const QNetworkInterface & interface, QNetworkInterface::allInterfaces())
         {
             if (!interface.isValid())
                 continue;
@@ -514,8 +514,8 @@ void NetworkManager::vodChatPieceReply() {
     reply->deleteLater();
 }
 
-const QString CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
-const QString CHANNEL_BADGES_URL_SUFFIX = "/badges";
+const QString NetworkManager::CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
+const QString NetworkManager::CHANNEL_BADGES_URL_SUFFIX = "/badges";
 
 void NetworkManager::getChannelBadgeUrls(const QString &access_token, const QString &channel) {
     QString url = CHANNEL_BADGES_URL_PREFIX + channel + CHANNEL_BADGES_URL_SUFFIX;
@@ -533,9 +533,9 @@ void NetworkManager::getChannelBadgeUrls(const QString &access_token, const QStr
     connect(reply, SIGNAL(finished()), this, SLOT(channelBadgeUrlsReply()));
 }
 
-const QString CHANNEL_BADGES_BETA_URL_PREFIX = "https://badges.twitch.tv/v1/badges/channels/";
-const QString CHANNEL_BADGES_BETA_URL_SUFFIX = "/display?language=en";
-const QString GLOBAL_BADGES_BETA_URL = "https://badges.twitch.tv/v1/badges/global/display?language=en";
+const QString NetworkManager::CHANNEL_BADGES_BETA_URL_PREFIX = "https://badges.twitch.tv/v1/badges/channels/";
+const QString NetworkManager::CHANNEL_BADGES_BETA_URL_SUFFIX = "/display?language=en";
+const QString NetworkManager::GLOBAL_BADGES_BETA_URL = "https://badges.twitch.tv/v1/badges/global/display?language=en";
 
 void NetworkManager::getChannelBadgeUrlsBeta(const int channelID) {
     QString url = CHANNEL_BADGES_BETA_URL_PREFIX + QString::number(channelID) + CHANNEL_BADGES_BETA_URL_SUFFIX;
@@ -638,7 +638,7 @@ bool NetworkManager::handleNetworkError(QNetworkReply *reply)
 
 void NetworkManager::handleSslErrors(QNetworkReply */*reply*/, QList<QSslError> errors)
 {
-    foreach (QSslError e, errors) {
+    foreach (const QSslError & e, errors) {
         qDebug() << "Ssl error: " << e.errorString();
     }
 
