@@ -101,6 +101,7 @@ private:
 };
 
 class URLFormatImageProvider : public ImageProvider {
+    Q_OBJECT
 public:
     URLFormatImageProvider(const QString imageProviderName, const QString urlFormat, const QString extension, const QString cacheDirName = "");
 protected:
