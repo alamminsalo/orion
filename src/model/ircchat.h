@@ -37,9 +37,6 @@
 #include "imageprovider.h"
 #include "channelmanager.h"
 
-const qint16 PORT = 6667;
-const QString HOST = "irc.twitch.tv";
-
 //#define TWITCH_EMOTE_URI "https://static-cdn.jtvnw.net/emoticons/v1/%d/1.0"
 
 struct ChatMessage {
@@ -132,6 +129,12 @@ private slots:
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
 
 private:
+    static const qint16 PORT;
+    static const QString HOST;
+
+    static const QString IMAGE_PROVIDER_EMOTE;
+    static const QString EMOTICONS_URL_FORMAT;
+
     URLFormatImageProvider _emoteProvider;
     BadgeImageProvider * _badgeProvider;
     ChannelManager * _cman;
