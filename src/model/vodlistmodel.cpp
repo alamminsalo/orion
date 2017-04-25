@@ -24,7 +24,7 @@ VodListModel::~VodListModel()
     clear();
 }
 
-Qt::ItemFlags VodListModel::flags(const QModelIndex &index) const
+Qt::ItemFlags VodListModel::flags(const QModelIndex &/*index*/) const
 {
     return Qt::ItemIsEnabled;
 }
@@ -73,7 +73,7 @@ QVariant VodListModel::data(const QModelIndex &index, int role) const
     return var;
 }
 
-int VodListModel::rowCount(const QModelIndex &parent) const
+int VodListModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return vods.size();
 }

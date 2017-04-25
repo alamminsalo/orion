@@ -85,7 +85,7 @@ void NetworkManager::testNetworkInterface()
             bool isUp = interface.flags().testFlag(QNetworkInterface::IsUp);
             bool isLoopback = interface.flags().testFlag(QNetworkInterface::IsLoopBack);
             bool isActive = interface.flags().testFlag(QNetworkInterface::IsRunning);
-            bool isPtP = interface.flags().testFlag(QNetworkInterface::IsPointToPoint);
+//            bool isPtP = interface.flags().testFlag(QNetworkInterface::IsPointToPoint);
 
 //            qDebug() << "Properties: ";
 //            qDebug() << (isUp ? "Is up" : "Is down");
@@ -636,7 +636,7 @@ bool NetworkManager::handleNetworkError(QNetworkReply *reply)
     return true;
 }
 
-void NetworkManager::handleSslErrors(QNetworkReply *reply, QList<QSslError> errors)
+void NetworkManager::handleSslErrors(QNetworkReply */*reply*/, QList<QSslError> errors)
 {
     foreach (QSslError e, errors) {
         qDebug() << "Ssl error: " << e.errorString();
