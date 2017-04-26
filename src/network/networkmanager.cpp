@@ -636,7 +636,7 @@ bool NetworkManager::handleNetworkError(QNetworkReply *reply)
     return true;
 }
 
-void NetworkManager::handleSslErrors(QNetworkReply */*reply*/, QList<QSslError> errors)
+void NetworkManager::handleSslErrors(QNetworkReply * /*reply*/, QList<QSslError> errors)
 {
     foreach (const QSslError & e, errors) {
         qDebug() << "Ssl error: " << e.errorString();
