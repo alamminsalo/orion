@@ -19,6 +19,10 @@ CustomApp::CustomApp(int &argc, char **argv): QApplication(argc, argv)
 {
 }
 
+CustomApp::~CustomApp()
+{
+}
+
 bool CustomApp::event(QEvent *e)
 {
     // qDebug() << "Window event: " << e->type();
