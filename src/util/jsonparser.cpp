@@ -41,10 +41,10 @@ QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
             }
         }
         if (channels.count() < cnames.count()){
-            foreach (Channel* channel, channels){
+            foreach (const Channel* channel, channels){
                 cnames.removeOne(channel->getServiceName());
             }
-            foreach(QString name, cnames){
+            foreach(const QString & name, cnames){
                 channels.append(new Channel(name));
             }
         }
@@ -540,7 +540,7 @@ int JsonParser::parseTotal(const QByteArray &data)
     return total;
 }
 
-ReplayChatMessage parseVodChatEntry(const QJsonValueRef &entry) {
+ReplayChatMessage parseVodChatEntry(const QJsonValue &entry) {
     ReplayChatMessage out;
     
     const QJsonObject & entryObj = entry.toObject();
@@ -600,7 +600,8 @@ QList<ReplayChatMessage> JsonParser::parseVodChatPiece(const QByteArray &data)
         QJsonObject json = doc.object();
 
         if (!json["data"].isNull() && json["data"].isArray()) {
-            for (auto entry : json["data"].toArray()) {
+            const QJsonArray & chatEntries = json["data"].toArray();
+            for (const auto & entry : chatEntries) {
 
                 out.append(parseVodChatEntry(entry));
             }
