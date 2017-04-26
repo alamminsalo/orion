@@ -583,7 +583,8 @@ void IrcChat::processError(QAbstractSocket::SocketError socketError) {
 
 void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & l) {
 	bool first = true;
-	for (auto part : s.split(sep)) {
+    const QStringList & parts = s.split(sep);
+	for (const auto & part : parts) {
 		if (first) {
 			first = false;
 			l.append(part);
@@ -661,7 +662,8 @@ QMap<int, QPair<int, int>> IrcChat::parseEmotesTag(const QString emotes) {
 
             _emoteProvider.makeAvailable(key);
 
-            for (auto emotePlc : positions.split(',')) {
+            const QStringList & emotePlcs = positions.split(',');
+            for (const auto & emotePlc : emotePlcs) {
                 auto firstAndLast = emotePlc.split('-');
                 int first = firstAndLast[0].toInt();
                 int last = firstAndLast.length() > 1 ? firstAndLast[1].toInt() : first;
@@ -895,7 +897,8 @@ void IrcChat::parseCommand(QString cmd) {
 			}
 			else if (tag.key == "emote-sets") {
                 qDebug() << "GLOBALUSERSTATE emote-sets" << tag.value;
-				for (auto entry : tag.value.split(',')) {
+                const QStringList & entries = tag.value.split(',');
+				for (const auto & entry : entries) {
 					_emoteSetIDs.append(entry.toInt());
 				}
                 emit emoteSetIDsChanged();

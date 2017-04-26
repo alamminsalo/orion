@@ -83,7 +83,7 @@ signals:
     void downloadComplete();
 
 public slots:
-    bool bulkDownload(QList<QString> keys);
+    bool bulkDownload(const QList<QString> & keys);
     void individualDownloadComplete(QString filename, bool hadError);
 
 protected:

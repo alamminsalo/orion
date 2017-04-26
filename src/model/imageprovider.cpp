@@ -89,9 +89,9 @@ bool ImageProvider::download(QString key) {
     return true;
 }
 
-bool ImageProvider::bulkDownload(QList<QString> keys) {
+bool ImageProvider::bulkDownload(const QList<QString> & keys) {
     bool waitForDownloadComplete = false;
-    for (auto key : keys) {
+    for (const auto & key : keys) {
         if (makeAvailable(key)) {
             waitForDownloadComplete = true;
         }
