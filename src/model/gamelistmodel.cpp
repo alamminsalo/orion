@@ -80,28 +80,28 @@ QHash<int, QByteArray> GameListModel::roleNames() const
 void GameListModel::addAll(const QList<Game *> &list)
 {
     if (!list.isEmpty()){
-        emit beginInsertRows(QModelIndex(), games.size(), games.size() + list.size() - 1);
+        beginInsertRows(QModelIndex(), games.size(), games.size() + list.size() - 1);
         foreach (Game *game, list) {
             games.append(new Game(*game));
         }
-        emit endInsertRows();
+        endInsertRows();
     }
 }
 
 void GameListModel::addGame(Game *game)
 {
-    emit beginInsertRows(QModelIndex(), games.size(), games.size());
+    beginInsertRows(QModelIndex(), games.size(), games.size());
     games.append(game);
-    emit endInsertRows();
+    endInsertRows();
 }
 
 void GameListModel::removeGame(Game *game)
 {
     int index = games.indexOf(game);
     if (index > -1){
-        emit beginRemoveRows(QModelIndex(), index, index);
+        beginRemoveRows(QModelIndex(), index, index);
         delete games.takeAt(index);
-        emit endRemoveRows();
+        endRemoveRows();
     }
 }
 
@@ -118,10 +118,10 @@ Game *GameListModel::find(const uint id)
 void GameListModel::clear()
 {
     if (!games.isEmpty()){
-        emit beginRemoveRows(QModelIndex(), 0, games.size());
+        beginRemoveRows(QModelIndex(), 0, games.size());
         qDeleteAll(games);
         games.clear();
-        emit endRemoveRows();
+        endRemoveRows();
     }
 }
 

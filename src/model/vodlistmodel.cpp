@@ -94,11 +94,11 @@ QHash<int, QByteArray> VodListModel::roleNames() const
 void VodListModel::addAll(QList<Vod *> &items)
 {
     if (!items.isEmpty()){
-        emit beginInsertRows(QModelIndex(), vods.size(), vods.size() + items.size() - 1);
+        beginInsertRows(QModelIndex(), vods.size(), vods.size() + items.size() - 1);
         foreach (Vod *vod, items) {
             vods.append(new Vod(*vod));
         }
-        emit endInsertRows();
+        endInsertRows();
     }
 }
 
@@ -113,10 +113,10 @@ Vod *VodListModel::find(const QString id)
 void VodListModel::clear()
 {
     if (!vods.isEmpty()){
-        emit beginRemoveRows(QModelIndex(), 0, vods.size());
+        beginRemoveRows(QModelIndex(), 0, vods.size());
         qDeleteAll(vods);
         vods.clear();
-        emit endRemoveRows();
+        endRemoveRows();
     }
 }
 
