@@ -372,6 +372,9 @@ bool IrcChat::connected() {
     if (sock) {
         return sock->state() == QTcpSocket::ConnectedState;
     }
+    else {
+        return false;
+    }
 }
 
 QVariantMap createEmoteEntry(int emoteId, QString emoteText) {
