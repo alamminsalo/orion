@@ -520,7 +520,7 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
             displayName = userGlobalDisplayName;
         }
 
-        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges });
+        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, false, "" });
     }
 }
 
