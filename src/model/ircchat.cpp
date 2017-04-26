@@ -61,12 +61,13 @@ void IrcChat::initSocket() {
     if(!sock) {
         emit errorOccured("Error creating socket");
     }
-
-    connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
-    connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
-    connect(sock, SIGNAL(connected()), this, SLOT(login()));
-    connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
-    connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+    else {
+        connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
+        connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
+        connect(sock, SIGNAL(connected()), this, SLOT(login()));
+        connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
+        connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+    }
 }
 
 void IrcChat::initProviders() {
@@ -121,7 +122,9 @@ void IrcChat::join(const QString channel, const QString channelId) {
     }
 
     // Join channel's chat room
-    sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
+    if (sock) {
+        sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
+    }
 
     qDebug() << "Joined channel " << channel;
 }
@@ -323,23 +326,29 @@ void IrcChat::replayStop() {
 void IrcChat::leave()
 {
     msgQueue.clear();
-    sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    if (sock) {
+        sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    }
     room = "";
 }
 
 void IrcChat::disconnect() {
     leave();
-    sock->close();
+    if (sock) {
+        sock->close();
+    }
 }
 
 void IrcChat::reopenSocket() {
-    qDebug() << "Reopening socket";
-    if(sock->isOpen())
-        sock->close();
-    sock->open(QIODevice::ReadWrite);
-    sock->connectToHost(HOST, PORT);
-    if(!sock->isOpen()) {
-        emit errorOccured("Error opening socket");
+    if (sock) {
+        qDebug() << "Reopening socket";
+        if (sock->isOpen())
+            sock->close();
+        sock->open(QIODevice::ReadWrite);
+        sock->connectToHost(HOST, PORT);
+        if (!sock->isOpen()) {
+            emit errorOccured("Error opening socket");
+        }
     }
 }
 
@@ -360,7 +369,9 @@ void IrcChat::setAnonymous(bool newAnonymous) {
 }
 
 bool IrcChat::connected() {
-    return sock->state() == QTcpSocket::ConnectedState;
+    if (sock) {
+        return sock->state() == QTcpSocket::ConnectedState;
+    }
 }
 
 QVariantMap createEmoteEntry(int emoteId, QString emoteText) {
@@ -450,7 +461,9 @@ bool IrcChat::addBadges(QVariantList &badges, QString channel) {
 
 void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes) {
     if (inRoom() && connected()) {
-        sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
+        if (sock) {
+            sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
+        }
 
 		bool isAction = false;
 		QVariantList message;
@@ -523,13 +536,15 @@ void IrcChat::login()
     else
         setAnonymous(false);
 
-    // Tell server that we support twitch-specific commands
-    sock->write("CAP REQ :twitch.tv/commands\r\n");
-    sock->write("CAP REQ :twitch.tv/tags\r\n");
+    if (sock) {
+        // Tell server that we support twitch-specific commands
+        sock->write("CAP REQ :twitch.tv/commands\r\n");
+        sock->write("CAP REQ :twitch.tv/tags\r\n");
 
-    // Login
-    sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
-    sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+        // Login
+        sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
+        sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+    }
 
     logged_in = true;
 
@@ -540,7 +555,7 @@ void IrcChat::login()
 
 void IrcChat::receive() {
     QString msg;
-    while (sock->canReadLine()) {
+    while (sock && sock->canReadLine()) {
         msg = sock->readLine();
         msg = msg.remove('\n').remove('\r');
         parseCommand(msg);
