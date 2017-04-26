@@ -96,20 +96,20 @@ int ChannelListModel::rowCount(const QModelIndex &/*parent*/) const
 
 void ChannelListModel::addChannel(Channel *channel)
 {
-    emit beginInsertRows(QModelIndex(), channels.size(), channels.size());
+    beginInsertRows(QModelIndex(), channels.size(), channels.size());
     channels.append(channel);
-    emit endInsertRows();
+    endInsertRows();
 }
 
 void ChannelListModel::addAll(const QList<Channel *> &list)
 {
     if (!list.isEmpty()){
-        emit beginInsertRows(QModelIndex(), channels.size(), channels.size() + list.size() - 1);
+        beginInsertRows(QModelIndex(), channels.size(), channels.size() + list.size() - 1);
         foreach (Channel* channel, list){
             channels.append(new Channel(*channel));
         }
 
-        emit endInsertRows();
+        endInsertRows();
     }
 }
 
@@ -131,9 +131,9 @@ void ChannelListModel::removeChannel(Channel *channel)
 {
     int index = channels.indexOf(channel);
     if (index > -1){
-        emit beginRemoveRows(QModelIndex(), index, index);
+        beginRemoveRows(QModelIndex(), index, index);
         delete channels.takeAt(index);
-        emit endRemoveRows();
+        endRemoveRows();
     }
 }
 
@@ -160,17 +160,17 @@ Channel *ChannelListModel::find(const quint32 &id)
 void ChannelListModel::clearView()
 {
     //Gives a sign to drop all channels from view, without removing them
-    emit beginRemoveRows(QModelIndex(), 0, channels.size());
-    emit endRemoveRows();
+    beginRemoveRows(QModelIndex(), 0, channels.size());
+    endRemoveRows();
 }
 
 void ChannelListModel::clear()
 {
     if (!channels.isEmpty()){
-        emit beginRemoveRows(QModelIndex(), 0, channels.size());
+        beginRemoveRows(QModelIndex(), 0, channels.size());
         qDeleteAll(channels);
         channels.clear();
-        emit endRemoveRows();
+        endRemoveRows();
     }
 }
 
