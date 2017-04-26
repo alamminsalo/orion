@@ -42,23 +42,11 @@ IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
     _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes"),
     _badgeProvider(nullptr),
-    _cman(nullptr)
+    _cman(nullptr),
+    sock(nullptr)
     {
 
     logged_in = false;
-
-    // Open socket
-    sock = new QTcpSocket(this);
-    if(sock) {
-        emit errorOccured("Error opening socket");
-    }
-
-    //createConnection();
-    connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
-    connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
-    connect(sock, SIGNAL(connected()), this, SLOT(login()));
-    connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
-    connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
 
     connect(&_emoteProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
 
@@ -67,7 +55,23 @@ IrcChat::IrcChat(QObject *parent) :
 	emoteDirPathImpl = _emoteProvider.getBaseUrl();
 }
 
+void IrcChat::initSocket() {
+    // Open socket
+    sock = new QTcpSocket(this);
+    if(!sock) {
+        emit errorOccured("Error creating socket");
+    }
+
+    //createConnection();
+    connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
+    connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
+    connect(sock, SIGNAL(connected()), this, SLOT(login()));
+    connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
+    connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+}
+
 void IrcChat::initProviders() {
+    initSocket();
 	auto engine = qmlEngine(this);
 	RegisterEngineProviders(*engine);
 }
@@ -336,7 +340,7 @@ void IrcChat::reopenSocket() {
     sock->open(QIODevice::ReadWrite);
     sock->connectToHost(HOST, PORT);
     if(!sock->isOpen()) {
-        errorOccured("Error opening socket");
+        emit errorOccured("Error opening socket");
     }
 }
 
@@ -565,7 +569,7 @@ void IrcChat::processError(QAbstractSocket::SocketError socketError) {
         err = "Unknown error.";
     }
 
-    errorOccured(err);
+    emit errorOccured(err);
 }
 
 void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & l) {
