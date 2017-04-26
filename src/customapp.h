@@ -22,6 +22,7 @@ class CustomApp: public QApplication
     Q_OBJECT
 public:
     CustomApp(int &argc, char **argv);
+    virtual ~CustomApp() {}
 
 public slots:
     bool event(QEvent *);
