@@ -222,7 +222,7 @@ void IrcChat::replayChatMessage(const ReplayChatMessage & replayMessage) {
 
             // \s -> space
             systemMessage.replace("\\s", " ");
-            // \\ -> \ 
+            // double backslash -> single backslash
             systemMessage.replace("\\\\", "\\");
 
             chatMessage.systemMessage = systemMessage;
@@ -844,7 +844,7 @@ void IrcChat::parseCommand(QString cmd) {
 
                 // \s -> space
                 systemMessage.replace("\\s", " ");
-                // \\ -> \ 
+                // double backslash -> single backslash
                 systemMessage.replace("\\\\", "\\");
 
                 parse.chatMessage.systemMessage = systemMessage;
