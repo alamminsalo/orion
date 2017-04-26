@@ -62,7 +62,6 @@ void IrcChat::initSocket() {
         emit errorOccured("Error creating socket");
     }
 
-    //createConnection();
     connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
     connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
     connect(sock, SIGNAL(connected()), this, SLOT(login()));
@@ -515,11 +514,6 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 void IrcChat::onSockStateChanged() {
     // We don't check if connected property actually changed because this slot should only be awaken when it did
     emit connectedChanged();
-}
-
-void IrcChat::createConnection()
-{
-    sock->connectToHost(HOST, PORT);
 }
 
 void IrcChat::login()

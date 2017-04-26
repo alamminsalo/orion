@@ -121,7 +121,6 @@ public slots:
     bool bulkDownloadEmotes(QList<QString> keys);
 
 private slots:
-    void createConnection();
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
     void handleDownloadComplete();
