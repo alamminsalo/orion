@@ -75,10 +75,10 @@ build_script:
 
 after_build:
   - 7z a orion_%configuration%_%platform%_snapshot.zip . -x!.git
-  - copy /y %MPVDIR%\mpv-dev-%platform%.7z .
+  - copy /y %MPVDIR%\mpv-dev.7z .
 
 artifacts:
   - path: orion_$(configuration)_$(platform)_snapshot.zip
     name: orion windows $(configuration) $(platform) snapshot zip
-  - path: mpv-dev-$(platform).7z
+  - path: mpv-dev.7z
     name: libmpv dev archive used for build
