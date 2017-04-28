@@ -83,7 +83,7 @@ public slots:
                 QMap<QString,QString> map;
                 params = params.mid(params.indexOf("?")+1);
 
-                foreach (QString s, params.split("&")) {
+                foreach (const QString & s, params.split("&")) {
                     QStringList pair = s.split("=");
                     if (pair.length() == 2){
                         map.insert(pair[0], pair[1]);

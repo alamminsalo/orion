@@ -30,7 +30,7 @@ Features:
 #### Install needed libraries and software
 
 ```
-sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine qt5-quickcontrols2 mpv
+sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-quickcontrols2 mpv
 ```
 
 If using backend other than mpv, install those packages instead.

@@ -37,9 +37,6 @@
 #include "imageprovider.h"
 #include "channelmanager.h"
 
-const qint16 PORT = 6667;
-const QString HOST = "irc.twitch.tv";
-
 //#define TWITCH_EMOTE_URI "https://static-cdn.jtvnw.net/emoticons/v1/%d/1.0"
 
 struct ChatMessage {
@@ -124,7 +121,6 @@ public slots:
     bool bulkDownloadEmotes(QList<QString> keys);
 
 private slots:
-    void createConnection();
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
     void handleDownloadComplete();
@@ -132,6 +128,12 @@ private slots:
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
 
 private:
+    static const qint16 PORT;
+    static const QString HOST;
+
+    static const QString IMAGE_PROVIDER_EMOTE;
+    static const QString EMOTICONS_URL_FORMAT;
+
     URLFormatImageProvider _emoteProvider;
     BadgeImageProvider * _badgeProvider;
     ChannelManager * _cman;
@@ -151,6 +153,7 @@ private:
         QString emotesStr;
     };
 
+    void initSocket();
     void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse);
     QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
     void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
