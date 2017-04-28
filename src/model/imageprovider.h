@@ -83,7 +83,7 @@ signals:
     void downloadComplete();
 
 public slots:
-    bool bulkDownload(QList<QString> keys);
+    bool bulkDownload(const QList<QString> & keys);
     void individualDownloadComplete(QString filename, bool hadError);
 
 protected:
@@ -101,6 +101,7 @@ private:
 };
 
 class URLFormatImageProvider : public ImageProvider {
+    Q_OBJECT
 public:
     URLFormatImageProvider(const QString imageProviderName, const QString urlFormat, const QString extension, const QString cacheDirName = "");
 protected:

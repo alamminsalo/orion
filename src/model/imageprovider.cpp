@@ -89,9 +89,9 @@ bool ImageProvider::download(QString key) {
     return true;
 }
 
-bool ImageProvider::bulkDownload(QList<QString> keys) {
+bool ImageProvider::bulkDownload(const QList<QString> & keys) {
     bool waitForDownloadComplete = false;
-    for (auto key : keys) {
+    for (const auto & key : keys) {
         if (makeAvailable(key)) {
             waitForDownloadComplete = true;
         }
@@ -173,7 +173,7 @@ void DownloadHandler::dataAvailable() {
     _file.write(buffer.data(), buffer.size());
 }
 
-void DownloadHandler::error(QNetworkReply::NetworkError code) {
+void DownloadHandler::error(QNetworkReply::NetworkError /*code*/) {
     hadError = true;
     QNetworkReply* _reply = qobject_cast<QNetworkReply*>(sender());
     qDebug() << "Network error downloading" << filename << ":" << _reply->errorString();
@@ -198,7 +198,8 @@ CachedImageProvider::CachedImageProvider(QHash<QString, QImage*> & imageTable) :
 
 }
 
-QImage CachedImageProvider::requestImage(const QString &id, QSize * size, const QSize & requestedSize) {
+QImage CachedImageProvider::requestImage(const QString &id, QSize * size, const QSize & /*requestedSize*/) {
+    // TODO figure out something sensible to do re requestedSize
     //qDebug() << "Requested id" << id << "from image provider";
     QImage * entry = NULL;
     auto result = imageTable.find(id);

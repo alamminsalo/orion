@@ -32,31 +32,21 @@
 #include <QtMath>
 #include <QDateTime>
 
-const QString IMAGE_PROVIDER_EMOTE = "emote";
-const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
-const QString IMAGE_PROVIDER_BADGE_OFFICIAL = "";
+const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
+const QString IrcChat::EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
+
+const qint16 IrcChat::PORT = 6667;
+const QString IrcChat::HOST = "irc.twitch.tv";
 
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
     _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes"),
     _badgeProvider(nullptr),
-    _cman(nullptr)
+    _cman(nullptr),
+    sock(nullptr)
     {
 
     logged_in = false;
-
-    // Open socket
-    sock = new QTcpSocket(this);
-    if(sock) {
-        emit errorOccured("Error opening socket");
-    }
-
-    //createConnection();
-    connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
-    connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
-    connect(sock, SIGNAL(connected()), this, SLOT(login()));
-    connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
-    connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
 
     connect(&_emoteProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
 
@@ -65,7 +55,23 @@ IrcChat::IrcChat(QObject *parent) :
 	emoteDirPathImpl = _emoteProvider.getBaseUrl();
 }
 
+void IrcChat::initSocket() {
+    // Open socket
+    sock = new QTcpSocket(this);
+    if(!sock) {
+        emit errorOccured("Error creating socket");
+    }
+    else {
+        connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
+        connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
+        connect(sock, SIGNAL(connected()), this, SLOT(login()));
+        connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
+        connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+    }
+}
+
 void IrcChat::initProviders() {
+    initSocket();
 	auto engine = qmlEngine(this);
 	RegisterEngineProviders(*engine);
 }
@@ -116,7 +122,9 @@ void IrcChat::join(const QString channel, const QString channelId) {
     }
 
     // Join channel's chat room
-    sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
+    if (sock) {
+        sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
+    }
 
     qDebug() << "Joined channel " << channel;
 }
@@ -220,7 +228,7 @@ void IrcChat::replayChatMessage(const ReplayChatMessage & replayMessage) {
 
             // \s -> space
             systemMessage.replace("\\s", " ");
-            // \\ -> \ 
+            // double backslash -> single backslash
             systemMessage.replace("\\\\", "\\");
 
             chatMessage.systemMessage = systemMessage;
@@ -318,23 +326,29 @@ void IrcChat::replayStop() {
 void IrcChat::leave()
 {
     msgQueue.clear();
-    sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    if (sock) {
+        sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    }
     room = "";
 }
 
 void IrcChat::disconnect() {
     leave();
-    sock->close();
+    if (sock) {
+        sock->close();
+    }
 }
 
 void IrcChat::reopenSocket() {
-    qDebug() << "Reopening socket";
-    if(sock->isOpen())
-        sock->close();
-    sock->open(QIODevice::ReadWrite);
-    sock->connectToHost(HOST, PORT);
-    if(!sock->isOpen()) {
-        errorOccured("Error opening socket");
+    if (sock) {
+        qDebug() << "Reopening socket";
+        if (sock->isOpen())
+            sock->close();
+        sock->open(QIODevice::ReadWrite);
+        sock->connectToHost(HOST, PORT);
+        if (!sock->isOpen()) {
+            emit errorOccured("Error opening socket");
+        }
     }
 }
 
@@ -355,7 +369,12 @@ void IrcChat::setAnonymous(bool newAnonymous) {
 }
 
 bool IrcChat::connected() {
-    return sock->state() == QTcpSocket::ConnectedState;
+    if (sock) {
+        return sock->state() == QTcpSocket::ConnectedState;
+    }
+    else {
+        return false;
+    }
 }
 
 QVariantMap createEmoteEntry(int emoteId, QString emoteText) {
@@ -445,7 +464,9 @@ bool IrcChat::addBadges(QVariantList &badges, QString channel) {
 
 void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes) {
     if (inRoom() && connected()) {
-        sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
+        if (sock) {
+            sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
+        }
 
 		bool isAction = false;
 		QVariantList message;
@@ -502,18 +523,13 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
             displayName = userGlobalDisplayName;
         }
 
-        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges });
+        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, false, "" });
     }
 }
 
 void IrcChat::onSockStateChanged() {
     // We don't check if connected property actually changed because this slot should only be awaken when it did
     emit connectedChanged();
-}
-
-void IrcChat::createConnection()
-{
-    sock->connectToHost(HOST, PORT);
 }
 
 void IrcChat::login()
@@ -523,13 +539,15 @@ void IrcChat::login()
     else
         setAnonymous(false);
 
-    // Tell server that we support twitch-specific commands
-    sock->write("CAP REQ :twitch.tv/commands\r\n");
-    sock->write("CAP REQ :twitch.tv/tags\r\n");
+    if (sock) {
+        // Tell server that we support twitch-specific commands
+        sock->write("CAP REQ :twitch.tv/commands\r\n");
+        sock->write("CAP REQ :twitch.tv/tags\r\n");
 
-    // Login
-    sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
-    sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+        // Login
+        sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
+        sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+    }
 
     logged_in = true;
 
@@ -540,7 +558,7 @@ void IrcChat::login()
 
 void IrcChat::receive() {
     QString msg;
-    while (sock->canReadLine()) {
+    while (sock && sock->canReadLine()) {
         msg = sock->readLine();
         msg = msg.remove('\n').remove('\r');
         parseCommand(msg);
@@ -563,12 +581,13 @@ void IrcChat::processError(QAbstractSocket::SocketError socketError) {
         err = "Unknown error.";
     }
 
-    errorOccured(err);
+    emit errorOccured(err);
 }
 
 void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & l) {
 	bool first = true;
-	for (auto part : s.split(sep)) {
+    const QStringList & parts = s.split(sep);
+	for (const auto & part : parts) {
 		if (first) {
 			first = false;
 			l.append(part);
@@ -646,7 +665,8 @@ QMap<int, QPair<int, int>> IrcChat::parseEmotesTag(const QString emotes) {
 
             _emoteProvider.makeAvailable(key);
 
-            for (auto emotePlc : positions.split(',')) {
+            const QStringList & emotePlcs = positions.split(',');
+            for (const auto & emotePlc : emotePlcs) {
                 auto firstAndLast = emotePlc.split('-');
                 int first = firstAndLast[0].toInt();
                 int last = firstAndLast.length() > 1 ? firstAndLast[1].toInt() : first;
@@ -842,7 +862,7 @@ void IrcChat::parseCommand(QString cmd) {
 
                 // \s -> space
                 systemMessage.replace("\\s", " ");
-                // \\ -> \ 
+                // double backslash -> single backslash
                 systemMessage.replace("\\\\", "\\");
 
                 parse.chatMessage.systemMessage = systemMessage;
@@ -880,7 +900,8 @@ void IrcChat::parseCommand(QString cmd) {
 			}
 			else if (tag.key == "emote-sets") {
                 qDebug() << "GLOBALUSERSTATE emote-sets" << tag.value;
-				for (auto entry : tag.value.split(',')) {
+                const QStringList & entries = tag.value.split(',');
+				for (const auto & entry : entries) {
 					_emoteSetIDs.append(entry.toInt());
 				}
                 emit emoteSetIDsChanged();

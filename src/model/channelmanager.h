@@ -32,6 +32,7 @@
 class ChannelManager;
 
 class BadgeImageProvider : public ImageProvider {
+    Q_OBJECT
 public:
     BadgeImageProvider(ChannelManager * channelManager);
     void setChannelName(QString channelName) { _channelName = channelName; }

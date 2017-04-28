@@ -64,8 +64,8 @@ class Channel: public QObject{
 		void updateTime();
         qint64 getTime();
         const QString getName() const;
-        const QString getServiceName();
-        const QString getFullUri();
+        const QString getServiceName() const;
+        const QString getFullUri() const;
         const QString getInfo() const;
 		bool hasAlert();
 		void setOnline(const bool);
