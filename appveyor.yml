@@ -12,30 +12,32 @@ environment:
 install:
   - if %platform%==x86 set mpv_platform=i686
   - if %platform%==x64 set mpv_platform=x86_64
-  - if %platform%==x86 set MPVDIR=c:\mpv_x86
-  - if %platform%==x64 set MPVDIR=c:\mpv_x64
+  - set MPVDIR=c:\mpv
+  - if %platform%==x86 set MPVLIBDIR=%MPVDIR%\32
+  - if %platform%==x64 set MPVLIBDIR=%MPVDIR%\64
   - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
   - ps: |
       if (!(Test-Path "${env:mpvdir}\mpv-dev-${env:platform}.7z")) {
-         $libmpv_downloads_page = Invoke-WebRequest "https://sourceforge.net/projects/mpv-player-windows/files/libmpv/"
-         $libmpv_download_filename = $libmpv_downloads_page.AllElements | Where {$_.Class -eq "file " -and $_.title -like "mpv-dev-${env:mpv_platform}-*.7z"} | sort -Property title -Descending | select -First 1 -ExpandProperty title
-         echo "Downloading ${libmpv_download_filename} to mpv-dev-${env:platform}.7z"
-         $libmpv_download_filename | Out-File "${env:mpvdir}\version.txt"
-         Start-FileDownload "https://superb-sea2.dl.sourceforge.net/project/mpv-player-windows/libmpv/${libmpv_download_filename}" -FileName "${env:mpvdir}\mpv-dev-${env:platform}.7z" 
+         $libmpv_downloads_page = Invoke-WebRequest "https://mpv.srsfckn.biz/"
+         $libmpv_download_url = $libmpv_downloads_page.AllElements | Where {$_.href -like "*/mpv-dev-*.7z"} | sort -Property href -Descending | select -First 1 -ExpandProperty href
+         echo "Downloading ${libmpv_download_url} to mpv-dev.7z"
+         $libmpv_download_url | Out-File "${env:mpvdir}\version.txt"
+         Start-FileDownload "${libmpv_download_url}" -FileName "${env:mpvdir}\mpv-dev.7z" 
       }
+      Start-FileDownload "https://raw.githubusercontent.com/mpv-player/mpv/master/libmpv/mpv.def" -FileName "${env:mpvdir}\mpv.def"
   - type %MPVDIR%\version.txt
   - if %platform%==x86 set QTDIR=C:\Qt\5.8\msvc2015
   - if %platform%==x64 set QTDIR=C:\Qt\5.8\msvc2015_64
   - if %platform%==x86 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
   - if %platform%==x64 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
   - cd "%MPVDIR%"
-  - 7z x -y mpv-dev-%platform%.7z
+  - 7z x -y mpv-dev.7z
   - if not exist include\mpv mkdir include\mpv
   - move include\*.* include\mpv
   - dir /s
   - set INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt;%MPVDIR%\include
-  - if %platform%==x86 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;%MPVDIR%
-  - if %platform%==x64 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x64;%MPVDIR%
+  - if %platform%==x86 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86;%MPVLIBDIR%
+  - if %platform%==x64 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x64;%MPVLIBDIR%
   - set VCINSTALLDIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
   - if %platform%==x86 set OPENSSL_DIR=C:\OpenSSL-Win32
   - if %platform%==x64 set OPENSSL_DIR=C:\OpenSSL-Win64
@@ -56,13 +58,13 @@ build_script:
 
     mkdir libs
 
-    copy /y "%MPVDIR%\mpv-1.dll" libs
+    copy /y "%MPVLIBDIR%\mpv-1.dll" libs
 
     copy /y "%OPENSSL_DIR%\ssleay32.dll" libs
 
     copy /y "%OPENSSL_DIR%\libeay32.dll" libs
 
-    lib /def:%MPVDIR%\mpv.def /name:%MPVDIR%\mpv-1.dll /out:%MPVDIR%\mpv.lib /MACHINE:%platform%
+    lib /def:%MPVDIR%\mpv.def /name:%MPVLIBDIR%\mpv-1.dll /out:%MPVLIBDIR%\mpv.lib /MACHINE:%platform%
 
     nmake %configuration%
 
