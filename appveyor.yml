@@ -28,7 +28,8 @@ install:
          $libmpv_download_url | Out-File "${env:mpvdir}\version.txt"
          Start-FileDownload "${libmpv_download_url}" -FileName "${env:mpvdir}\mpv-dev.7z" 
       }
-      Start-FileDownload "https://raw.githubusercontent.com/mpv-player/mpv/master/libmpv/mpv.def" -FileName "${env:mpvdir}\mpv.def"
+      Start-FileDownload "https://raw.githubusercontent.com/mpv-player/mpv/master/libmpv/mpv.def" -FileName "${env:mpvdir}\mpv_dl.def"
+      @("EXPORTS") + (Get-Content "${env:mpvdir}\mpv_dl.def") | Set-Content "${env:mpvdir}\mpv.def"
   - type %MPVDIR%\version.txt
   - if %platform%==x86 set QTDIR=C:\Qt\5.8\msvc2015
   - if %platform%==x64 set QTDIR=C:\Qt\5.8\msvc2015_64
