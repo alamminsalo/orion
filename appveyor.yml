@@ -17,7 +17,7 @@ install:
   - if %platform%==x64 set MPVLIBDIR=%MPVDIR%\64
   - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
   - ps: |
-      if (!(Test-Path "${env:mpvdir}\mpv-dev-${env:platform}.7z")) {
+      if (!(Test-Path "${env:mpvdir}\mpv-dev.7z")) {
          # TLS 1.2 is required by the site
          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
          $libmpv_site_uri = [System.Uri]"https://mpv.srsfckn.biz/"
