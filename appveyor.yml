@@ -18,6 +18,8 @@ install:
   - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
   - ps: |
       if (!(Test-Path "${env:mpvdir}\mpv-dev-${env:platform}.7z")) {
+         # TLS 1.2 is required by the site
+         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
          $libmpv_downloads_page = Invoke-WebRequest "https://mpv.srsfckn.biz/"
          $libmpv_download_url = $libmpv_downloads_page.AllElements | Where {$_.href -like "*/mpv-dev-*.7z"} | sort -Property href -Descending | select -First 1 -ExpandProperty href
          echo "Downloading ${libmpv_download_url} to mpv-dev.7z"
