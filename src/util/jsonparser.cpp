@@ -610,3 +610,29 @@ QList<ReplayChatMessage> JsonParser::parseVodChatPiece(const QByteArray &data)
 
     return out;
 }
+
+QMap<QString, QList<QString>> JsonParser::parseChatterList(const QByteArray &data)
+{
+    QMap<QString, QList<QString>> out;
+    
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        QJsonObject chatters = json["chatters"].toObject();
+        
+        for (auto groupEntry = chatters.constBegin(); groupEntry != chatters.constEnd(); groupEntry++) {
+            QList<QString> groupChatters;
+            const QJsonArray & groupChattersJson = groupEntry.value().toArray();
+            for (const auto & chatter : groupChattersJson) {
+                groupChatters.append(chatter.toString());
+            }
+            out.insert(groupEntry.key(), groupChatters);
+        }
+    }
+
+    return out;
+    
+}

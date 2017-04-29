@@ -38,6 +38,8 @@ Item {
     property real _opacity: root.status > 1 ? 0.6 : 1.0
     property int chatWidth: width
 
+    property bool viewerListEnabled: false
+
     Rectangle {
         anchors.fill: parent
         color: Styles.sidebarBg
@@ -54,6 +56,7 @@ Item {
 
     function joinChannel(channel, channelId) {
         if (channel !== chat.channel || chat.replayMode) {
+            viewerListEnabled = false;
             chatModel.clear()
             chat.joinChannel(channel, channelId)
         }
@@ -65,6 +68,7 @@ Item {
     }
 
     function replayChat(channelName, channelId, vodId, startEpochTime) {
+        viewerListEnabled = false;
         chatModel.clear()
         chat.leaveChannel()
         chat.replayChat(channelName, channelId, vodId, startEpochTime);
@@ -145,8 +149,167 @@ Item {
         }
     }
 
+    Rectangle {
+        id: viewerList
+        enabled: viewerListEnabled
+        property bool loading: true
+
+        height: enabled? root.height : 0
+
+        anchors {
+            bottom: root.bottom
+            left: root.left
+            right: root.right
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        z: 10
+
+        color: Styles.sidebarBg
+        opacity: root._opacity
+
+        onEnabledChanged: {
+            if (enabled) {
+                viewerList.loading = true;
+                viewerListModel.clear();
+                g_cman.loadChatterList(chat.channel);
+            }
+        }
+
+        SpinnerIcon {
+            id: spinner
+            anchors.centerIn: parent
+            iconSize: parent.width * 0.1
+            visible: viewerList.loading && viewerList.enabled
+        }
+
+        IconButton {
+            icon: "times"
+
+            visible: viewerList.enabled
+
+            width: height
+
+            anchors {
+                left: viewerListHeading.left
+                top: viewerListHeading.top
+                bottom: viewerListHeading.bottom
+
+            }
+
+            onClicked: {
+                viewerListEnabled = false;
+            }
+        }
+
+        Item {
+            id: viewerListHeading
+            visible: viewerList.enabled
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
+
+            height: dp(60)
+
+            Label {
+                anchors.centerIn: parent
+
+                text: "Viewer List"
+                color: Styles.textColor
+                font.pixelSize: Styles.titleFont.bigger
+                font.bold: true
+            }
+        }
+
+        ListView {
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+                top: viewerListHeading.bottom
+            }
+
+            model: ListModel {
+                id: viewerListModel
+            }
+
+            Connections {
+                target: g_cman
+                onChatterListLoaded: {
+                    viewerList.loading = false;
+
+                    var groupOrder = ["staff", "global_mods", "admins", "moderators", "viewers"];
+
+                    for (var j = 0; j < groupOrder.length; j++) {
+                        var groupName = groupOrder[j];
+                        var group = chatters[groupName];
+                        if (!group) {
+                            continue;
+                        }
+
+                        for (var i = 0; i < group.length; i++) {
+                            var chatter = group[i];
+                            viewerListModel.append({"groupName": groupName, "user": chatter});
+                        }
+                    }
+                }
+            }
+
+            clip: true
+            delegate: Item {
+                height: dp(25)
+                Text {
+                    text: user
+                    color: Styles.textColor
+                    anchors {
+                        fill: parent
+                        leftMargin: dp(5)
+                        rightMargin: dp(5)
+                    }
+                    font.capitalization: Font.Capitalize
+                }
+            }
+
+            section {
+                property: "groupName"
+                criteria: ViewSection.FullString
+                delegate: Item {
+                    height: dp(50)
+                    Text {
+                        anchors {
+                            leftMargin: dp(5)
+                            rightMargin: dp(5)
+                            bottomMargin: dp(5)
+                            left: parent.left
+                            right: parent.right
+                            bottom: parent.bottom
+                        }
+
+                        font.capitalization: Font.AllUppercase
+                        text: section
+                        //color: Styles.textColor
+                        color: Styles.purple
+                        font.pixelSize: Styles.titleFont.smaller
+                    }
+                }
+
+            }
+
+        }
+    }
+
     ListView {
         id: list
+
+        visible: !viewerList.enabled
 
         property bool lock: true
         property int scrollbuf: 0
@@ -291,7 +454,7 @@ Item {
             right: parent.right
         }
 
-        visible: !chat.isAnonymous && !chat.replayMode
+        visible: !chat.isAnonymous && !chat.replayMode && !viewerList.enabled
 
         Rectangle {
             anchors.fill: parent
