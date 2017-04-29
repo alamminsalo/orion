@@ -468,11 +468,9 @@ bool IrcChat::addBadges(QVariantList &badges, QString channel) {
 
 void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes) {
     if (inRoom() && connected()) {
-        if (sock) {
-            sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
-        }
-
 		bool isAction = false;
+        bool isWhisper = false;
+        QString recipient = "";
 		QVariantList message;
 		const QString ME_PREFIX = "/me ";
 		QString displayMessage = msg;
@@ -480,6 +478,30 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 			isAction = true;
 			displayMessage = displayMessage.mid(ME_PREFIX.length());
 		}
+        const QString MSG_PREFIX = "/msg ";
+        if (displayMessage.startsWith(MSG_PREFIX)) {
+            isWhisper = true;
+            QString rest = displayMessage.mid(MSG_PREFIX.length());
+            int spacePos = rest.indexOf(' ');
+            if (spacePos == -1 || spacePos == rest.length() - 1) {
+                emit noticeReceived("Ignoring /msg with empty message");
+                return;
+            }
+            recipient = rest.left(spacePos);
+            displayMessage = rest.mid(spacePos + 1);
+        }
+
+        if (sock) {
+            QString ircCmd;
+            if (isWhisper) {
+                ircCmd = "PRIVMSG #" + room + " :/w " + recipient + " " + displayMessage + "\r\n";
+            }
+            else {
+                ircCmd = "PRIVMSG #" + room + " :" + msg + "\r\n";
+            }
+            sock->write(ircCmd.toStdString().c_str());
+        }
+
 		addWordSplit(displayMessage, ' ', message);
         message = substituteEmotesInMessage(message, relevantEmotes);
 
@@ -527,7 +549,9 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
             displayName = userGlobalDisplayName;
         }
 
-        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, false, "" });
+        bool isChannelMessage = isWhisper;
+        QString systemMessage = isWhisper ? ("Whispered to " + recipient + ":") : "";
+        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, isChannelMessage, systemMessage, false });
     }
 }
 
@@ -608,7 +632,7 @@ bool IrcChat::allDownloadsComplete() {
 
 void IrcChat::disposeOfMessage(ChatMessage m) {
     if (allDownloadsComplete()) {
-        emit messageReceived(m.name, m.messageList, m.color, m.subscriber, m.turbo, m.mod, m.isAction, m.badges, m.isChannelNotice, m.systemMessage);
+        emit messageReceived(m.name, m.messageList, m.color, m.subscriber, m.turbo, m.mod, m.isAction, m.badges, m.isChannelNotice, m.systemMessage, m.isWhisper);
     }
     else {
         // queue message to be shown when downloads are complete
@@ -742,6 +766,7 @@ void IrcChat::parseMessageCommand(const QString cmd, const QString cmdKeyword, C
 
     chatMessage.isAction = false;
     chatMessage.isChannelNotice = false;
+    chatMessage.isWhisper = false;
 
     foreach(const QString & tagStr, commandParse.tags) {
         Tag tag(tagStr);
@@ -880,9 +905,35 @@ void IrcChat::parseCommand(QString cmd) {
         disposeOfMessage(parse.chatMessage);
         return;
     }
+    if (cmd.contains("WHISPER")) {
+        // Structure of message: 
+        // @badges=;color=;display-name=TWitch_UserName;emotes=;message-id=2;thread-id=56781234_142000000;turbo=0;user-id=123456789;user-type= :twitch_username!twitch_username@twitch_username.tmi.twitch.tv WHISPER other_twitch_user :hi
+        CommandParse parse;
+
+        parseMessageCommand(cmd, "WHISPER", parse);
+
+        if (parse.wrongChannel) {
+            return;
+        }
+
+        parse.chatMessage.isChannelNotice = true;
+        parse.chatMessage.isWhisper = true;
+
+        parse.chatMessage.systemMessage = QString("Whisper from");
+
+        createEmoteMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.messageList, parse.message);
+
+        //qDebug() << "messageList " << messageList;
+
+        qDebug() << "whisper isWhisper" << parse.chatMessage.isWhisper;
+        disposeOfMessage(parse.chatMessage);
+        return;
+
+    }
     if(cmd.contains("NOTICE")) {
         QString text = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("NOTICE")) + 1);
         emit noticeReceived(text);
+        return;
     }
     if(cmd.contains("GLOBALUSERSTATE")) {
 		// Structure of message: @badges=turbo/1;color=#4100CC;display-name=user_name;emote-sets=0,1,22,345;user-id=12345678;user-type= :tmi.twitch.tv GLOBALUSERSTATE
@@ -966,7 +1017,7 @@ void IrcChat::parseCommand(QString cmd) {
         }
         return;
     }
-    //qDebug() << "Unrecognized chat command:" << cmd;
+    qDebug() << "Unrecognized chat command:" << cmd;
 }
 
 QString IrcChat::getParamValue(QString params, QString param) {
@@ -986,7 +1037,7 @@ void IrcChat::handleDownloadComplete() {
         //qDebug() << "Download queue complete; posting pending messages";
         while (!msgQueue.empty()) {
             ChatMessage tmpMsg = msgQueue.first();
-            emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.mod, tmpMsg.isAction, tmpMsg.badges, tmpMsg.isChannelNotice, tmpMsg.systemMessage);
+            emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.mod, tmpMsg.isAction, tmpMsg.badges, tmpMsg.isChannelNotice, tmpMsg.systemMessage, tmpMsg.isWhisper);
             msgQueue.pop_front();
         }
     }
