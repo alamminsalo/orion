@@ -549,7 +549,7 @@ Item {
 
                 width: dp(50)
                 height: width
-                enabled: !isVod
+                enabled: (!isVod && currentChannel && currentChannel.name) ? true : false
 
                 anchors {
                     right: parent.right
