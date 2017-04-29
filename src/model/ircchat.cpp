@@ -474,21 +474,23 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 		QVariantList message;
 		const QString ME_PREFIX = "/me ";
 		QString displayMessage = msg;
-		if (displayMessage.startsWith(ME_PREFIX)) {
+		if (displayMessage.toLower().startsWith(ME_PREFIX)) {
 			isAction = true;
 			displayMessage = displayMessage.mid(ME_PREFIX.length());
 		}
-        const QString MSG_PREFIX = "/msg ";
-        if (displayMessage.startsWith(MSG_PREFIX)) {
-            isWhisper = true;
-            QString rest = displayMessage.mid(MSG_PREFIX.length());
-            int spacePos = rest.indexOf(' ');
-            if (spacePos == -1 || spacePos == rest.length() - 1) {
-                emit noticeReceived("Ignoring /msg with empty message");
-                return;
+        for (const QString & prefix : { "/msg ", "/w " }) {
+            if (displayMessage.toLower().startsWith(prefix)) {
+                displayMessage = displayMessage.mid(prefix.length());
+                isWhisper = true;
+                int spacePos = displayMessage.indexOf(' ');
+                if (spacePos == -1 || spacePos == displayMessage.length() - 1) {
+                    emit noticeReceived("Ignoring whisper with empty message");
+                    return;
+                }
+                recipient = displayMessage.left(spacePos);
+                displayMessage = displayMessage.mid(spacePos + 1);
+                break;
             }
-            recipient = rest.left(spacePos);
-            displayMessage = rest.mid(spacePos + 1);
         }
 
         if (sock) {

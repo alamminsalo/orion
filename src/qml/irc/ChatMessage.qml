@@ -255,7 +255,7 @@ Item {
         {
             var clickedUser = link.replace('user:',"");
             if (isWhisper) {
-                _input.text = "/msg " + clickedUser + " " + _input.text;
+                _input.text = "/w " + clickedUser + " " + _input.text;
             } else {
                 var value = "@" + clickedUser + ', ';
                 if (_input.text === "")
