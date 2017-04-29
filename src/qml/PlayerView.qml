@@ -564,6 +564,12 @@ Item {
                         chatview.status++;
                     }
                 }
+
+                ToolTip {
+                    visible: _viewerListButton.mouseArea.containsMouse
+                    delay: 666
+                    text: "Viewer List"
+                }
             }
         }
 
