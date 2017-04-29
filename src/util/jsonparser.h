@@ -54,6 +54,7 @@ public:
     static QMap<QString, QMap<QString, QString>> parseChannelBadgeUrls(const QByteArray &data);
     static QMap<QString, QMap<QString, QMap<QString, QString>>> parseBadgeUrlsBetaFormat(const QByteArray &data);
     static QList<ReplayChatMessage> parseVodChatPiece(const QByteArray &data);
+    static QMap<QString, QList<QString>> parseChatterList(const QByteArray &data);
 };
 
 #endif // JSONPARSER_H

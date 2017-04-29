@@ -128,6 +128,7 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeIm
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
     connect(netman, SIGNAL(vodStartGetOperationFinished(double)), this, SIGNAL(vodStartGetOperationFinished(double)));
     connect(netman, SIGNAL(vodChatPieceGetOperationFinished(QList<ReplayChatMessage>)), this, SIGNAL(vodChatPieceGetOperationFinished(QList<ReplayChatMessage>)));
+    connect(netman, SIGNAL(chatterListLoadOperationFinished(QMap<QString, QList<QString>>)), this, SLOT(processChatterList(QMap<QString, QList<QString>>)));
 
     connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
     load();
@@ -733,6 +734,10 @@ bool ChannelManager::loadChannelBetaBadgeUrls(int channel) {
     return out;
 }
 
+void ChannelManager::loadChatterList(const QString channel) {
+    netman->loadChatterList(channel);
+}
+
 void ChannelManager::getVodStartTime(quint64 vodId) {
     netman->getVodStartTime(vodId);
 }
@@ -809,6 +814,20 @@ void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quin
     qDeleteAll(list);
 
     emit followedUpdated();
+}
+
+void ChannelManager::processChatterList(QMap<QString, QList<QString>> chatters)
+{
+    QVariantMap out;
+    for (auto groupEntry = chatters.constBegin(); groupEntry != chatters.constEnd(); groupEntry++) {
+        QVariantList group;
+        for (const auto & chatter : groupEntry.value()) {
+            group.append(chatter);
+        }
+        out.insert(groupEntry.key(), group);
+    }
+
+    emit chatterListLoaded(out);
 }
 
 void ChannelManager::onNetworkAccessChanged(bool up)

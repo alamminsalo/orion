@@ -147,6 +147,7 @@ public:
     Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
     Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
     Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
+    Q_INVOKABLE void loadChatterList(const QString channel);
 
     Q_INVOKABLE void cancelLastVodChatRequest();
     Q_INVOKABLE void resetVodChat();
@@ -221,6 +222,8 @@ signals:
     void vodStartGetOperationFinished(double);
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
 
+    void chatterListLoaded(QVariantMap chatters);
+
 public slots:
     void checkFavourites();
     void addToFavourites(const quint32&);
@@ -248,6 +251,7 @@ private slots:
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
+    void processChatterList(QMap<QString, QList<QString>> chatters);
 };
 
 #endif //CHANNEL_MANAGER_H

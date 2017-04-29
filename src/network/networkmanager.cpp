@@ -380,6 +380,38 @@ void NetworkManager::getVodStartTime(quint64 vodId) {
 
 }
 
+void NetworkManager::loadChatterList(const QString channel) {
+    qDebug() << "Loading viewer list for" << channel;
+    const QString url = QString(TWITCH_TMI_USER_API) + channel + QString("/chatters");
+
+    qDebug() << "Request" << url;
+
+    QNetworkRequest request;
+    request.setUrl(url);
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(chatterListReply()));
+}
+
+void NetworkManager::chatterListReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+
+    //qDebug() << data;
+
+    QMap<QString, QList<QString>> ret = JsonParser::parseChatterList(data);
+
+    emit chatterListLoadOperationFinished(ret);
+
+    reply->deleteLater();
+}
+
 void NetworkManager::getVodChatPiece(quint64 vodId, quint64 offset) {
     QString url = QString(TWITCH_RECHAT_API) + QString("?start=%1&video_id=v%2").arg(offset).arg(vodId);
 
