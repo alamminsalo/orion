@@ -43,7 +43,8 @@ IrcChat::IrcChat(QObject *parent) :
     _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes"),
     _badgeProvider(nullptr),
     _cman(nullptr),
-    sock(nullptr)
+    sock(nullptr),
+    replayMode(false)
     {
 
     logged_in = false;
@@ -104,6 +105,7 @@ IrcChat::~IrcChat() {
 }
 
 void IrcChat::join(const QString channel, const QString channelId) {
+    replayMode = false;
 
     if (inRoom())
         leave();
@@ -130,6 +132,8 @@ void IrcChat::join(const QString channel, const QString channelId) {
 }
 
 void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset) {
+    replayMode = true;
+
     if (inRoom())
         leave();
 
@@ -552,7 +556,7 @@ void IrcChat::login()
     logged_in = true;
 
     //Join room automatically, if given
-    if (!room.isEmpty())
+    if (!room.isEmpty() && !replayMode)
         join(room, roomChannelId);
 }
 

@@ -132,9 +132,13 @@ Item {
 
         onConnectedChanged: {
             if (connected) {
-                console.log("Connected to chat")
                 if (root.channel) {
-                    joinChannel(root.channel, root.channelId)
+                    if (root.replayMode) {
+                        console.log("Reconnected; chat replay may resume")
+                    } else {
+                        console.log("Connected to chat")
+                        joinChannel(root.channel, root.channelId)
+                    }
                 }
             } else {
                 console.log("Disconnected from chat")

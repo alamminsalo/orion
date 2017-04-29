@@ -162,6 +162,7 @@ private:
     QTcpSocket *sock;
     QString room;
     QString roomChannelId;
+    bool replayMode;
     // map of channel name -> list of pairs (badge name, badge version)
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
