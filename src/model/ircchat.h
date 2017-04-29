@@ -50,6 +50,7 @@ struct ChatMessage {
     QVariantList badges;
     bool isChannelNotice;
     QString systemMessage;
+    bool isWhisper;
 };
 
 // Backend for chat
@@ -106,7 +107,7 @@ signals:
     void connectedChanged();
     void emoteSetIDsChanged();
     void anonymousChanged();
-    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage);
+    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage, bool isWhisper);
     void noticeReceived(QString message);
     void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
 

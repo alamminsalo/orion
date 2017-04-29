@@ -26,6 +26,7 @@ Item {
     property string jsonBadgeEntries
     property string emoteDirPath
     property bool isChannelNotice
+    property bool isWhisper
     property string systemMessage
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
@@ -252,13 +253,18 @@ Item {
     {
         if (link.substr(0,5) === "user:")
         {
-            var value = "@"+link.replace('user:',"")+', '
-            if (_input.text === "")
-            {
-                _input.text = value
-            }
-            else {
-                _input.text = _input.text + ' '+ value
+            var clickedUser = link.replace('user:',"");
+            if (isWhisper) {
+                _input.text = "/msg " + clickedUser + " " + _input.text;
+            } else {
+                var value = "@" + clickedUser + ', ';
+                if (_input.text === "")
+                {
+                    _input.text = value
+                }
+                else {
+                    _input.text = _input.text + ' '+ value
+                }
             }
 
         }
