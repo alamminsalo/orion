@@ -38,6 +38,8 @@ Item {
     property real _opacity: root.status > 1 ? 0.6 : 1.0
     property int chatWidth: width
 
+    property bool viewerListEnabled: false
+
     Rectangle {
         anchors.fill: parent
         color: Styles.sidebarBg
@@ -54,7 +56,7 @@ Item {
 
     function joinChannel(channel, channelId) {
         if (channel !== chat.channel || chat.replayMode) {
-            viewerList.enabled = false;
+            viewerListEnabled = false;
             chatModel.clear()
             chat.joinChannel(channel, channelId)
         }
@@ -66,7 +68,7 @@ Item {
     }
 
     function replayChat(channelName, channelId, vodId, startEpochTime) {
-        viewerList.enabled = false;
+        viewerListEnabled = false;
         chatModel.clear()
         chat.leaveChannel()
         chat.replayChat(channelName, channelId, vodId, startEpochTime);
@@ -149,7 +151,7 @@ Item {
 
     Rectangle {
         id: viewerList
-        enabled: false
+        enabled: viewerListEnabled
         property bool loading: true
 
         height: enabled? root.height : 0
@@ -202,7 +204,7 @@ Item {
             }
 
             onClicked: {
-                viewerList.enabled = false;
+                viewerListEnabled = false;
             }
         }
 
@@ -222,7 +224,7 @@ Item {
 
                 text: "Viewer List"
                 color: Styles.textColor
-                font.pixelSize: Style.titleFont.bigger
+                font.pixelSize: Styles.titleFont.bigger
                 font.bold: true
             }
         }
@@ -470,7 +472,7 @@ Item {
                 id: _input
                 anchors {
                     left: parent.left
-                    right: _viewerListButton.left
+                    right: _emoteButton.left
                     top: parent.top
                     bottom: parent.bottom
                     //left: parent.left
@@ -494,25 +496,6 @@ Item {
                 }
             }
 
-            IconButton {
-                id: _viewerListButton
-                icon: "list"
-
-                visible: root.width > 0
-
-                width: height * 0.6
-
-                anchors {
-                    right: _emoteButton.left
-                    top: parent.top
-                    bottom: parent.bottom
-                }
-
-                onClicked: {
-                    viewerList.enabled = !viewerList.enabled;
-                }
-            }
-
             IconButton{
                 id: _emoteButton
                 property bool emotePickerDownloadsInProgress : false
@@ -526,13 +509,12 @@ Item {
 
                 visible: root.width > 0
 
-                width: height * 0.6
+                width: height
 
                 anchors {
                     right: parent.right
                     top: parent.top
                     bottom: parent.bottom
-                    rightMargin: dp(5)
                 }
 
                 icon: "smile"
