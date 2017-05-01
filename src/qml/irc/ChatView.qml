@@ -160,11 +160,11 @@ Item {
             right: parent.right
             left: parent.left
         }
-        height: dp(30)
+        height: dp(40)
 
         IconButton {
             id: _viewerListButton
-            icon: "list"
+            icon: viewerListEnabled ? "times" : "list"
 
             enabled: (!isVod && currentChannel && currentChannel.name) ? true : false
 
@@ -206,7 +206,7 @@ Item {
         enabled: viewerListEnabled
         property bool loading: true
 
-        height: enabled? root.height : 0
+        height: enabled? parent.height : 0
 
         anchors {
             bottom: parent.bottom
@@ -241,35 +241,16 @@ Item {
             visible: viewerList.loading && viewerList.enabled
         }
 
-        IconButton {
-            icon: "times"
-
-            visible: viewerList.enabled
-
-            width: height
-
-            anchors {
-                left: viewerListHeading.left
-                top: viewerListHeading.top
-                bottom: viewerListHeading.bottom
-
-            }
-
-            onClicked: {
-                viewerListEnabled = false;
-            }
-        }
-
         Item {
             id: viewerListHeading
             visible: viewerList.enabled
             anchors {
-                top: parent.top
+                bottom: parent.top
                 left: parent.left
                 right: parent.right
             }
 
-            height: dp(60)
+            height: dp(40)
 
             Label {
                 anchors.centerIn: parent
