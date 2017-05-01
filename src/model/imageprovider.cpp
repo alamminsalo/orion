@@ -24,7 +24,7 @@
 #include "imageprovider.h"
 
 ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
-    _imageProviderName(imageProviderName), _extension(extension) {
+    _imageProviderName(imageProviderName), _extension(extension), _bulkDownloadStarting(false), _downloadCompletePending(false) {
 
     activeDownloadCount = 0;
 
@@ -92,27 +92,38 @@ bool ImageProvider::download(QString key) {
 }
 
 bool ImageProvider::bulkDownload(const QList<QString> & keys) {
-    const int MSEC_PER_DOWNLOAD = 32; // ~ 500kbit/sec for 2k images
+    Q_ASSERT(!_bulkDownloadStarting);
+    _bulkDownloadStarting = true;
+    const int MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
     qint64 startTime = QDateTime::currentMSecsSinceEpoch();
     qint64 nextDownloadTime = startTime;
     bool waitForDownloadComplete = false;
     for (const auto & key : keys) {
         if (makeAvailable(key)) {
             waitForDownloadComplete = true;
+            nextDownloadTime += MSEC_PER_DOWNLOAD;
+            do {
+                qApp->processEvents();
+                qint64 curTime = QDateTime::currentMSecsSinceEpoch();
+                if (curTime >= nextDownloadTime) break;
+                if (qAbs(curTime - startTime) > 600000) {
+                    // assume clock jump
+                    startTime = nextDownloadTime = curTime;
+                    break;
+                }
+            } while (true);
         }
-        nextDownloadTime += MSEC_PER_DOWNLOAD;
-        do {
+        else {
             qApp->processEvents();
-            qint64 curTime = QDateTime::currentMSecsSinceEpoch();
-            if (curTime >= nextDownloadTime) break;
-            if (qAbs(curTime - startTime) > 600000) {
-                // assume clock jump
-                startTime = nextDownloadTime = curTime;
-                break;
-            }
-        } while (true);
+        }
     }
-    return waitForDownloadComplete;
+    _bulkDownloadStarting = false;
+    if (_downloadCompletePending) {
+        _downloadCompletePending = false;
+        emit downloadComplete();
+    }
+
+    return waitForDownloadComplete && activeDownloadCount > 0;
 }
 
 
@@ -137,7 +148,12 @@ void ImageProvider::individualDownloadComplete(QString filename, bool hadError) 
     currentlyDownloading.remove(emoteKey);
 
     if (activeDownloadCount == 0) {
-        emit downloadComplete();
+        if (_bulkDownloadStarting) {
+            _downloadCompletePending = true;
+        }
+        else {
+            emit downloadComplete();
+        }
     }
 }
 

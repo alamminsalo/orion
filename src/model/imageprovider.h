@@ -98,6 +98,8 @@ private:
     int activeDownloadCount;
     QString _extension;
     QSet<QString> currentlyDownloading;
+    bool _bulkDownloadStarting;
+    bool _downloadCompletePending;
 };
 
 class URLFormatImageProvider : public ImageProvider {
