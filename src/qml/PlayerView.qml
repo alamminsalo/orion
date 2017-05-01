@@ -820,7 +820,7 @@ Item {
         id: chatControls
         anchors {
             top: parent.top
-            right: parent.right
+            right: chatview.right
         }
         width: chatview.width
         height: dp(30)
