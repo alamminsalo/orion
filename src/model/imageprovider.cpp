@@ -23,10 +23,16 @@
 #include <QDateTime>
 #include "imageprovider.h"
 
+const int ImageProvider::MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
+
 ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
     _imageProviderName(imageProviderName), _extension(extension), _bulkDownloadStarting(false), _downloadCompletePending(false) {
 
     activeDownloadCount = 0;
+
+    _bulkDownloadTimer.setInterval(MSEC_PER_DOWNLOAD);
+    _bulkDownloadTimer.setSingleShot(true);
+    connect(&_bulkDownloadTimer, SIGNAL(timeout()), this, SLOT(bulkDownloadStep()));
 
     QString useCacheDirName = cacheDirName != "" ? cacheDirName : imageProviderName;
     _cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QString("/" + useCacheDirName);
@@ -91,37 +97,38 @@ bool ImageProvider::download(QString key) {
     return true;
 }
 
-bool ImageProvider::bulkDownload(const QList<QString> & keys) {
-    Q_ASSERT(!_bulkDownloadStarting);
-    _bulkDownloadStarting = true;
-    const int MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
-    bool waitForDownloadComplete = false;
-    for (const auto & key : keys) {
-        qint64 curTime = QDateTime::currentMSecsSinceEpoch();
-        qint64 nextDownloadTime = curTime + MSEC_PER_DOWNLOAD;
+void ImageProvider::bulkDownloadStep() {
+    for (; _bulkDownloadPos != _curBulkDownloadKeys.constEnd(); _bulkDownloadPos++) {
+        const QString & key = *_bulkDownloadPos;
+
         if (makeAvailable(key)) {
-            waitForDownloadComplete = true;
-            do {
-                qApp->processEvents();
-                curTime = QDateTime::currentMSecsSinceEpoch();
-                if (curTime >= nextDownloadTime) break;
-                if (curTime < nextDownloadTime - 100) {
-                    // assume clock jump
-                    break;
-                }
-            } while (true);
+            // hit us back when the next time interval is up
+            _bulkDownloadTimer.start();
+            return;
         }
         else {
             qApp->processEvents();
         }
     }
+
     _bulkDownloadStarting = false;
     if (_downloadCompletePending) {
         _downloadCompletePending = false;
         emit downloadComplete();
     }
+}
 
-    return waitForDownloadComplete && activeDownloadCount > 0;
+bool ImageProvider::bulkDownload(const QList<QString> & keys) {
+    Q_ASSERT(!_bulkDownloadStarting);
+    _bulkDownloadStarting = true;
+
+    _curBulkDownloadKeys = keys;
+
+    _bulkDownloadPos = keys.constBegin();
+
+    bulkDownloadStep();
+
+    return _bulkDownloadStarting || activeDownloadCount > 0;
 }
 
 
