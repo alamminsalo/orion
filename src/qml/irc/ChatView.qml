@@ -33,6 +33,8 @@ Item {
             status = 0
     }
 
+    property bool chatViewVisible: root.width > 0
+
     visible: status > 0
 
     property real _opacity: root.status > 1 ? 0.6 : 1.0
@@ -309,7 +311,7 @@ Item {
     ListView {
         id: list
 
-        visible: !viewerList.enabled
+        visible: !viewerList.enabled && root.chatViewVisible
 
         property bool lock: true
         property int scrollbuf: 0
@@ -508,7 +510,7 @@ Item {
 
                 property bool pickerLoaded: false
 
-                visible: root.width > 0
+                visible: root.chatViewVisible
 
                 width: height
 
