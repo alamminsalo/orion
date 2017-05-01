@@ -818,11 +818,33 @@ Item {
     ChatView {
         id: chatview
 
+        // Use JS so we can control the order the anchors are set.
+        // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
         anchors {
             top: parent.top
             bottom: parent.bottom
-            left: g_cman.swapChat ? parent.left : undefined
-            right: !g_cman.swapChat ? parent.right : undefined
+        }
+
+        function updateAnchors() {
+            console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
+            if (g_cman.swapChat) {
+                anchors.right = undefined;
+                anchors.left = parent.left;
+            } else {
+                anchors.left = undefined;
+                anchors.right = parent.right;
+            }
+        }
+
+        Component.onCompleted: {
+            chatview.updateAnchors();
+        }
+
+        Connections {
+            target: g_cman
+            onSwapChatChanged: {
+                chatview.updateAnchors();
+            }
         }
 
         width: visible && !smallMode ? dp(250) : 0
