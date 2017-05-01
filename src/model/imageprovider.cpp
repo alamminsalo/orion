@@ -19,6 +19,8 @@
 #include <QDebug>
 #include <QNetworkRequest>
 #include <QStandardPaths>
+#include <QApplication>
+#include <QDateTime>
 #include "imageprovider.h"
 
 ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
@@ -90,11 +92,25 @@ bool ImageProvider::download(QString key) {
 }
 
 bool ImageProvider::bulkDownload(const QList<QString> & keys) {
+    const int MSEC_PER_DOWNLOAD = 32; // ~ 500kbit/sec for 2k images
+    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    qint64 nextDownloadTime = startTime;
     bool waitForDownloadComplete = false;
     for (const auto & key : keys) {
         if (makeAvailable(key)) {
             waitForDownloadComplete = true;
         }
+        nextDownloadTime += MSEC_PER_DOWNLOAD;
+        do {
+            qApp->processEvents();
+            qint64 curTime = QDateTime::currentMSecsSinceEpoch();
+            if (curTime >= nextDownloadTime) break;
+            if (qAbs(curTime - startTime) > 600000) {
+                // assume clock jump
+                startTime = nextDownloadTime = curTime;
+                break;
+            }
+        } while (true);
     }
     return waitForDownloadComplete;
 }
