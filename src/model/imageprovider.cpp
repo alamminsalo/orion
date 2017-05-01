@@ -95,20 +95,18 @@ bool ImageProvider::bulkDownload(const QList<QString> & keys) {
     Q_ASSERT(!_bulkDownloadStarting);
     _bulkDownloadStarting = true;
     const int MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
-    qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-    qint64 nextDownloadTime = startTime;
     bool waitForDownloadComplete = false;
     for (const auto & key : keys) {
+        qint64 curTime = QDateTime::currentMSecsSinceEpoch();
+        qint64 nextDownloadTime = curTime + MSEC_PER_DOWNLOAD;
         if (makeAvailable(key)) {
             waitForDownloadComplete = true;
-            nextDownloadTime += MSEC_PER_DOWNLOAD;
             do {
                 qApp->processEvents();
-                qint64 curTime = QDateTime::currentMSecsSinceEpoch();
+                curTime = QDateTime::currentMSecsSinceEpoch();
                 if (curTime >= nextDownloadTime) break;
-                if (qAbs(curTime - startTime) > 600000) {
+                if (curTime < nextDownloadTime - 100) {
                     // assume clock jump
-                    startTime = nextDownloadTime = curTime;
                     break;
                 }
             } while (true);
