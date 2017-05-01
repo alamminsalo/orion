@@ -824,7 +824,7 @@ Item {
         }
         width: chatview.width
         height: dp(30)
-        visible: chatview.visible
+        visible: chatview.visible && !smallMode
 
         IconButton {
             id: _viewerListButton
