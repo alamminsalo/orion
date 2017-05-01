@@ -57,7 +57,7 @@ bool ImageProvider::makeAvailable(QString key) {
 
 bool ImageProvider::download(QString key) {
     if (_imageTable.contains(key)) {
-        qDebug() << "already in the table";
+        //qDebug() << "already in the table";
         return false;
     }
 

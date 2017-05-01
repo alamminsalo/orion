@@ -36,7 +36,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
     if (splitPos != -1) {
         const QString badge = key.left(splitPos);
         const QString version = key.mid(splitPos + 1);
-        qDebug() << "badge hunt: channel name" << _channelName << "channel id" << _channelId << "badge" << badge << "version" << version;
+        //qDebug() << "badge hunt: channel name" << _channelName << "channel id" << _channelId << "badge" << badge << "version" << version;
 
         if (_channelManager->getChannelBadgeBetaUrl(_channelId, badge, version, betaImageFormat, url)) {
             return QList<QString>({ _channelId, badge, version, betaImageFormat }).join("-");
