@@ -50,6 +50,7 @@ IrcChat::IrcChat(QObject *parent) :
     logged_in = false;
 
     connect(&_emoteProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+    connect(&_emoteProvider, &ImageProvider::bulkDownloadComplete, this, &IrcChat::bulkDownloadComplete);
 
     room = "";
 

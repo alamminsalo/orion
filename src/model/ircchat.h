@@ -113,6 +113,8 @@ signals:
 
     void downloadComplete();
     bool downloadError();
+
+    void bulkDownloadComplete();
     
 public slots:
     void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);

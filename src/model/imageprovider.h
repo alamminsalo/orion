@@ -82,6 +82,7 @@ public:
 
 signals:
     void downloadComplete();
+    void bulkDownloadComplete();
 
 public slots:
     bool bulkDownload(const QList<QString> & keys);
@@ -108,7 +109,6 @@ private:
     QTimer _bulkDownloadTimer;
     QList<QString> _curBulkDownloadKeys;
     QList<QString>::const_iterator _bulkDownloadPos;
-    bool _downloadCompletePending;
 };
 
 class URLFormatImageProvider : public ImageProvider {
