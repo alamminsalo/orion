@@ -121,7 +121,7 @@ public slots:
     void onSockStateChanged();
     void login();
 
-    bool bulkDownloadEmotes(QList<QString> keys);
+    void bulkDownloadEmotes(QList<QString> keys);
 
 private slots:
     void receive();

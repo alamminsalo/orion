@@ -26,7 +26,7 @@
 const int ImageProvider::MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
 
 ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
-    _imageProviderName(imageProviderName), _extension(extension), _bulkDownloadStarting(false) {
+    _imageProviderName(imageProviderName), _extension(extension) {
 
     activeDownloadCount = 0;
 
@@ -111,21 +111,15 @@ void ImageProvider::bulkDownloadStep() {
         }
     }
 
-    _bulkDownloadStarting = false;
     emit bulkDownloadComplete();
 }
 
-bool ImageProvider::bulkDownload(const QList<QString> & keys) {
-    Q_ASSERT(!_bulkDownloadStarting);
-    _bulkDownloadStarting = true;
-
+void ImageProvider::bulkDownload(const QList<QString> & keys) {
     _curBulkDownloadKeys = keys;
 
     _bulkDownloadPos = keys.constBegin();
 
     bulkDownloadStep();
-
-    return _bulkDownloadStarting || activeDownloadCount > 0;
 }
 
 

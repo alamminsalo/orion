@@ -1046,6 +1046,6 @@ void IrcChat::handleDownloadComplete() {
     }
 }
 
-bool IrcChat::bulkDownloadEmotes(QList<QString> keys) {
-    return _emoteProvider.bulkDownload(keys);
+void IrcChat::bulkDownloadEmotes(QList<QString> keys) {
+    _emoteProvider.bulkDownload(keys);
 }

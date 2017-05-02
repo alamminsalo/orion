@@ -85,7 +85,7 @@ signals:
     void bulkDownloadComplete();
 
 public slots:
-    bool bulkDownload(const QList<QString> & keys);
+    void bulkDownload(const QList<QString> & keys);
     void individualDownloadComplete(QString filename, bool hadError);
 
 protected slots:
@@ -105,7 +105,6 @@ private:
     int activeDownloadCount;
     QString _extension;
     QSet<QString> currentlyDownloading;
-    bool _bulkDownloadStarting;
     QTimer _bulkDownloadTimer;
     QList<QString> _curBulkDownloadKeys;
     QList<QString>::const_iterator _bulkDownloadPos;
