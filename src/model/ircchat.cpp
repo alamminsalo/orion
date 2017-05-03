@@ -50,6 +50,7 @@ IrcChat::IrcChat(QObject *parent) :
     logged_in = false;
 
     connect(&_emoteProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+    connect(&_emoteProvider, &ImageProvider::bulkDownloadComplete, this, &IrcChat::bulkDownloadComplete);
 
     room = "";
 
@@ -1045,6 +1046,6 @@ void IrcChat::handleDownloadComplete() {
     }
 }
 
-bool IrcChat::bulkDownloadEmotes(QList<QString> keys) {
-    return _emoteProvider.bulkDownload(keys);
+void IrcChat::bulkDownloadEmotes(QList<QString> keys) {
+    _emoteProvider.bulkDownload(keys);
 }

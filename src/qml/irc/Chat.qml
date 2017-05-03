@@ -25,7 +25,7 @@ Item {
     signal notify(string message)
     signal clear()
     signal emoteSetIDsChanged(var emoteSetIDs)
-    signal downloadComplete()
+    signal bulkDownloadComplete()
     signal channelBadgeUrlsLoaded(string channel, var badgeUrls)
     signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
 
@@ -159,9 +159,8 @@ Item {
             root.emoteSetIDsChanged(emoteSetIDs)
         }
 
-        onDownloadComplete: {
-            console.log("inner download complete");
-            root.downloadComplete();
+        onBulkDownloadComplete: {
+            root.bulkDownloadComplete();
         }
     }
 }

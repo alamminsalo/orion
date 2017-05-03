@@ -113,13 +113,15 @@ signals:
 
     void downloadComplete();
     bool downloadError();
+
+    void bulkDownloadComplete();
     
 public slots:
     void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);
     void onSockStateChanged();
     void login();
 
-    bool bulkDownloadEmotes(QList<QString> keys);
+    void bulkDownloadEmotes(QList<QString> keys);
 
 private slots:
     void receive();

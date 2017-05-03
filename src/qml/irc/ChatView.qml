@@ -758,12 +758,7 @@ Item {
                             }
                             curDownloading ++;
                             console.log("Downloading emote set #", curDownloading, curSetID);
-                            var waitForDownload = chat.bulkDownloadEmotes(curSetList);
-
-                            if (!waitForDownload) {
-                                showLastSet();
-                                nextDownload();
-                            }
+                            chat.bulkDownloadEmotes(curSetList);
                         } else {
                             emotePickerDownloadsInProgress = false;
                             _emotePicker.loading = false;
@@ -786,7 +781,7 @@ Item {
 
                 Connections {
                     target: chat
-                    onDownloadComplete: {
+                    onBulkDownloadComplete: {
                         //console.log("outer download complete");
                         if (_emoteButton.emotePickerDownloadsInProgress) {
                             //console.log("handling emote picker set finished");
@@ -816,6 +811,8 @@ Item {
         property var lastChannelBetaBadgeSetData: {}
         property var globalBetaBadgeSetData: {}
         property var lastBetaBadgeSetData: {}
+
+        property bool debugOutput: false
 
         onLastEmoteSetsChanged: {
             initEmotesMaps();
@@ -896,7 +893,7 @@ Item {
         }
 
         onMessageReceived: {
-            //console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString())
+            if (debugOutput) console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString());
 
             if (chatColor != "") {
                 colors[user] = chatColor;
@@ -908,17 +905,17 @@ Item {
 
             // ListElement doesn't support putting in an array value, ugh.
             var serializedMessage = JSON.stringify(message);
-            console.log("onMessageReceived: passing: " + serializedMessage);
+            if (debugOutput) console.log("onMessageReceived: passing: " + serializedMessage);
 
             var badgeEntries = [];
             var imageFormatToUse = "image";
             var badgesSeen = {};
 
-            console.log("badges for this message:")
+            if (debugOutput) console.log("badges for this message:")
             for (var k = 0; k < badges.length; k++) {
                 var badgeName = badges[k][0];
                 var versionStr = badges[k][1];
-                console.log("  badge", badgeName, versionStr);
+                if (debugOutput) console.log("  badge", badgeName, versionStr);
 
                 if (badgesSeen[badgeName]) {
                     continue;
@@ -938,7 +935,7 @@ Item {
                         console.log("  available versions are", keysStr(badgeSetData))
                     } else {
                         var entry = {"name": versionObj.title, "url": badgeLocalUrl, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
-                        console.log("adding entry", JSON.stringify(entry));
+                        if (debugOutput) console.log("adding entry", JSON.stringify(entry));
                         badgeEntries.push(entry);
                         curBadgeAdded = true;
                     }
@@ -946,12 +943,14 @@ Item {
 
                 var badgeUrls = lastBadgeUrls[badgeName];
                 if (!curBadgeAdded && badgeUrls != null) {
-                    console.log("  badge urls:")
-                    for (var j in badgeUrls) {
-                        console.log("    key", j, "value", badgeUrls[j]);
+                    if (debugOutput) {
+                        console.log("  badge urls:")
+                        for (var j in badgeUrls) {
+                            console.log("    key", j, "value", badgeUrls[j]);
+                        }
                     }
                     var entry = {"name": badgeName, "url": badgeLocalUrl};
-                    console.log("adding entry", JSON.stringify(entry));
+                    if (debugOutput) console.log("adding entry", JSON.stringify(entry));
                     badgeEntries.push(entry);
                     curBadgeAdded = true;
                 }
