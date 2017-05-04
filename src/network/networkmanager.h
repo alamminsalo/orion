@@ -76,6 +76,8 @@ public:
     void getChannelBadgeUrls(const QString &access_token, const QString &channel);
     void getChannelBadgeUrlsBeta(const int channelID);
     void getGlobalBadgesUrlsBeta();
+    void getChannelBitsUrls(const int channelID);
+    void getGlobalBitsUrls();
 
     Q_INVOKABLE void getVodStartTime(quint64 vodId);
     Q_INVOKABLE void getVodChatPiece(quint64 vodId, quint64 offset);
@@ -118,6 +120,9 @@ signals:
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
     void chatterListLoadOperationFinished(QMap<QString, QList<QString>>);
 
+    void getChannelBitsUrlsOperationFinished(int channelID, QMap<QString, QMap<QString, QString>> channelBitsUrls);
+    void getGlobalBitsUrlsOperationFinished(QMap<QString, QMap<QString, QString>> globalBitsUrls);
+
     void networkAccessChanged(bool up);
 
 private slots:
@@ -147,6 +152,8 @@ private slots:
     void channelBadgeUrlsReply();
     void channelBadgeUrlsBetaReply();
     void globalBadgeUrlsBetaReply();
+    void channelBitsUrlsReply();
+    void globalBitsUrlsReply();
 
 private:
     static const QString CHANNEL_BADGES_URL_PREFIX;

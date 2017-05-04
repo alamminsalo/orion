@@ -74,6 +74,54 @@ const QUrl BadgeImageProvider::getUrlForKey(QString & key) {
     return QUrl();
 }
 
+BitsImageProvider::BitsImageProvider(ChannelManager * channelManager) : ImageProvider("bits", ".png"), _channelManager(channelManager) {
+
+}
+
+QString BitsImageProvider::getCanonicalKey(QString key) {
+    // input key has a prefix and a bits level, separated by a -
+
+    QString url;
+    
+    const QString theme = "dark";
+    const QString type = "static";
+    const QString size = "1";
+
+    int splitPos = key.indexOf('-');
+    if (splitPos != -1) {
+        QString prefix = key.left(splitPos);
+        QString minBits = key.mid(splitPos + 1);
+
+        if (_channelManager->getChannelBitsUrl(_channelId, prefix, minBits, url)) {
+            return QList<QString>({QString::number(_channelId), theme, type, size, prefix, minBits}).join("-");
+        }
+        if (_channelManager->getChannelBitsUrl(-1, prefix, minBits, url)) {
+            return QList<QString>({ "GLOBAL", theme, type, size, prefix, minBits }).join("-");
+        }
+    }
+    return key;
+}
+
+
+const QUrl BitsImageProvider::getUrlForKey(QString & key) {
+    QString url;
+
+    QList<QString> parts = key.split("-");
+    if (parts.length() == 6) {
+        const QString & channelIdStr = parts[0];
+        const QString & prefix = parts[4];
+        const QString & minBits = parts[5];
+        const int channelId = channelIdStr == "GLOBAL" ? -1 : channelIdStr.toInt();
+
+        if (_channelManager->getChannelBitsUrl(channelId, prefix, minBits, url)) {
+            return url;
+        }
+    }
+    qDebug() << "Invalid bits cache key" << key;
+    return QUrl();
+}
+
+
 ChannelListModel *ChannelManager::createFollowedChannelsModel()
 {
     ChannelListModel *model = new ChannelListModel();
@@ -84,7 +132,7 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
     return model;
 }
 
-ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeImageProvider(this) {
+ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeImageProvider(this), bitsImageProvider(this) {
     access_token = "";
     tempFavourites = 0;
 
@@ -125,6 +173,10 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeIm
     connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>>)));
     connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
     connect(netman, SIGNAL(getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
+
+    connect(netman, SIGNAL(getChannelBitsUrlsOperationFinished(int, QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBitsUrlsLoaded(int, QMap<QString, QMap<QString, QString>>)));
+    connect(netman, SIGNAL(getGlobalBitsUrlsOperationFinished(QMap<QString, QMap<QString, QString>>)), this, SLOT(innerGlobalBitsUrlsLoaded(QMap<QString, QMap<QString, QString>>)));
+
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
     connect(netman, SIGNAL(vodStartGetOperationFinished(double)), this, SIGNAL(vodStartGetOperationFinished(double)));
     connect(netman, SIGNAL(vodChatPieceGetOperationFinished(QList<ReplayChatMessage>)), this, SIGNAL(vodChatPieceGetOperationFinished(QList<ReplayChatMessage>)));
@@ -621,7 +673,6 @@ void ChannelManager::notifyMultipleChannelsOnline(const QList<Channel*> &channel
     }
 }
 
-
 //Login function
 void ChannelManager::onUserNameUpdated(const QString &name)
 {
@@ -710,8 +761,8 @@ bool ChannelManager::loadChannelBetaBadgeUrls(int channel) {
     bool out = false;
 
     const QString channelKey = QString::number(channel);
-    auto result = channelBadgeBetaUrls.find(channelKey);
-    if (result != channelBadgeBetaUrls.end()) {
+    auto result = channelBadgeBetaUrls.constFind(channelKey);
+    if (result != channelBadgeBetaUrls.constEnd()) {
         // deliver cached channel beta badge URLS
         emit channelBadgeBetaUrlsLoaded(channelKey, convertBetaBadges(result.value()));
     }
@@ -728,6 +779,50 @@ bool ChannelManager::loadChannelBetaBadgeUrls(int channel) {
     }
     else {
         netman->getGlobalBadgesUrlsBeta();
+        out = true;
+    }
+
+    return out;
+}
+
+/*
+QVariantMap convertBitsUrls(const QMap<QString, QMap<QString, QString>> & bitsUrls) {
+    QVariantMap out;
+    for (auto one = bitsUrls.constBegin(); one != bitsUrls.constEnd(); one++) {
+        const auto & twoMap = one.value();
+        QVariantMap oneObj;
+        for (auto two = twoMap.constBegin(); two != twoMap.constEnd(); two++) {
+            oneObj.insert(two.key(), two.value());
+        }
+        out.insert(one.key(), oneObj);
+    }
+
+    return out;
+}
+*/
+
+bool ChannelManager::loadChannelBitsUrls(int channel) {
+    bool out = false;
+
+    const int GLOBAL_BITS_IDENTIFIER = -1;
+
+    auto result = channelBitsUrls.find(channel);
+    if (result != channelBitsUrls.end()) {
+        // deliver cached channel bits URLS
+        emit channelBitsUrlsLoaded(channel, result.value());
+    }
+    else {
+        netman->getChannelBitsUrls(channel);
+        out = true;
+    }
+
+    result = channelBitsUrls.find(GLOBAL_BITS_IDENTIFIER);
+    if (result != channelBitsUrls.end()) {
+        // deliver cached channel bits URLS
+        emit channelBitsUrlsLoaded(GLOBAL_BITS_IDENTIFIER, result.value());
+    }
+    else {
+        netman->getGlobalBitsUrls();
         out = true;
     }
 
@@ -788,6 +883,21 @@ void ChannelManager::innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QSt
     channelBadgeBetaUrls.insert(GLOBAL_BADGES_KEY, badgeData);
 
     emit channelBadgeBetaUrlsLoaded(GLOBAL_BADGES_KEY, convertBetaBadges(badgeData));
+}
+
+void ChannelManager::innerChannelBitsUrlsLoaded(int channelID, QMap<QString, QMap<QString, QString>> curChannelBitsUrls) {
+    channelBitsUrls.remove(channelID);
+    channelBitsUrls.insert(channelID, curChannelBitsUrls);
+
+    emit channelBitsUrlsLoaded(channelID, curChannelBitsUrls);
+}
+
+void ChannelManager::innerGlobalBitsUrlsLoaded(QMap<QString, QMap<QString, QString>> globalBitsUrls) {
+    const int GLOBAL_BITS_KEY = -1;
+    channelBitsUrls.remove(GLOBAL_BITS_KEY);
+    channelBitsUrls.insert(GLOBAL_BITS_KEY, globalBitsUrls);
+
+    emit channelBitsUrlsLoaded(GLOBAL_BITS_KEY, globalBitsUrls);
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)

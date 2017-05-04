@@ -28,6 +28,7 @@ Item {
     signal bulkDownloadComplete()
     signal channelBadgeUrlsLoaded(string channel, var badgeUrls)
     signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
+    signal channelBitsUrlsLoaded(int channelID, var bitsUrls)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
@@ -60,29 +61,36 @@ Item {
             console.log("onChannelBadgeBetaUrlsLoaded", "channel", channel, "badgeSetData", badgeSetData);
             root.channelBadgeBetaUrlsLoaded(channel, badgeSetData);
         }
+
+        onChannelBitsUrlsLoaded: {
+            console.log("onChannelBitsUrlsLoaded", "channelID", channelID, "bitsUrls", bitsUrls);
+            root.channelBitsUrlsLoaded(channelID, bitsUrls);
+        }
+    }
+
+    function enterChannelCommon(channelName, channelId) {
+        root.channel = channelName
+        root.channelId = channelId
+        g_cman.loadChannelBadgeUrls(channelName);
+        g_cman.loadChannelBetaBadgeUrls(channelId);
+        g_cman.loadChannelBitsUrls(channelId);
     }
 
     function joinChannel(channelName, channelId) {
         chat.join(channelName, channelId)
-        root.channel = channelName
-        root.channelId = channelId
+        enterChannelCommon(channelName, channelId);
         if (root.replayMode) {
             chat.replayStop();
         }
         root.replayMode = false;
         messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName, false)
-        g_cman.loadChannelBadgeUrls(channelName);
-        g_cman.loadChannelBetaBadgeUrls(channelId);
     }
 
     function replayChat(channelName, channelId, vodId, startEpochTime) {
         chat.replay(channelName, channelId, vodId, startEpochTime, 0)
-        root.channel = channelName
-        root.channelId = channelId
+        enterChannelCommon(channelName, channelId);
         root.replayMode = true
         messageReceived("notice", null, "", false, false, false, [], true, "Starting chat replay #" + channelName + " v" + vodId, false)
-        g_cman.loadChannelBadgeUrls(channelName);
-        g_cman.loadChannelBetaBadgeUrls(channelId);
     }
 
     function durationStr(duration) {

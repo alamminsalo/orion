@@ -46,6 +46,19 @@ private:
     QString _channelId;
 };
 
+class BitsImageProvider : public ImageProvider {
+    Q_OBJECT
+public:
+    BitsImageProvider(ChannelManager * channelManager);
+    void setChannelId(int channelId) { _channelId = channelId; }
+    virtual QString getCanonicalKey(QString key);
+protected:
+    virtual const QUrl getUrlForKey(QString & key);
+private:
+    ChannelManager * _channelManager;
+    int _channelId;
+};
+
 class ChannelManager: public QObject
 {
     Q_OBJECT
@@ -95,8 +108,10 @@ protected:
     QMap<int, QMap<int, QString>> lastEmoteSets;
     QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
     QMap<QString, QMap<QString, QMap<QString, QMap<QString, QString>>>> channelBadgeBetaUrls;
+    QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsUrls;
 
     BadgeImageProvider badgeImageProvider;
+    BitsImageProvider bitsImageProvider;
 
 public:
     ChannelManager(NetworkManager *netman);
@@ -147,6 +162,7 @@ public:
     Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
     Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
     Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
+    Q_INVOKABLE bool loadChannelBitsUrls(int channel);
     Q_INVOKABLE void loadChatterList(const QString channel);
 
     Q_INVOKABLE void cancelLastVodChatRequest();
@@ -162,6 +178,10 @@ public:
     
     BadgeImageProvider * getBadgeImageProvider() {
         return &badgeImageProvider;
+    }
+
+    BitsImageProvider * getBitsImageProvider() {
+        return &bitsImageProvider;
     }
 
     bool getChannelBadgeUrl(const QString channel, const QString badgeName, const QString imageFormat, QString & outUrl) {
@@ -197,6 +217,24 @@ public:
         return false;
     }
 
+    bool getChannelBitsUrl(const int channelId, const QString & prefix, const QString & minBits, QString & outUrl) {
+        auto channelEntry = channelBitsUrls.find(channelId);
+        if (channelEntry != channelBitsUrls.end()) {
+            auto actionEntry = channelEntry.value().find(prefix);
+            if (actionEntry != channelEntry.value().end()) {
+                auto tierEntry = actionEntry.value().find(minBits);
+                if (tierEntry != actionEntry.value().end()) {
+                    outUrl = tierEntry.value();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Map of action prefix -> bits number str -> url
+    typedef QMap<QString, QMap<QString, QString>> BitsUrlsMap;
+
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
     void resultsUpdated();
@@ -218,6 +256,8 @@ signals:
     void emoteSetsLoaded(QVariantMap emoteSets);
     void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
     void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
+
+    void channelBitsUrlsLoaded(const int channelID, BitsUrlsMap bitsUrls);
 
     void vodStartGetOperationFinished(double);
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
@@ -249,6 +289,8 @@ private slots:
     void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
     void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
+    void innerChannelBitsUrlsLoaded(int channelID, QMap<QString, QMap<QString, QString>> channelBitsUrls);
+    void innerGlobalBitsUrlsLoaded(QMap<QString, QMap<QString, QString>> globalBitsUrls);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
     void processChatterList(QMap<QString, QList<QString>> chatters);

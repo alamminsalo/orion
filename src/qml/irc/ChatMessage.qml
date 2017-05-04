@@ -196,14 +196,13 @@ Item {
           height: _emoteImg.height
           Image {
             id: _emoteImg
-            // synchronous to simplify CustomFlow
             Component.onCompleted: {
-              source = "image://emote/" + msgItem.emoteId.toString();
+              source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
             }
 
             ToolTip {
-                visible: _emoteImgMouseArea.containsMouse && msgItem.emoteText != null
-                text: msgItem.emoteText
+                visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
+                text: msgItem.originalText
             }
           }
       }
@@ -217,7 +216,6 @@ Item {
           height: _badgeImg.height
           Image {
             id: _badgeImg
-            // synchronous to simplify CustomFlow
             Component.onCompleted: {
               source = badgeEntry.url;
             }

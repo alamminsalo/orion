@@ -597,6 +597,82 @@ void NetworkManager::getGlobalBadgesUrlsBeta() {
     connect(reply, SIGNAL(finished()), this, SLOT(globalBadgeUrlsBetaReply()));
 }
 
+void NetworkManager::getChannelBitsUrls(const int channelID) {
+    QString url = QString(KRAKEN_API) + QString("/bits/actions?channel_id=") + QString::number(channelID);
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setRawHeader("Accept", QString("application/vnd.twitchtv.v5+json").toUtf8());
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(channelBitsUrlsReply()));
+}
+
+void NetworkManager::channelBitsUrlsReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QString urlString = reply->url().toString();
+
+    qDebug() << "url was" << urlString;
+
+    int eqPos = urlString.lastIndexOf('=');
+
+    if (eqPos != -1) {
+        QString channelIDStr = urlString.mid(eqPos + 1);
+        int channelID = channelIDStr.toInt();
+        qDebug() << "bits urls for channel" << channelID << "loaded";
+        auto badges = JsonParser::parseBitsUrlsFormat(data);
+
+        emit getChannelBitsUrlsOperationFinished(channelID, badges);
+    }
+    else {
+        qDebug() << "can't determine channel from request url";
+    }
+
+    reply->deleteLater();
+}
+
+void NetworkManager::getGlobalBitsUrls() {
+    QString url = QString(KRAKEN_API) + QString("/bits/actions");
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(globalBitsUrlsReply()));
+}
+
+void NetworkManager::globalBitsUrlsReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    QString urlString = reply->url().toString();
+
+
+    auto badges = JsonParser::parseBitsUrlsFormat(data);
+
+    emit getGlobalBitsUrlsOperationFinished(badges);
+
+    reply->deleteLater();
+}
+
 void NetworkManager::editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add)
 {
     QString url = QString(KRAKEN_API) + "/users/" + user

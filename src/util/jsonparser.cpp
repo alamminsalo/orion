@@ -525,6 +525,49 @@ QMap<QString, QMap<QString, QMap<QString, QString>>> JsonParser::parseBadgeUrlsB
     return out;
 }
 
+QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByteArray &data)
+{
+    const QString BITS_THEME = "dark";
+    const QString BITS_TYPE = "static";
+    const QString BITS_SIZE = "1";
+
+    QMap<QString, QMap<QString, QString>> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        auto actions = json["actions"].toArray();
+        for (const auto & actionEntry : actions) {
+            
+            QMap<QString, QString> actionMap;
+
+            const QJsonObject & actionObj = actionEntry.toObject();
+            QString actionPrefix = actionObj["prefix"].toString();
+
+            const QJsonArray & tiers = actionObj["tiers"].toArray();
+            for (const auto & tierEntry : tiers) {
+                const QJsonObject & tierObj = tierEntry.toObject();
+
+                int minBits = tierObj["min_bits"].toInt();
+
+                const QString & url = tierObj["images"].toObject()[BITS_THEME].toObject()[BITS_TYPE].toObject()[BITS_SIZE].toString();
+
+                qDebug() << "bits url for" << actionPrefix << "minBits" << minBits << "is" << url;
+                actionMap.insert(QString::number(minBits), url);
+            }
+
+            if (actionMap.size() > 0) {
+                out.insert(actionPrefix, actionMap);
+            }
+        }
+    }
+
+    return out;
+}
+
 int JsonParser::parseTotal(const QByteArray &data)
 {
     int total = 0;

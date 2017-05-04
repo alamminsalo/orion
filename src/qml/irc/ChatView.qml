@@ -831,9 +831,8 @@ Item {
             for (var i in emoteSets) {
                 //console.log("  ", i);
                 var entry = emoteSets[i];
-                for (var emoteIdStr in entry) {
-                    var emoteId = parseInt(emoteIdStr);
-                    var emoteText = entry[emoteIdStr];
+                for (var emoteId in entry) {
+                    var emoteText = entry[emoteId];
                     if (regexExactMatch(plainText, emoteText)) {
                         //console.log("adding plain text emote", emoteText, emoteId);
                         _textEmotesMap[emoteText] = emoteId;

@@ -51,6 +51,7 @@ struct ChatMessage {
     bool isChannelNotice;
     QString systemMessage;
     bool isWhisper;
+    QString bitsNumber;
 };
 
 // Backend for chat
@@ -129,6 +130,7 @@ private slots:
     void handleDownloadComplete();
     void handleVodStartTime(double);
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
+    void handleChannelBitsUrlsLoaded(const int channelID, ChannelManager::BitsUrlsMap bitsUrls);
 
 private:
     static const qint16 PORT;
@@ -136,8 +138,11 @@ private:
 
     static const QString IMAGE_PROVIDER_EMOTE;
     static const QString EMOTICONS_URL_FORMAT;
+    static const QString IMAGE_PROVIDER_BITS;
+    static const QString BITS_URL_FORMAT;
 
     URLFormatImageProvider _emoteProvider;
+    BitsImageProvider * _bitsProvider;
     BadgeImageProvider * _badgeProvider;
     ChannelManager * _cman;
     
@@ -159,7 +164,7 @@ private:
     void initSocket();
     void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse);
     QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
-    void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
+    void createMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QString bitsNumber, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
@@ -192,6 +197,15 @@ private:
 
     void replayChatMessage(const ReplayChatMessage &);
     void replayUpdateCommon();
+
+    QMap<QString, QRegExp> lastCurChannelBitsRegexes;
+    QMap<QString, QRegExp> lastGlobalBitsRegexes;
+
+    enum ImageEntryKind { emote, bits };
+
+    typedef QMap<int, QPair<int, QPair<ImageEntryKind, QString>>> ImagePositionsMap;
+
+    void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
 };
 
 #endif // IRCCHAT_H
