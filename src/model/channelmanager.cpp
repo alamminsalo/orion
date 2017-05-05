@@ -74,7 +74,7 @@ const QUrl BadgeImageProvider::getUrlForKey(QString & key) {
     return QUrl();
 }
 
-BitsImageProvider::BitsImageProvider(ChannelManager * channelManager) : ImageProvider("bits", ".png"), _channelManager(channelManager) {
+BitsImageProvider::BitsImageProvider(ChannelManager * channelManager) : ImageProvider("bits", ".gif"), _channelManager(channelManager) {
 
 }
 
@@ -84,7 +84,7 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
     QString url;
     
     const QString theme = "dark";
-    const QString type = "static";
+    const QString type = "animated";
     const QString size = "1";
 
     int splitPos = key.indexOf('-');
@@ -103,8 +103,7 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
     return key;
 }
 
-
-const QUrl BitsImageProvider::getUrlForKey(QString & key) {
+const QUrl ChannelManager::getBitsUrlForKey(const QString & key) const {
     QString url;
 
     QList<QString> parts = key.split("-");
@@ -114,12 +113,16 @@ const QUrl BitsImageProvider::getUrlForKey(QString & key) {
         const QString & minBits = parts[5];
         const int channelId = channelIdStr == "GLOBAL" ? -1 : channelIdStr.toInt();
 
-        if (_channelManager->getChannelBitsUrl(channelId, prefix, minBits, url)) {
+        if (getChannelBitsUrl(channelId, prefix, minBits, url)) {
             return url;
         }
     }
     qDebug() << "Invalid bits cache key" << key;
     return QUrl();
+}
+
+const QUrl BitsImageProvider::getUrlForKey(QString & key) {
+    return _channelManager->getBitsUrlForKey(key);
 }
 
 

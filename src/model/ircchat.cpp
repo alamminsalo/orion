@@ -859,6 +859,8 @@ void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePosition
         case ImageEntryKind::bits:
             if (_bitsProvider) {
                 QVariantMap imgEntry = createImageEntry(_bitsProvider->getImageProviderName(), imageId, originalText);
+                // currently QML AnimatedImage doesn't support using images from a QQuickImageProvider
+                imgEntry.insert("sourceUrl", _cman->getBitsUrlForKey(imageId).toString());
                 messageList.append(imgEntry);
             }
             break;

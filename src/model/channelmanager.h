@@ -184,7 +184,7 @@ public:
         return &bitsImageProvider;
     }
 
-    bool getChannelBadgeUrl(const QString channel, const QString badgeName, const QString imageFormat, QString & outUrl) {
+    bool getChannelBadgeUrl(const QString channel, const QString badgeName, const QString imageFormat, QString & outUrl) const {
         auto channelEntry = channelBadgeUrls.find(channel);
         if (channelEntry != channelBadgeUrls.end()) {
             auto badgeEntry = channelEntry.value().find(badgeName);
@@ -199,7 +199,7 @@ public:
         return false;
     }
 
-    bool getChannelBadgeBetaUrl(const QString channel, const QString badgeName, const QString version, const QString imageFormat, QString & outUrl) {
+    bool getChannelBadgeBetaUrl(const QString channel, const QString badgeName, const QString version, const QString imageFormat, QString & outUrl) const {
         auto channelEntry = channelBadgeBetaUrls.find(channel);
         if (channelEntry != channelBadgeBetaUrls.end()) {
             auto badgeEntry = channelEntry.value().find(badgeName);
@@ -217,7 +217,7 @@ public:
         return false;
     }
 
-    bool getChannelBitsUrl(const int channelId, const QString & prefix, const QString & minBits, QString & outUrl) {
+    bool getChannelBitsUrl(const int channelId, const QString & prefix, const QString & minBits, QString & outUrl) const {
         auto channelEntry = channelBitsUrls.find(channelId);
         if (channelEntry != channelBitsUrls.end()) {
             auto actionEntry = channelEntry.value().find(prefix);
@@ -231,6 +231,8 @@ public:
         }
         return false;
     }
+
+    const QUrl getBitsUrlForKey(const QString & key) const;
 
     // Map of action prefix -> bits number str -> url
     typedef QMap<QString, QMap<QString, QString>> BitsUrlsMap;
