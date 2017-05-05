@@ -109,6 +109,7 @@ protected:
     QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
     QMap<QString, QMap<QString, QMap<QString, QMap<QString, QString>>>> channelBadgeBetaUrls;
     QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsUrls;
+    QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsColors;
 
     BadgeImageProvider badgeImageProvider;
     BitsImageProvider bitsImageProvider;
@@ -234,8 +235,20 @@ public:
 
     const QUrl getBitsUrlForKey(const QString & key) const;
 
-    // Map of action prefix -> bits number str -> url
-    typedef QMap<QString, QMap<QString, QString>> BitsUrlsMap;
+    bool getChannelBitsColor(const int channelId, const QString & prefix, const QString & minBits, QString & outColor) {
+        auto channelEntry = channelBitsColors.find(channelId);
+        if (channelEntry != channelBitsColors.end()) {
+            auto actionEntry = channelEntry.value().find(prefix);
+            if (actionEntry != channelEntry.value().end()) {
+                auto tierEntry = actionEntry.value().find(minBits);
+                if (tierEntry != actionEntry.value().end()) {
+                    outColor = tierEntry.value();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
@@ -259,7 +272,7 @@ signals:
     void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
     void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
 
-    void channelBitsUrlsLoaded(const int channelID, BitsUrlsMap bitsUrls);
+    void channelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls, BitsQStringsMap bitsColors);
 
     void vodStartGetOperationFinished(double);
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
@@ -291,8 +304,8 @@ private slots:
     void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
     void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
-    void innerChannelBitsUrlsLoaded(int channelID, QMap<QString, QMap<QString, QString>> channelBitsUrls);
-    void innerGlobalBitsUrlsLoaded(QMap<QString, QMap<QString, QString>> globalBitsUrls);
+    void innerChannelBitsDataLoaded(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
+    void innerGlobalBitsDataLoaded(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
     void processChatterList(QMap<QString, QList<QString>> chatters);

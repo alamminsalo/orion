@@ -130,7 +130,7 @@ private slots:
     void handleDownloadComplete();
     void handleVodStartTime(double);
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
-    void handleChannelBitsUrlsLoaded(const int channelID, ChannelManager::BitsUrlsMap bitsUrls);
+    void handleChannelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls);
 
 private:
     static const qint16 PORT;
@@ -202,7 +202,14 @@ private:
 
     enum ImageEntryKind { emote, bits };
 
-    typedef QMap<int, QPair<int, QPair<ImageEntryKind, QString>>> ImagePositionsMap;
+    struct InlineImageInfo {
+        ImageEntryKind kind;
+        QString key;
+        QString textSuffix;
+        QString textSuffixColor;
+    };
+
+    typedef QMap<int, QPair<int, InlineImageInfo>> ImagePositionsMap;
 
     void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
 

@@ -39,6 +39,9 @@
 #define USE_HLS true
 #define FOLLOWED_FETCH_LIMIT 25
 
+// Map of action prefix -> bits number str -> url
+typedef QMap<QString, QMap<QString, QString>> BitsQStringsMap;
+
 class NetworkManager: public QObject
 {
     Q_OBJECT
@@ -120,8 +123,8 @@ signals:
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
     void chatterListLoadOperationFinished(QMap<QString, QList<QString>>);
 
-    void getChannelBitsUrlsOperationFinished(int channelID, QMap<QString, QMap<QString, QString>> channelBitsUrls);
-    void getGlobalBitsUrlsOperationFinished(QMap<QString, QMap<QString, QString>> globalBitsUrls);
+    void getChannelBitsUrlsOperationFinished(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
+    void getGlobalBitsUrlsOperationFinished(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);
 
     void networkAccessChanged(bool up);
 

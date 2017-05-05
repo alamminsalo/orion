@@ -183,8 +183,8 @@ ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeIm
     connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
     connect(netman, SIGNAL(getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
 
-    connect(netman, SIGNAL(getChannelBitsUrlsOperationFinished(int, QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBitsUrlsLoaded(int, QMap<QString, QMap<QString, QString>>)));
-    connect(netman, SIGNAL(getGlobalBitsUrlsOperationFinished(QMap<QString, QMap<QString, QString>>)), this, SLOT(innerGlobalBitsUrlsLoaded(QMap<QString, QMap<QString, QString>>)));
+    connect(netman, SIGNAL(getChannelBitsUrlsOperationFinished(int, BitsQStringsMap, BitsQStringsMap)), this, SLOT(innerChannelBitsDataLoaded(int, BitsQStringsMap, BitsQStringsMap)));
+    connect(netman, SIGNAL(getGlobalBitsUrlsOperationFinished(BitsQStringsMap, BitsQStringsMap)), this, SLOT(innerGlobalBitsDataLoaded(BitsQStringsMap, BitsQStringsMap)));
 
     connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
     connect(netman, SIGNAL(vodStartGetOperationFinished(double)), this, SIGNAL(vodStartGetOperationFinished(double)));
@@ -818,7 +818,9 @@ bool ChannelManager::loadChannelBitsUrls(int channel) {
     auto result = channelBitsUrls.find(channel);
     if (result != channelBitsUrls.end()) {
         // deliver cached channel bits URLS
-        emit channelBitsUrlsLoaded(channel, result.value());
+        auto colors = channelBitsColors.find(channel);
+
+        emit channelBitsUrlsLoaded(channel, result.value(), colors.value());
     }
     else {
         netman->getChannelBitsUrls(channel);
@@ -828,7 +830,9 @@ bool ChannelManager::loadChannelBitsUrls(int channel) {
     result = channelBitsUrls.find(GLOBAL_BITS_IDENTIFIER);
     if (result != channelBitsUrls.end()) {
         // deliver cached channel bits URLS
-        emit channelBitsUrlsLoaded(GLOBAL_BITS_IDENTIFIER, result.value());
+        auto colors = channelBitsColors.find(GLOBAL_BITS_IDENTIFIER);
+
+        emit channelBitsUrlsLoaded(GLOBAL_BITS_IDENTIFIER, result.value(), colors.value());
     }
     else {
         netman->getGlobalBitsUrls();
@@ -894,19 +898,25 @@ void ChannelManager::innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QSt
     emit channelBadgeBetaUrlsLoaded(GLOBAL_BADGES_KEY, convertBetaBadges(badgeData));
 }
 
-void ChannelManager::innerChannelBitsUrlsLoaded(int channelID, QMap<QString, QMap<QString, QString>> curChannelBitsUrls) {
+void ChannelManager::innerChannelBitsDataLoaded(int channelID, QMap<QString, QMap<QString, QString>> curChannelBitsUrls, QMap<QString, QMap<QString, QString>> curChannelBitsColors) {
     channelBitsUrls.remove(channelID);
     channelBitsUrls.insert(channelID, curChannelBitsUrls);
 
-    emit channelBitsUrlsLoaded(channelID, curChannelBitsUrls);
+    channelBitsColors.remove(channelID);
+    channelBitsColors.insert(channelID, curChannelBitsColors);
+
+    emit channelBitsUrlsLoaded(channelID, curChannelBitsUrls, curChannelBitsColors);
 }
 
-void ChannelManager::innerGlobalBitsUrlsLoaded(QMap<QString, QMap<QString, QString>> globalBitsUrls) {
+void ChannelManager::innerGlobalBitsDataLoaded(QMap<QString, QMap<QString, QString>> globalBitsUrls, QMap<QString, QMap<QString, QString>> globalBitsColors) {
     const int GLOBAL_BITS_KEY = -1;
     channelBitsUrls.remove(GLOBAL_BITS_KEY);
     channelBitsUrls.insert(GLOBAL_BITS_KEY, globalBitsUrls);
 
-    emit channelBitsUrlsLoaded(GLOBAL_BITS_KEY, globalBitsUrls);
+    channelBitsColors.remove(GLOBAL_BITS_KEY);
+    channelBitsColors.insert(GLOBAL_BITS_KEY, globalBitsColors);
+
+    emit channelBitsUrlsLoaded(GLOBAL_BITS_KEY, globalBitsUrls, globalBitsColors);
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)

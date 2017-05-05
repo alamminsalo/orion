@@ -525,13 +525,11 @@ QMap<QString, QMap<QString, QMap<QString, QString>>> JsonParser::parseBadgeUrlsB
     return out;
 }
 
-QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByteArray &data)
+void JsonParser::parseBitsData(const QByteArray &data, QMap<QString, QMap<QString, QString>> & outUrls, QMap<QString, QMap<QString, QString>> & outColors)
 {
     const QString BITS_THEME = "dark";
     const QString BITS_TYPE = "animated";
     const QString BITS_SIZE = "1";
-
-    QMap<QString, QMap<QString, QString>> out;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
@@ -542,7 +540,8 @@ QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByt
         auto actions = json["actions"].toArray();
         for (const auto & actionEntry : actions) {
             
-            QMap<QString, QString> actionMap;
+            QMap<QString, QString> actionUrlsMap;
+            QMap<QString, QString> actionColorsMap;
 
             const QJsonObject & actionObj = actionEntry.toObject();
             QString actionPrefix = actionObj["prefix"].toString();
@@ -554,18 +553,22 @@ QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByt
                 int minBits = tierObj["min_bits"].toInt();
 
                 const QString & url = tierObj["images"].toObject()[BITS_THEME].toObject()[BITS_TYPE].toObject()[BITS_SIZE].toString();
-
                 qDebug() << "bits url for" << actionPrefix << "minBits" << minBits << "is" << url;
-                actionMap.insert(QString::number(minBits), url);
+                actionUrlsMap.insert(QString::number(minBits), url);
+
+                const QString & color = tierObj["color"].toString();
+                actionColorsMap.insert(QString::number(minBits), color);
             }
 
-            if (actionMap.size() > 0) {
-                out.insert(actionPrefix, actionMap);
+            if (actionUrlsMap.size() > 0) {
+                outUrls.insert(actionPrefix, actionUrlsMap);
+            }
+
+            if (actionColorsMap.size() > 0) {
+                outColors.insert(actionPrefix, actionColorsMap);
             }
         }
     }
-
-    return out;
 }
 
 int JsonParser::parseTotal(const QByteArray &data)

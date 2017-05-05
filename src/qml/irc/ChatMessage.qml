@@ -196,18 +196,34 @@ Item {
       MouseArea {
           id: _emoteImgMouseArea
           hoverEnabled: true
-          width: _emoteImg.width
-          height: _emoteImg.height
-          Image {
-            id: _emoteImg
-            Component.onCompleted: {
-              source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
-            }
+          width: childrenRect.width
+          height: childrenRect.height
 
-            ToolTip {
-                visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
-                text: msgItem.originalText
-            }
+          Row {
+              width: _emoteImg.width + _emoteImgSuffixText.width
+              height: _emoteImg.height
+
+              Image {
+                id: _emoteImg
+                Component.onCompleted: {
+                  source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
+                }
+              }
+
+              Text {
+                  id: _emoteImgSuffixText
+                  text: msgItem.textSuffix
+                  color: msgItem.textSuffixColor
+                  font.bold: true
+                  verticalAlignment: Text.AlignVCenter
+                  height: _emoteImg.height
+              }
+
+          }
+
+          ToolTip {
+              visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
+              text: msgItem.originalText
           }
       }
     }
@@ -215,23 +231,35 @@ Item {
       MouseArea {
           id: _animatedImgMouseArea
           hoverEnabled: true
-          width: _animatedImg.width
+          width: _animatedImg.width + _animatedImgSuffixText.width
           height: _animatedImg.height
-          AnimatedImage {
-            id: _animatedImg
 
-            // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
-            width: 28
-            height: 28
+          Row {
+              AnimatedImage {
+                id: _animatedImg
 
-            Component.onCompleted: {
-              source = msgItem.sourceUrl;
-            }
+                // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
+                width: 28
+                height: 28
 
-            ToolTip {
-                visible: _animatedImgMouseArea.containsMouse && msgItem.originalText != null
-                text: msgItem.originalText
-            }
+                Component.onCompleted: {
+                  source = msgItem.sourceUrl;
+                }
+              }
+
+              Text {
+                  id: _animatedImgSuffixText
+                  text: msgItem.textSuffix
+                  color: msgItem.textSuffixColor
+                  font.bold: true
+                  verticalAlignment: Text.AlignVCenter
+                  height: _animatedImg.height
+              }
+          }
+
+          ToolTip {
+              visible: _animatedImgMouseArea.containsMouse && msgItem.originalText != null
+              text: msgItem.originalText
           }
       }
     }
