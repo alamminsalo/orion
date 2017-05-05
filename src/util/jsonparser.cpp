@@ -528,7 +528,7 @@ QMap<QString, QMap<QString, QMap<QString, QString>>> JsonParser::parseBadgeUrlsB
 QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByteArray &data)
 {
     const QString BITS_THEME = "dark";
-    const QString BITS_TYPE = "static";
+    const QString BITS_TYPE = "animated";
     const QString BITS_SIZE = "1";
 
     QMap<QString, QMap<QString, QString>> out;

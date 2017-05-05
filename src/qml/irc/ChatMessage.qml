@@ -154,7 +154,11 @@ Item {
                 return msgText;
               }
             } else {
-              return imgThing;
+              if (pmsg[index].imageProvider == "bits") {
+                  return bitsImgThing;
+              } else {
+                  return imgThing;
+              }
             }
           }
         }
@@ -206,6 +210,30 @@ Item {
 
             ToolTip {
                 visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
+                text: msgItem.originalText
+            }
+          }
+      }
+    }
+    property Component bitsImgThing: Component {
+      MouseArea {
+          id: _animatedImgMouseArea
+          hoverEnabled: true
+          width: _animatedImg.width
+          height: _animatedImg.height
+          AnimatedImage {
+            id: _animatedImg
+
+            // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
+            width: 28
+            height: 28
+
+            Component.onCompleted: {
+              source = msgItem.sourceUrl;
+            }
+
+            ToolTip {
+                visible: _animatedImgMouseArea.containsMouse && msgItem.originalText != null
                 text: msgItem.originalText
             }
           }
