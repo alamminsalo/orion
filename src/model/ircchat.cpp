@@ -113,15 +113,14 @@ IrcChat::~IrcChat() {
     disconnect();
 }
 
-void IrcChat::join(const QString channel, const QString channelId) {
-    replayMode = false;
-
+void IrcChat::roomInitCommon(const QString channel, const QString channelId) {
     if (inRoom())
         leave();
 
-    // Save channel name for later use
+    // Save channel name and numerical id for later use
     room = channel;
     roomChannelId = channelId;
+
 
     if (_badgeProvider) {
         _badgeProvider->setChannelName(channel);
@@ -132,7 +131,12 @@ void IrcChat::join(const QString channel, const QString channelId) {
     if (_bitsProvider) {
         _bitsProvider->setChannelId(channelId.toInt());
     }
+}
 
+void IrcChat::join(const QString channel, const QString channelId) {
+    replayMode = false;
+
+    roomInitCommon(channel, channelId);
     if (!connected()) {
         reopenSocket();
     }
@@ -148,16 +152,7 @@ void IrcChat::join(const QString channel, const QString channelId) {
 void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset) {
     replayMode = true;
 
-    if (inRoom())
-        leave();
-
-    room = channel;
-    roomChannelId = channelId;
-
-    if (_badgeProvider) {
-        _badgeProvider->setChannelName(channel);
-        _badgeProvider->setChannelId(channelId);
-    }
+    roomInitCommon(channel, channelId);
 
     replayVodId = vodId;
 
@@ -398,20 +393,12 @@ bool IrcChat::connected() {
     }
 }
 
-QVariantMap createEmoteEntry(QString emoteId, QString originalText) {
-    QVariantMap emoteObj;
-    emoteObj.insert("imageProvider", "emote");
-    emoteObj.insert("imageId", emoteId);
-    emoteObj.insert("originalText", originalText);
-    return emoteObj;
-}
-
-QVariantMap createBitsEntry(QString bitType, QString originalText) {
-    QVariantMap bitsObj;
-    bitsObj.insert("imageProvider", "bits");
-    bitsObj.insert("imageId", bitType);
-    bitsObj.insert("originalText", originalText);
-    return bitsObj;
+QVariantMap createImageEntry(QString imageProvider, QString imageId, QString originalText) {
+    QVariantMap imageObj;
+    imageObj.insert("imageProvider", imageProvider);
+    imageObj.insert("imageId", imageId);
+    imageObj.insert("originalText", originalText);
+    return imageObj;
 }
 
 QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes) {
@@ -427,7 +414,7 @@ QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, co
             if (spacePrefix) {
                 output.append(" ");
             }
-            output.append(createEmoteEntry(emoteId, emoteText));
+            output.append(createImageEntry(_emoteProvider.getImageProviderName(), emoteId, emoteText));
         }
         else {
             output.append(*word);
@@ -867,10 +854,13 @@ void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePosition
         QString originalText = message.mid(emoteStart, emoteAfterEnd - emoteStart);
         switch (imageKind) {
         case ImageEntryKind::emote:
-            messageList.append(createEmoteEntry(imageId, originalText));
+            messageList.append(createImageEntry(_emoteProvider.getImageProviderName(), imageId, originalText));
             break;
         case ImageEntryKind::bits:
-            messageList.append(createBitsEntry(imageId, originalText));
+            if (_bitsProvider) {
+                QVariantMap imgEntry = createImageEntry(_bitsProvider->getImageProviderName(), imageId, originalText);
+                messageList.append(imgEntry);
+            }
             break;
         }
         cur = emoteAfterEnd;
