@@ -970,18 +970,7 @@ void IrcChat::parseCommand(QString cmd) {
         return;
     }
 
-    if (cmd.contains("at foobat test 1")) {
-        cmd = "@badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;room-id=1337;bits=1000;subscriber=1;turbo=1 :nick!nick@nick.tmi.twitch.tv PRIVMSG #ee__vee :this is a cheer1000 test message";
-    }
-
-    if (cmd.contains("at foobat test 2")) {
-        cmd = "@badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;room-id=1337;bits=10010;subscriber=1;turbo=1 :nick!nick@nick.tmi.twitch.tv PRIVMSG #ee__vee :this is a cheer10 kappa10000 test message";
-    }
-
     if(cmd.contains("PRIVMSG")) {
-
-        qDebug() << "PRIVMSG command";
-        qDebug() << cmd;
 
         // Structure of message: '@color=#HEX;display-name=NicK;emotes=id:start-end,start-end/id:start-end;subscriber=0or1;turbo=0or1;user-type=type :nick!nick@nick.tmi.twitch.tv PRIVMSG #channel :message'
 
