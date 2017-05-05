@@ -192,18 +192,34 @@ Item {
       MouseArea {
           id: _emoteImgMouseArea
           hoverEnabled: true
-          width: _emoteImg.width
-          height: _emoteImg.height
-          Image {
-            id: _emoteImg
-            Component.onCompleted: {
-              source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
-            }
+          width: childrenRect.width
+          height: childrenRect.height
 
-            ToolTip {
-                visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
-                text: msgItem.originalText
-            }
+          Row {
+              width: _emoteImg.width + _emoteImgSuffixText.width
+              height: _emoteImg.height
+
+              Image {
+                id: _emoteImg
+                Component.onCompleted: {
+                  source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
+                }
+              }
+
+              Text {
+                  id: _emoteImgSuffixText
+                  text: msgItem.textSuffix
+                  color: msgItem.textSuffixColor
+                  font.bold: true
+                  verticalAlignment: Text.AlignVCenter
+                  height: _emoteImg.height
+              }
+
+          }
+
+          ToolTip {
+              visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
+              text: msgItem.originalText
           }
       }
     }

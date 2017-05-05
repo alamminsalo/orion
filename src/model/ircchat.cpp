@@ -786,11 +786,16 @@ void IrcChat::checkBitsRegex(const QRegExp & regex, const QString & prefix, cons
         int bitsCountEnd = regex.pos(3) + bitsCount.length();
         QString minBits = minBitsForBits(bitsCount);
 
-        qDebug() << "found bits prefix" << foundPrefix << "with count" << bitsCount << "; using minBits" << minBits << "start" << prefixStart << "end" << prefixEnd << "resuming at" << bitsCountEnd;
+        qDebug() << "found bits prefix" << foundPrefix << "with count" << bitsCount << "; using minBits" << minBits << "start" << prefixStart << "end" << bitsCountEnd << "resuming at" << bitsCountEnd;
 
         QString key = prefix + "-" + minBits;
         if (_bitsProvider) {
-            mapToUpdate.insert(prefixStart, qMakePair(prefixEnd, qMakePair(ImageEntryKind::bits, _bitsProvider->getCanonicalKey(key))));
+            InlineImageInfo info;
+            info.kind = ImageEntryKind::bits;
+            info.key = _bitsProvider->getCanonicalKey(key);
+            info.textSuffix = bitsCount;
+            _cman->getChannelBitsColor(roomChannelId.toInt(), prefix, minBits, info.textSuffixColor);
+            mapToUpdate.insert(prefixStart, qMakePair(bitsCountEnd, info));
             _bitsProvider->makeAvailable(key);
         }
 
@@ -798,7 +803,7 @@ void IrcChat::checkBitsRegex(const QRegExp & regex, const QString & prefix, cons
     }
 }
 
-void updateBitsRegexes(const ChannelManager::BitsUrlsMap & bitsUrls, QMap<QString, QRegExp> & mapToUpdate) {
+void updateBitsRegexes(const BitsQStringsMap & bitsUrls, QMap<QString, QRegExp> & mapToUpdate) {
     mapToUpdate.clear();
     
     for (auto actionEntry = bitsUrls.constBegin(); actionEntry != bitsUrls.constEnd(); actionEntry++) {
@@ -807,7 +812,7 @@ void updateBitsRegexes(const ChannelManager::BitsUrlsMap & bitsUrls, QMap<QStrin
     }
 }
 
-void IrcChat::handleChannelBitsUrlsLoaded(const int channelID, ChannelManager::BitsUrlsMap bitsUrls) {
+void IrcChat::handleChannelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls) {
     if (channelID == -1) {
         updateBitsRegexes(bitsUrls, lastGlobalBitsRegexes);
     }
@@ -829,7 +834,13 @@ void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePosition
         int start = counter.toUtf16Offset(emoteEntry.key());
         int end = counter.toUtf16Offset(emoteEntry.value().first + 1);
         QString key = QString::number(emoteEntry.value().second);
-        imagePositionsMap.insert(start, qMakePair(end, qMakePair(ImageEntryKind::emote, key)));
+
+        InlineImageInfo info;
+        info.kind = ImageEntryKind::emote;
+        info.key = key;
+        info.textSuffixColor = "#ffffff";
+        
+        imagePositionsMap.insert(start, qMakePair(end, info));
     }
 
     if (bitsNumber.length() > 0) {
@@ -849,16 +860,26 @@ void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePosition
             addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
         }
         auto emoteAfterEnd = i.value().first;
-        auto imageKind = i.value().second.first;
-        auto imageId = i.value().second.second;
+
+        auto imageInfo = i.value().second;
+        auto imageKind = imageInfo.kind;
+        auto imageId = imageInfo.key;
         QString originalText = message.mid(emoteStart, emoteAfterEnd - emoteStart);
+
+        QVariantMap imgEntry;
+
         switch (imageKind) {
         case ImageEntryKind::emote:
-            messageList.append(createImageEntry(_emoteProvider.getImageProviderName(), imageId, originalText));
+            imgEntry = createImageEntry(_emoteProvider.getImageProviderName(), imageId, originalText);
+            imgEntry.insert("textSuffix", imageInfo.textSuffix);
+            imgEntry.insert("textSuffixColor", imageInfo.textSuffixColor);
+            messageList.append(imgEntry);
             break;
         case ImageEntryKind::bits:
             if (_bitsProvider) {
-                QVariantMap imgEntry = createImageEntry(_bitsProvider->getImageProviderName(), imageId, originalText);
+                imgEntry = createImageEntry(_bitsProvider->getImageProviderName(), imageId, originalText);
+                imgEntry.insert("textSuffix", imageInfo.textSuffix);
+                imgEntry.insert("textSuffixColor", imageInfo.textSuffixColor);
                 messageList.append(imgEntry);
             }
             break;
