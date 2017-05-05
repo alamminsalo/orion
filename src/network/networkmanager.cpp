@@ -647,6 +647,7 @@ void NetworkManager::getGlobalBitsUrls() {
     qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", QString("application/vnd.twitchtv.v5+json").toUtf8());
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
