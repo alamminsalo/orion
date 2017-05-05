@@ -566,7 +566,7 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
 
         bool isChannelMessage = isWhisper;
         QString systemMessage = isWhisper ? ("Whispered to " + recipient + ":") : "";
-        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, isChannelMessage, systemMessage, false });
+        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, isChannelMessage, systemMessage, false, "" });
     }
 }
 
@@ -778,15 +778,12 @@ void IrcChat::checkBitsRegex(const QRegExp & regex, const QString & prefix, cons
         const QStringList & match = regex.capturedTexts();
 
         int prefixStart = regex.pos(2);
-        QString foundPrefix = match[2];
-        int prefixLen = foundPrefix.length();
-        int prefixEnd = prefixStart + prefixLen;
 
         QString bitsCount = match[3];
         int bitsCountEnd = regex.pos(3) + bitsCount.length();
         QString minBits = minBitsForBits(bitsCount);
 
-        qDebug() << "found bits prefix" << foundPrefix << "with count" << bitsCount << "; using minBits" << minBits << "start" << prefixStart << "end" << bitsCountEnd << "resuming at" << bitsCountEnd;
+        qDebug() << "found bits prefix" << prefix << "with count" << bitsCount << "; using minBits" << minBits << "start" << prefixStart << "end" << bitsCountEnd << "resuming at" << bitsCountEnd;
 
         QString key = prefix + "-" + minBits;
         if (_bitsProvider) {
