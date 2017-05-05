@@ -139,7 +139,6 @@ private:
     static const QString IMAGE_PROVIDER_EMOTE;
     static const QString EMOTICONS_URL_FORMAT;
     static const QString IMAGE_PROVIDER_BITS;
-    static const QString BITS_URL_FORMAT;
 
     URLFormatImageProvider _emoteProvider;
     BitsImageProvider * _bitsProvider;

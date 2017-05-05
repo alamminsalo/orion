@@ -35,7 +35,6 @@
 const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
 const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
 const QString IrcChat::EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
-const QString IrcChat::BITS_URL_FORMAT = "https://static-cdn.jtvnw.net/bits/dark/static/%1/1";
 
 const qint16 IrcChat::PORT = 6667;
 const QString IrcChat::HOST = "irc.twitch.tv";
