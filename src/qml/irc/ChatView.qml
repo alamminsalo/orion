@@ -15,10 +15,12 @@
 import QtQuick 2.0
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
+import QtQuick.Controls 2.0
 import "../fonts/fontAwesome.js" as FontAwesome
 import "../styles.js" as Styles
 import "../components"
 import "../util.js" as Util
+import "../"
 
 Item {
     id: root
@@ -33,10 +35,14 @@ Item {
             status = 0
     }
 
+    property bool chatViewVisible: root.width > 0
+
     visible: status > 0
 
     property real _opacity: root.status > 1 ? 0.6 : 1.0
     property int chatWidth: width
+
+    property bool viewerListEnabled: false
 
     Rectangle {
         anchors.fill: parent
@@ -53,7 +59,8 @@ Item {
     }
 
     function joinChannel(channel, channelId) {
-        if ("#" + channel != chat.channel) {
+        if (channel !== chat.channel || chat.replayMode) {
+            viewerListEnabled = false;
             chatModel.clear()
             chat.joinChannel(channel, channelId)
         }
@@ -62,6 +69,25 @@ Item {
     function leaveChannel() {
         chatModel.clear()
         chat.leaveChannel()
+    }
+
+    function replayChat(channelName, channelId, vodId, startEpochTime) {
+        viewerListEnabled = false;
+        chatModel.clear()
+        chat.leaveChannel()
+        chat.replayChat(channelName, channelId, vodId, startEpochTime);
+    }
+
+    function playerSeek(newOffset) {
+        if (chat.replayMode) {
+            chat.replaySeek(newOffset);
+        }
+    }
+
+    function playerPositionUpdate(newOffset) {
+        if (chat.replayMode) {
+            chat.replayUpdate(newOffset);
+        }
     }
 
     function sendMessage() {
@@ -127,8 +153,197 @@ Item {
         }
     }
 
+
+    Item {
+        id: chatControls
+        anchors {
+            top: parent.top
+            right: parent.right
+            left: parent.left
+        }
+        height: dp(40)
+
+        IconButton {
+            id: _viewerListButton
+            icon: viewerListEnabled ? "times" : "list"
+
+            enabled: (!isVod && currentChannel && currentChannel.name) ? true : false
+
+            anchors {
+                top: parent.top
+                right: parent.right
+                rightMargin: 5
+                bottom: parent.bottom
+            }
+            width: height
+
+            onClicked: {
+                viewerListEnabled = !viewerListEnabled
+                if (viewerListEnabled && (status == 0)) {
+                    status++;
+                }
+            }
+
+            ToolTip {
+                visible: _viewerListButton.mouseArea.containsMouse
+                delay: 666
+                text: "Viewer List"
+            }
+        }
+    }
+
+	Item {
+		id: chatContainer
+
+		anchors {
+            top: chatControls.bottom
+			left: parent.left
+			right: parent.right
+            bottom: parent.bottom
+		}
+
+    Rectangle {
+        id: viewerList
+        enabled: viewerListEnabled
+        property bool loading: true
+
+        height: enabled? parent.height : 0
+
+        anchors {
+            bottom: parent.bottom
+            left: parent.left
+            right: parent.right
+        }
+
+        Behavior on height {
+            NumberAnimation {
+                duration: 200
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        z: 10
+
+        color: Styles.sidebarBg
+        opacity: root._opacity
+
+        onEnabledChanged: {
+            if (enabled) {
+                viewerList.loading = true;
+                viewerListModel.clear();
+                g_cman.loadChatterList(chat.channel);
+            }
+        }
+
+        SpinnerIcon {
+            id: spinner
+            anchors.centerIn: parent
+            iconSize: parent.width * 0.1
+            visible: viewerList.loading && viewerList.enabled
+        }
+
+        Item {
+            id: viewerListHeading
+            visible: viewerList.enabled
+            anchors {
+                bottom: parent.top
+                left: parent.left
+                right: parent.right
+            }
+
+            height: dp(40)
+
+            Label {
+                anchors.centerIn: parent
+
+                text: "Viewer List"
+                color: Styles.textColor
+                font.pixelSize: Styles.titleFont.bigger
+                font.bold: true
+            }
+        }
+
+        ListView {
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+                top: viewerListHeading.bottom
+            }
+
+            model: ListModel {
+                id: viewerListModel
+            }
+
+            Connections {
+                target: g_cman
+                onChatterListLoaded: {
+                    viewerList.loading = false;
+
+                    var groupOrder = ["staff", "global_mods", "admins", "moderators", "viewers"];
+
+                    for (var j = 0; j < groupOrder.length; j++) {
+                        var groupName = groupOrder[j];
+                        var group = chatters[groupName];
+                        if (!group) {
+                            continue;
+                        }
+
+                        for (var i = 0; i < group.length; i++) {
+                            var chatter = group[i];
+                            viewerListModel.append({"groupName": groupName, "user": chatter});
+                        }
+                    }
+                }
+            }
+
+            clip: true
+            delegate: Item {
+                height: dp(25)
+                Text {
+                    text: user
+                    color: Styles.textColor
+                    anchors {
+                        fill: parent
+                        leftMargin: dp(5)
+                        rightMargin: dp(5)
+                    }
+                    font.capitalization: Font.Capitalize
+                }
+            }
+
+            section {
+                property: "groupName"
+                criteria: ViewSection.FullString
+                delegate: Item {
+                    height: dp(50)
+                    Text {
+                        anchors {
+                            leftMargin: dp(5)
+                            rightMargin: dp(5)
+                            bottomMargin: dp(5)
+                            left: parent.left
+                            right: parent.right
+                            bottom: parent.bottom
+                        }
+
+                        font.capitalization: Font.AllUppercase
+                        text: section
+                        //color: Styles.textColor
+                        color: Styles.purple
+                        font.pixelSize: Styles.titleFont.smaller
+                    }
+                }
+
+            }
+
+        }
+    }
+
     ListView {
         id: list
+
+        visible: !viewerList.enabled && root.chatViewVisible
 
         property bool lock: true
         property int scrollbuf: 0
@@ -161,6 +376,7 @@ Item {
             emoteDirPath: chat.emoteDirPath
             isChannelNotice: model.isChannelNotice
             systemMessage: model.systemMessage
+            isWhisper: model.isWhisper
             highlightOpacity: root._opacity
 
             anchors {
@@ -275,7 +491,7 @@ Item {
             right: parent.right
         }
 
-        visible: !chat.isAnonymous
+        visible: !chat.isAnonymous && !chat.replayMode && !viewerList.enabled
 
         Rectangle {
             anchors.fill: parent
@@ -317,7 +533,7 @@ Item {
                 }
             }
 
-            Button{
+            IconButton{
                 id: _emoteButton
                 property bool emotePickerDownloadsInProgress : false
                 property var setsToDownload
@@ -328,7 +544,9 @@ Item {
 
                 property bool pickerLoaded: false
 
-                width: dp(38)
+                visible: root.chatViewVisible
+
+                width: height
 
                 anchors {
                     right: parent.right
@@ -336,24 +554,7 @@ Item {
                     bottom: parent.bottom
                 }
 
-                text: "emotes"
-
-                style: ButtonStyle {
-                    background: Rectangle {
-                        color: "#000000"
-                    }
-
-                    label: Text {
-                        text: FontAwesome.fromText("smile")
-                        color: "#ffffff"
-                        font.family: "FontAwesome"
-                        font.pointSize: 18
-                        anchors.fill: parent
-                        verticalAlignment: Text.AlignVCenter
-                        horizontalAlignment: Text.AlignHCenter
-
-                    }
-                }
+                icon: "smile"
 
                 Connections {
                     target: _emotePicker
@@ -560,12 +761,7 @@ Item {
                             }
                             curDownloading ++;
                             console.log("Downloading emote set #", curDownloading, curSetID);
-                            var waitForDownload = chat.bulkDownloadEmotes(curSetList);
-
-                            if (!waitForDownload) {
-                                showLastSet();
-                                nextDownload();
-                            }
+                            chat.bulkDownloadEmotes(curSetList);
                         } else {
                             emotePickerDownloadsInProgress = false;
                             _emotePicker.loading = false;
@@ -588,7 +784,7 @@ Item {
 
                 Connections {
                     target: chat
-                    onDownloadComplete: {
+                    onBulkDownloadComplete: {
                         //console.log("outer download complete");
                         if (_emoteButton.emotePickerDownloadsInProgress) {
                             //console.log("handling emote picker set finished");
@@ -619,6 +815,8 @@ Item {
         property var globalBetaBadgeSetData: {}
         property var lastBetaBadgeSetData: {}
 
+        property bool debugOutput: false
+
         onLastEmoteSetsChanged: {
             initEmotesMaps();
         }
@@ -636,9 +834,8 @@ Item {
             for (var i in emoteSets) {
                 //console.log("  ", i);
                 var entry = emoteSets[i];
-                for (var emoteIdStr in entry) {
-                    var emoteId = parseInt(emoteIdStr);
-                    var emoteText = entry[emoteIdStr];
+                for (var emoteId in entry) {
+                    var emoteText = entry[emoteId];
                     if (regexExactMatch(plainText, emoteText)) {
                         //console.log("adding plain text emote", emoteText, emoteId);
                         _textEmotesMap[emoteText] = emoteId;
@@ -698,7 +895,7 @@ Item {
         }
 
         onMessageReceived: {
-            //console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString())
+            if (debugOutput) console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString());
 
             if (chatColor != "") {
                 colors[user] = chatColor;
@@ -710,17 +907,17 @@ Item {
 
             // ListElement doesn't support putting in an array value, ugh.
             var serializedMessage = JSON.stringify(message);
-            console.log("onMessageReceived: passing: " + serializedMessage);
+            if (debugOutput) console.log("onMessageReceived: passing: " + serializedMessage);
 
             var badgeEntries = [];
             var imageFormatToUse = "image";
             var badgesSeen = {};
 
-            console.log("badges for this message:")
+            if (debugOutput) console.log("badges for this message:")
             for (var k = 0; k < badges.length; k++) {
                 var badgeName = badges[k][0];
                 var versionStr = badges[k][1];
-                console.log("  badge", badgeName, versionStr);
+                if (debugOutput) console.log("  badge", badgeName, versionStr);
 
                 if (badgesSeen[badgeName]) {
                     continue;
@@ -746,7 +943,8 @@ Item {
                             devicePixelRatio = 3.0;
                         }
                         var entry = {"name": versionObj.title, "url": badgeLocalUrl, "click_action": versionObj.click_action, "click_url": versionObj.click_url, "devicePixelRatio": devicePixelRatio}
-                        console.log("adding entry", JSON.stringify(entry));
+                        if (debugOutput) console.log("adding entry", JSON.stringify(entry));
+
                         badgeEntries.push(entry);
                         curBadgeAdded = true;
                     }
@@ -754,12 +952,14 @@ Item {
 
                 var badgeUrls = lastBadgeUrls[badgeName];
                 if (!curBadgeAdded && badgeUrls != null) {
-                    console.log("  badge urls:")
-                    for (var j in badgeUrls) {
-                        console.log("    key", j, "value", badgeUrls[j]);
+                    if (debugOutput) {
+                        console.log("  badge urls:")
+                        for (var j in badgeUrls) {
+                            console.log("    key", j, "value", badgeUrls[j]);
+                        }
                     }
                     var entry = {"name": badgeName, "url": badgeLocalUrl, "devicePixelRatio": 1.0};
-                    console.log("adding entry", JSON.stringify(entry));
+                    if (debugOutput) console.log("adding entry", JSON.stringify(entry));
                     badgeEntries.push(entry);
                     curBadgeAdded = true;
                 }
@@ -771,7 +971,7 @@ Item {
 
             var jsonBadgeEntries = JSON.stringify(badgeEntries);
 
-            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage})
+            chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
             list.scrollbuf = 6
         }
 
@@ -828,4 +1028,5 @@ Item {
             chatModel.clear()
         }
     }
+}
 }

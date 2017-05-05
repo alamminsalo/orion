@@ -22,7 +22,6 @@
 #include <QString>
 #include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
-#include <QtWebEngine>
 #include <QResource>
 #include "util/runguard.h"
 #include "model/channelmanager.h"
@@ -33,13 +32,14 @@
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
 #include "model/ircchat.h"
+#include "network/httpserver.h"
 #include <QFont>
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
 #endif
 
-inline void noisyFailureMsgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+inline void noisyFailureMsgHandler(QtMsgType /*type*/, const QMessageLogContext &/*context*/, const QString &/*msg*/)
 {
 
 }
@@ -57,9 +57,6 @@ int main(int argc, char *argv[])
 
     //Init engine
     QQmlApplicationEngine engine;
-
-    //Init webengine
-    QtWebEngine::initialize();
 
     QIcon appIcon = QIcon(":/icon/orion.ico");
 
@@ -85,13 +82,16 @@ int main(int argc, char *argv[])
 
     //Create channels manager
     ChannelManager *cman = new ChannelManager(netman);
-    //cman->checkResources();
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
 
     //Create vods manager
     VodManager *vod = new VodManager(netman);
+
+    //Http server used for auth
+    HttpServer *httpserver = new HttpServer(&app);
+    QObject::connect(httpserver, SIGNAL(codeReceived(QString)), cman, SLOT(setAccessToken(QString)));
     //-------------------------------------------------------------------------------------------------------------------//
 
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
@@ -127,6 +127,7 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_vodmgr", vod);
     rootContext->setContextProperty("vodsModel", vod->getModel());
     rootContext->setContextProperty("app_version", APP_VERSION);
+    rootContext->setContextProperty("httpServer", httpserver);
 
 #ifdef MPV_PLAYER
     rootContext->setContextProperty("player_backend", "mpv");

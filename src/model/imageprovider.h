@@ -24,6 +24,7 @@
 #include <QSet>
 #include <QQuickImageProvider>
 #include <QNetworkReply>
+#include <QTimer>
 
 // Handles state for an individual download
 class DownloadHandler : public QObject
@@ -81,15 +82,21 @@ public:
 
 signals:
     void downloadComplete();
+    void bulkDownloadComplete();
 
 public slots:
-    bool bulkDownload(QList<QString> keys);
+    void bulkDownload(const QList<QString> & keys);
     void individualDownloadComplete(QString filename, bool hadError);
+
+protected slots:
+    void bulkDownloadStep();
 
 protected:
     virtual const QUrl getUrlForKey(QString & key) = 0;
 
 private:
+    static const int MSEC_PER_DOWNLOAD;
+
     QNetworkAccessManager _manager;
 
     QHash<QString, QImage*> _imageTable;
@@ -98,9 +105,13 @@ private:
     int activeDownloadCount;
     QString _extension;
     QSet<QString> currentlyDownloading;
+    QTimer _bulkDownloadTimer;
+    QList<QString> _curBulkDownloadKeys;
+    QList<QString>::const_iterator _bulkDownloadPos;
 };
 
 class URLFormatImageProvider : public ImageProvider {
+    Q_OBJECT
 public:
     URLFormatImageProvider(const QString imageProviderName, const QString urlFormat, const QString extension, const QString cacheDirName = "");
 protected:

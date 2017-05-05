@@ -26,6 +26,7 @@ class Vod
     quint32 duration;
     quint64 views;
     QString preview;
+    QString createdAt;
 
 public:
     Vod();
@@ -44,6 +45,8 @@ public:
     void setId(const QString &value);
     QString getTitle() const;
     void setTitle(const QString &value);
+    QString getCreatedAt() const;
+    void setCreatedAt(const QString &value);
 };
 
 #endif // VOD_H

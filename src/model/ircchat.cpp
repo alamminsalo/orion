@@ -29,40 +29,53 @@
 #include <QStandardPaths>
 #include <QImage>
 #include <qqml.h>
+#include <QtMath>
+#include <QDateTime>
 
-const QString IMAGE_PROVIDER_EMOTE = "emote";
-const QString EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
-const QString IMAGE_PROVIDER_BADGE_OFFICIAL = "";
+const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
+const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
+const QString IrcChat::EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
+
+const qint16 IrcChat::PORT = 6667;
+const QString IrcChat::HOST = "irc.twitch.tv";
 
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
     _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes_2x"),
-    _badgeProvider(nullptr)
+    _bitsProvider(nullptr),
+    _badgeProvider(nullptr),
+    _cman(nullptr),
+    sock(nullptr),
+    replayMode(false)
     {
 
     logged_in = false;
 
-    // Open socket
-    sock = new QTcpSocket(this);
-    if(sock) {
-        emit errorOccured("Error opening socket");
-    }
-
-    //createConnection();
-    connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
-    connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
-    connect(sock, SIGNAL(connected()), this, SLOT(login()));
-    connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
-    connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
-
     connect(&_emoteProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+    connect(&_emoteProvider, &ImageProvider::bulkDownloadComplete, this, &IrcChat::bulkDownloadComplete);
 
     room = "";
 
 	emoteDirPathImpl = _emoteProvider.getBaseUrl();
 }
 
+void IrcChat::initSocket() {
+    // Open socket
+    sock = new QTcpSocket(this);
+    if(!sock) {
+        emit errorOccured("Error creating socket");
+    }
+    else {
+        connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
+        connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
+        connect(sock, SIGNAL(connected()), this, SLOT(login()));
+        connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
+        connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+    }
+}
+
 void IrcChat::initProviders() {
+    initSocket();
 	auto engine = qmlEngine(this);
 	RegisterEngineProviders(*engine);
 }
@@ -72,6 +85,9 @@ void IrcChat::RegisterEngineProviders(QQmlEngine & engine) {
     if (_badgeProvider) {
         engine.addImageProvider(_badgeProvider->getImageProviderName(), _badgeProvider->getQMLImageProvider());
     }
+    if (_bitsProvider) {
+        engine.addImageProvider(_bitsProvider->getImageProviderName(), _bitsProvider->getQMLImageProvider());
+    }
     else {
         qDebug() << "couldn't hook up badge provider as it was not available";
     }
@@ -80,21 +96,25 @@ void IrcChat::RegisterEngineProviders(QQmlEngine & engine) {
 void IrcChat::hookupChannelProviders(ChannelManager * cman) {
     if (cman) {
         _badgeProvider = cman->getBadgeImageProvider();
+        _bitsProvider = cman->getBitsImageProvider();
         connect(_badgeProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+        connect(_bitsProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+        _cman = cman;
+        connect(_cman, &ChannelManager::vodStartGetOperationFinished, this, &IrcChat::handleVodStartTime);
+        connect(_cman, &ChannelManager::vodChatPieceGetOperationFinished, this, &IrcChat::handleDownloadedReplayChat);
+        connect(_cman, &ChannelManager::channelBitsUrlsLoaded, this, &IrcChat::handleChannelBitsUrlsLoaded);
     }
     else {
         qDebug() << "hookupChannelProviders got null";
     }
 }
 
-void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
-void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
-
 IrcChat::~IrcChat() {
     disconnect();
 }
 
 void IrcChat::join(const QString channel, const QString channelId) {
+    replayMode = false;
 
     if (inRoom())
         leave();
@@ -108,35 +128,248 @@ void IrcChat::join(const QString channel, const QString channelId) {
         _badgeProvider->setChannelId(channelId);
     }
 
+    lastCurChannelBitsRegexes.clear();
+    if (_bitsProvider) {
+        _bitsProvider->setChannelId(channelId.toInt());
+    }
+
     if (!connected()) {
         reopenSocket();
     }
 
     // Join channel's chat room
-    sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
+    if (sock) {
+        sock->write(("JOIN #" + channel + "\r\n").toStdString().c_str());
+    }
 
     qDebug() << "Joined channel " << channel;
 }
 
+void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset) {
+    replayMode = true;
+
+    if (inRoom())
+        leave();
+
+    room = channel;
+    roomChannelId = channelId;
+
+    if (_badgeProvider) {
+        _badgeProvider->setChannelName(channel);
+        _badgeProvider->setChannelId(channelId);
+    }
+
+    replayVodId = vodId;
+
+    replayChatVodStartTime = vodStartEpochTime;
+
+    replayChatCurrentSeekOffset = playbackOffset;
+
+    // Get start timestamp of the chat replay segments as the requests need to be aligned to chunk boundaries from this start
+    _cman->getVodStartTime(vodId);
+}
+
+void IrcChat::handleVodStartTime(double startTime) {
+    replayChatFirstChunkTime = startTime;
+    replaySeek(replayChatCurrentSeekOffset);
+}
+
+double quantize(double value, double start, double multiple) {
+    double rel = value - start;
+    return start + qRound(qFloor(rel / multiple) * multiple);
+}
+
+const double CHAT_CHUNK_TIME = 30.0;
+
+void IrcChat::replaySeek(double newOffset) {
+    // we set a flag indicating that a request is in flight
+    if (replayChatRequestInProgress) {
+        _cman->cancelLastVodChatRequest();
+    }
+    _cman->resetVodChat();
+    replayChatRequestInProgress = true;
+    // we save the offset as the current time
+    replayChatCurrentTime = replayChatVodStartTime + newOffset;
+    qDebug() << "original vod playback start time" << QDateTime::fromMSecsSinceEpoch(replayChatCurrentTime * 1000.0, Qt::UTC);
+    nextChatChunkTimestamp = quantize(replayChatCurrentTime, replayChatFirstChunkTime, CHAT_CHUNK_TIME);
+    qDebug() << "quantized vod playback start time for chat chunk" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC);
+    // we dump any pending messages from other stuff
+    replayChatMessagesPending.clear();
+    // we'll do an initial request for starting offset chat right now.
+    _cman->getVodChatPiece(replayVodId, nextChatChunkTimestamp);
+    // time passes in the front end as the vod plays back.
+}
+
+void IrcChat::replayUpdate(double newOffset) {
+    // every so often the front end will find that time has passed and update our time and do our timestamp update
+    double newCurrentTime = replayChatVodStartTime + newOffset;
+    replayChatCurrentTime = newCurrentTime;
+    replayUpdateCommon();
+}
+
+QList<QPair<QString, QString>> parseBadges(const QString badgesStr);
+
+void IrcChat::replayChatMessage(const ReplayChatMessage & replayMessage) {
+
+    ChatMessage chatMessage;
+
+    chatMessage.name = replayMessage.from;
+
+    for (auto tag = replayMessage.tags.constBegin(); tag != replayMessage.tags.constEnd(); tag++) {
+        if (tag.key() == "display-name") {
+            QString displayName = tag.value().toString();
+            if (displayName != "") {
+                chatMessage.name = displayName;
+            }
+        }
+        else if (tag.key() == "color") {
+            chatMessage.color = tag.value().toString();
+        }
+        else if (tag.key() == "subscriber") {
+            chatMessage.subscriber = tag.value().toBool();
+        }
+        else if (tag.key() == "turbo") {
+            chatMessage.turbo = tag.value().toBool();
+        }
+        else if (tag.key() == "mod") {
+            chatMessage.mod = tag.value().toBool();
+        }
+        else if (tag.key() == "badges") {
+            QList<QPair<QString, QString>> badgesMap = parseBadges(tag.value().toString());
+            for (auto entry = badgesMap.constBegin(); entry != badgesMap.constEnd(); entry++) {
+                makeBadgeAvailable(entry->first, entry->second);
+                chatMessage.badges.push_back(QVariantList({ entry->first, entry->second }));
+            }
+        }
+        else if (tag.key() == "system-msg") {
+            QString systemMessage = tag.value().toString();
+
+            // \s -> space
+            systemMessage.replace("\\s", " ");
+            // double backslash -> single backslash
+            systemMessage.replace("\\\\", "\\");
+
+            chatMessage.systemMessage = systemMessage;
+        }
+        else if (tag.key() == "bits") {
+            chatMessage.bitsNumber = tag.value().toString();
+        }
+    }
+
+    if (replayMessage.command == "USERNOTICE") {
+        chatMessage.isChannelNotice = true;
+    }
+    else {
+        chatMessage.isChannelNotice = false;
+    }
+
+    QString message = replayMessage.message;
+
+    // parse IRC action before applying emotes, as emote indices are relative to the content of the action
+    const QString ACTION_PREFIX = QString(QChar(1)) + "ACTION ";
+    const QString ACTION_SUFFIX = QString(QChar(1));
+    if (message.startsWith(ACTION_PREFIX) && message.endsWith(ACTION_SUFFIX)) {
+        chatMessage.isAction = true;
+        message = message.mid(ACTION_PREFIX.length(), message.length() - ACTION_SUFFIX.length() - ACTION_PREFIX.length());
+    }
+    else {
+        chatMessage.isAction = false;
+    }
+
+    for (int emoteId : replayMessage.emoteList) {
+        _emoteProvider.makeAvailable(QString::number(emoteId));
+    }
+    
+    QVariantList messageList;
+    createMessageList(replayMessage.emotePositionsMap, chatMessage.bitsNumber, messageList, message);
+
+    //qDebug() << "messageList " << messageList;
+
+    chatMessage.messageList = messageList;
+
+    disposeOfMessage(chatMessage);
+}
+
+void IrcChat::replayUpdateCommon() {
+    // time to start fetching chat in advance by
+    const double CHAT_TIME_MARGIN = 5.0;
+
+    double curVideoOffsetMS = (replayChatCurrentTime - replayChatVodStartTime) * 1000.0;
+
+    // in a chat update check, we look at the current time emit whatever chat's timestamps are up
+    while (!replayChatMessagesPending.empty() && (replayChatMessagesPending.first().videoOffset) <= curVideoOffsetMS) {
+        auto message = replayChatMessagesPending.first();
+        auto delay = (curVideoOffsetMS - (replayChatMessagesPending.first().videoOffset)) / 1000.0;
+
+        if (delay > 1.0 || delay < -1.0) {
+            qDebug() << "**********************************************************";
+            qDebug() << "chat replay delay" << delay << "s -" << message.from << message.message;
+            qDebug() << "**********************************************************";
+        }
+
+        replayChatMessage(message);
+        replayChatMessagesPending.pop_front();
+    }
+
+    // there is some sketchy logic to figure out what timestamp we actually deem ourselves to have chat up until
+    double nextChatTime = nextChatChunkTimestamp;
+    // then if we're close enough to the end of the chat buffer and there isn't a request in progress, we request some more chat
+    if (!replayChatRequestInProgress && replayChatCurrentTime > (nextChatTime - CHAT_TIME_MARGIN)) {
+        replayChatRequestInProgress = true;
+        _cman->getVodChatPiece(replayVodId, nextChatTime);
+    }
+        
+}
+
+void IrcChat::handleDownloadedReplayChat(QList<ReplayChatMessage> messages) {
+    // eventually the initial chat response will arrive. we'll put the chat into a queue, and do a first chat update check
+
+    replayChatMessagesPending.append(messages);
+
+    qDebug() << "CHAT REPLAY PART; t=" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC) << messages.length() << "records";
+    
+    nextChatChunkTimestamp += CHAT_CHUNK_TIME;
+
+    replayChatRequestInProgress = false;
+
+    replayUpdateCommon();
+}
+
+void IrcChat::replayStop() {
+    if (replayChatRequestInProgress) {
+        _cman->cancelLastVodChatRequest();
+        replayChatRequestInProgress = false;
+    }
+    _cman->resetVodChat();
+    replayChatMessagesPending.clear();
+}
+
 void IrcChat::leave()
 {
-    sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    msgQueue.clear();
+    if (sock) {
+        sock->write(("PART #" + room + "\r\n").toStdString().c_str());
+    }
     room = "";
 }
 
 void IrcChat::disconnect() {
     leave();
-    sock->close();
+    if (sock) {
+        sock->close();
+    }
 }
 
 void IrcChat::reopenSocket() {
-    qDebug() << "Reopening socket";
-    if(sock->isOpen())
-        sock->close();
-    sock->open(QIODevice::ReadWrite);
-    sock->connectToHost(HOST, PORT);
-    if(!sock->isOpen()) {
-        errorOccured("Error opening socket");
+    if (sock) {
+        qDebug() << "Reopening socket";
+        if (sock->isOpen())
+            sock->close();
+        sock->open(QIODevice::ReadWrite);
+        sock->connectToHost(HOST, PORT);
+        if (!sock->isOpen()) {
+            emit errorOccured("Error opening socket");
+        }
     }
 }
 
@@ -157,14 +390,28 @@ void IrcChat::setAnonymous(bool newAnonymous) {
 }
 
 bool IrcChat::connected() {
-    return sock->state() == QTcpSocket::ConnectedState;
+    if (sock) {
+        return sock->state() == QTcpSocket::ConnectedState;
+    }
+    else {
+        return false;
+    }
 }
 
-QVariantMap createEmoteEntry(int emoteId, QString emoteText) {
+QVariantMap createEmoteEntry(QString emoteId, QString originalText) {
     QVariantMap emoteObj;
-    emoteObj.insert("emoteId", emoteId);
-    emoteObj.insert("emoteText", emoteText);
+    emoteObj.insert("imageProvider", "emote");
+    emoteObj.insert("imageId", emoteId);
+    emoteObj.insert("originalText", originalText);
     return emoteObj;
+}
+
+QVariantMap createBitsEntry(QString bitType, QString originalText) {
+    QVariantMap bitsObj;
+    bitsObj.insert("imageProvider", "bits");
+    bitsObj.insert("imageId", bitType);
+    bitsObj.insert("originalText", originalText);
+    return bitsObj;
 }
 
 QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes) {
@@ -175,8 +422,8 @@ QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, co
         QString emoteText = spacePrefix ? word->toString().mid(1) : word->toString();
         auto entry = relevantEmotes.find(emoteText);
         if (entry != relevantEmotes.end()) {
-            int emoteId = entry.value().toInt();
-            _emoteProvider.makeAvailable(QString::number(emoteId));
+            QString emoteId = entry.value().toString();
+            _emoteProvider.makeAvailable(emoteId);
             if (spacePrefix) {
                 output.append(" ");
             }
@@ -198,7 +445,7 @@ void removeVariantListPairByFirstValue(QVariantList list, const QVariant value) 
         }
 
         if (it->toList()[0] == value) {
-            list.erase(it);
+            it = list.erase(it);
         }
         else {
             ++it;
@@ -247,16 +494,42 @@ bool IrcChat::addBadges(QVariantList &badges, QString channel) {
 
 void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes) {
     if (inRoom() && connected()) {
-        sock->write(("PRIVMSG #" + room + " :" + msg + "\r\n").toStdString().c_str());
-
 		bool isAction = false;
+        bool isWhisper = false;
+        QString recipient = "";
 		QVariantList message;
 		const QString ME_PREFIX = "/me ";
 		QString displayMessage = msg;
-		if (displayMessage.startsWith(ME_PREFIX)) {
+		if (displayMessage.toLower().startsWith(ME_PREFIX)) {
 			isAction = true;
 			displayMessage = displayMessage.mid(ME_PREFIX.length());
 		}
+        for (const QString & prefix : { "/msg ", "/w " }) {
+            if (displayMessage.toLower().startsWith(prefix)) {
+                displayMessage = displayMessage.mid(prefix.length());
+                isWhisper = true;
+                int spacePos = displayMessage.indexOf(' ');
+                if (spacePos == -1 || spacePos == displayMessage.length() - 1) {
+                    emit noticeReceived("Ignoring whisper with empty message");
+                    return;
+                }
+                recipient = displayMessage.left(spacePos);
+                displayMessage = displayMessage.mid(spacePos + 1);
+                break;
+            }
+        }
+
+        if (sock) {
+            QString ircCmd;
+            if (isWhisper) {
+                ircCmd = "PRIVMSG #" + room + " :/w " + recipient + " " + displayMessage + "\r\n";
+            }
+            else {
+                ircCmd = "PRIVMSG #" + room + " :" + msg + "\r\n";
+            }
+            sock->write(ircCmd.toStdString().c_str());
+        }
+
 		addWordSplit(displayMessage, ' ', message);
         message = substituteEmotesInMessage(message, relevantEmotes);
 
@@ -304,18 +577,15 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
             displayName = userGlobalDisplayName;
         }
 
-        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges });
+        bool isChannelMessage = isWhisper;
+        QString systemMessage = isWhisper ? ("Whispered to " + recipient + ":") : "";
+        disposeOfMessage({ displayName, message, color, subscriber, turbo, mod, isAction, userBadges, isChannelMessage, systemMessage, false });
     }
 }
 
 void IrcChat::onSockStateChanged() {
     // We don't check if connected property actually changed because this slot should only be awaken when it did
     emit connectedChanged();
-}
-
-void IrcChat::createConnection()
-{
-    sock->connectToHost(HOST, PORT);
 }
 
 void IrcChat::login()
@@ -325,24 +595,26 @@ void IrcChat::login()
     else
         setAnonymous(false);
 
-    // Tell server that we support twitch-specific commands
-    sock->write("CAP REQ :twitch.tv/commands\r\n");
-    sock->write("CAP REQ :twitch.tv/tags\r\n");
+    if (sock) {
+        // Tell server that we support twitch-specific commands
+        sock->write("CAP REQ :twitch.tv/commands\r\n");
+        sock->write("CAP REQ :twitch.tv/tags\r\n");
 
-    // Login
-    sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
-    sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+        // Login
+        sock->write(("PASS " + userpass + "\r\n").toStdString().c_str());
+        sock->write(("NICK " + username + "\r\n").toStdString().c_str());
+    }
 
     logged_in = true;
 
     //Join room automatically, if given
-    if (!room.isEmpty())
+    if (!room.isEmpty() && !replayMode)
         join(room, roomChannelId);
 }
 
 void IrcChat::receive() {
     QString msg;
-    while (sock->canReadLine()) {
+    while (sock && sock->canReadLine()) {
         msg = sock->readLine();
         msg = msg.remove('\n').remove('\r');
         parseCommand(msg);
@@ -365,12 +637,13 @@ void IrcChat::processError(QAbstractSocket::SocketError socketError) {
         err = "Unknown error.";
     }
 
-    errorOccured(err);
+    emit errorOccured(err);
 }
 
 void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & l) {
 	bool first = true;
-	for (auto part : s.split(sep)) {
+    const QStringList & parts = s.split(sep);
+	for (const auto & part : parts) {
 		if (first) {
 			first = false;
 			l.append(part);
@@ -382,12 +655,12 @@ void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & 
 }
 
 bool IrcChat::allDownloadsComplete() {
-    return !_emoteProvider.downloadsInProgress() && _badgeProvider && !_badgeProvider->downloadsInProgress();
+    return !_emoteProvider.downloadsInProgress() && _badgeProvider && !_badgeProvider->downloadsInProgress() && _bitsProvider && !_bitsProvider->downloadsInProgress();
 }
 
 void IrcChat::disposeOfMessage(ChatMessage m) {
     if (allDownloadsComplete()) {
-        emit messageReceived(m.name, m.messageList, m.color, m.subscriber, m.turbo, m.mod, m.isAction, m.badges, m.isChannelNotice, m.systemMessage);
+        emit messageReceived(m.name, m.messageList, m.color, m.subscriber, m.turbo, m.mod, m.isAction, m.badges, m.isChannelNotice, m.systemMessage, m.isWhisper);
     }
     else {
         // queue message to be shown when downloads are complete
@@ -448,7 +721,8 @@ QMap<int, QPair<int, int>> IrcChat::parseEmotesTag(const QString emotes) {
 
             _emoteProvider.makeAvailable(key);
 
-            for (auto emotePlc : positions.split(',')) {
+            const QStringList & emotePlcs = positions.split(',');
+            for (const auto & emotePlc : emotePlcs) {
                 auto firstAndLast = emotePlc.split('-');
                 int first = firstAndLast[0].toInt();
                 int last = firstAndLast.length() > 1 ? firstAndLast[1].toInt() : first;
@@ -460,19 +734,146 @@ QMap<int, QPair<int, int>> IrcChat::parseEmotesTag(const QString emotes) {
     return emotePositionsMap;
 }
 
-void IrcChat::createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message) {
-    // cut up message into an ordered list of text fragments and emotes
+class UnicodeCharacterCounter {
+public:
+    UnicodeCharacterCounter(const QString s) : s(s) { }
+    int toUtf16Offset(int unicodeOffset) {
+        if (unicodeOffset < curUnicodeOffset) {
+            curUnicodeOffset = 0;
+            curQStringOffset = 0;
+        }
+        
+        while (curUnicodeOffset < unicodeOffset) {
+            if (curQStringOffset >= s.length()) return s.length();
+            const QChar ch = s.at(curQStringOffset++);
+            if ((0xd800 <= ch) && (ch <= 0xdbff)) {
+                if (curQStringOffset >= s.length()) return s.length();
+                curQStringOffset++; // consume another QString char
+            }
+            curUnicodeOffset++;
+        }
+
+        return curQStringOffset;
+    }
+private:
+    int curUnicodeOffset = 0;
+    int curQStringOffset = 0;
+    const QString s;
+};
+
+QRegExp createBitsRegex(const QString bitsPrefix) {
+    const QString lowerPrefix = bitsPrefix.toLower();
+    const QString BITS_REGEX_FORMAT = "(^|\\s)(%1)(\\d+)(\\s|$)";
+    const QString regexStr = BITS_REGEX_FORMAT.arg(QRegExp::escape(lowerPrefix));
+    qDebug() << "creating bits regex for" << bitsPrefix << ":" << regexStr;
+
+    return QRegExp(regexStr);
+}
+
+const int BITS_LEVELS[] = {10000, 5000, 1000, 100};
+
+QString minBitsForBits(QString bitsStr) {
+    int bits = bitsStr.toInt();
+    for (int curMinBits : BITS_LEVELS) {
+        if (bits >= curMinBits) {
+            return QString::number(curMinBits);
+        }
+    }
+    return "1";
+}
+
+void IrcChat::checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate) {
+    int pos = 0;
+    while (true) {
+        pos = regex.indexIn(message, pos);
+        if (pos == -1) break;
+
+        const QStringList & match = regex.capturedTexts();
+
+        int prefixStart = regex.pos(2);
+        QString foundPrefix = match[2];
+        int prefixLen = foundPrefix.length();
+        int prefixEnd = prefixStart + prefixLen;
+
+        QString bitsCount = match[3];
+        int bitsCountEnd = regex.pos(3) + bitsCount.length();
+        QString minBits = minBitsForBits(bitsCount);
+
+        qDebug() << "found bits prefix" << foundPrefix << "with count" << bitsCount << "; using minBits" << minBits << "start" << prefixStart << "end" << prefixEnd << "resuming at" << bitsCountEnd;
+
+        QString key = prefix + "-" + minBits;
+        if (_bitsProvider) {
+            mapToUpdate.insert(prefixStart, qMakePair(prefixEnd, qMakePair(ImageEntryKind::bits, _bitsProvider->getCanonicalKey(key))));
+            _bitsProvider->makeAvailable(key);
+        }
+
+        pos = bitsCountEnd;
+    }
+}
+
+void updateBitsRegexes(const ChannelManager::BitsUrlsMap & bitsUrls, QMap<QString, QRegExp> & mapToUpdate) {
+    mapToUpdate.clear();
+    
+    for (auto actionEntry = bitsUrls.constBegin(); actionEntry != bitsUrls.constEnd(); actionEntry++) {
+        const QString & prefix = actionEntry.key();
+        mapToUpdate.insert(prefix, createBitsRegex(prefix));
+    }
+}
+
+void IrcChat::handleChannelBitsUrlsLoaded(const int channelID, ChannelManager::BitsUrlsMap bitsUrls) {
+    if (channelID == -1) {
+        updateBitsRegexes(bitsUrls, lastGlobalBitsRegexes);
+    }
+    else if (QString::number(channelID) == roomChannelId) {
+        updateBitsRegexes(bitsUrls, lastCurChannelBitsRegexes);
+    }
+}
+
+void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QString bitsNumber, QVariantList & messageList, const QString message) {
+    // cut up message into an ordered list of text fragments and images
+
+    // put together all kinds of image entries so we can go through them in order
+    ImagePositionsMap imagePositionsMap; // map of start unicode pos -> (end unicode pos, (image kind, key))
+
+    UnicodeCharacterCounter counter(message);
+
+    for (auto emoteEntry = emotePositionsMap.constBegin(); emoteEntry != emotePositionsMap.constEnd(); emoteEntry++) {
+        // also convert positions to utf-16 domain at this time
+        int start = counter.toUtf16Offset(emoteEntry.key());
+        int end = counter.toUtf16Offset(emoteEntry.value().first + 1);
+        QString key = QString::number(emoteEntry.value().second);
+        imagePositionsMap.insert(start, qMakePair(end, qMakePair(ImageEntryKind::emote, key)));
+    }
+
+    if (bitsNumber.length() > 0) {
+        for (const QMap<QString, QRegExp> & map : { lastCurChannelBitsRegexes, lastGlobalBitsRegexes }) {
+            for (auto mapEntry = map.constBegin(); mapEntry != map.constEnd(); mapEntry++) {
+                const auto & prefix = mapEntry.key();
+                const auto & regex = mapEntry.value();
+                checkBitsRegex(regex, prefix, message, imagePositionsMap);
+            }
+        }
+    }
+
     int cur = 0;
-    for (auto i = emotePositionsMap.constBegin(); i != emotePositionsMap.constEnd(); i++) {
+    for (auto i = imagePositionsMap.constBegin(); i != imagePositionsMap.constEnd(); i++) {
         auto emoteStart = i.key();
         if (emoteStart > cur) {
             addWordSplit(message.mid(cur, emoteStart - cur), ' ', messageList);
         }
-        auto emoteEnd = i.value().first;
-        auto emoteId = i.value().second;
-        QString emoteText = message.mid(emoteStart, emoteEnd - emoteStart + 1);
-        messageList.append(createEmoteEntry(emoteId, emoteText));
-        cur = emoteEnd + 1;
+        auto emoteAfterEnd = i.value().first;
+        auto imageKind = i.value().second.first;
+        auto imageId = i.value().second.second;
+        QString originalText = message.mid(emoteStart, emoteAfterEnd - emoteStart);
+        switch (imageKind) {
+        case ImageEntryKind::emote:
+            messageList.append(createEmoteEntry(imageId, originalText));
+            break;
+        case ImageEntryKind::bits:
+            messageList.append(createBitsEntry(imageId, originalText));
+            break;
+        }
+        cur = emoteAfterEnd;
     }
     if (cur < message.length()) {
         addWordSplit(message.mid(cur, message.length() - cur), ' ', messageList);
@@ -491,6 +892,7 @@ void IrcChat::parseMessageCommand(const QString cmd, const QString cmdKeyword, C
 
     chatMessage.isAction = false;
     chatMessage.isChannelNotice = false;
+    chatMessage.isWhisper = false;
 
     foreach(const QString & tagStr, commandParse.tags) {
         Tag tag(tagStr);
@@ -521,6 +923,9 @@ void IrcChat::parseMessageCommand(const QString cmd, const QString cmdKeyword, C
         else if (tag.key == "emotes") {
             emotesStr = tag.value;
         }
+        else if (tag.key == "bits") {
+            chatMessage.bitsNumber = tag.value;
+        }
         else {
             //qDebug() << "Unused " << cmdKeyword << " tag" << tag.key;
         }
@@ -537,6 +942,16 @@ void IrcChat::parseMessageCommand(const QString cmd, const QString cmdKeyword, C
     if (messageSepPos != -1) {
         commandParse.haveMessage = true;
         commandParse.message = cmd.mid(messageSepPos + 1);
+    }
+
+    int channelEnd = messageSepPos == -1 ? cmd.length() : messageSepPos - 1;
+    int channelStart = cmdKeywordPos + cmdKeyword.length() + 1;
+    commandParse.channel = cmd.mid(channelStart, channelEnd - channelStart);
+
+    bool isHashChannel = (commandParse.channel.length() > 0) && (commandParse.channel.at(0) == '#');
+    commandParse.wrongChannel = isHashChannel && inRoom() && ((QString("#") + room) != commandParse.channel);
+    if (commandParse.wrongChannel) {
+        qDebug() << "message is for" << commandParse.channel.mid(1) << "and we are in" << room;
     }
 
     if (displayName.length() > 0) {
@@ -563,6 +978,10 @@ void IrcChat::parseCommand(QString cmd) {
 
         parseMessageCommand(cmd, "PRIVMSG", parse);
 
+        if (parse.wrongChannel) {
+            return;
+        }
+
 		// parse IRC action before applying emotes, as emote indices are relative to the content of the action
 		const QString ACTION_PREFIX = QString(QChar(1)) + "ACTION ";
 		const QString ACTION_SUFFIX = QString(QChar(1));
@@ -571,7 +990,7 @@ void IrcChat::parseCommand(QString cmd) {
             parse.message = parse.message.mid(ACTION_PREFIX.length(), parse.message.length() - ACTION_SUFFIX.length() - ACTION_PREFIX.length());
 		}
 
-        createEmoteMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.messageList, parse.message);
+        createMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.bitsNumber, parse.chatMessage.messageList, parse.message);
 
         //qDebug() << "messageList " << messageList;
 
@@ -588,6 +1007,10 @@ void IrcChat::parseCommand(QString cmd) {
 
         parseMessageCommand(cmd, "USERNOTICE", parse);
 
+        if (parse.wrongChannel) {
+            return;
+        }
+
         parse.chatMessage.isChannelNotice = true;
 
         foreach(const QString & tagStr, parse.tags) {
@@ -597,23 +1020,49 @@ void IrcChat::parseCommand(QString cmd) {
 
                 // \s -> space
                 systemMessage.replace("\\s", " ");
-                // \\ -> \ 
+                // double backslash -> single backslash
                 systemMessage.replace("\\\\", "\\");
 
                 parse.chatMessage.systemMessage = systemMessage;
             }
         }
 
-        createEmoteMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.messageList, parse.message);
+        createMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.bitsNumber, parse.chatMessage.messageList, parse.message);
 
         //qDebug() << "messageList " << messageList;
 
         disposeOfMessage(parse.chatMessage);
         return;
     }
+    if (cmd.contains("WHISPER")) {
+        // Structure of message: 
+        // @badges=;color=;display-name=TWitch_UserName;emotes=;message-id=2;thread-id=56781234_142000000;turbo=0;user-id=123456789;user-type= :twitch_username!twitch_username@twitch_username.tmi.twitch.tv WHISPER other_twitch_user :hi
+        CommandParse parse;
+
+        parseMessageCommand(cmd, "WHISPER", parse);
+
+        if (parse.wrongChannel) {
+            return;
+        }
+
+        parse.chatMessage.isChannelNotice = true;
+        parse.chatMessage.isWhisper = true;
+
+        parse.chatMessage.systemMessage = QString("Whisper from");
+
+        createMessageList(parseEmotesTag(parse.emotesStr), parse.chatMessage.bitsNumber, parse.chatMessage.messageList, parse.message);
+
+        //qDebug() << "messageList " << messageList;
+
+        qDebug() << "whisper isWhisper" << parse.chatMessage.isWhisper;
+        disposeOfMessage(parse.chatMessage);
+        return;
+
+    }
     if(cmd.contains("NOTICE")) {
         QString text = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("NOTICE")) + 1);
         emit noticeReceived(text);
+        return;
     }
     if(cmd.contains("GLOBALUSERSTATE")) {
 		// Structure of message: @badges=turbo/1;color=#4100CC;display-name=user_name;emote-sets=0,1,22,345;user-id=12345678;user-type= :tmi.twitch.tv GLOBALUSERSTATE
@@ -635,7 +1084,8 @@ void IrcChat::parseCommand(QString cmd) {
 			}
 			else if (tag.key == "emote-sets") {
                 qDebug() << "GLOBALUSERSTATE emote-sets" << tag.value;
-				for (auto entry : tag.value.split(',')) {
+                const QStringList & entries = tag.value.split(',');
+				for (const auto & entry : entries) {
 					_emoteSetIDs.append(entry.toInt());
 				}
                 emit emoteSetIDsChanged();
@@ -696,7 +1146,7 @@ void IrcChat::parseCommand(QString cmd) {
         }
         return;
     }
-    //qDebug() << "Unrecognized chat command:" << cmd;
+    qDebug() << "Unrecognized chat command:" << cmd;
 }
 
 QString IrcChat::getParamValue(QString params, QString param) {
@@ -716,12 +1166,12 @@ void IrcChat::handleDownloadComplete() {
         //qDebug() << "Download queue complete; posting pending messages";
         while (!msgQueue.empty()) {
             ChatMessage tmpMsg = msgQueue.first();
-            emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.mod, tmpMsg.isAction, tmpMsg.badges, tmpMsg.isChannelNotice, tmpMsg.systemMessage);
+            emit messageReceived(tmpMsg.name, tmpMsg.messageList, tmpMsg.color, tmpMsg.subscriber, tmpMsg.turbo, tmpMsg.mod, tmpMsg.isAction, tmpMsg.badges, tmpMsg.isChannelNotice, tmpMsg.systemMessage, tmpMsg.isWhisper);
             msgQueue.pop_front();
         }
     }
 }
 
-bool IrcChat::bulkDownloadEmotes(QList<QString> keys) {
-    return _emoteProvider.bulkDownload(keys);
+void IrcChat::bulkDownloadEmotes(QList<QString> keys) {
+    _emoteProvider.bulkDownload(keys);
 }

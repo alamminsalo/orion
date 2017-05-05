@@ -40,7 +40,6 @@ Rectangle {
         playerView.visible = playerView.smallMode
         settingsView.visible = false
         vodsView.visible = false
-        webView.visible = false
 
         switch (selection){
 
@@ -85,10 +84,6 @@ Rectangle {
         case 6:
             settingsView.visible = true
             break
-
-        case 7:
-            webView.visible = true
-            break
         }
     }
 
@@ -119,11 +114,6 @@ Rectangle {
 
     OptionsView{
         id: settingsView
-        visible: false
-    }
-
-    WebView{
-        id: webView
         visible: false
     }
 
@@ -169,15 +159,23 @@ Rectangle {
         }
     }
 
+    function updateForNetworkAccess(up) {
+        if (up) {
+            connectionErrorRectangle.height = 0
+        }
+        else {
+            connectionErrorRectangle.height = dp(50)
+        }
+    }
+
+    Component.onCompleted: {
+        updateForNetworkAccess(netman.networkAccess());
+    }
+
     Connections {
         target: netman
         onNetworkAccessChanged: {
-            if (up) {
-                connectionErrorRectangle.height = 0
-            }
-            else {
-                connectionErrorRectangle.height = dp(50)
-            }
+            updateForNetworkAccess(up);
         }
     }
 }

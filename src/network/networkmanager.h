@@ -33,6 +33,8 @@
 #include "../model/game.h"
 #include "../model/vod.h"
 
+#include "replaychat.h"
+
 #define ONLY_BROADCASTS true
 #define USE_HLS true
 #define FOLLOWED_FETCH_LIMIT 25
@@ -74,12 +76,20 @@ public:
     void getChannelBadgeUrls(const QString &access_token, const QString &channel);
     void getChannelBadgeUrlsBeta(const int channelID);
     void getGlobalBadgesUrlsBeta();
+    void getChannelBitsUrls(const int channelID);
+    void getGlobalBitsUrls();
+
+    Q_INVOKABLE void getVodStartTime(quint64 vodId);
+    Q_INVOKABLE void getVodChatPiece(quint64 vodId, quint64 offset);
+    Q_INVOKABLE void cancelLastVodChatRequest();
+    Q_INVOKABLE void resetVodChat();
+    Q_INVOKABLE void loadChatterList(const QString channel);
 
     QNetworkAccessManager *getManager() const;
 
     //TODO: move to new class if more operations need to be added
-    Q_INVOKABLE void clearCookies();
     Q_INVOKABLE QString getClientId() const { return QString(CLIENT_ID); }
+    Q_INVOKABLE bool networkAccess();
 
 signals:
     void finishedConnectionTest();
@@ -106,6 +116,13 @@ signals:
     void getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>);
     void getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>);
 
+    void vodStartGetOperationFinished(double);
+    void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
+    void chatterListLoadOperationFinished(QMap<QString, QList<QString>>);
+
+    void getChannelBitsUrlsOperationFinished(int channelID, QMap<QString, QMap<QString, QString>> channelBitsUrls);
+    void getGlobalBitsUrlsOperationFinished(QMap<QString, QMap<QString, QString>> globalBitsUrls);
+
     void networkAccessChanged(bool up);
 
 private slots:
@@ -125,6 +142,9 @@ private slots:
     void favouritesReply();
     void editUserFavouritesReply();
     void streamReply();
+    void vodStartReply();
+    void vodChatPieceReply();
+    void chatterListReply();
 
     //Oauth slots
     void userReply();
@@ -132,11 +152,31 @@ private slots:
     void channelBadgeUrlsReply();
     void channelBadgeUrlsBetaReply();
     void globalBadgeUrlsBetaReply();
+    void channelBitsUrlsReply();
+    void globalBitsUrlsReply();
 
 private:
+    static const QString CHANNEL_BADGES_URL_PREFIX;
+    static const QString CHANNEL_BADGES_URL_SUFFIX;
+    static const QString CHANNEL_BADGES_BETA_URL_PREFIX;
+    static const QString CHANNEL_BADGES_BETA_URL_SUFFIX;
+    static const QString GLOBAL_BADGES_BETA_URL;
+
     QNetworkAccessManager *operation;
     bool connectionOK;
     QTimer offlinePoller;
+
+    const int REPLAY_CHAT_DEDUPE_SWAP_ITERATIONS = 5;
+    int replayChatPartNum = 0;
+
+    QSet<QString> * curChatReplayDedupeBatch;
+    QSet<QString> * prevChatReplayDedupeBatch;
+
+    void initReplayChat();
+    void teardownReplayChat();
+    void filterReplayChat(QList<ReplayChatMessage> & replayChat);
+
+    QNetworkReply *lastVodChatRequest;
 };
 
 #endif // NETWORKMANAGER_H

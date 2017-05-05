@@ -24,7 +24,7 @@ VodListModel::~VodListModel()
     clear();
 }
 
-Qt::ItemFlags VodListModel::flags(const QModelIndex &index) const
+Qt::ItemFlags VodListModel::flags(const QModelIndex &/*index*/) const
 {
     return Qt::ItemIsEnabled;
 }
@@ -64,13 +64,16 @@ QVariant VodListModel::data(const QModelIndex &index, int role) const
         case Game:
             var.setValue(vod->getGame());
             break;
+
+        case CreatedAt:
+            var.setValue(vod->getCreatedAt());
         }
     }
 
     return var;
 }
 
-int VodListModel::rowCount(const QModelIndex &parent) const
+int VodListModel::rowCount(const QModelIndex &/*parent*/) const
 {
     return vods.size();
 }
@@ -84,17 +87,18 @@ QHash<int, QByteArray> VodListModel::roleNames() const
     roles[Game] = "game";
     roles[Duration] = "duration";
     roles[Views] = "views";
+    roles[CreatedAt] = "createdAt";
     return roles;
 }
 
 void VodListModel::addAll(QList<Vod *> &items)
 {
     if (!items.isEmpty()){
-        emit beginInsertRows(QModelIndex(), vods.size(), vods.size() + items.size() - 1);
+        beginInsertRows(QModelIndex(), vods.size(), vods.size() + items.size() - 1);
         foreach (Vod *vod, items) {
             vods.append(new Vod(*vod));
         }
-        emit endInsertRows();
+        endInsertRows();
     }
 }
 
@@ -109,10 +113,10 @@ Vod *VodListModel::find(const QString id)
 void VodListModel::clear()
 {
     if (!vods.isEmpty()){
-        emit beginRemoveRows(QModelIndex(), 0, vods.size());
+        beginRemoveRows(QModelIndex(), 0, vods.size());
         qDeleteAll(vods);
         vods.clear();
-        emit endRemoveRows();
+        endRemoveRows();
     }
 }
 

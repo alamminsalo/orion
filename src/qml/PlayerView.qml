@@ -91,7 +91,7 @@ Item {
         onNetworkAccessChanged: {
             if (up && currentChannel && !renderer.status !== "PAUSED") {
                 //console.log("Network up. Resuming playback...")
-                loadAndPlay()
+                loadAndPlay(currentQualityName)
             }
         }
 
@@ -100,7 +100,7 @@ Item {
             if (channelName === currentChannel.name) {
                 if (online && !root.streamOnline) {
                     console.log("Stream back online, resuming playback")
-                    loadAndPlay()
+                    loadAndPlay(currentQualityName)
                 }
                 root.streamOnline = online
             }
@@ -183,6 +183,8 @@ Item {
 
                 seekBar.setPosition(0, duration)
             }
+        } else {
+            isVod = false;
         }
 
         currentChannel = {
@@ -200,7 +202,23 @@ Item {
         _favIcon.update()
         _label.visible = false
         setWatchingTitle()
-        chatview.joinChannel(currentChannel.name, currentChannel._id)
+
+        if (isVod) {
+            var startEpochTime = (new Date(vod.createdAt)).getTime() / 1000.0;
+
+            console.log("typeof vod._id is", typeof(vod._id))
+
+            if (vod._id.charAt(0) !== "v") {
+                console.log("unknown vod id format in", vod._id);
+            } else {
+                var vodIdNum = parseInt(vod._id.substring(1));
+                console.log("replaying chat for vod", vodIdNum, "starting at", startEpochTime);
+                chatview.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime);
+            }
+        } else {
+            chatview.joinChannel(currentChannel.name, currentChannel._id);
+        }
+
         pollTimer.restart()
 
         requestSelectionChange(5)
@@ -239,13 +257,14 @@ Item {
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
+            chatview.playerSeek(position)
             renderer.seekTo(position)
         }
     }
 
     function reloadStream() {
         renderer.stop()
-        loadAndPlay()
+        loadAndPlay(currentQualityName)
     }
 
     Connections {
@@ -275,6 +294,7 @@ Item {
         }
 
         onPositionChanged: {
+            chatview.playerPositionUpdate(renderer.position);
             seekBar.setPosition(renderer.position, duration)
         }
 
@@ -499,7 +519,6 @@ Item {
                     top: parent.top
                     bottom: parent.bottom
                     right: parent.right
-                    rightMargin: dp(5)
                 }
                 width: dp(50)
                 height: width
@@ -799,11 +818,33 @@ Item {
     ChatView {
         id: chatview
 
+        // Use JS so we can control the order the anchors are set.
+        // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
         anchors {
             top: parent.top
             bottom: parent.bottom
-            left: g_cman.swapChat ? parent.left : undefined
-            right: !g_cman.swapChat ? parent.right : undefined
+        }
+
+        function updateAnchors() {
+            console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
+            if (g_cman.swapChat) {
+                anchors.right = undefined;
+                anchors.left = parent.left;
+            } else {
+                anchors.left = undefined;
+                anchors.right = parent.right;
+            }
+        }
+
+        Component.onCompleted: {
+            chatview.updateAnchors();
+        }
+
+        Connections {
+            target: g_cman
+            onSwapChatChanged: {
+                chatview.updateAnchors();
+            }
         }
 
         width: visible && !smallMode ? dp(250) : 0

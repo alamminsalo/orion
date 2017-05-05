@@ -16,14 +16,16 @@ import QtQuick 2.5
 
 import "../util.js" as Util
 
+// Could this not be using CommonGrid?
+
 //ChannelList.qml
 GridView {
     property variant selectedItem
     property bool tooltipEnabled: false
     property string title
 
-    signal itemClicked(int index)
-    signal itemRightClicked(int index)
+    signal itemClicked(int index, Item clickedItem)
+    signal itemRightClicked(int index, Item clickedItem)
 
     id: root
 
@@ -135,11 +137,15 @@ GridView {
         }
 
         onClicked: {
-            if (currentItem){
+            // Note that click/press doesn't necessarily set grid's current item so we shouldn't use currentIndex
+            // TODO: rework this if something better than a single-point click solution is available for touchscreens
+            var clickedIndex = indexAt(mouse.x, mouse.y);
+            if (clickedIndex !== -1){
+                var clickedItem = itemAt(mouse.x, mouse.y);
                 if (mouse.button === Qt.LeftButton)
-                    itemClicked(currentIndex)
+                    itemClicked(clickedIndex, clickedItem);
                 else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(currentIndex)
+                    itemRightClicked(clickedIndex, clickedItem);
                 }
             }
         }

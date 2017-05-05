@@ -41,10 +41,10 @@ QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
             }
         }
         if (channels.count() < cnames.count()){
-            foreach (Channel* channel, channels){
+            foreach (const Channel* channel, channels){
                 cnames.removeOne(channel->getServiceName());
             }
-            foreach(QString name, cnames){
+            foreach(const QString & name, cnames){
                 channels.append(new Channel(name));
             }
         }
@@ -251,6 +251,9 @@ Vod *JsonParser::parseVod(const QJsonObject &json)
 
     if (!json["views"].isNull())
         vod->setViews(json["views"].toInt());
+
+    if (!json["created_at"].isNull())
+        vod->setCreatedAt(json["created_at"].toString());
 
     return vod;
 }
@@ -522,6 +525,49 @@ QMap<QString, QMap<QString, QMap<QString, QString>>> JsonParser::parseBadgeUrlsB
     return out;
 }
 
+QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByteArray &data)
+{
+    const QString BITS_THEME = "dark";
+    const QString BITS_TYPE = "static";
+    const QString BITS_SIZE = "1";
+
+    QMap<QString, QMap<QString, QString>> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        auto actions = json["actions"].toArray();
+        for (const auto & actionEntry : actions) {
+            
+            QMap<QString, QString> actionMap;
+
+            const QJsonObject & actionObj = actionEntry.toObject();
+            QString actionPrefix = actionObj["prefix"].toString();
+
+            const QJsonArray & tiers = actionObj["tiers"].toArray();
+            for (const auto & tierEntry : tiers) {
+                const QJsonObject & tierObj = tierEntry.toObject();
+
+                int minBits = tierObj["min_bits"].toInt();
+
+                const QString & url = tierObj["images"].toObject()[BITS_THEME].toObject()[BITS_TYPE].toObject()[BITS_SIZE].toString();
+
+                qDebug() << "bits url for" << actionPrefix << "minBits" << minBits << "is" << url;
+                actionMap.insert(QString::number(minBits), url);
+            }
+
+            if (actionMap.size() > 0) {
+                out.insert(actionPrefix, actionMap);
+            }
+        }
+    }
+
+    return out;
+}
+
 int JsonParser::parseTotal(const QByteArray &data)
 {
     int total = 0;
@@ -535,4 +581,101 @@ int JsonParser::parseTotal(const QByteArray &data)
     }
 
     return total;
+}
+
+ReplayChatMessage parseVodChatEntry(const QJsonValue &entry) {
+    ReplayChatMessage out;
+    
+    const QJsonObject & entryObj = entry.toObject();
+
+    const QJsonObject & attributes = entryObj["attributes"].toObject();
+
+    out.from = attributes["from"].toString();
+    out.deleted = attributes["deleted"].toBool();
+    out.message = attributes["message"].toString();
+    out.room = attributes["room"].toString();
+    out.timestamp = attributes["timestamp"].toDouble();
+    out.videoOffset = attributes["video-offset"].toDouble();
+    out.command = attributes["command"].toString();
+
+    auto tags = attributes["tags"].toObject();
+    for (auto tagEntry = tags.constBegin(); tagEntry != tags.constEnd(); tagEntry++) {
+        auto tagName = tagEntry.key();
+        if (tagName == "emotes") {
+            auto emotes = tagEntry.value().toObject();
+            for (auto emoteEntry = emotes.constBegin(); emoteEntry != emotes.constEnd(); emoteEntry++) {
+                int emoteId = emoteEntry.key().toInt();
+
+                out.emoteList.append(emoteId);
+
+                auto emotePairs = emoteEntry.value().toArray();
+                for (auto emotePair : emotePairs) {
+                    auto emotePairArray = emotePair.toArray();
+                    if (emotePairArray.size() == 2) {
+                        auto first = emotePairArray[0].toInt();
+                        auto last = emotePairArray[1].toInt();
+                        out.emotePositionsMap.insert(first, qMakePair(last, emoteId));
+                    }
+                }
+            }
+
+        }
+        else if (tagName == "mod" || tagName == "subscriber" || tagName == "turbo") {
+            out.tags.insert(tagName, tagEntry.value().toBool());
+        }
+        else {
+            out.tags.insert(tagName, tagEntry.value().toString());
+        }
+    }
+
+    out.id = entryObj["id"].toString();
+        
+    return out;
+}
+
+QList<ReplayChatMessage> JsonParser::parseVodChatPiece(const QByteArray &data)
+{
+    QList<ReplayChatMessage> out;
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        if (!json["data"].isNull() && json["data"].isArray()) {
+            const QJsonArray & chatEntries = json["data"].toArray();
+            for (const auto & entry : chatEntries) {
+
+                out.append(parseVodChatEntry(entry));
+            }
+        }
+    }
+
+    return out;
+}
+
+QMap<QString, QList<QString>> JsonParser::parseChatterList(const QByteArray &data)
+{
+    QMap<QString, QList<QString>> out;
+    
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        QJsonObject chatters = json["chatters"].toObject();
+        
+        for (auto groupEntry = chatters.constBegin(); groupEntry != chatters.constEnd(); groupEntry++) {
+            QList<QString> groupChatters;
+            const QJsonArray & groupChattersJson = groupEntry.value().toArray();
+            for (const auto & chatter : groupChattersJson) {
+                groupChatters.append(chatter.toString());
+            }
+            out.insert(groupEntry.key(), groupChatters);
+        }
+    }
+
+    return out;
+    
 }

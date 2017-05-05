@@ -26,6 +26,7 @@ Item {
     property string jsonBadgeEntries
     property string emoteDirPath
     property bool isChannelNotice
+    property bool isWhisper
     property string systemMessage
     property int fontSize: Styles.titleFont.smaller
     property var pmsg: JSON.parse(msg)
@@ -80,6 +81,10 @@ Item {
         anchors {
             left: parent.left
             right: parent.right
+            margins: {
+                leftMargin: dp(2)
+                rightMargin: dp(2)
+            }
         }
 
         visible: showSystemMessageLine
@@ -98,6 +103,10 @@ Item {
           top: _systemMessageLine.bottom
           left: parent.left
           right: parent.right
+          margins: {
+              leftMargin: dp(2)
+              rightMargin: dp(2)
+          }
       }
 
       vAlign: vAlignCenter
@@ -191,14 +200,13 @@ Item {
             width: sourceSize.width/2.0
             height: sourceSize.height/2.0
 
-            // synchronous to simplify CustomFlow
             Component.onCompleted: {
-              source = "image://emote/" + msgItem.emoteId.toString();
+              source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
             }
 
             ToolTip {
-                visible: _emoteImgMouseArea.containsMouse && msgItem.emoteText != null
-                text: msgItem.emoteText
+                visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
+                text: msgItem.originalText
             }
           }
       }
@@ -212,7 +220,6 @@ Item {
           height: _badgeImg.height
           Image {
             id: _badgeImg
-            // synchronous to simplify CustomFlow
             Component.onCompleted: {
               source = badgeEntry.url;
             }
@@ -251,13 +258,18 @@ Item {
     {
         if (link.substr(0,5) === "user:")
         {
-            var value = "@"+link.replace('user:',"")+', '
-            if (_input.text === "")
-            {
-                _input.text = value
-            }
-            else {
-                _input.text = _input.text + ' '+ value
+            var clickedUser = link.replace('user:',"");
+            if (isWhisper) {
+                _input.text = "/w " + clickedUser + " " + _input.text;
+            } else {
+                var value = "@" + clickedUser + ', ';
+                if (_input.text === "")
+                {
+                    _input.text = value
+                }
+                else {
+                    _input.text = _input.text + ' '+ value
+                }
             }
 
         }

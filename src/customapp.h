@@ -19,6 +19,7 @@
 
 class CustomApp: public QApplication
 {
+    Q_OBJECT
 public:
     CustomApp(int &argc, char **argv);
 

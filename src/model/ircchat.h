@@ -37,9 +37,6 @@
 #include "imageprovider.h"
 #include "channelmanager.h"
 
-const qint16 PORT = 6667;
-const QString HOST = "irc.twitch.tv";
-
 //#define TWITCH_EMOTE_URI "https://static-cdn.jtvnw.net/emoticons/v1/%d/1.0"
 
 struct ChatMessage {
@@ -53,6 +50,8 @@ struct ChatMessage {
     QVariantList badges;
     bool isChannelNotice;
     QString systemMessage;
+    bool isWhisper;
+    QString bitsNumber;
 };
 
 // Backend for chat
@@ -72,6 +71,10 @@ public:
     Q_PROPERTY(QList<int> emoteSetIDs READ emoteSetIDs NOTIFY emoteSetIDsChanged)
 
     Q_INVOKABLE void join(const QString channel, const QString channelId);
+    Q_INVOKABLE void replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset);
+    Q_INVOKABLE void replaySeek(double newOffset);
+    Q_INVOKABLE void replayUpdate(double newOffset);
+    Q_INVOKABLE void replayStop();
     Q_INVOKABLE void leave();
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void reopenSocket();
@@ -105,35 +108,50 @@ signals:
     void connectedChanged();
     void emoteSetIDsChanged();
     void anonymousChanged();
-    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage);
+    void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage, bool isWhisper);
     void noticeReceived(QString message);
     void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
 
     void downloadComplete();
     bool downloadError();
+
+    void bulkDownloadComplete();
     
 public slots:
     void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);
     void onSockStateChanged();
     void login();
 
-    bool bulkDownloadEmotes(QList<QString> keys);
+    void bulkDownloadEmotes(QList<QString> keys);
 
 private slots:
-    void createConnection();
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
     void handleDownloadComplete();
+    void handleVodStartTime(double);
+    void handleDownloadedReplayChat(QList<ReplayChatMessage>);
+    void handleChannelBitsUrlsLoaded(const int channelID, ChannelManager::BitsUrlsMap bitsUrls);
 
 private:
+    static const qint16 PORT;
+    static const QString HOST;
+
+    static const QString IMAGE_PROVIDER_EMOTE;
+    static const QString EMOTICONS_URL_FORMAT;
+    static const QString IMAGE_PROVIDER_BITS;
+
     URLFormatImageProvider _emoteProvider;
+    BitsImageProvider * _bitsProvider;
     BadgeImageProvider * _badgeProvider;
+    ChannelManager * _cman;
     
     QList<ChatMessage> msgQueue;
 
     void parseCommand(QString cmd);
 
     struct CommandParse {
+        QString channel;
+        bool wrongChannel;
         ChatMessage chatMessage;
         QString params;
         bool haveMessage;
@@ -142,14 +160,16 @@ private:
         QString emotesStr;
     };
 
+    void initSocket();
     void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse);
     QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
-    void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
+    void createMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QString bitsNumber, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
     QString room;
     QString roomChannelId;
+    bool replayMode;
     // map of channel name -> list of pairs (badge name, badge version)
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
@@ -162,6 +182,29 @@ private:
     QMap<QString, bool> userChannelMod;
     QMap<QString, bool> userChannelSubscriber;
     bool allDownloadsComplete();
+
+    bool replayChatRequestInProgress;
+    
+    double replayChatVodStartTime;
+    double replayChatFirstChunkTime;
+    double replayChatCurrentSeekOffset;
+    double replayChatCurrentTime; // the position that playback is currently at in chat
+    double nextChatChunkTimestamp;
+    
+    quint64 replayVodId;
+    QList<ReplayChatMessage> replayChatMessagesPending;
+
+    void replayChatMessage(const ReplayChatMessage &);
+    void replayUpdateCommon();
+
+    QMap<QString, QRegExp> lastCurChannelBitsRegexes;
+    QMap<QString, QRegExp> lastGlobalBitsRegexes;
+
+    enum ImageEntryKind { emote, bits };
+
+    typedef QMap<int, QPair<int, QPair<ImageEntryKind, QString>>> ImagePositionsMap;
+
+    void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
 };
 
 #endif // IRCCHAT_H

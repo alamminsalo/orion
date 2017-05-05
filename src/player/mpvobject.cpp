@@ -30,7 +30,7 @@ MpvObject::MpvObject(QQuickItem * parent)
     //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 
     // Request hw decoding, just for testing.
-    //mpv::qt::set_option_variant(mpv, "hwdec-preload", "auto");
+    mpv::qt::set_option_variant(mpv, "hwdec", "auto");
 
     //Cache
     //mpv::qt::set_option_variant(mpv, "cache", 8192);

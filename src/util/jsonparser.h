@@ -24,6 +24,7 @@
 #include "../model/channel.h"
 #include "../model/game.h"
 #include "../model/vod.h"
+#include "../network/replaychat.h"
 
 /**
  * @brief The JsonParser class
@@ -52,6 +53,9 @@ public:
     static QMap<int, QMap<int, QString>> parseEmoteSets(const QByteArray&);
     static QMap<QString, QMap<QString, QString>> parseChannelBadgeUrls(const QByteArray &data);
     static QMap<QString, QMap<QString, QMap<QString, QString>>> parseBadgeUrlsBetaFormat(const QByteArray &data);
+    static QList<ReplayChatMessage> parseVodChatPiece(const QByteArray &data);
+    static QMap<QString, QList<QString>> parseChatterList(const QByteArray &data);
+    static QMap<QString, QMap<QString, QString>> parseBitsUrlsFormat(const QByteArray &data);
 };
 
 #endif // JSONPARSER_H

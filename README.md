@@ -13,11 +13,11 @@ Features:
 
 ## Screencaptures
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
+![mac](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/9.png)
+![linux](https://cloud.githubusercontent.com/assets/5585454/25102163/dc5b1dac-23bf-11e7-9285-d8234ab9d12b.png)
 
-![alt tag](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/8.jpeg)
+![android](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/8.jpeg)
 
 ## Dependencies
 
@@ -30,7 +30,7 @@ Features:
 #### Install needed libraries and software
 
 ```
-sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-webengine qt5-quickcontrols2 mpv
+sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-quickcontrols2 mpv
 ```
 
 If using backend other than mpv, install those packages instead.

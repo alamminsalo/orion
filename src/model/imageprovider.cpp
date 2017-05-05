@@ -19,12 +19,20 @@
 #include <QDebug>
 #include <QNetworkRequest>
 #include <QStandardPaths>
+#include <QApplication>
+#include <QDateTime>
 #include "imageprovider.h"
+
+const int ImageProvider::MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
 
 ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
     _imageProviderName(imageProviderName), _extension(extension) {
 
     activeDownloadCount = 0;
+
+    _bulkDownloadTimer.setInterval(MSEC_PER_DOWNLOAD);
+    _bulkDownloadTimer.setSingleShot(true);
+    connect(&_bulkDownloadTimer, SIGNAL(timeout()), this, SLOT(bulkDownloadStep()));
 
     QString useCacheDirName = cacheDirName != "" ? cacheDirName : imageProviderName;
     _cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QString("/" + useCacheDirName);
@@ -55,7 +63,7 @@ bool ImageProvider::makeAvailable(QString key) {
 
 bool ImageProvider::download(QString key) {
     if (_imageTable.contains(key)) {
-        qDebug() << "already in the table";
+        //qDebug() << "already in the table";
         return false;
     }
 
@@ -89,14 +97,29 @@ bool ImageProvider::download(QString key) {
     return true;
 }
 
-bool ImageProvider::bulkDownload(QList<QString> keys) {
-    bool waitForDownloadComplete = false;
-    for (auto key : keys) {
+void ImageProvider::bulkDownloadStep() {
+    for (; _bulkDownloadPos != _curBulkDownloadKeys.constEnd(); _bulkDownloadPos++) {
+        const QString & key = *_bulkDownloadPos;
+
         if (makeAvailable(key)) {
-            waitForDownloadComplete = true;
+            // hit us back when the next time interval is up
+            _bulkDownloadTimer.start();
+            return;
+        }
+        else {
+            qApp->processEvents();
         }
     }
-    return waitForDownloadComplete;
+
+    emit bulkDownloadComplete();
+}
+
+void ImageProvider::bulkDownload(const QList<QString> & keys) {
+    _curBulkDownloadKeys = keys;
+
+    _bulkDownloadPos = keys.constBegin();
+
+    bulkDownloadStep();
 }
 
 
@@ -173,7 +196,7 @@ void DownloadHandler::dataAvailable() {
     _file.write(buffer.data(), buffer.size());
 }
 
-void DownloadHandler::error(QNetworkReply::NetworkError code) {
+void DownloadHandler::error(QNetworkReply::NetworkError /*code*/) {
     hadError = true;
     QNetworkReply* _reply = qobject_cast<QNetworkReply*>(sender());
     qDebug() << "Network error downloading" << filename << ":" << _reply->errorString();
@@ -198,7 +221,8 @@ CachedImageProvider::CachedImageProvider(QHash<QString, QImage*> & imageTable) :
 
 }
 
-QImage CachedImageProvider::requestImage(const QString &id, QSize * size, const QSize & requestedSize) {
+QImage CachedImageProvider::requestImage(const QString &id, QSize * size, const QSize & /*requestedSize*/) {
+    // TODO figure out something sensible to do re requestedSize
     //qDebug() << "Requested id" << id << "from image provider";
     QImage * entry = NULL;
     auto result = imageTable.find(id);

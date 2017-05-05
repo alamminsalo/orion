@@ -40,13 +40,10 @@
         <file>VodsView.qml</file>
         <file>components/Video.qml</file>
         <file>components/SeekBar.qml</file>
-        <file>components/VodGrid.qml</file>
         <file>util.js</file>
-        <file>WebView.qml</file>
         <file>components/GradientBottom.qml</file>
         <file>components/BasicButton.qml</file>
         <file>components/OptionEntry.qml</file>
-        <file>WebPlayer.qml</file>
         <file>player.html</file>
         <file>irc/Chat.qml</file>
         <file>irc/ChatView.qml</file>
