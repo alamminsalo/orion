@@ -205,6 +205,8 @@ private:
     typedef QMap<int, QPair<int, QPair<ImageEntryKind, QString>>> ImagePositionsMap;
 
     void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
+
+    void roomInitCommon(const QString channel, const QString channelId);
 };
 
 #endif // IRCCHAT_H

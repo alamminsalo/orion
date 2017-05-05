@@ -99,6 +99,7 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
             return QList<QString>({ "GLOBAL", theme, type, size, prefix, minBits }).join("-");
         }
     }
+    qDebug() << "can't canonicalize" << key << "couldn't find that bits badge";
     return key;
 }
 

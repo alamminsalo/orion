@@ -113,15 +113,14 @@ IrcChat::~IrcChat() {
     disconnect();
 }
 
-void IrcChat::join(const QString channel, const QString channelId) {
-    replayMode = false;
-
+void IrcChat::roomInitCommon(const QString channel, const QString channelId) {
     if (inRoom())
         leave();
 
-    // Save channel name for later use
+    // Save channel name and numerical id for later use
     room = channel;
     roomChannelId = channelId;
+
 
     if (_badgeProvider) {
         _badgeProvider->setChannelName(channel);
@@ -132,7 +131,12 @@ void IrcChat::join(const QString channel, const QString channelId) {
     if (_bitsProvider) {
         _bitsProvider->setChannelId(channelId.toInt());
     }
+}
 
+void IrcChat::join(const QString channel, const QString channelId) {
+    replayMode = false;
+
+    roomInitCommon(channel, channelId);
     if (!connected()) {
         reopenSocket();
     }
@@ -148,16 +152,7 @@ void IrcChat::join(const QString channel, const QString channelId) {
 void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset) {
     replayMode = true;
 
-    if (inRoom())
-        leave();
-
-    room = channel;
-    roomChannelId = channelId;
-
-    if (_badgeProvider) {
-        _badgeProvider->setChannelName(channel);
-        _badgeProvider->setChannelId(channelId);
-    }
+    roomInitCommon(channel, channelId);
 
     replayVodId = vodId;
 
