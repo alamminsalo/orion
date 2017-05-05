@@ -85,7 +85,7 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
     
     const QString theme = "dark";
     const QString type = "animated";
-    const QString size = "1";
+    const QString size = "2";
 
     int splitPos = key.indexOf('-');
     if (splitPos != -1) {

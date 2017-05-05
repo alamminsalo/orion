@@ -529,7 +529,7 @@ QMap<QString, QMap<QString, QString>> JsonParser::parseBitsUrlsFormat(const QByt
 {
     const QString BITS_THEME = "dark";
     const QString BITS_TYPE = "animated";
-    const QString BITS_SIZE = "1";
+    const QString BITS_SIZE = "2";
 
     QMap<QString, QMap<QString, QString>> out;
 
