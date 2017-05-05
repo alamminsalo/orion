@@ -393,20 +393,12 @@ bool IrcChat::connected() {
     }
 }
 
-QVariantMap createEmoteEntry(QString emoteId, QString originalText) {
-    QVariantMap emoteObj;
-    emoteObj.insert("imageProvider", "emote");
-    emoteObj.insert("imageId", emoteId);
-    emoteObj.insert("originalText", originalText);
-    return emoteObj;
-}
-
-QVariantMap createBitsEntry(QString bitType, QString originalText) {
-    QVariantMap bitsObj;
-    bitsObj.insert("imageProvider", "bits");
-    bitsObj.insert("imageId", bitType);
-    bitsObj.insert("originalText", originalText);
-    return bitsObj;
+QVariantMap createImageEntry(QString imageProvider, QString imageId, QString originalText) {
+    QVariantMap imageObj;
+    imageObj.insert("imageProvider", imageProvider);
+    imageObj.insert("imageId", imageId);
+    imageObj.insert("originalText", originalText);
+    return imageObj;
 }
 
 QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, const QVariantMap &relevantEmotes) {
@@ -422,7 +414,7 @@ QVariantList IrcChat::substituteEmotesInMessage(const QVariantList & message, co
             if (spacePrefix) {
                 output.append(" ");
             }
-            output.append(createEmoteEntry(emoteId, emoteText));
+            output.append(createImageEntry(_emoteProvider.getImageProviderName(), emoteId, emoteText));
         }
         else {
             output.append(*word);
@@ -862,10 +854,13 @@ void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePosition
         QString originalText = message.mid(emoteStart, emoteAfterEnd - emoteStart);
         switch (imageKind) {
         case ImageEntryKind::emote:
-            messageList.append(createEmoteEntry(imageId, originalText));
+            messageList.append(createImageEntry(_emoteProvider.getImageProviderName(), imageId, originalText));
             break;
         case ImageEntryKind::bits:
-            messageList.append(createBitsEntry(imageId, originalText));
+            if (_bitsProvider) {
+                QVariantMap imgEntry = createImageEntry(_bitsProvider->getImageProviderName(), imageId, originalText);
+                messageList.append(imgEntry);
+            }
             break;
         }
         cur = emoteAfterEnd;
