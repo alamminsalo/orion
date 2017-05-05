@@ -81,7 +81,8 @@ BitsImageProvider::BitsImageProvider(ChannelManager * channelManager) : ImagePro
 QString BitsImageProvider::getCanonicalKey(QString key) {
     // input key has a prefix and a bits level, separated by a -
 
-    QString url;
+    QString globalUrl;
+    QString channelUrl;
     
     const QString theme = "dark";
     const QString type = "static";
@@ -92,10 +93,14 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
         QString prefix = key.left(splitPos);
         QString minBits = key.mid(splitPos + 1);
 
-        if (_channelManager->getChannelBitsUrl(_channelId, prefix, minBits, url)) {
-            return QList<QString>({QString::number(_channelId), theme, type, size, prefix, minBits}).join("-");
+        bool foundGlobalUrl = _channelManager->getChannelBitsUrl(-1, prefix, minBits, globalUrl);
+
+        if (_channelManager->getChannelBitsUrl(_channelId, prefix, minBits, channelUrl)) {
+            if (!foundGlobalUrl || channelUrl != globalUrl) {
+                return QList<QString>({ QString::number(_channelId), theme, type, size, prefix, minBits }).join("-");
+            }
         }
-        if (_channelManager->getChannelBitsUrl(-1, prefix, minBits, url)) {
+        if (foundGlobalUrl) {
             return QList<QString>({ "GLOBAL", theme, type, size, prefix, minBits }).join("-");
         }
     }
