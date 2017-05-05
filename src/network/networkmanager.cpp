@@ -630,9 +630,11 @@ void NetworkManager::channelBitsUrlsReply() {
         QString channelIDStr = urlString.mid(eqPos + 1);
         int channelID = channelIDStr.toInt();
         qDebug() << "bits urls for channel" << channelID << "loaded";
-        auto badges = JsonParser::parseBitsUrlsFormat(data);
+        BitsQStringsMap urls;
+        BitsQStringsMap colors;
+        JsonParser::parseBitsData(data, urls, colors);
 
-        emit getChannelBitsUrlsOperationFinished(channelID, badges);
+        emit getChannelBitsUrlsOperationFinished(channelID, urls, colors);
     }
     else {
         qDebug() << "can't determine channel from request url";
@@ -667,9 +669,11 @@ void NetworkManager::globalBitsUrlsReply() {
     QString urlString = reply->url().toString();
 
 
-    auto badges = JsonParser::parseBitsUrlsFormat(data);
+    BitsQStringsMap urls;
+    BitsQStringsMap colors;
+    JsonParser::parseBitsData(data, urls, colors);
 
-    emit getGlobalBitsUrlsOperationFinished(badges);
+    emit getGlobalBitsUrlsOperationFinished(urls, colors);
 
     reply->deleteLater();
 }
