@@ -80,8 +80,23 @@ int main(int argc, char *argv[])
     QNetworkProxyFactory::setUseSystemConfiguration(true);
     NetworkManager *netman = new NetworkManager(engine.networkAccessManager());
 
+    // detect hi dpi screens
+    qDebug() << "Screens:";
+    int screens = 0;
+    qreal maxDevicePixelRatio = QGuiApplication::primaryScreen()->devicePixelRatio();
+    for (const auto & screen : QGuiApplication::screens()) {
+        qreal curPixelRatio = screen->devicePixelRatio();
+        maxDevicePixelRatio = qMax(maxDevicePixelRatio, curPixelRatio);
+        screens++;
+        qDebug() << "  Screen #" << screens << screen->name() << ": devicePixelRatio" << curPixelRatio;
+    }
+    qDebug() << "maxDevicePixelRatio" << maxDevicePixelRatio;
+    bool hiDpi = maxDevicePixelRatio > 1.0;
+    qDebug() << "hiDpi" << hiDpi;
+    IrcChat::setHiDpi(hiDpi);
+
     //Create channels manager
-    ChannelManager *cman = new ChannelManager(netman);
+    ChannelManager *cman = new ChannelManager(netman, hiDpi);
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));

@@ -36,6 +36,10 @@ Item {
     property var singleShot: undefined
     property var replayMode: false
 
+    function getHiDpi() {
+        return chat.getHiDpi();
+    }
+
     Component.onCompleted: {
         chat.hookupChannelProviders(g_cman)
         chat.initProviders()

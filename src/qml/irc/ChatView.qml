@@ -424,7 +424,7 @@ Item {
         visible: false
         height: 0
 
-        devicePixelRatio: 2.0
+        devicePixelRatio: chat.getHiDpi()? 2.0 : 1.0
 
         onVisibleChanged: {
             if (visible) {

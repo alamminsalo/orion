@@ -81,6 +81,7 @@ public:
     Q_INVOKABLE void initProviders();
     Q_INVOKABLE void hookupChannelProviders(ChannelManager * cman);
     Q_INVOKABLE QString getBadgeLocalUrl(QString key);
+    Q_INVOKABLE bool getHiDpi();
 
     //# User
     QString username, userpass;
@@ -102,6 +103,8 @@ public:
     QList<int> emoteSetIDs();
 
     void RegisterEngineProviders(QQmlEngine & engine);
+
+    static void setHiDpi(bool setting);
 
 signals:
     void errorOccured(QString errorDescription);    
@@ -133,11 +136,14 @@ private slots:
     void handleChannelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls);
 
 private:
+    static bool hiDpi;
+
     static const qint16 PORT;
     static const QString HOST;
 
     static const QString IMAGE_PROVIDER_EMOTE;
-    static const QString EMOTICONS_URL_FORMAT;
+    static const QString EMOTICONS_URL_FORMAT_HIDPI;
+    static const QString EMOTICONS_URL_FORMAT_LODPI;
     static const QString IMAGE_PROVIDER_BITS;
 
     URLFormatImageProvider _emoteProvider;

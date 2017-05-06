@@ -56,6 +56,9 @@ public:
     static QList<ReplayChatMessage> parseVodChatPiece(const QByteArray &data);
     static QMap<QString, QList<QString>> parseChatterList(const QByteArray &data);
     static void parseBitsData(const QByteArray &data, QMap<QString, QMap<QString, QString>> & outUrls, QMap<QString, QMap<QString, QString>> & outColors);
+    static void setHiDpi(bool setting);
+private:
+    static bool hiDpi;
 };
 
 #endif // JSONPARSER_H

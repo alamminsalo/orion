@@ -206,8 +206,8 @@ Item {
               Image {
                 id: _emoteImg
 
-                width: sourceSize.width/2.0
-                height: sourceSize.height/2.0
+                width: sourceSize.width/(chat.getHiDpi()? 2.0 : 1.0)
+                height: sourceSize.height/(chat.getHiDpi()? 2.0 : 1.0)
 
                 Component.onCompleted: {
                   source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;

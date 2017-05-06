@@ -34,7 +34,7 @@ class ChannelManager;
 class BadgeImageProvider : public ImageProvider {
     Q_OBJECT
 public:
-    BadgeImageProvider(ChannelManager * channelManager);
+    BadgeImageProvider(ChannelManager * channelManager, bool hiDpi);
     void setChannelName(QString channelName) { _channelName = channelName; }
     void setChannelId(QString channelId) { _channelId = channelId; }
     virtual QString getCanonicalKey(QString key);
@@ -44,12 +44,13 @@ private:
     ChannelManager * _channelManager;
     QString _channelName;
     QString _channelId;
+    bool _hiDpi;
 };
 
 class BitsImageProvider : public ImageProvider {
     Q_OBJECT
 public:
-    BitsImageProvider(ChannelManager * channelManager);
+    BitsImageProvider(ChannelManager * channelManager, bool hiDpi);
     void setChannelId(int channelId) { _channelId = channelId; }
     virtual QString getCanonicalKey(QString key);
 protected:
@@ -57,6 +58,7 @@ protected:
 private:
     ChannelManager * _channelManager;
     int _channelId;
+    bool _hiDpi;
 };
 
 class ChannelManager: public QObject
@@ -115,7 +117,7 @@ protected:
     BitsImageProvider bitsImageProvider;
 
 public:
-    ChannelManager(NetworkManager *netman);
+    ChannelManager(NetworkManager *netman, bool hiDpi);
     ~ChannelManager();
 
     void load();

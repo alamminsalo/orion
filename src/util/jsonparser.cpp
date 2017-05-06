@@ -15,6 +15,12 @@
 #include "jsonparser.h"
 #include <QUrl>
 
+bool JsonParser::hiDpi = false;
+
+void JsonParser::setHiDpi(bool setting) {
+    hiDpi = setting;
+}
+
 QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
 {
     QList<Channel*> channels;
@@ -529,7 +535,10 @@ void JsonParser::parseBitsData(const QByteArray &data, QMap<QString, QMap<QStrin
 {
     const QString BITS_THEME = "dark";
     const QString BITS_TYPE = "animated";
-    const QString BITS_SIZE = "2";
+    const QString BITS_SIZE_LODPI = "1";
+    const QString BITS_SIZE_HIDPI = "2";
+
+    const QString BITS_SIZE = hiDpi ? BITS_SIZE_HIDPI : BITS_SIZE_LODPI;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);

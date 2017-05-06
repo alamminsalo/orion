@@ -21,7 +21,7 @@
 #include <QApplication>
 #include <QStandardPaths>
 
-BadgeImageProvider::BadgeImageProvider(ChannelManager * channelManager) : ImageProvider("badge", ".png"), _channelManager(channelManager) {
+BadgeImageProvider::BadgeImageProvider(ChannelManager * channelManager, bool hiDpi) : ImageProvider("badge", ".png"), _channelManager(channelManager), _hiDpi(hiDpi) {
     
 }
 
@@ -29,7 +29,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
     /** Resolve a key with just a badge name and version, specific to the current room, to a globally unique key for an official API or beta API badge */
     QString url;
 
-    const QString betaImageFormat = "image_url_2x";
+    const QString betaImageFormat = _hiDpi? "image_url_2x" : "image_url_1x";
     const QString officialImageFormat = "image";
 
     int splitPos = key.indexOf("-");
@@ -74,7 +74,7 @@ const QUrl BadgeImageProvider::getUrlForKey(QString & key) {
     return QUrl();
 }
 
-BitsImageProvider::BitsImageProvider(ChannelManager * channelManager) : ImageProvider("bits", ".gif"), _channelManager(channelManager) {
+BitsImageProvider::BitsImageProvider(ChannelManager * channelManager, bool hiDpi) : ImageProvider("bits", ".gif"), _channelManager(channelManager), _hiDpi(hiDpi) {
 
 }
 
@@ -86,7 +86,7 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
     
     const QString theme = "dark";
     const QString type = "animated";
-    const QString size = "2";
+    const QString size = _hiDpi? "2" : "1";
 
     int splitPos = key.indexOf('-');
     if (splitPos != -1) {
@@ -141,7 +141,7 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
     return model;
 }
 
-ChannelManager::ChannelManager(NetworkManager *netman) : netman(netman), badgeImageProvider(this), bitsImageProvider(this) {
+ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netman), badgeImageProvider(this, hiDpi), bitsImageProvider(this, hiDpi) {
     access_token = "";
     tempFavourites = 0;
 

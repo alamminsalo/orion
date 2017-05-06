@@ -31,17 +31,30 @@
 #include <qqml.h>
 #include <QtMath>
 #include <QDateTime>
+#include "../util/jsonparser.h"
 
 const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
 const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
-const QString IrcChat::EMOTICONS_URL_FORMAT = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
+const QString IrcChat::EMOTICONS_URL_FORMAT_LODPI = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
+const QString IrcChat::EMOTICONS_URL_FORMAT_HIDPI = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
 
 const qint16 IrcChat::PORT = 6667;
 const QString IrcChat::HOST = "irc.twitch.tv";
 
+bool IrcChat::hiDpi = false;
+
+void IrcChat::setHiDpi(bool setting) {
+    hiDpi = setting;
+    JsonParser::setHiDpi(setting);
+}
+
+bool IrcChat::getHiDpi() {
+    return hiDpi;
+}
+
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
-    _emoteProvider(IMAGE_PROVIDER_EMOTE, EMOTICONS_URL_FORMAT, ".png", "emotes_2x"),
+    _emoteProvider(IMAGE_PROVIDER_EMOTE, hiDpi? EMOTICONS_URL_FORMAT_HIDPI : EMOTICONS_URL_FORMAT_LODPI, ".png", hiDpi? "emotes_2x" : "emotes"),
     _bitsProvider(nullptr),
     _badgeProvider(nullptr),
     _cman(nullptr),
