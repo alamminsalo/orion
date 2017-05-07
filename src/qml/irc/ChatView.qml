@@ -19,6 +19,7 @@ import QtQuick.Controls 2.0
 import "../fonts/fontAwesome.js" as FontAwesome
 import "../styles.js" as Styles
 import "../components"
+import "../util.js" as Util
 import "../"
 
 Item {
@@ -422,6 +423,8 @@ Item {
 
         visible: false
         height: 0
+
+        devicePixelRatio: chat.getHiDpi()? 2.0 : 1.0
 
         onVisibleChanged: {
             if (visible) {
@@ -831,9 +834,8 @@ Item {
             for (var i in emoteSets) {
                 //console.log("  ", i);
                 var entry = emoteSets[i];
-                for (var emoteIdStr in entry) {
-                    var emoteId = parseInt(emoteIdStr);
-                    var emoteText = entry[emoteIdStr];
+                for (var emoteId in entry) {
+                    var emoteText = entry[emoteId];
                     if (regexExactMatch(plainText, emoteText)) {
                         //console.log("adding plain text emote", emoteText, emoteId);
                         _textEmotesMap[emoteText] = emoteId;
@@ -934,8 +936,15 @@ Item {
                         console.log("  beta badge set for", badgeName, "has no version entry for", versionStr);
                         console.log("  available versions are", keysStr(badgeSetData))
                     } else {
-                        var entry = {"name": versionObj.title, "url": badgeLocalUrl, "click_action": versionObj.click_action, "click_url": versionObj.click_url}
+                        var devicePixelRatio = 1.0;
+                        if (Util.endsWith(badgeLocalUrl, "-image_url_2x")) {
+                            devicePixelRatio = 2.0;
+                        } else if (Util.endsWith(badgeLocalUrl, "-image_url_4x")) {
+                            devicePixelRatio = 3.0;
+                        }
+                        var entry = {"name": versionObj.title, "url": badgeLocalUrl, "click_action": versionObj.click_action, "click_url": versionObj.click_url, "devicePixelRatio": devicePixelRatio}
                         if (debugOutput) console.log("adding entry", JSON.stringify(entry));
+
                         badgeEntries.push(entry);
                         curBadgeAdded = true;
                     }
@@ -949,7 +958,7 @@ Item {
                             console.log("    key", j, "value", badgeUrls[j]);
                         }
                     }
-                    var entry = {"name": badgeName, "url": badgeLocalUrl};
+                    var entry = {"name": badgeName, "url": badgeLocalUrl, "devicePixelRatio": 1.0};
                     if (debugOutput) console.log("adding entry", JSON.stringify(entry));
                     badgeEntries.push(entry);
                     curBadgeAdded = true;

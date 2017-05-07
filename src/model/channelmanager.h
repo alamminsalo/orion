@@ -34,7 +34,7 @@ class ChannelManager;
 class BadgeImageProvider : public ImageProvider {
     Q_OBJECT
 public:
-    BadgeImageProvider(ChannelManager * channelManager);
+    BadgeImageProvider(ChannelManager * channelManager, bool hiDpi);
     void setChannelName(QString channelName) { _channelName = channelName; }
     void setChannelId(QString channelId) { _channelId = channelId; }
     virtual QString getCanonicalKey(QString key);
@@ -44,6 +44,21 @@ private:
     ChannelManager * _channelManager;
     QString _channelName;
     QString _channelId;
+    bool _hiDpi;
+};
+
+class BitsImageProvider : public ImageProvider {
+    Q_OBJECT
+public:
+    BitsImageProvider(ChannelManager * channelManager, bool hiDpi);
+    void setChannelId(int channelId) { _channelId = channelId; }
+    virtual QString getCanonicalKey(QString key);
+protected:
+    virtual const QUrl getUrlForKey(QString & key);
+private:
+    ChannelManager * _channelManager;
+    int _channelId;
+    bool _hiDpi;
 };
 
 class ChannelManager: public QObject
@@ -95,11 +110,14 @@ protected:
     QMap<int, QMap<int, QString>> lastEmoteSets;
     QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
     QMap<QString, QMap<QString, QMap<QString, QMap<QString, QString>>>> channelBadgeBetaUrls;
+    QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsUrls;
+    QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsColors;
 
     BadgeImageProvider badgeImageProvider;
+    BitsImageProvider bitsImageProvider;
 
 public:
-    ChannelManager(NetworkManager *netman);
+    ChannelManager(NetworkManager *netman, bool hiDpi);
     ~ChannelManager();
 
     void load();
@@ -147,6 +165,7 @@ public:
     Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
     Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
     Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
+    Q_INVOKABLE bool loadChannelBitsUrls(int channel);
     Q_INVOKABLE void loadChatterList(const QString channel);
 
     Q_INVOKABLE void cancelLastVodChatRequest();
@@ -164,7 +183,11 @@ public:
         return &badgeImageProvider;
     }
 
-    bool getChannelBadgeUrl(const QString channel, const QString badgeName, const QString imageFormat, QString & outUrl) {
+    BitsImageProvider * getBitsImageProvider() {
+        return &bitsImageProvider;
+    }
+
+    bool getChannelBadgeUrl(const QString channel, const QString badgeName, const QString imageFormat, QString & outUrl) const {
         auto channelEntry = channelBadgeUrls.find(channel);
         if (channelEntry != channelBadgeUrls.end()) {
             auto badgeEntry = channelEntry.value().find(badgeName);
@@ -179,7 +202,7 @@ public:
         return false;
     }
 
-    bool getChannelBadgeBetaUrl(const QString channel, const QString badgeName, const QString version, const QString imageFormat, QString & outUrl) {
+    bool getChannelBadgeBetaUrl(const QString channel, const QString badgeName, const QString version, const QString imageFormat, QString & outUrl) const {
         auto channelEntry = channelBadgeBetaUrls.find(channel);
         if (channelEntry != channelBadgeBetaUrls.end()) {
             auto badgeEntry = channelEntry.value().find(badgeName);
@@ -191,6 +214,38 @@ public:
                         outUrl = urlEntry.value();
                         return true;
                     }
+                }
+            }
+        }
+        return false;
+    }
+
+    bool getChannelBitsUrl(const int channelId, const QString & prefix, const QString & minBits, QString & outUrl) const {
+        auto channelEntry = channelBitsUrls.find(channelId);
+        if (channelEntry != channelBitsUrls.end()) {
+            auto actionEntry = channelEntry.value().find(prefix);
+            if (actionEntry != channelEntry.value().end()) {
+                auto tierEntry = actionEntry.value().find(minBits);
+                if (tierEntry != actionEntry.value().end()) {
+                    outUrl = tierEntry.value();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    const QUrl getBitsUrlForKey(const QString & key) const;
+
+    bool getChannelBitsColor(const int channelId, const QString & prefix, const QString & minBits, QString & outColor) {
+        auto channelEntry = channelBitsColors.find(channelId);
+        if (channelEntry != channelBitsColors.end()) {
+            auto actionEntry = channelEntry.value().find(prefix);
+            if (actionEntry != channelEntry.value().end()) {
+                auto tierEntry = actionEntry.value().find(minBits);
+                if (tierEntry != actionEntry.value().end()) {
+                    outColor = tierEntry.value();
+                    return true;
                 }
             }
         }
@@ -218,6 +273,8 @@ signals:
     void emoteSetsLoaded(QVariantMap emoteSets);
     void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
     void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
+
+    void channelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls, BitsQStringsMap bitsColors);
 
     void vodStartGetOperationFinished(double);
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
@@ -249,6 +306,8 @@ private slots:
     void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
     void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
+    void innerChannelBitsDataLoaded(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
+    void innerGlobalBitsDataLoaded(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);
     void addFollowedResults(const QList<Channel*>&, const quint32);
     void onNetworkAccessChanged(bool);
     void processChatterList(QMap<QString, QList<QString>> chatters);

@@ -51,6 +51,7 @@ struct ChatMessage {
     bool isChannelNotice;
     QString systemMessage;
     bool isWhisper;
+    QString bitsNumber;
 };
 
 // Backend for chat
@@ -80,6 +81,7 @@ public:
     Q_INVOKABLE void initProviders();
     Q_INVOKABLE void hookupChannelProviders(ChannelManager * cman);
     Q_INVOKABLE QString getBadgeLocalUrl(QString key);
+    Q_INVOKABLE bool getHiDpi();
 
     //# User
     QString username, userpass;
@@ -101,6 +103,8 @@ public:
     QList<int> emoteSetIDs();
 
     void RegisterEngineProviders(QQmlEngine & engine);
+
+    static void setHiDpi(bool setting);
 
 signals:
     void errorOccured(QString errorDescription);    
@@ -129,15 +133,21 @@ private slots:
     void handleDownloadComplete();
     void handleVodStartTime(double);
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
+    void handleChannelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls);
 
 private:
+    static bool hiDpi;
+
     static const qint16 PORT;
     static const QString HOST;
 
     static const QString IMAGE_PROVIDER_EMOTE;
-    static const QString EMOTICONS_URL_FORMAT;
+    static const QString EMOTICONS_URL_FORMAT_HIDPI;
+    static const QString EMOTICONS_URL_FORMAT_LODPI;
+    static const QString IMAGE_PROVIDER_BITS;
 
     URLFormatImageProvider _emoteProvider;
+    BitsImageProvider * _bitsProvider;
     BadgeImageProvider * _badgeProvider;
     ChannelManager * _cman;
     
@@ -159,7 +169,7 @@ private:
     void initSocket();
     void parseMessageCommand(const QString cmd, const QString cmdKeyword, CommandParse & commandParse);
     QMap<int, QPair<int, int>> parseEmotesTag(const QString emotes);
-    void createEmoteMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QVariantList & messageList, const QString message);
+    void createMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QString bitsNumber, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
     QString getParamValue(QString params, QString param);
     QTcpSocket *sock;
@@ -192,6 +202,24 @@ private:
 
     void replayChatMessage(const ReplayChatMessage &);
     void replayUpdateCommon();
+
+    QMap<QString, QRegExp> lastCurChannelBitsRegexes;
+    QMap<QString, QRegExp> lastGlobalBitsRegexes;
+
+    enum ImageEntryKind { emote, bits };
+
+    struct InlineImageInfo {
+        ImageEntryKind kind;
+        QString key;
+        QString textSuffix;
+        QString textSuffixColor;
+    };
+
+    typedef QMap<int, QPair<int, InlineImageInfo>> ImagePositionsMap;
+
+    void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
+
+    void roomInitCommon(const QString channel, const QString channelId);
 };
 
 #endif // IRCCHAT_H

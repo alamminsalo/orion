@@ -154,7 +154,11 @@ Item {
                 return msgText;
               }
             } else {
-              return imgThing;
+              if (pmsg[index].imageProvider == "bits") {
+                  return bitsImgThing;
+              } else {
+                  return imgThing;
+              }
             }
           }
         }
@@ -192,19 +196,74 @@ Item {
       MouseArea {
           id: _emoteImgMouseArea
           hoverEnabled: true
-          width: _emoteImg.width
-          height: _emoteImg.height
-          Image {
-            id: _emoteImg
-            // synchronous to simplify CustomFlow
-            Component.onCompleted: {
-              source = "image://emote/" + msgItem.emoteId.toString();
-            }
+          width: childrenRect.width
+          height: childrenRect.height
 
-            ToolTip {
-                visible: _emoteImgMouseArea.containsMouse && msgItem.emoteText != null
-                text: msgItem.emoteText
-            }
+          Row {
+              width: _emoteImg.width + _emoteImgSuffixText.width
+              height: _emoteImg.height
+
+              Image {
+                id: _emoteImg
+
+                width: sourceSize.width/(chat.getHiDpi()? 2.0 : 1.0)
+                height: sourceSize.height/(chat.getHiDpi()? 2.0 : 1.0)
+
+                Component.onCompleted: {
+                  source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
+                }
+              }
+
+              Text {
+                  id: _emoteImgSuffixText
+                  text: msgItem.textSuffix
+                  color: msgItem.textSuffixColor
+                  font.bold: true
+                  verticalAlignment: Text.AlignVCenter
+                  height: _emoteImg.height
+              }
+
+          }
+
+          ToolTip {
+              visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
+              text: msgItem.originalText
+          }
+      }
+    }
+    property Component bitsImgThing: Component {
+      MouseArea {
+          id: _animatedImgMouseArea
+          hoverEnabled: true
+          width: _animatedImg.width + _animatedImgSuffixText.width
+          height: _animatedImg.height
+
+          Row {
+              AnimatedImage {
+                id: _animatedImg
+
+                // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
+                width: 28
+                height: 28
+
+                Component.onCompleted: {
+                  source = msgItem.sourceUrl;
+                }
+              }
+
+              Text {
+                  id: _animatedImgSuffixText
+                  text: msgItem.textSuffix
+                  color: msgItem.textSuffixColor
+                  font.bold: true
+                  verticalAlignment: Text.AlignVCenter
+                  height: _animatedImg.height
+              }
+          }
+
+          ToolTip {
+              visible: _animatedImgMouseArea.containsMouse && msgItem.originalText != null
+              text: msgItem.originalText
           }
       }
     }
@@ -217,10 +276,12 @@ Item {
           height: _badgeImg.height
           Image {
             id: _badgeImg
-            // synchronous to simplify CustomFlow
             Component.onCompleted: {
               source = badgeEntry.url;
             }
+
+            width: sourceSize.width/badgeEntry.devicePixelRatio
+            height: sourceSize.height/badgeEntry.devicePixelRatio
 
             onStatusChanged: {
                 if (status == Image.Ready) {
