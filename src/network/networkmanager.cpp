@@ -133,6 +133,7 @@ bool NetworkManager::networkAccess() {
 void NetworkManager::testConnection()
 {
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(TWITCH_API_BASE));
 
