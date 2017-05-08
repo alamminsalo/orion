@@ -587,6 +587,7 @@ void NetworkManager::getChannelBadgeUrlsBeta(const int channelID) {
     qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
@@ -601,6 +602,7 @@ void NetworkManager::getGlobalBadgesUrlsBeta() {
     qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
@@ -690,14 +692,15 @@ void NetworkManager::globalBitsUrlsReply() {
     reply->deleteLater();
 }
 
-void NetworkManager::editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add)
+void NetworkManager::editUserFavourite(const QString &access_token, const quint64 userId, const quint64 channelId, bool add)
 {
-    QString url = QString(KRAKEN_API) + "/users/" + user
-            + "/follows/channels/" + channel;
+    QString url = QString(KRAKEN_API) + "/users/" + QString::number(userId)
+            + "/follows/channels/" + QString::number(channelId);
 
     QString auth = "OAuth " + access_token;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", QString("application/vnd.twitchtv.v5+json").toUtf8());
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());

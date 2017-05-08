@@ -245,8 +245,8 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
         channel->setOnline(online);
         channel->setViewers(viewers);
 
-        if (isAccessTokenAvailable() && !user_name.isEmpty()) {
-            netman->editUserFavourite(access_token, user_name, channel->getServiceName(), true);
+        if (isAccessTokenAvailable() && user_id != 0) {
+            netman->editUserFavourite(access_token, user_id, channel->getId(), true);
         }
 
         favouritesModel->addChannel(channel);
@@ -453,8 +453,8 @@ void ChannelManager::addToFavourites(const quint32 &id){
 
     if (channel){
 
-        if (isAccessTokenAvailable() && !user_name.isEmpty()) {
-            netman->editUserFavourite(access_token, user_name, channel->getServiceName(), true);
+        if (isAccessTokenAvailable() && user_id != 0) {
+            netman->editUserFavourite(access_token, user_id, channel->getId(), true);
         }
 
         favouritesModel->addChannel(new Channel(*channel));
@@ -481,8 +481,8 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
 
     emit deletedChannel(chan->getId());
 
-    if (isAccessTokenAvailable() && !user_name.isEmpty()) {
-        netman->editUserFavourite(access_token, user_name, chan->getServiceName(), false);
+    if (isAccessTokenAvailable() && user_id != 0) {
+        netman->editUserFavourite(access_token, user_id, chan->getId(), false);
     }
 
     favouritesModel->removeChannel(chan);

@@ -229,7 +229,8 @@ Channel* JsonParser::parseChannelJson(const QJsonObject &json)
         }
 
         if (!json["_id"].isNull()){
-            channel->setId(json["_id"].toString().toInt());
+            const QJsonValue & _id = json["_id"];
+            channel->setId(_id.isString() ? _id.toString().toInt() : static_cast<quint32>(_id.toDouble()));
         }
     }
 

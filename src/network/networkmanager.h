@@ -74,7 +74,7 @@ public:
     //Methods using oauth
     void getUser(const QString &access_token);
     void getUserFavourites(const quint64 userId, quint32 offset, quint32 limit);
-    void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
+    void editUserFavourite(const QString &access_token, const quint64 userId, const quint64 channelId, bool add);
     void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
     void getChannelBadgeUrls(const QString &access_token, const quint64 channelId);
     void getChannelBadgeUrlsBeta(const int channelID);
