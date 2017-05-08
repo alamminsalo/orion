@@ -186,6 +186,7 @@ void NetworkManager::getStreams(const QString &url)
 void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = KRAKEN_API;
     url += QString("/games/top?limit=%1").arg(limit)
