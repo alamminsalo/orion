@@ -302,7 +302,7 @@ private slots:
     void updateFavourites(const QList<Channel*>&);
     void updateStreams(const QList<Channel*>&);
     void addGames(const QList<Game*>&);
-    void onUserNameUpdated(const QString &name, const quint64 userId);
+    void onUserUpdated(const QString &name, const quint64 userId);
     void onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>);
     void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
     void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);

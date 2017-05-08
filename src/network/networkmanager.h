@@ -112,7 +112,7 @@ signals:
     void error(const QString &error);
 
     //oauth
-    void userNameOperationFinished(const QString&, const quint64);
+    void userOperationFinished(const QString&, const quint64);
     void userEditFollowsOperationFinished();
     void getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>);
     void getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>);

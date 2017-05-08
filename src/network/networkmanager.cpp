@@ -995,7 +995,7 @@ void NetworkManager::userReply()
     QByteArray data = reply->readAll();
 
     auto pair = JsonParser::parseUser(data);
-    emit userNameOperationFinished(pair.first, pair.second);
+    emit userOperationFinished(pair.first, pair.second);
 
     reply->deleteLater();
 }
