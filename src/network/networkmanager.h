@@ -73,7 +73,7 @@ public:
 
     //Methods using oauth
     void getUser(const QString &access_token);
-    void getUserFavourites(const QString &user_name, quint32 offset, quint32 limit);
+    void getUserFavourites(const quint64 userId, quint32 offset, quint32 limit);
     void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
     void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
     void getChannelBadgeUrls(const QString &access_token, const QString &channel);
@@ -112,7 +112,7 @@ signals:
     void error(const QString &error);
 
     //oauth
-    void userNameOperationFinished(const QString&);
+    void userNameOperationFinished(const QString&, const quint64);
     void userEditFollowsOperationFinished();
     void getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>);
     void getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>);

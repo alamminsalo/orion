@@ -142,6 +142,7 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
 }
 
 ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netman), badgeImageProvider(this, hiDpi), bitsImageProvider(this, hiDpi) {
+    user_id = 0;
     access_token = "";
     tempFavourites = 0;
 
@@ -177,7 +178,7 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     connect(netman, SIGNAL(m3u8OperationFinished(QVariantMap)), this, SIGNAL(foundPlaybackStream(QVariantMap)));
     connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
 
-    connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
+    connect(netman, SIGNAL(userNameOperationFinished(QString, quint64)), this, SLOT(onUserNameUpdated(QString, quint64)));
     connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
     connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>>)));
     connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
@@ -682,9 +683,10 @@ void ChannelManager::notifyMultipleChannelsOnline(const QList<Channel*> &channel
 }
 
 //Login function
-void ChannelManager::onUserNameUpdated(const QString &name)
+void ChannelManager::onUserNameUpdated(const QString &name, const quint64 userId)
 {
     user_name = name;
+    user_id = userId;
     emit userNameUpdated(user_name);
 
     if (isAccessTokenAvailable()) {
@@ -923,7 +925,7 @@ void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& of
     //if (offset == 0)
     //favouritesModel->clear();
 
-    netman->getUserFavourites(user_name, offset, limit);
+    netman->getUserFavourites(user_id, offset, limit);
 }
 
 

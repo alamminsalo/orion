@@ -229,7 +229,7 @@ Channel* JsonParser::parseChannelJson(const QJsonObject &json)
         }
 
         if (!json["_id"].isNull()){
-            channel->setId(json["_id"].toInt());
+            channel->setId(json["_id"].toString().toInt());
         }
     }
 
@@ -418,9 +418,10 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
     return url;
 }
 
-QString JsonParser::parseUserName(const QByteArray &data)
+QPair<QString, quint64> JsonParser::parseUser(const QByteArray &data)
 {
     QString displayName;
+    quint64 userId;
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
 
@@ -428,9 +429,10 @@ QString JsonParser::parseUserName(const QByteArray &data)
         QJsonObject json = doc.object();
         if (!json["name"].isNull())
             displayName = json["name"].toString();
+        userId = json["_id"].toString().toULongLong();
     }
 
-    return displayName;
+    return qMakePair(displayName, userId);
 }
 
 QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data) {

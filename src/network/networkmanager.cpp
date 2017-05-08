@@ -324,6 +324,7 @@ void NetworkManager::getUser(const QString &access_token)
     QString auth = "OAuth " + access_token;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
@@ -333,16 +334,16 @@ void NetworkManager::getUser(const QString &access_token)
     connect(reply, SIGNAL(finished()), this, SLOT(userReply()));
 }
 
-void NetworkManager::getUserFavourites(const QString &user_name, quint32 offset, quint32 limit)
+void NetworkManager::getUserFavourites(const quint64 userId, quint32 offset, quint32 limit)
 {
-    if (user_name.isEmpty()) {
+    if (!userId)
         return;
-    }
 
-    QString url = QString(KRAKEN_API) + "/users/" + user_name + "/follows/channels"
+    QString url = QString(KRAKEN_API) + "/users/" + QString::number(userId) + "/follows/channels"
             + QString("?offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setAttribute(QNetworkRequest::User, (int) (offset + limit));
@@ -365,6 +366,7 @@ void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> 
     qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
@@ -992,7 +994,8 @@ void NetworkManager::userReply()
     }
     QByteArray data = reply->readAll();
 
-    emit userNameOperationFinished(JsonParser::parseUserName(data));
+    auto pair = JsonParser::parseUser(data);
+    emit userNameOperationFinished(pair.first, pair.second);
 
     reply->deleteLater();
 }

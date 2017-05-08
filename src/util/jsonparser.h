@@ -48,7 +48,7 @@ public:
     static Vod* parseVod(const QJsonObject&);
     static QString parseChannelStreamExtractionInfo(const QByteArray&);
     static QString parseVodExtractionInfo(const QByteArray&);
-    static QString parseUserName(const QByteArray&);
+    static QPair<QString, quint64> parseUser(const QByteArray&);
     static int parseTotal(const QByteArray&);
     static QMap<int, QMap<int, QString>> parseEmoteSets(const QByteArray&);
     static QMap<QString, QMap<QString, QString>> parseChannelBadgeUrls(const QByteArray &data);
