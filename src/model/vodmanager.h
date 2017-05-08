@@ -27,7 +27,7 @@ public:
     VodManager(NetworkManager *netman);
     ~VodManager();
 
-    Q_INVOKABLE void search(const QString channelName, const quint32 offset, const quint32 limit);
+    Q_INVOKABLE void search(const quint64 channelId, const quint32 offset, const quint32 limit);
 
     Q_INVOKABLE QString getGame() const;
 

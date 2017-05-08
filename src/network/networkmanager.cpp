@@ -251,11 +251,11 @@ void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offse
 {
     QNetworkRequest request;
     request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     QString url = QString(KRAKEN_API)
-            + QString("/streams?game=%1").arg(game)
+            + QString("/streams?game=") + QUrl::toPercentEncoding(game)
             + QString("&offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);
-    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setUrl(QUrl(url));
 
     QNetworkReply *reply = operation->get(request);
@@ -279,20 +279,21 @@ void NetworkManager::getChannelPlaybackStream(const QString &channelName)
     connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
 }
 
-void NetworkManager::getBroadcasts(const QString channelName, quint32 offset, quint32 limit)
+void NetworkManager::getBroadcasts(const quint64 channelId, quint32 offset, quint32 limit)
 {
     QString url = QString(KRAKEN_API)
-            + QString("/channels/%1/videos").arg(channelName)
+            + QString("/channels/%1/videos").arg(channelId)
             + QString("?offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);
 
     if (ONLY_BROADCASTS)
-        url += "&broadcasts=true";
+        url += "&broadcast_type=archive";
 
-    if (USE_HLS)
-        url += "&hls=true";
+    //if (USE_HLS)
+        //url += "&hls=true";
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
