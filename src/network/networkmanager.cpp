@@ -201,11 +201,14 @@ void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
 void NetworkManager::searchChannels(const QString &query, const quint32 &offset, const quint32 &limit)
 {
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
-            + QString("/search/channels?q=%1").arg(query)
+            + QString("/search/channels?query=") + QUrl::toPercentEncoding(query)
             + QString("&offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);
+
+    qDebug() << "requesting" << url;
     request.setUrl(QUrl(url));
 
     QNetworkReply *reply = operation->get(request);
@@ -216,10 +219,10 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
 void NetworkManager::searchGames(const QString &query)
 {
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
-            + QString("/search/games?q=%1").arg(query)
-            + "&type=suggest";
+            + QString("/search/games?query=") + QUrl::toPercentEncoding(query);
 
     request.setUrl(QUrl(url));
 
@@ -231,6 +234,7 @@ void NetworkManager::searchGames(const QString &query)
 void NetworkManager::getFeaturedStreams()
 {
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     QString url = QString(KRAKEN_API)
             + "/streams/featured?limit=25&offset=0";
