@@ -76,7 +76,7 @@ public:
     void getUserFavourites(const quint64 userId, quint32 offset, quint32 limit);
     void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
     void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
-    void getChannelBadgeUrls(const QString &access_token, const QString &channel);
+    void getChannelBadgeUrls(const QString &access_token, const quint64 channelId);
     void getChannelBadgeUrlsBeta(const int channelID);
     void getGlobalBadgesUrlsBeta();
     void getChannelBitsUrls(const int channelID);
@@ -115,7 +115,7 @@ signals:
     void userOperationFinished(const QString&, const quint64);
     void userEditFollowsOperationFinished();
     void getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>);
-    void getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>);
+    void getChannelBadgeUrlsOperationFinished(const quint64, const QMap<QString, QMap<QString, QString>>);
     void getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>);
     void getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>);
 

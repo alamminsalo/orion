@@ -164,7 +164,7 @@ public:
     Q_INVOKABLE void setMinimizeOnStartup(bool value);
 
     Q_INVOKABLE bool loadEmoteSets(bool reload, const QList<int> &emoteSetIDs);
-    Q_INVOKABLE bool loadChannelBadgeUrls(const QString channel);
+    Q_INVOKABLE bool loadChannelBadgeUrls(const quint64 channelId);
     Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
     Q_INVOKABLE bool loadChannelBitsUrls(int channel);
     Q_INVOKABLE void loadChatterList(const QString channel);
@@ -188,8 +188,8 @@ public:
         return &bitsImageProvider;
     }
 
-    bool getChannelBadgeUrl(const QString channel, const QString badgeName, const QString imageFormat, QString & outUrl) const {
-        auto channelEntry = channelBadgeUrls.find(channel);
+    bool getChannelBadgeUrl(const QString channelId, const QString badgeName, const QString imageFormat, QString & outUrl) const {
+        auto channelEntry = channelBadgeUrls.find(channelId);
         if (channelEntry != channelBadgeUrls.end()) {
             auto badgeEntry = channelEntry.value().find(badgeName);
             if (badgeEntry != channelEntry.value().end()) {
@@ -272,7 +272,7 @@ signals:
     void userNameUpdated(const QString name);
     void login(const QString &username, const QString &password);
     void emoteSetsLoaded(QVariantMap emoteSets);
-    void channelBadgeUrlsLoaded(const QString &channel, QVariantMap badgeUrls);
+    void channelBadgeUrlsLoaded(const quint64 channelId, QVariantMap badgeUrls);
     void channelBadgeBetaUrlsLoaded(const QString &channel, QVariantMap badgeSetData);
 
     void channelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls, BitsQStringsMap bitsColors);
@@ -304,7 +304,7 @@ private slots:
     void addGames(const QList<Game*>&);
     void onUserUpdated(const QString &name, const quint64 userId);
     void onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>);
-    void innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>> badgeUrls);
+    void innerChannelBadgeUrlsLoaded(const quint64, const QMap<QString, QMap<QString, QString>> badgeUrls);
     void innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerChannelBitsDataLoaded(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);

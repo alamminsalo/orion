@@ -44,7 +44,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
         if (_channelManager->getChannelBadgeBetaUrl("GLOBAL", badge, version, betaImageFormat, url)) {
             return QList<QString>({ "GLOBAL", badge, version, betaImageFormat }).join("-");
         }
-        if (_channelManager->getChannelBadgeUrl(_channelName, badge, officialImageFormat, url)) {
+        if (_channelManager->getChannelBadgeUrl(_channelId, badge, officialImageFormat, url)) {
             return QList<QString>({ _channelName, badge, officialImageFormat }).join("-");
         }
         if (_channelManager->getChannelBadgeUrl("GLOBAL", badge, officialImageFormat, url)) {
@@ -180,7 +180,7 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
 
     connect(netman, SIGNAL(userOperationFinished(QString, quint64)), this, SLOT(onUserUpdated(QString, quint64)));
     connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
-    connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>>)));
+    connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const quint64, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const quint64, const QMap<QString, QMap<QString, QString>>)));
     connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
     connect(netman, SIGNAL(getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
 
@@ -754,15 +754,15 @@ QVariantMap convertBetaBadges(const QMap<QString, QMap<QString, QMap<QString, QS
     return out;
 }
 
-bool ChannelManager::loadChannelBadgeUrls(const QString channel) {
-    auto result = channelBadgeUrls.find(channel);
+bool ChannelManager::loadChannelBadgeUrls(const quint64 channelId) {
+    auto result = channelBadgeUrls.find(QString::number(channelId));
     if (result != channelBadgeUrls.end()) {
         // deliver cached channel badge URLs
-        emit channelBadgeUrlsLoaded(channel, convertBadges(result.value()));
+        emit channelBadgeUrlsLoaded(channelId, convertBadges(result.value()));
         return false;
     }
     else {
-        netman->getChannelBadgeUrls(access_token, channel);
+        netman->getChannelBadgeUrls(access_token, channelId);
         return true;
     }
 }
@@ -873,12 +873,13 @@ void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> upda
     emit emoteSetsLoaded(convertEmoteSets(updatedEmoteSets));
 }
 
-void ChannelManager::innerChannelBadgeUrlsLoaded(const QString channel, const QMap<QString, QMap<QString, QString>> badgeUrls)
+void ChannelManager::innerChannelBadgeUrlsLoaded(const quint64 channelId, const QMap<QString, QMap<QString, QString>> badgeUrls)
 {
-    channelBadgeUrls.remove(channel);
-    channelBadgeUrls.insert(channel, badgeUrls);
+    const QString channelIdStr = QString::number(channelId);
+    channelBadgeUrls.remove(channelIdStr);
+    channelBadgeUrls.insert(channelIdStr, badgeUrls);
 
-    emit channelBadgeUrlsLoaded(channel, convertBadges(badgeUrls));
+    emit channelBadgeUrlsLoaded(channelId, convertBadges(badgeUrls));
 }
 
 void ChannelManager::innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData)

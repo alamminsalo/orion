@@ -560,13 +560,14 @@ void NetworkManager::vodChatPieceReply() {
 const QString NetworkManager::CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
 const QString NetworkManager::CHANNEL_BADGES_URL_SUFFIX = "/badges";
 
-void NetworkManager::getChannelBadgeUrls(const QString &access_token, const QString &channel) {
-    QString url = CHANNEL_BADGES_URL_PREFIX + channel + CHANNEL_BADGES_URL_SUFFIX;
+void NetworkManager::getChannelBadgeUrls(const QString &access_token, const quint64 channelId) {
+    QString url = CHANNEL_BADGES_URL_PREFIX + QString::number(channelId) + CHANNEL_BADGES_URL_SUFFIX;
     QString auth = "OAuth " + access_token;
 
     qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
     request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
@@ -1028,11 +1029,11 @@ void NetworkManager::channelBadgeUrlsReply()
     qDebug() << "url was" << urlString;
 
     if (urlString.startsWith(CHANNEL_BADGES_URL_PREFIX) && urlString.endsWith(CHANNEL_BADGES_URL_SUFFIX)) {
-        QString channel = urlString.mid(CHANNEL_BADGES_URL_PREFIX.length(), urlString.length() - CHANNEL_BADGES_URL_PREFIX.length() - CHANNEL_BADGES_URL_SUFFIX.length());
-        qDebug() << "badges for channel" << channel << "loaded";
+        quint64 channelId = urlString.mid(CHANNEL_BADGES_URL_PREFIX.length(), urlString.length() - CHANNEL_BADGES_URL_PREFIX.length() - CHANNEL_BADGES_URL_SUFFIX.length()).toULongLong();
+        qDebug() << "badges for channel" << channelId << "loaded";
         auto badges = JsonParser::parseChannelBadgeUrls(data);
 
-        emit getChannelBadgeUrlsOperationFinished(channel, badges);
+        emit getChannelBadgeUrlsOperationFinished(channelId, badges);
     }
     else {
         qDebug() << "can't determine channel from badges request url";
