@@ -173,6 +173,7 @@ void NetworkManager::getStreams(const QString &url)
 {
     //qDebug() << "GET: " << url;
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
@@ -248,6 +249,7 @@ void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offse
             + QString("/streams?game=%1").arg(game)
             + QString("&offset=%1").arg(offset)
             + QString("&limit=%1").arg(limit);
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setUrl(QUrl(url));
 
     QNetworkReply *reply = operation->get(request);
