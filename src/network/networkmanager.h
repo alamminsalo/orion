@@ -60,7 +60,7 @@ public:
     NetworkManager(QNetworkAccessManager *);
     ~NetworkManager();
 
-    Q_INVOKABLE void getStream(const QString&);
+    Q_INVOKABLE void getStream(const quint64);
     void getStreams(const QString&);
     void getGames(const quint32&, const quint32&);
     void searchChannels(const QString&, const quint32&, const quint32&);

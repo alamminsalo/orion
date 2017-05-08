@@ -157,10 +157,11 @@ void NetworkManager::testConnectionReply()
  * @brief NetworkManager::getStream
  * Gets single stream status. Usable for polling a channel's stream
  */
-void NetworkManager::getStream(const QString &channelName)
+void NetworkManager::getStream(const quint64 channelId)
 {
-    QString url = KRAKEN_API + QString("/streams/%1").arg(channelName);
+    QString url = KRAKEN_API + QString("/streams/%1").arg(channelId);
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
     request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(QUrl(url));
 
