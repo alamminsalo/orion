@@ -876,8 +876,12 @@ Item {
         function getRandomColor() {
             var letters = '0123456789ABCDEF';
             var color = '#';
-            for (var i = 0; i < 6; i++ ) {
-                color += letters[Math.floor(Math.random() * (letters.length - 1))];
+            var minBrightness = 85;
+            var maxBrightness = 240;
+            var brightnessRange = maxBrightness - minBrightness + 1;
+            for (var i = 0; i < 3; i++ ) {
+                var colorVal = minBrightness + Math.floor(brightnessRange * Math.random());
+                color += letters[colorVal / 16] + letters[colorVal % 16];
             }
             return color;
         }
