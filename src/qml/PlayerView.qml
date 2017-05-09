@@ -127,8 +127,8 @@ Item {
         interval: 4000
         repeat: true
         onTriggered: {
-            if (currentChannel && currentChannel.name)
-                netman.getStream(currentChannel.name)
+            if (currentChannel && currentChannel._id)
+                netman.getStream(currentChannel._id)
         }
     }
 

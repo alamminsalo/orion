@@ -229,7 +229,8 @@ Channel* JsonParser::parseChannelJson(const QJsonObject &json)
         }
 
         if (!json["_id"].isNull()){
-            channel->setId(json["_id"].toInt());
+            const QJsonValue & _id = json["_id"];
+            channel->setId(_id.isString() ? _id.toString().toInt() : static_cast<quint32>(_id.toDouble()));
         }
     }
 
@@ -243,8 +244,18 @@ Vod *JsonParser::parseVod(const QJsonObject &json)
     if (!json["_id"].isNull())
         vod->setId(json["_id"].toString());
 
-    if (!json["preview"].isNull())
-        vod->setPreview(json["preview"].toString());
+    if (!json["preview"].isNull()) {
+        const QJsonValue & preview = json["preview"];
+        if (preview.isString()) {
+            vod->setPreview(preview.toString());
+        }
+        else if (preview.isObject()) {
+            const QJsonValue & previewUrl = preview.toObject()["medium"];
+            if (previewUrl.isString()) {
+                vod->setPreview(previewUrl.toString());
+            }
+        }
+    }
 
     if (!json["title"].isNull())
         vod->setTitle(json["title"].toString());
@@ -408,9 +419,10 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
     return url;
 }
 
-QString JsonParser::parseUserName(const QByteArray &data)
+QPair<QString, quint64> JsonParser::parseUser(const QByteArray &data)
 {
     QString displayName;
+    quint64 userId = 0;
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
 
@@ -418,9 +430,10 @@ QString JsonParser::parseUserName(const QByteArray &data)
         QJsonObject json = doc.object();
         if (!json["name"].isNull())
             displayName = json["name"].toString();
+        userId = json["_id"].toString().toULongLong();
     }
 
-    return displayName;
+    return qMakePair(displayName, userId);
 }
 
 QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data) {

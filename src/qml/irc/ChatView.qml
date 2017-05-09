@@ -983,8 +983,8 @@ Item {
         }
 
         onChannelBadgeUrlsLoaded: {
-            console.log("onChannelBadgeUrlsLoaded for channel", channel, "current channel is", chat.channel);
-            if (channel == chat.channel) {
+            console.log("onChannelBadgeUrlsLoaded for channel", channelId, "current channel is", chat.channelId);
+            if (channelId == chat.channelId) {
                 console.log("saving lastBadgeUrls", badgeUrls)
                 for (var i in badgeUrls) {
                     console.log("  ", i, badgeUrls[i]);

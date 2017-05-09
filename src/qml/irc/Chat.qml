@@ -26,7 +26,7 @@ Item {
     signal clear()
     signal emoteSetIDsChanged(var emoteSetIDs)
     signal bulkDownloadComplete()
-    signal channelBadgeUrlsLoaded(string channel, var badgeUrls)
+    signal channelBadgeUrlsLoaded(int channelId, var badgeUrls)
     signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
     signal channelBitsUrlsLoaded(int channelID, var bitsUrls)
 
@@ -58,7 +58,7 @@ Item {
 
         onChannelBadgeUrlsLoaded: {
             console.log("onChannelBadgeUrlsLoaded", "channel", channel, "badgeUrls", badgeUrls);
-            root.channelBadgeUrlsLoaded(channel, badgeUrls);
+            root.channelBadgeUrlsLoaded(channelId, badgeUrls);
         }
 
         onChannelBadgeBetaUrlsLoaded: {
@@ -75,7 +75,7 @@ Item {
     function enterChannelCommon(channelName, channelId) {
         root.channel = channelName
         root.channelId = channelId
-        g_cman.loadChannelBadgeUrls(channelName);
+        g_cman.loadChannelBadgeUrls(channelId);
         g_cman.loadChannelBetaBadgeUrls(channelId);
         g_cman.loadChannelBitsUrls(channelId);
     }

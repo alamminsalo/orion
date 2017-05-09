@@ -44,7 +44,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
         if (_channelManager->getChannelBadgeBetaUrl("GLOBAL", badge, version, betaImageFormat, url)) {
             return QList<QString>({ "GLOBAL", badge, version, betaImageFormat }).join("-");
         }
-        if (_channelManager->getChannelBadgeUrl(_channelName, badge, officialImageFormat, url)) {
+        if (_channelManager->getChannelBadgeUrl(_channelId, badge, officialImageFormat, url)) {
             return QList<QString>({ _channelName, badge, officialImageFormat }).join("-");
         }
         if (_channelManager->getChannelBadgeUrl("GLOBAL", badge, officialImageFormat, url)) {
@@ -142,6 +142,7 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
 }
 
 ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netman), badgeImageProvider(this, hiDpi), bitsImageProvider(this, hiDpi) {
+    user_id = 0;
     access_token = "";
     tempFavourites = 0;
 
@@ -177,9 +178,9 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     connect(netman, SIGNAL(m3u8OperationFinished(QVariantMap)), this, SIGNAL(foundPlaybackStream(QVariantMap)));
     connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
 
-    connect(netman, SIGNAL(userNameOperationFinished(QString)), this, SLOT(onUserNameUpdated(QString)));
+    connect(netman, SIGNAL(userOperationFinished(QString, quint64)), this, SLOT(onUserUpdated(QString, quint64)));
     connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
-    connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const QString, const QMap<QString, QMap<QString, QString>>)));
+    connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const quint64, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const quint64, const QMap<QString, QMap<QString, QString>>)));
     connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
     connect(netman, SIGNAL(getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
 
@@ -244,8 +245,8 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
         channel->setOnline(online);
         channel->setViewers(viewers);
 
-        if (isAccessTokenAvailable() && !user_name.isEmpty()) {
-            netman->editUserFavourite(access_token, user_name, channel->getServiceName(), true);
+        if (isAccessTokenAvailable() && user_id != 0) {
+            netman->editUserFavourite(access_token, user_id, channel->getId(), true);
         }
 
         favouritesModel->addChannel(channel);
@@ -452,8 +453,8 @@ void ChannelManager::addToFavourites(const quint32 &id){
 
     if (channel){
 
-        if (isAccessTokenAvailable() && !user_name.isEmpty()) {
-            netman->editUserFavourite(access_token, user_name, channel->getServiceName(), true);
+        if (isAccessTokenAvailable() && user_id != 0) {
+            netman->editUserFavourite(access_token, user_id, channel->getId(), true);
         }
 
         favouritesModel->addChannel(new Channel(*channel));
@@ -480,8 +481,8 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
 
     emit deletedChannel(chan->getId());
 
-    if (isAccessTokenAvailable() && !user_name.isEmpty()) {
-        netman->editUserFavourite(access_token, user_name, chan->getServiceName(), false);
+    if (isAccessTokenAvailable() && user_id != 0) {
+        netman->editUserFavourite(access_token, user_id, chan->getId(), false);
     }
 
     favouritesModel->removeChannel(chan);
@@ -507,6 +508,14 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
         save();
 }
 
+QString commaSeparatedChannelIds(const QList<Channel *> & channels) {
+    QStringList channelIdStrs;
+    foreach(Channel* channel, channels) {
+        channelIdStrs.append(QString::number(channel->getId()));
+    }
+    return channelIdStrs.join(',');
+}
+
 void ChannelManager::checkStreams(const QList<Channel *> &list)
 {
     //Divide list to sublists for sanity
@@ -517,20 +526,11 @@ void ChannelManager::checkStreams(const QList<Channel *> &list)
         //Take sublist, max 50 items
         QList<Channel*> sublist = list.mid(pos, 50);
 
-        //Create comma-separated list of channels
-        QString channelsUrl = "";
-        foreach(Channel* channel, sublist){
-            if (!channelsUrl.isEmpty())
-                channelsUrl += ",";
-
-            channelsUrl += channel->getServiceName();
-        }
-
         //Fetch channels
         QString url = KRAKEN_API
                 + QString("/streams?")
                 + QString("limit=%1").arg(50) //Important!
-                + QString("&channel=") + channelsUrl;
+                + QString("&channel=") + commaSeparatedChannelIds(sublist);
         netman->getStreams(url);
 
         //Shift pos by 50
@@ -683,9 +683,10 @@ void ChannelManager::notifyMultipleChannelsOnline(const QList<Channel*> &channel
 }
 
 //Login function
-void ChannelManager::onUserNameUpdated(const QString &name)
+void ChannelManager::onUserUpdated(const QString &name, const quint64 userId)
 {
     user_name = name;
+    user_id = userId;
     emit userNameUpdated(user_name);
 
     if (isAccessTokenAvailable()) {
@@ -753,15 +754,15 @@ QVariantMap convertBetaBadges(const QMap<QString, QMap<QString, QMap<QString, QS
     return out;
 }
 
-bool ChannelManager::loadChannelBadgeUrls(const QString channel) {
-    auto result = channelBadgeUrls.find(channel);
+bool ChannelManager::loadChannelBadgeUrls(const quint64 channelId) {
+    auto result = channelBadgeUrls.find(QString::number(channelId));
     if (result != channelBadgeUrls.end()) {
         // deliver cached channel badge URLs
-        emit channelBadgeUrlsLoaded(channel, convertBadges(result.value()));
+        emit channelBadgeUrlsLoaded(channelId, convertBadges(result.value()));
         return false;
     }
     else {
-        netman->getChannelBadgeUrls(access_token, channel);
+        netman->getChannelBadgeUrls(access_token, channelId);
         return true;
     }
 }
@@ -872,12 +873,13 @@ void ChannelManager::onEmoteSetsUpdated(const QMap<int, QMap<int, QString>> upda
     emit emoteSetsLoaded(convertEmoteSets(updatedEmoteSets));
 }
 
-void ChannelManager::innerChannelBadgeUrlsLoaded(const QString channel, const QMap<QString, QMap<QString, QString>> badgeUrls)
+void ChannelManager::innerChannelBadgeUrlsLoaded(const quint64 channelId, const QMap<QString, QMap<QString, QString>> badgeUrls)
 {
-    channelBadgeUrls.remove(channel);
-    channelBadgeUrls.insert(channel, badgeUrls);
+    const QString channelIdStr = QString::number(channelId);
+    channelBadgeUrls.remove(channelIdStr);
+    channelBadgeUrls.insert(channelIdStr, badgeUrls);
 
-    emit channelBadgeUrlsLoaded(channel, convertBadges(badgeUrls));
+    emit channelBadgeUrlsLoaded(channelId, convertBadges(badgeUrls));
 }
 
 void ChannelManager::innerChannelBadgeBetaUrlsLoaded(const int channelId, const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData)
@@ -924,7 +926,7 @@ void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& of
     //if (offset == 0)
     //favouritesModel->clear();
 
-    netman->getUserFavourites(user_name, offset, limit);
+    netman->getUserFavourites(user_id, offset, limit);
 }
 
 

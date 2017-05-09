@@ -41,7 +41,7 @@ Item{
 
         header.text = "Videos for " + selectedChannel.title;
 
-        g_vodmgr.search(selectedChannel.name, 0, 35)
+        g_vodmgr.search(selectedChannel._id, 0, 35)
 
         itemCount = 35
 
@@ -126,7 +126,7 @@ Item{
 
         function checkScroll(){
             if (atYEnd && model.count() === itemCount && itemCount > 0){
-                g_vodmgr.search(selectedChannel.name, itemCount, 25)
+                g_vodmgr.search(selectedChannel._id, itemCount, 25)
                 itemCount += 25
             }
         }

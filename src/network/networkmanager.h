@@ -60,7 +60,7 @@ public:
     NetworkManager(QNetworkAccessManager *);
     ~NetworkManager();
 
-    Q_INVOKABLE void getStream(const QString&);
+    Q_INVOKABLE void getStream(const quint64);
     void getStreams(const QString&);
     void getGames(const quint32&, const quint32&);
     void searchChannels(const QString&, const quint32&, const quint32&);
@@ -68,15 +68,15 @@ public:
     void getFeaturedStreams();
     void getStreamsForGame(const QString&, const quint32&, const quint32&);
     void getChannelPlaybackStream(const QString&);
-    void getBroadcasts(const QString channelName, quint32 offset, quint32 limit);
+    void getBroadcasts(const quint64 channelId, quint32 offset, quint32 limit);
     void getBroadcastPlaybackStream(const QString &vod);
 
     //Methods using oauth
     void getUser(const QString &access_token);
-    void getUserFavourites(const QString &user_name, quint32 offset, quint32 limit);
-    void editUserFavourite(const QString &access_token, const QString &user, const QString &channel, bool add);
+    void getUserFavourites(const quint64 userId, quint32 offset, quint32 limit);
+    void editUserFavourite(const QString &access_token, const quint64 userId, const quint64 channelId, bool add);
     void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
-    void getChannelBadgeUrls(const QString &access_token, const QString &channel);
+    void getChannelBadgeUrls(const QString &access_token, const quint64 channelId);
     void getChannelBadgeUrlsBeta(const int channelID);
     void getGlobalBadgesUrlsBeta();
     void getChannelBitsUrls(const int channelID);
@@ -112,10 +112,10 @@ signals:
     void error(const QString &error);
 
     //oauth
-    void userNameOperationFinished(const QString&);
+    void userOperationFinished(const QString&, const quint64);
     void userEditFollowsOperationFinished();
     void getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>);
-    void getChannelBadgeUrlsOperationFinished(const QString, const QMap<QString, QMap<QString, QString>>);
+    void getChannelBadgeUrlsOperationFinished(const quint64, const QMap<QString, QMap<QString, QString>>);
     void getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>);
     void getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>);
 

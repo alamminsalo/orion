@@ -27,14 +27,14 @@ VodManager::~VodManager()
     delete model;
 }
 
-void VodManager::search(const QString channelName, const quint32 offset, const quint32 limit)
+void VodManager::search(const quint64 channelId, const quint32 offset, const quint32 limit)
 {
     if (offset == 0) {
         model->clear();
         emit searchStarted();
     }
 
-    netman->getBroadcasts(channelName, offset, limit);
+    netman->getBroadcasts(channelId, offset, limit);
 }
 
 void VodManager::onSearchFinished(QList<Vod *> items)
