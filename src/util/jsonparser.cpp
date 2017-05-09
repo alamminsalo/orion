@@ -422,7 +422,7 @@ QString JsonParser::parseVodExtractionInfo(const QByteArray &data)
 QPair<QString, quint64> JsonParser::parseUser(const QByteArray &data)
 {
     QString displayName;
-    quint64 userId;
+    quint64 userId = 0;
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
 
