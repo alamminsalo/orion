@@ -428,6 +428,7 @@ Item {
 
         onVisibleChanged: {
             if (visible) {
+                focusFilterInput();
                 height = dp(320);
             }
         }
@@ -561,9 +562,6 @@ Item {
                     onVisibleChanged: {
                         if (_emotePicker.visible && !_emoteButton.pickerLoaded) {
                             loadEmotes();
-                        }
-                        if (_emotePicker.visible) {
-                            _emotePicker.focusFilterInput();
                         }
                     }
                 }
