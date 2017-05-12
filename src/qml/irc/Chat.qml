@@ -28,7 +28,6 @@ Item {
     signal bulkDownloadComplete()
     signal channelBadgeUrlsLoaded(int channelId, var badgeUrls)
     signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
-    signal channelBitsUrlsLoaded(int channelID, var bitsUrls)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
@@ -64,11 +63,6 @@ Item {
         onChannelBadgeBetaUrlsLoaded: {
             console.log("onChannelBadgeBetaUrlsLoaded", "channel", channel, "badgeSetData", badgeSetData);
             root.channelBadgeBetaUrlsLoaded(channel, badgeSetData);
-        }
-
-        onChannelBitsUrlsLoaded: {
-            console.log("onChannelBitsUrlsLoaded", "channelID", channelID, "bitsUrls", bitsUrls);
-            root.channelBitsUrlsLoaded(channelID, bitsUrls);
         }
     }
 
