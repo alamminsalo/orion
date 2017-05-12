@@ -58,29 +58,8 @@ Channel::Channel(){
     favourite = false;
 }
 
-Channel::Channel(const QString &uri) : Channel(){
-    this->serviceName = uri;
-}
-
-Channel::Channel(const QString &uri, const QString &name, const QString &info) : Channel(uri){
-    this->name = name;
-    this->info = info;
-}
-
-Channel::Channel(const QString &uri, const QString &name, const QString &info, bool alert) : Channel(name,uri,info){
-    this->alert = alert;
-}
-
-Channel::Channel(const QString &uri, const QString &name, const QString &info, bool alert, time_t time) : Channel(name,uri,info,alert){
-    this->timestamp = time;
-}
-
-Channel::Channel(const QString &uri, const QString &name, const QString &info, bool alert, time_t time, const QString &logo) : Channel(name,uri,info,alert,time){
-    this->logouri = logo;
-}
-
-Channel::Channel(const QString &uri, const QString &name, const QString &info, bool alert, time_t time, const QString &logo, const QString &preview) : Channel(name,uri,info,alert,time,logo){
-    this->previewuri = preview;
+Channel::Channel(const quint64 newId) : Channel() {
+    this->id = newId;
 }
 
 Channel::Channel(const Channel &channel){

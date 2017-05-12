@@ -13,7 +13,6 @@
  */
 
 #include "jsonparser.h"
-#include <QUrl>
 
 bool JsonParser::hiDpi = false;
 
@@ -33,27 +32,10 @@ QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
         //Online streams
         QJsonArray arr = json["streams"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseStreamJson(item.toObject()));
+            channels.append(JsonParser::parseStreamJson(item.toObject(), true));
         }
 
-        //Offline streams
-        QStringList cnames;
-        if (!json["_links"].isNull() && !json["_links"].toObject()["self"].isNull()){
-            QString query = QUrl::fromPercentEncoding(QUrl(json["_links"].toObject()["self"].toString()).query().toUtf8());
-            if (!query.isEmpty()){
-                query.remove(0, query.indexOf("channel=") + 8);
-                query.truncate(query.indexOf('&'));
-                cnames = query.split(",");
-            }
-        }
-        if (channels.count() < cnames.count()){
-            foreach (const Channel* channel, channels){
-                cnames.removeOne(channel->getServiceName());
-            }
-            foreach(const QString & name, cnames){
-                channels.append(new Channel(name));
-            }
-        }
+        //Caller must use request context to determine offline streams
     }
 
     return channels;
@@ -64,12 +46,12 @@ Channel *JsonParser::parseStream(const QByteArray &data)
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
-        return parseStreamJson(doc.object());
+        return parseStreamJson(doc.object(), false);
     }
     return new Channel();
 }
 
-Channel* JsonParser::parseStreamJson(const QJsonObject &json)
+Channel* JsonParser::parseStreamJson(const QJsonObject &json, const bool expectChannel)
 {
     Channel* channel = new Channel();
 
@@ -79,14 +61,6 @@ Channel* JsonParser::parseStreamJson(const QJsonObject &json)
         jsonObj = jsonObj["stream"].toObject();
     } else {
         jsonObj = json;
-    }
-
-    //Take name from _links
-    QJsonObject links = jsonObj["_links"].toObject();
-    if (!links["self"].isNull()){
-        QString channelName = links["self"].toString();
-        channelName.remove(0, channelName.lastIndexOf('/') + 1);
-        channel->setServiceName(channelName);
     }
 
     if (!jsonObj["preview"].isNull()){
@@ -116,6 +90,9 @@ Channel* JsonParser::parseStreamJson(const QJsonObject &json)
         channel->setInfo(c->getInfo());
 
         delete c;
+    }
+    else if (expectChannel) {
+        qDebug() << "expected channel; stream will not have channel id to correlate";
     }
 
     channel->setOnline(true);
@@ -322,7 +299,7 @@ QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
 
         if (!json["featured"].isNull()){
             foreach (const QJsonValue &item, json["featured"].toArray()){
-                channels.append(JsonParser::parseStreamJson(item.toObject()["stream"].toObject()));
+                channels.append(JsonParser::parseStreamJson(item.toObject()["stream"].toObject(), true));
             }
         }
     }

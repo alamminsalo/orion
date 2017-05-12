@@ -108,7 +108,7 @@ signals:
     void m3u8OperationBFinished(const QVariantMap&);
     void fileOperationFinished(const QByteArray&);
     void favouritesReplyFinished(const QList<Channel *>&, const quint32);
-    void streamGetOperationFinished(const QString channelName, const bool online);
+    void streamGetOperationFinished(const quint64 channelId, const bool online);
     void error(const QString &error);
 
     //oauth

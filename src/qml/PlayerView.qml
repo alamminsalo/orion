@@ -96,8 +96,8 @@ Item {
         }
 
         onStreamGetOperationFinished: {
-            //console.log("Received stream status", channelName, online)
-            if (channelName === currentChannel.name) {
+            //console.log("Received stream status", channelId, currentChannel._id, online)
+            if (channelId === currentChannel._id) {
                 if (online && !root.streamOnline) {
                     console.log("Stream back online, resuming playback")
                     loadAndPlay(currentQualityName)

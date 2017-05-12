@@ -236,9 +236,9 @@ bool ChannelListModel::updateStream(Channel *item)
 {
     bool onlineStateChanged = false;
 
-    if (item && !item->getServiceName().isEmpty()){
+    if (item && item->getId()){
 
-        if (Channel *channel = find(item->getServiceName())){
+        if (Channel *channel = find(item->getId())){
 
             if (item->isOnline()){
                 channel->setViewers(item->getViewers());
@@ -259,6 +259,9 @@ bool ChannelListModel::updateStream(Channel *item)
                 //emit channelOnlineStateChanged(channel);
             }
         }
+    }
+    else {
+        qDebug() << "ChannelListModel::updateStream got an item without id" << item->getServiceName();
     }
 
     return onlineStateChanged;

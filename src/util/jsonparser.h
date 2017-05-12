@@ -42,7 +42,7 @@ public:
     static QList<Vod *> parseVods(const QByteArray&);
     static Game* parseGame(const QJsonObject&);
     static Channel* parseStream(const QByteArray&);
-    static Channel* parseStreamJson(const QJsonObject&);
+    static Channel* parseStreamJson(const QJsonObject&, const bool expectChannel);
     static Channel* parseChannel(const QByteArray&);
     static Channel* parseChannelJson(const QJsonObject&);
     static Vod* parseVod(const QJsonObject&);

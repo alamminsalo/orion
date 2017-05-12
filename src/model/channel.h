@@ -46,12 +46,7 @@ class Channel: public QObject{
 
 	public:
         Channel();
-        Channel(const QString&);
-        Channel(const QString&, const QString&, const QString&);
-        Channel(const QString&, const QString&, const QString&, bool);
-        Channel(const QString&, const QString&, const QString&, bool, time_t);
-        Channel(const QString&, const QString&, const QString&, bool, time_t, const QString&);
-        Channel(const QString&, const QString&, const QString&, bool, time_t, const QString&, const QString&);
+        Channel(const quint64);
         Channel(const Channel&);
         ~Channel();
         void updateWith(const Channel &other);

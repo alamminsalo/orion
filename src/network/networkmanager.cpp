@@ -18,6 +18,8 @@
 #include "../util/m3u8parser.h"
 #include <QNetworkConfiguration>
 #include <QEventLoop>
+#include <QSet>
+#include <QUrlQuery>
 
 NetworkManager::NetworkManager(QNetworkAccessManager *man)
 {
@@ -788,11 +790,36 @@ void NetworkManager::streamReply()
 
     Channel *channel = JsonParser::parseStream(data);
 
-    emit streamGetOperationFinished(channel->getServiceName(), channel->isOnline());
+    QString channelIdStr = reply->url().toString();
+    channelIdStr.remove(0, channelIdStr.lastIndexOf('/') + 1);
+    const quint64 channelId = channelIdStr.toULongLong();
+
+    emit streamGetOperationFinished(channelId, channel->isOnline());
 
     channel->deleteLater();
 
     reply->deleteLater();
+}
+
+void addOfflineChannels(QList<Channel *> & channels, const QList<quint64> & expectedChannelIds) {
+    if (channels.count() < expectedChannelIds.count()) {
+        QSet<quint64> unseenChannelIds = expectedChannelIds.toSet();
+
+        foreach(const Channel* channel, channels) {
+            unseenChannelIds.remove(channel->getId());
+        }
+        foreach(const quint64 id, unseenChannelIds) {
+            channels.append(new Channel(id));
+        }
+    }
+}
+
+template <class U>
+void addULongLongStringList(U & modify, const QStringList & newItems) {
+    modify.reserve(modify.length() + newItems.length());
+    for (const QString & s : newItems) {
+        modify.append(s.toULongLong());
+    }
 }
 
 void NetworkManager::allStreamsReply()
@@ -804,7 +831,18 @@ void NetworkManager::allStreamsReply()
     }
     QByteArray data = reply->readAll();
 
-    emit allStreamsOperationFinished(JsonParser::parseStreams(data));
+    QList<quint64> queriedChannelIds;
+
+    const QUrlQuery query(reply->url().query());
+    if (query.hasQueryItem("channel")) {
+        addULongLongStringList(queriedChannelIds, query.queryItemValue("channel").split(","));
+    }
+
+    QList<Channel *> out = JsonParser::parseStreams(data);
+
+    addOfflineChannels(out, queriedChannelIds);
+
+    emit allStreamsOperationFinished(out);
 
     reply->deleteLater();
 }
@@ -849,7 +887,18 @@ void NetworkManager::gameStreamsReply()
 
     //qDebug() << data;
 
-    emit gameStreamsOperationFinished(JsonParser::parseStreams(data));
+    QList<quint64> queriedChannelIds;
+
+    const QUrlQuery query(reply->url().query());
+    if (query.hasQueryItem("channel")) {
+        addULongLongStringList(queriedChannelIds, query.queryItemValue("channel").split(","));
+    }
+
+    QList<Channel *> out = JsonParser::parseStreams(data);
+
+    addOfflineChannels(out, queriedChannelIds);
+
+    emit gameStreamsOperationFinished(out);
 
     reply->deleteLater();
 }
