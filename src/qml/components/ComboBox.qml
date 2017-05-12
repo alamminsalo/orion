@@ -15,12 +15,11 @@
 import QtQuick 2.5
 import "../styles.js" as Styles
 
-//TODO: change name to something like 'StreamSelectorComboBox'
-
 Rectangle {
     property var entries: []
     property alias open: list.visible
     property alias mouseArea: mArea
+    property var compareFunction: null
 
     id: root
 
@@ -30,39 +29,8 @@ Rectangle {
         list.visible = false
     }
 
-    function nameWeight(str) {
-        //Returns weight for given str, used in sorting
-        switch(str) {
-
-        //Source always on top
-        case "source": return 999999;
-
-        //Rest in order
-        case "audio_only": return -1;
-        case "mobile": return 0;
-        case "low": return 1;
-        case "medium": return 2;
-        case "high": return 3;
-
-        //Number evaluation
-        default:
-            var numbers = str.split("p")
-
-            var value = parseInt(numbers[0])
-
-            if (numbers.length > 1)
-                value += parseInt(numbers[1])
-
-            return value
-        }
-    }
-
-    function sortEntries(fn) {
-        entries.sort(function(a, b) {return nameWeight(a) - nameWeight(b)});
-    }
-
     onEntriesChanged: {
-        sortEntries(nameWeight);
+        entries.sort(compareFunction);
 
         console.log("Setting new entries")
 
@@ -90,6 +58,15 @@ Rectangle {
 
     function selectFirst() {
         list.currentIndex = 0
+    }
+
+    function selectItem(item) {
+        console.log("ComboBox selectItem", item);
+        var index = findIndex(item);
+        console.log("index", index);
+        if (index != null) {
+            list.currentIndex = index;
+        }
     }
 
     color: Styles.shadeColor

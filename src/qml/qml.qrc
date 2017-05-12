@@ -29,7 +29,6 @@
         <file>SideBar.qml</file>
         <file>components/OptionTextInput.qml</file>
         <file>components/OptionCheckbox.qml</file>
-        <file>components/OptionCombo.qml</file>
         <file>icon/orion.ico</file>
         <file>components/ComboBox.qml</file>
         <file>components/VolumeSlider.qml</file>
@@ -54,5 +53,7 @@
         <file>components/CustomFlow.qml</file>
         <file>components/CommonGrid.qml</file>
         <file>components/ChannelGrid.qml</file>
+        <file>components/OptionCornerSelect.qml</file>
+        <file>components/StreamSelectorComboBox.qml</file>
     </qresource>
 </RCC>

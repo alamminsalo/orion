@@ -28,7 +28,7 @@ Item {
     property bool isChannelNotice
     property bool isWhisper
     property string systemMessage
-    property int fontSize: Styles.titleFont.smaller
+    property int fontSize: Styles.titleFont.smaller * g_cman.textScaleFactor
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
     property var highlightOpacity: 1.0
@@ -41,6 +41,13 @@ Item {
     property var visibleBadgeEntries: showUsernameLine? badgeEntries : []
 
     height: childrenRect.height
+
+    onFontSizeChanged: {
+        // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
+        Qt.callLater(function() {
+            _messageLineFlow.updatePositions()
+        })
+    }
 
     function makeUrl(str) {
         var pref = "";
@@ -206,8 +213,8 @@ Item {
               Image {
                 id: _emoteImg
 
-                width: sourceSize.width/(chat.getHiDpi()? 2.0 : 1.0)
-                height: sourceSize.height/(chat.getHiDpi()? 2.0 : 1.0)
+                width: sourceSize.width/(chat.getHiDpi()? 2.0 : 1.0)*g_cman.textScaleFactor
+                height: sourceSize.height/(chat.getHiDpi()? 2.0 : 1.0)*g_cman.textScaleFactor
 
                 Component.onCompleted: {
                   source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
@@ -219,6 +226,7 @@ Item {
                   text: msgItem.textSuffix
                   color: msgItem.textSuffixColor
                   font.bold: true
+                  font.pixelSize: fontSize
                   verticalAlignment: Text.AlignVCenter
                   height: _emoteImg.height
               }
@@ -243,8 +251,8 @@ Item {
                 id: _animatedImg
 
                 // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
-                width: 28
-                height: 28
+                width: 28 * g_cman.textScaleFactor
+                height: 28 * g_cman.textScaleFactor
 
                 Component.onCompleted: {
                   source = msgItem.sourceUrl;
@@ -256,6 +264,7 @@ Item {
                   text: msgItem.textSuffix
                   color: msgItem.textSuffixColor
                   font.bold: true
+                  font.pixelSize: fontSize
                   verticalAlignment: Text.AlignVCenter
                   height: _animatedImg.height
               }
@@ -280,8 +289,8 @@ Item {
               source = badgeEntry.url;
             }
 
-            width: sourceSize.width/badgeEntry.devicePixelRatio
-            height: sourceSize.height/badgeEntry.devicePixelRatio
+            width: sourceSize.width/badgeEntry.devicePixelRatio*g_cman.textScaleFactor
+            height: sourceSize.height/badgeEntry.devicePixelRatio*g_cman.textScaleFactor
 
             onStatusChanged: {
                 if (status == Image.Ready) {

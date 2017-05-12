@@ -66,6 +66,7 @@ class ChannelManager: public QObject
     Q_OBJECT
 
     Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat NOTIFY swapChatChanged)
+    Q_PROPERTY(double textScaleFactor READ getTextScaleFactor WRITE setTextScaleFactor NOTIFY textScaleFactorChanged)
     Q_PROPERTY(bool offlineNotifications READ getOfflineNotifications WRITE setOfflineNotifications NOTIFY notificationsChanged)
 
 protected:
@@ -92,6 +93,7 @@ protected:
     bool minimizeOnStartup;
     bool _swapChat;
     bool offlineNotifications;
+    double _textScaleFactor;
 
     //Oauth
     QString user_name;
@@ -176,6 +178,8 @@ public:
 
     void setSwapChat(bool value);
     bool getSwapChat();
+    void setTextScaleFactor(double value);
+    double getTextScaleFactor();
 
     void setOfflineNotifications(bool value);
     bool getOfflineNotifications();
@@ -265,6 +269,7 @@ signals:
     void gamesUpdated();
     void followedUpdated();
     void swapChatChanged();
+    void textScaleFactorChanged();
     void notificationsChanged();
 
     //oauth methods

@@ -150,6 +150,7 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     closeToTray = false;
     alertPosition = 1;
     minimizeOnStartup = false;
+    _textScaleFactor = 1.0;
 
     resultsModel = new ChannelListModel();
 
@@ -407,7 +408,9 @@ void ChannelManager::load(){
     if(!settings.value("swapChat").isNull()) {
         _swapChat = settings.value("swapChat").toBool();
     }
-
+    if (!settings.value("textScaleFactor").isNull()) {
+        _textScaleFactor = settings.value("textScaleFactor").toDouble();
+    }
     if(!settings.value("notifications").isNull()) {
         offlineNotifications = settings.value("notifications").toBool();
     }
@@ -434,6 +437,7 @@ void ChannelManager::save()
     settings.setValue("minimizeOnStartup", minimizeOnStartup);
     settings.setValue("swapChat", _swapChat);
     settings.setValue("notifications", offlineNotifications);
+    settings.setValue("textScaleFactor", _textScaleFactor);
 
     //Write channels
     settings.beginWriteArray("channels");
@@ -1000,6 +1004,15 @@ void ChannelManager::setSwapChat(bool value) {
 
 bool ChannelManager::getSwapChat() {
     return _swapChat;
+}
+
+double ChannelManager::getTextScaleFactor() {
+    return _textScaleFactor;
+}
+
+void ChannelManager::setTextScaleFactor(double value) {
+    _textScaleFactor = value;
+    emit textScaleFactorChanged();
 }
 
 void ChannelManager::setOfflineNotifications(bool value) {

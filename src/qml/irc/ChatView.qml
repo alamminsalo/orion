@@ -426,6 +426,8 @@ Item {
 
         devicePixelRatio: chat.getHiDpi()? 2.0 : 1.0
 
+        fontPixelSize: Styles.titleFont.smaller * g_cman.textScaleFactor
+
         onVisibleChanged: {
             if (visible) {
                 focusFilterInput();
@@ -521,7 +523,7 @@ Item {
                 selectionColor: Styles.purple
                 focus: true
                 selectByMouse: true
-                font.pixelSize: Styles.titleFont.smaller
+                font.pixelSize: Styles.titleFont.smaller * g_cman.textScaleFactor
                 verticalAlignment: Text.AlignVCenter
 
                 Keys.onReturnPressed: sendMessage()

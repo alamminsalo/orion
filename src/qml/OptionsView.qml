@@ -63,7 +63,7 @@ Item{
             text: "Show offline notifications"
         }
 
-        OptionCombo {
+        OptionCornerSelect {
             id: alertPosition
             selection: g_cman.getAlertPosition()
 
@@ -115,6 +115,52 @@ Item{
                 g_cman.swapChat = !g_cman.swapChat
             }
             text: "Swap Chat Side"
+        }
+
+        OptionEntry {
+            anchors {
+                left: parent.left
+                right: parent.right
+            }
+            text: "Chat Text Scale Factor"
+
+
+            ComboBox {
+                id: textScaleFactor
+                //currentText: g_cman.getTextScaleFactor()
+
+                width: dp(90)
+                height: dp(40)
+
+                anchors {
+                    verticalCenter: parent.verticalCenter
+                    right: parent.right
+                }
+
+                Component.onCompleted: {
+                    var entries = ["0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2", "2.5", "3"];
+                    textScaleFactor.entries = entries;
+
+                    var val = g_cman.textScaleFactor;
+                    for (var i = 0; i < entries.length; i++) {
+                        var cur = entries[i];
+                        if (parseFloat(cur) == val) {
+                            textScaleFactor.selectItem(cur);
+                            break;
+                        }
+                    }
+
+                }
+
+                compareFunction: function(a, b) {
+                    return parseFloat(a) - parseFloat(b);
+                }
+
+                onItemChanged: {
+                    g_cman.textScaleFactor = parseFloat(item)
+                }
+            }
+
         }
 
         OptionEntry {

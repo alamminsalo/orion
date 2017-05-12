@@ -729,7 +729,7 @@ Item {
                 }   
             }
 
-            ComboBox {
+            StreamSelectorComboBox {
                 //Contains data for sources
                 id: sourcesBox
                 width: dp(90)
@@ -818,12 +818,13 @@ Item {
     ChatView {
         id: chatview
 
-        // Use JS so we can control the order the anchors are set.
-        // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
         anchors {
             top: parent.top
             bottom: parent.bottom
         }
+
+        // Use JS for side anchors so we can control the order the anchors are set when we change them.
+        // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
 
         function updateAnchors() {
             console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
@@ -847,8 +848,8 @@ Item {
             }
         }
 
-        width: visible && !smallMode ? dp(250) : 0
-        chatWidth: dp(250)
+        width: visible && !smallMode ? chatWidth : 0
+        chatWidth: dp(250) * g_cman.textScaleFactor
 
         Behavior on width {
             NumberAnimation {

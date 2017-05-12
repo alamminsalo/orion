@@ -30,6 +30,7 @@ Rectangle {
     property ListModel _filteredModel: ListModel {}
 
     property var _filterIndexMap
+    property int fontPixelSize: Styles.titleFont.smaller
 
     signal itemClicked(int index);
     signal closeRequested();
@@ -260,7 +261,7 @@ Rectangle {
             selectionColor: Styles.purple
             focus: true
             selectByMouse: true
-            font.pixelSize: Styles.titleFont.smaller
+            font.pixelSize: root.fontPixelSize
             verticalAlignment: Text.AlignVCenter
 
             Keys.onReturnPressed: {
