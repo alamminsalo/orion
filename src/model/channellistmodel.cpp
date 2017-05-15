@@ -250,6 +250,13 @@ bool ChannelListModel::updateStream(Channel *item)
                 }
             }
 
+            if (!item->isOnline()) {
+                // put some information back for notifications
+                if (!channel->getName().isEmpty()) {
+                    item->setName(channel->getName());
+                }
+            }
+
             if (channel->isOnline() != item->isOnline()){
                 channel->setOnline(item->isOnline());
                 updateChannelForView(channel);
