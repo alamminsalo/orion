@@ -45,7 +45,7 @@ volume              -- volume between 0 - 100
 Item {
     id: root
 
-    function load(src, start) {
+    function load(src, start, description) {
         console.log("Loading src", src, start)
         stop();
 
@@ -56,6 +56,9 @@ Item {
             streamOffsetCalibrated = false;
             streamOffset = 0;
         }
+
+        renderer.setOption("audio-client-name", "Orion");
+        renderer.setOption("title", description);
 
         renderer.command(["loadfile", src])
 

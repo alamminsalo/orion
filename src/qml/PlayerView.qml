@@ -134,7 +134,7 @@ Item {
 
 
     function loadAndPlay(streamName){
-        setWatchingTitle()
+        var description = setWatchingTitle();
 
         var start = !isVod ? -1 : seekBar.position
 
@@ -142,7 +142,7 @@ Item {
 
         console.debug("Loading: ", url)
 
-        renderer.load(url, start)
+        renderer.load(url, start, description)
 
         currentQualityName = streamName
     }
@@ -229,9 +229,11 @@ Item {
     }
 
     function setWatchingTitle(){
-        setHeaderText(currentChannel.title
-                      + (currentChannel.game ? " playing " + currentChannel.game : "")
-                      + (isVod ? " (VOD)" : ""))
+        var description = currentChannel.title
+                + (currentChannel.game ? " playing " + currentChannel.game : "")
+                + (isVod ? " (VOD)" : "");
+        setHeaderText(description);
+        return description;
     }
 
     function loadStreams(streams) {
