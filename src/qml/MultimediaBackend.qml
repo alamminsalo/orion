@@ -18,7 +18,7 @@ import "components"
 import "irc"
 import "styles.js" as Styles
 
-/* Interface for backend Mpv
+/* Interface for backend Multimedia
 
 Functions needed:
 load(src, start)    -- Loads stream src, if given, start sets the starting milliseconds in vods
@@ -36,7 +36,7 @@ playingStopped()    -- Signaled when playback stops (stream ends)
 volumeChanged()     -- Signaled when volume changes internally
 
 Variables needed:
-status              -- string "PLAYING" | "PAUSED" | "STOPPED"
+status              -- string "PLAYING" | "PAUSED" | "STOPPING" | "STOPPED"
 position            -- Milliseconds in playback
 volume              -- volume between 0 - 100
 
@@ -67,11 +67,12 @@ Item {
     }
 
     function stop() {
+        status = "STOPPING";
         renderer.stop()
     }
 
     function togglePause() {
-        if (status == "PAUSED" || status == "STOPPED")
+        if (status == "PAUSED" || status == "STOPPING" || status == "STOPPED")
             resume()
         else
             pause()
@@ -139,6 +140,10 @@ Item {
         }
 
         onPositionChanged: {
+            if (root.status == "STOPPING" && position == 0) {
+                // suppress this position update; during a reload we want to resume from the previous playing position
+                return;
+            }
             var pos = position / 1000
             if (root.position !== pos)
                 root.position = pos
