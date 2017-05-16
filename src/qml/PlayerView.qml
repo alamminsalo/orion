@@ -37,6 +37,14 @@ Item {
     property bool smallMode: false
     property alias enableSmallMode: miniModeCheckBox.checked
 
+    Component.onCompleted: {
+        var savedQuality = g_cman.getQuality();
+        console.log("Loaded saved quality", savedQuality);
+        if (savedQuality) {
+            currentQualityName = savedQuality;
+        }
+    }
+
     //Animations, need to be declared BEFORE width, height binds
     Behavior on width {
         enabled: smallMode
@@ -145,6 +153,7 @@ Item {
         renderer.load(url, start, description)
 
         currentQualityName = streamName
+        g_cman.setQuality(streamName);
     }
 
     function getStreams(channel, vod){
@@ -249,11 +258,12 @@ Item {
 
         sourcesBox.entries = sourceNames
 
-        if (currentQualityName && streamMap[currentQualityName])
+        if (currentQualityName && streamMap[currentQualityName]) {
+            sourcesBox.selectItem(currentQualityName);
             loadAndPlay(currentQualityName)
-
-        else
-            sourcesBox.selectFirst()
+        } else {
+            sourcesBox.selectFirst();
+        }
     }
 
     function seekTo(position) {

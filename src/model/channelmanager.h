@@ -94,6 +94,7 @@ protected:
     bool _swapChat;
     bool offlineNotifications;
     double _textScaleFactor;
+    QString quality;
 
     //Oauth
     QString user_name;
@@ -145,6 +146,9 @@ public:
 
     Q_INVOKABLE int getAlertPosition() const;
     Q_INVOKABLE void setAlertPosition(const int &value);
+
+    Q_INVOKABLE QString getQuality() const;
+    Q_INVOKABLE void setQuality(const QString & quality);
 
     Q_INVOKABLE int getVolumeLevel() const;
     Q_INVOKABLE void setVolumeLevel(const int &value);

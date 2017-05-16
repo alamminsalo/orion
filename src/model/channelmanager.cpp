@@ -364,6 +364,14 @@ ChannelListModel *ChannelManager::getResultsModel() const
     return resultsModel;
 }
 
+QString ChannelManager::getQuality() const {
+    return quality;
+}
+
+void ChannelManager::setQuality(const QString & value) {
+    quality = value;
+}
+
 void ChannelManager::load(){
     QSettings settings("orion.application", "Orion");
 
@@ -381,6 +389,10 @@ void ChannelManager::load(){
 
     if (settings.contains("minimizeOnStartup")) {
         minimizeOnStartup = settings.value("minimizeOnStartup").toBool();
+    }
+
+    if (settings.contains("quality")) {
+        quality = settings.value("quality").toString();
     }
 
     int size = settings.beginReadArray("channels");
@@ -443,6 +455,7 @@ void ChannelManager::save()
     settings.setValue("swapChat", _swapChat);
     settings.setValue("notifications", offlineNotifications);
     settings.setValue("textScaleFactor", _textScaleFactor);
+    settings.setValue("quality", quality);
 
     //Write channels
     settings.beginWriteArray("channels");
