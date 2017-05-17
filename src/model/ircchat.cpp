@@ -38,8 +38,8 @@ const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
 const QString IrcChat::EMOTICONS_URL_FORMAT_LODPI = "https://static-cdn.jtvnw.net/emoticons/v1/%1/1.0";
 const QString IrcChat::EMOTICONS_URL_FORMAT_HIDPI = "https://static-cdn.jtvnw.net/emoticons/v1/%1/2.0";
 
-const qint16 IrcChat::PORT = 6667;
-const QString IrcChat::HOST = "irc.twitch.tv";
+const qint16 IrcChat::PORT = 443;
+const QString IrcChat::HOST = "irc.chat.twitch.tv";
 
 bool IrcChat::hiDpi = false;
 
@@ -74,15 +74,17 @@ IrcChat::IrcChat(QObject *parent) :
 
 void IrcChat::initSocket() {
     // Open socket
-    sock = new QTcpSocket(this);
+    sock = new QSslSocket(this);
     if(!sock) {
         emit errorOccured("Error creating socket");
     }
     else {
+        sock->setPeerVerifyMode(QSslSocket::VerifyPeer);
         connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
         connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
-        connect(sock, SIGNAL(connected()), this, SLOT(login()));
-        connect(sock, SIGNAL(connected()), this, SLOT(onSockStateChanged()));
+        connect(sock, static_cast<void (QSslSocket::*)(const QList<QSslError> &errors)>(&QSslSocket::sslErrors), this, &IrcChat::processSslErrors);
+        connect(sock, SIGNAL(encrypted()), this, SLOT(login()));
+        connect(sock, SIGNAL(encrypted()), this, SLOT(onSockStateChanged()));
         connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
     }
 }
@@ -377,7 +379,7 @@ void IrcChat::reopenSocket() {
         if (sock->isOpen())
             sock->close();
         sock->open(QIODevice::ReadWrite);
-        sock->connectToHost(HOST, PORT);
+        sock->connectToHostEncrypted(HOST, PORT);
         if (!sock->isOpen()) {
             emit errorOccured("Error opening socket");
         }
@@ -650,6 +652,15 @@ void IrcChat::processError(QAbstractSocket::SocketError socketError) {
     }
 
     emit errorOccured(err);
+}
+
+void IrcChat::processSslErrors(const QList<QSslError> &errors) {
+    qDebug() << "SSL errors:";
+    for (const auto & error : errors) {
+        qDebug() << error.errorString();
+    }
+
+    emit errorOccured("SSL Error");
 }
 
 void IrcChat::addWordSplit(const QString & s, const QChar & sep, QVariantList & l) {

@@ -130,6 +130,7 @@ public slots:
 private slots:
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
+    void processSslErrors(const QList<QSslError> &errors);
     void handleDownloadComplete();
     void handleVodStartTime(double);
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
@@ -177,7 +178,7 @@ private:
     void createMessageList(const QMap<int, QPair<int, int>> & emotePositionsMap, QString bitsNumber, QVariantList & messageList, const QString message);
     void addWordSplit(const QString & s, const QChar & sep, QVariantList & l);
     QString getParamValue(QString params, QString param);
-    QTcpSocket *sock;
+    QSslSocket *sock;
     QString room;
     QString roomChannelId;
     bool replayMode;
