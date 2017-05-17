@@ -135,8 +135,8 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
 {
     ChannelListModel *model = new ChannelListModel();
 
-    connect(model, SIGNAL(channelOnlineStateChanged(Channel*)), this, SLOT(notify(Channel*)));
-    connect(model, SIGNAL(multipleChannelsChangedOnline(const QList<Channel*> &)), this, SLOT(notifyMultipleChannelsOnline(const QList<Channel*> &)));
+    connect(model, &ChannelListModel::channelOnlineStateChanged, this, &ChannelManager::notify);
+    connect(model, &ChannelListModel::multipleChannelsChangedOnline, this, &ChannelManager::notifyMultipleChannelsOnline);
 
     return model;
 }
@@ -171,33 +171,33 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     featuredProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
     featuredProxy->sort(0, Qt::DescendingOrder);
 
-    connect(netman, SIGNAL(allStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(updateStreams(QList<Channel*>)));
-    connect(netman, SIGNAL(featuredStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addFeaturedResults(QList<Channel*>)));
-    connect(netman, SIGNAL(gamesOperationFinished(const QList<Game*>&)), this, SLOT(addGames(QList<Game*>)));
-    connect(netman, SIGNAL(gameStreamsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
-    connect(netman, SIGNAL(searchChannelsOperationFinished(const QList<Channel*>&)), this, SLOT(addSearchResults(QList<Channel*>)));
-    connect(netman, SIGNAL(m3u8OperationFinished(QVariantMap)), this, SIGNAL(foundPlaybackStream(QVariantMap)));
-    connect(netman, SIGNAL(searchGamesOperationFinished(QList<Game*>)), this, SLOT(addGames(QList<Game*>)));
+    connect(netman, &NetworkManager::allStreamsOperationFinished, this, &ChannelManager::updateStreams);
+    connect(netman, &NetworkManager::featuredStreamsOperationFinished, this, &ChannelManager::addFeaturedResults);
+    connect(netman, &NetworkManager::gamesOperationFinished, this, &ChannelManager::addGames);
+    connect(netman, &NetworkManager::gameStreamsOperationFinished, this, &ChannelManager::addSearchResults);
+    connect(netman, &NetworkManager::searchChannelsOperationFinished, this, &ChannelManager::addSearchResults);
+    connect(netman, &NetworkManager::m3u8OperationFinished, this, &ChannelManager::foundPlaybackStream);
+    connect(netman, &NetworkManager::searchGamesOperationFinished, this, &ChannelManager::addGames);
 
-    connect(netman, SIGNAL(userOperationFinished(QString, quint64)), this, SLOT(onUserUpdated(QString, quint64)));
-    connect(netman, SIGNAL(getEmoteSetsOperationFinished(const QMap<int, QMap<int, QString>>)), this, SLOT(onEmoteSetsUpdated(const QMap<int, QMap<int, QString>>)));
-    connect(netman, SIGNAL(getChannelBadgeUrlsOperationFinished(const quint64, const QMap<QString, QMap<QString, QString>>)), this, SLOT(innerChannelBadgeUrlsLoaded(const quint64, const QMap<QString, QMap<QString, QString>>)));
-    connect(netman, SIGNAL(getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerChannelBadgeBetaUrlsLoaded(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
-    connect(netman, SIGNAL(getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>)), this, SLOT(innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>>)));
+    connect(netman, &NetworkManager::userOperationFinished, this, &ChannelManager::onUserUpdated);
+    connect(netman, &NetworkManager::getEmoteSetsOperationFinished, this, &ChannelManager::onEmoteSetsUpdated);
+    connect(netman, &NetworkManager::getChannelBadgeUrlsOperationFinished, this, &ChannelManager::innerChannelBadgeUrlsLoaded);
+    connect(netman, &NetworkManager::getChannelBadgeBetaUrlsOperationFinished, this, &ChannelManager::innerChannelBadgeBetaUrlsLoaded);
+    connect(netman, &NetworkManager::getGlobalBadgeBetaUrlsOperationFinished, this, &ChannelManager::innerGlobalBadgeBetaUrlsLoaded);
 
-    connect(netman, SIGNAL(getChannelBitsUrlsOperationFinished(int, BitsQStringsMap, BitsQStringsMap)), this, SLOT(innerChannelBitsDataLoaded(int, BitsQStringsMap, BitsQStringsMap)));
-    connect(netman, SIGNAL(getGlobalBitsUrlsOperationFinished(BitsQStringsMap, BitsQStringsMap)), this, SLOT(innerGlobalBitsDataLoaded(BitsQStringsMap, BitsQStringsMap)));
+    connect(netman, &NetworkManager::getChannelBitsUrlsOperationFinished, this, &ChannelManager::innerChannelBitsDataLoaded);
+    connect(netman, &NetworkManager::getGlobalBitsUrlsOperationFinished, this, &ChannelManager::innerGlobalBitsDataLoaded);
 
-    connect(netman, SIGNAL(favouritesReplyFinished(const QList<Channel*>&, const quint32)), this, SLOT(addFollowedResults(const QList<Channel*>&, const quint32)));
-    connect(netman, SIGNAL(vodStartGetOperationFinished(double)), this, SIGNAL(vodStartGetOperationFinished(double)));
-    connect(netman, SIGNAL(vodChatPieceGetOperationFinished(QList<ReplayChatMessage>)), this, SIGNAL(vodChatPieceGetOperationFinished(QList<ReplayChatMessage>)));
-    connect(netman, SIGNAL(chatterListLoadOperationFinished(QMap<QString, QList<QString>>)), this, SLOT(processChatterList(QMap<QString, QList<QString>>)));
+    connect(netman, &NetworkManager::favouritesReplyFinished, this, &ChannelManager::addFollowedResults);
+    connect(netman, &NetworkManager::vodStartGetOperationFinished, this, &ChannelManager::vodStartGetOperationFinished);
+    connect(netman, &NetworkManager::vodChatPieceGetOperationFinished, this, &ChannelManager::vodChatPieceGetOperationFinished);
+    connect(netman, &NetworkManager::chatterListLoadOperationFinished, this, &ChannelManager::processChatterList);
 
-    connect(netman, SIGNAL(blockedUserListLoadOperationFinished(const QList<QString> &, const quint32)), this, SLOT(addBlockedUserResults(const QList<QString> &, const quint32)));
+    connect(netman, &NetworkManager::blockedUserListLoadOperationFinished, this, &ChannelManager::addBlockedUserResults);
     connect(netman, &NetworkManager::userBlocked, this, &ChannelManager::innerUserBlocked);
     connect(netman, &NetworkManager::userUnblocked, this, &ChannelManager::innerUserUnblocked);
 
-    connect(netman, SIGNAL(networkAccessChanged(bool)), this, SLOT(onNetworkAccessChanged(bool)));
+    connect(netman, &NetworkManager::networkAccessChanged, this, &ChannelManager::onNetworkAccessChanged);
     load();
 }
 

@@ -90,7 +90,7 @@ void RunGuard::release()
 void RunGuard::setTimer()
 {
     timer = new QTimer();
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    connect(timer, &QTimer::timeout, this, &RunGuard::update);
     timer->start(250);
 }
 

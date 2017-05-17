@@ -48,7 +48,7 @@ void NotificationSender::getFile(const QString &url)
 
     QNetworkReply *reply = netman->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(onFileReply()));
+    connect(reply, &QNetworkReply::finished, this, &NotificationSender::onFileReply);
 }
 
 

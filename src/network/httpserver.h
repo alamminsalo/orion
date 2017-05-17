@@ -64,13 +64,13 @@ public slots:
     void onConnect() {
         qDebug()<<"Connected";
         QTcpSocket *socket = server->nextPendingConnection();
-        connect(socket, SIGNAL(readyRead()), this, SLOT(onRead()));
+        connect(socket, &QTcpSocket::readyRead, this, &HttpServer::onRead);
     }
 
     void onRead() {
         qDebug() << "Reading request...";
         QTcpSocket *socket = (QTcpSocket*) this->sender();
-        socket->connect(socket, SIGNAL(disconnected()), SLOT(deleteLater()));
+        socket->connect(socket, &QTcpSocket::disconnected, &QObject::deleteLater);
 
         /// Read data
         QString code;

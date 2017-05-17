@@ -28,7 +28,7 @@ Power::Power(QApplication *app) :
     app(app), cookie(0)
 {
     timer = new QTimer();
-    connect(timer, SIGNAL(timeout()), this, SLOT(onTimerProc()));
+    connect(timer, &QTimer::timeout, this, &Power::onTimerProc);
 }
 
 Power::~Power()

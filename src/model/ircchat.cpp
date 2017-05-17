@@ -80,12 +80,12 @@ void IrcChat::initSocket() {
     }
     else {
         sock->setPeerVerifyMode(QSslSocket::VerifyPeer);
-        connect(sock, SIGNAL(readyRead()), this, SLOT(receive()));
-        connect(sock, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(processError(QAbstractSocket::SocketError)));
+        connect(sock, &QSslSocket::readyRead, this, &IrcChat::receive);
+        connect(sock, static_cast<void (QSslSocket::*)(QAbstractSocket::SocketError)>(&QSslSocket::error), this, &IrcChat::processError);
         connect(sock, static_cast<void (QSslSocket::*)(const QList<QSslError> &errors)>(&QSslSocket::sslErrors), this, &IrcChat::processSslErrors);
-        connect(sock, SIGNAL(encrypted()), this, SLOT(login()));
-        connect(sock, SIGNAL(encrypted()), this, SLOT(onSockStateChanged()));
-        connect(sock, SIGNAL(disconnected()), this, SLOT(onSockStateChanged()));
+        connect(sock, &QSslSocket::encrypted, this, &IrcChat::login);
+        connect(sock, &QSslSocket::encrypted, this, &IrcChat::onSockStateChanged);
+        connect(sock, &QSslSocket::disconnected, this, &IrcChat::onSockStateChanged);
     }
 }
 

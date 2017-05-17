@@ -32,14 +32,14 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man)
     testNetworkInterface();
 
     //SSL errors handle (down the drain)
-    connect(operation, SIGNAL(sslErrors(QNetworkReply*,QList<QSslError>)), this, SLOT(handleSslErrors(QNetworkReply*,QList<QSslError>)));
+    connect(operation, &QNetworkAccessManager::sslErrors, this, &NetworkManager::handleSslErrors);
 
     //Handshake
     operation->connectToHost(TWITCH_API);
 
     //Set up offline poller
     offlinePoller.setInterval(2000);
-    connect(&offlinePoller, SIGNAL(timeout()), this, SLOT(testNetworkInterface()));
+    connect(&offlinePoller, &QTimer::timeout, this, &NetworkManager::testNetworkInterface);
 
     lastVodChatRequest = nullptr;
 }
@@ -60,7 +60,7 @@ void NetworkManager::testNetworkInterface()
     QString identifier;
 
     QEventLoop loop;
-    connect(this, SIGNAL(finishedConnectionTest()), &loop, SLOT(quit()));
+    connect(this, &NetworkManager::finishedConnectionTest, &loop, &QEventLoop::quit);
 
     //Test default configuration
     operation->setConfiguration(conf.defaultConfiguration());
@@ -141,7 +141,7 @@ void NetworkManager::testConnection()
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(testConnectionReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::testConnectionReply);
 }
 
 void NetworkManager::testConnectionReply()
@@ -170,7 +170,7 @@ void NetworkManager::getStream(const quint64 channelId)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(streamReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::streamReply);
 }
 
 void NetworkManager::getStreams(const QString &url)
@@ -183,7 +183,7 @@ void NetworkManager::getStreams(const QString &url)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(allStreamsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::allStreamsReply);
 }
 
 void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
@@ -198,7 +198,7 @@ void NetworkManager::getGames(const quint32 &offset, const quint32 &limit)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(gamesReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::gamesReply);
 }
 
 void NetworkManager::searchChannels(const QString &query, const quint32 &offset, const quint32 &limit)
@@ -216,7 +216,7 @@ void NetworkManager::searchChannels(const QString &query, const quint32 &offset,
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(searchChannelsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::searchChannelsReply);
 }
 
 void NetworkManager::searchGames(const QString &query)
@@ -231,7 +231,7 @@ void NetworkManager::searchGames(const QString &query)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(searchGamesReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::searchGamesReply);
 }
 
 void NetworkManager::getFeaturedStreams()
@@ -247,7 +247,7 @@ void NetworkManager::getFeaturedStreams()
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(featuredStreamsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::featuredStreamsReply);
 }
 
 void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offset, const quint32 &limit)
@@ -263,7 +263,7 @@ void NetworkManager::getStreamsForGame(const QString &game, const quint32 &offse
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(gameStreamsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::gameStreamsReply);
 }
 
 void NetworkManager::getChannelPlaybackStream(const QString &channelName)
@@ -279,7 +279,7 @@ void NetworkManager::getChannelPlaybackStream(const QString &channelName)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::streamExtractReply);
 }
 
 void NetworkManager::getBroadcasts(const quint64 channelId, quint32 offset, quint32 limit)
@@ -302,7 +302,7 @@ void NetworkManager::getBroadcasts(const quint64 channelId, quint32 offset, quin
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(broadcastsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::broadcastsReply);
 }
 
 void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
@@ -318,7 +318,7 @@ void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(streamExtractReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::streamExtractReply);
 }
 
 void NetworkManager::getUser(const QString &access_token)
@@ -334,7 +334,7 @@ void NetworkManager::getUser(const QString &access_token)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(userReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::userReply);
 }
 
 void NetworkManager::getUserFavourites(const quint64 userId, quint32 offset, quint32 limit)
@@ -353,7 +353,7 @@ void NetworkManager::getUserFavourites(const quint64 userId, quint32 offset, qui
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(favouritesReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::favouritesReply);
 }
 
 void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs) {
@@ -376,7 +376,7 @@ void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> 
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(emoteSetsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::emoteSetsReply);
 }
 
 void NetworkManager::getVodStartTime(quint64 vodId) {
@@ -390,7 +390,7 @@ void NetworkManager::getVodStartTime(quint64 vodId) {
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(vodStartReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::vodStartReply);
 
 }
 
@@ -405,7 +405,7 @@ void NetworkManager::loadChatterList(const QString channel) {
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(chatterListReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::chatterListReply);
 }
 
 void NetworkManager::getBlockedUserList(const QString &access_token, const quint64 userId, const quint32 offset, const quint32 limit) {
@@ -426,7 +426,7 @@ void NetworkManager::getBlockedUserList(const QString &access_token, const quint
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(blockedUserListReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::blockedUserListReply);
 }
 
 void NetworkManager::editUserBlock(const QString &access_token, const quint64 myUserId, const QString & blockUsername, const bool isBlock) {
@@ -444,7 +444,7 @@ void NetworkManager::editUserBlock(const QString &access_token, const quint64 my
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(blockUserLookupReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::blockUserLookupReply);
 }
 
 void NetworkManager::blockUserLookupReply() {
@@ -496,7 +496,7 @@ void NetworkManager::editUserBlockWithId(const QString &access_token, const quin
         reply = operation->deleteResource(request);
     }
 
-    connect(reply, SIGNAL(finished()), this, SLOT(blockUserReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::blockUserReply);
 }
 
 void NetworkManager::blockUserReply() {
@@ -574,7 +574,7 @@ void NetworkManager::getVodChatPiece(quint64 vodId, quint64 offset) {
 
     lastVodChatRequest = reply;
     
-    connect(reply, SIGNAL(finished()), this, SLOT(vodChatPieceReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::vodChatPieceReply);
 }
 
 void NetworkManager::cancelLastVodChatRequest() {
@@ -713,7 +713,7 @@ void NetworkManager::getChannelBadgeUrls(const QString &access_token, const quin
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(channelBadgeUrlsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::channelBadgeUrlsReply);
 }
 
 const QString NetworkManager::CHANNEL_BADGES_BETA_URL_PREFIX = "https://badges.twitch.tv/v1/badges/channels/";
@@ -732,7 +732,7 @@ void NetworkManager::getChannelBadgeUrlsBeta(const int channelID) {
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(channelBadgeUrlsBetaReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::channelBadgeUrlsBetaReply);
 }
 
 void NetworkManager::getGlobalBadgesUrlsBeta() {
@@ -747,7 +747,7 @@ void NetworkManager::getGlobalBadgesUrlsBeta() {
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(globalBadgeUrlsBetaReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::globalBadgeUrlsBetaReply);
 }
 
 void NetworkManager::getChannelBitsUrls(const int channelID) {
@@ -762,7 +762,7 @@ void NetworkManager::getChannelBitsUrls(const int channelID) {
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(channelBitsUrlsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::channelBitsUrlsReply);
 }
 
 void NetworkManager::channelBitsUrlsReply() {
@@ -808,7 +808,7 @@ void NetworkManager::getGlobalBitsUrls() {
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(globalBitsUrlsReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::globalBitsUrlsReply);
 }
 
 void NetworkManager::globalBitsUrlsReply() {
@@ -851,7 +851,7 @@ void NetworkManager::editUserFavourite(const QString &access_token, const quint6
     else
         reply = operation->deleteResource(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(editUserFavouritesReply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::editUserFavouritesReply);
 }
 
 QNetworkAccessManager *NetworkManager::getManager() const
@@ -869,7 +869,7 @@ void NetworkManager::getM3U8Data(const QString &url, M3U8TYPE type)
 
     QNetworkReply *reply = operation->get(request);
 
-    connect(reply, SIGNAL(finished()), this, SLOT(m3u8Reply()));
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::m3u8Reply);
 }
 
 bool NetworkManager::handleNetworkError(QNetworkReply *reply)

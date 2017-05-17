@@ -32,7 +32,7 @@ ImageProvider::ImageProvider(const QString imageProviderName, const QString exte
 
     _bulkDownloadTimer.setInterval(MSEC_PER_DOWNLOAD);
     _bulkDownloadTimer.setSingleShot(true);
-    connect(&_bulkDownloadTimer, SIGNAL(timeout()), this, SLOT(bulkDownloadStep()));
+    connect(&_bulkDownloadTimer, &QTimer::timeout, this, &ImageProvider::bulkDownloadStep);
 
     QString useCacheDirName = cacheDirName != "" ? cacheDirName : imageProviderName;
     _cacheDir = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + QString("/" + useCacheDirName);
