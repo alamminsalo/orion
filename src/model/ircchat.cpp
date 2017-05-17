@@ -116,6 +116,9 @@ void IrcChat::hookupChannelProviders(ChannelManager * cman) {
         connect(_cman, &ChannelManager::vodStartGetOperationFinished, this, &IrcChat::handleVodStartTime);
         connect(_cman, &ChannelManager::vodChatPieceGetOperationFinished, this, &IrcChat::handleDownloadedReplayChat);
         connect(_cman, &ChannelManager::channelBitsUrlsLoaded, this, &IrcChat::handleChannelBitsUrlsLoaded);
+        connect(_cman, &ChannelManager::blockedUsersLoaded, this, &IrcChat::blockedUsersLoaded);
+        connect(_cman, &ChannelManager::userBlocked, this, &IrcChat::userBlocked);
+        connect(_cman, &ChannelManager::userUnblocked, this, &IrcChat::userUnblocked);
     }
     else {
         qDebug() << "hookupChannelProviders got null";
@@ -516,6 +519,15 @@ void IrcChat::sendMessage(const QString &msg, const QVariantMap &relevantEmotes)
                 recipient = displayMessage.left(spacePos);
                 displayMessage = displayMessage.mid(spacePos + 1);
                 break;
+            }
+        }
+        
+        for (const QString & prefix : { "/block ", "/ignore ", "/unblock ", "/unignore " }) {
+            if (displayMessage.toLower().startsWith(prefix)) {
+                bool isBlock = (prefix == "/block ") || (prefix == "/ignore ");
+                QString username = displayMessage.mid(prefix.length());
+                setUserBlock(username, isBlock);
+                return;
             }
         }
 
@@ -1005,6 +1017,11 @@ void IrcChat::parseCommand(QString cmd) {
             return;
         }
 
+        if (blockedUsers.contains(parse.chatMessage.name.toLower())) {
+            qDebug() << "Dropping blocked user" << parse.chatMessage.name << "message";
+            return;
+        }
+
 		// parse IRC action before applying emotes, as emote indices are relative to the content of the action
 		const QString ACTION_PREFIX = QString(QChar(1)) + "ACTION ";
 		const QString ACTION_SUFFIX = QString(QChar(1));
@@ -1065,6 +1082,11 @@ void IrcChat::parseCommand(QString cmd) {
         parseMessageCommand(cmd, "WHISPER", parse);
 
         if (parse.wrongChannel) {
+            return;
+        }
+
+        if (blockedUsers.contains(parse.chatMessage.name.toLower())) {
+            qDebug() << "Dropping blocked user" << parse.chatMessage.name << "whisper";
             return;
         }
 
@@ -1197,4 +1219,28 @@ void IrcChat::handleDownloadComplete() {
 
 void IrcChat::bulkDownloadEmotes(QList<QString> keys) {
     _emoteProvider.bulkDownload(keys);
+}
+
+void IrcChat::blockedUsersLoaded(const QSet<QString> & newBlockedUsers) {
+    blockedUsers = newBlockedUsers;
+}
+
+void IrcChat::setUserBlock(const QString & username, const bool blocked) {
+    _cman->editUserBlock(username, blocked);
+}
+
+void IrcChat::userBlocked(const QString & blockedUsername) {
+    QString newBlockedUsername = blockedUsername.toLower();
+    emit noticeReceived("User " + blockedUsername + " successfully ignored");
+    if (!blockedUsers.contains(newBlockedUsername)) {
+        blockedUsers.insert(newBlockedUsername);
+    }
+}
+
+void IrcChat::userUnblocked(const QString & unblockedUsername) {
+    QString newUnblockedUsername = unblockedUsername.toLower();
+    emit noticeReceived("User " + newUnblockedUsername + " successfully unignored");
+    if (blockedUsers.contains(newUnblockedUsername)) {
+        blockedUsers.remove(newUnblockedUsername);
+    }
 }

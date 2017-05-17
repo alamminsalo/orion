@@ -134,6 +134,9 @@ private slots:
     void handleVodStartTime(double);
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
     void handleChannelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls);
+    void blockedUsersLoaded(const QSet<QString> &);
+    void userBlocked(const QString & blockedUsername);
+    void userUnblocked(const QString & unblockedUsername);
 
 private:
     static bool hiDpi;
@@ -152,6 +155,8 @@ private:
     ChannelManager * _cman;
     
     QList<ChatMessage> msgQueue;
+
+    QSet<QString> blockedUsers;
 
     void parseCommand(QString cmd);
 
@@ -220,6 +225,8 @@ private:
     void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
 
     void roomInitCommon(const QString channel, const QString channelId);
+
+    void setUserBlock(const QString & username, const bool blocked);
 };
 
 #endif // IRCCHAT_H

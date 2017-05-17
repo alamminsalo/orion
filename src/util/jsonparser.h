@@ -49,12 +49,14 @@ public:
     static QString parseChannelStreamExtractionInfo(const QByteArray&);
     static QString parseVodExtractionInfo(const QByteArray&);
     static QPair<QString, quint64> parseUser(const QByteArray&);
+    static QList<quint64> parseUsers(const QByteArray&);
     static int parseTotal(const QByteArray&);
     static QMap<int, QMap<int, QString>> parseEmoteSets(const QByteArray&);
     static QMap<QString, QMap<QString, QString>> parseChannelBadgeUrls(const QByteArray &data);
     static QMap<QString, QMap<QString, QMap<QString, QString>>> parseBadgeUrlsBetaFormat(const QByteArray &data);
     static QList<ReplayChatMessage> parseVodChatPiece(const QByteArray &data);
     static QMap<QString, QList<QString>> parseChatterList(const QByteArray &data);
+    static QList<QString> parseBlockList(const QByteArray &data);
     static void parseBitsData(const QByteArray &data, QMap<QString, QMap<QString, QString>> & outUrls, QMap<QString, QMap<QString, QString>> & outColors);
     static void setHiDpi(bool setting);
 private:

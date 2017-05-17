@@ -184,7 +184,7 @@ Item{
                         httpServer.start();
                         var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
                                 + "&redirect_uri=http://localhost:8979"
-                                + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login"
+                                + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
                                 + "&force_verify=true";
                         Qt.openUrlExternally(url);
 

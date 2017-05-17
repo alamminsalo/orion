@@ -413,6 +413,29 @@ QPair<QString, quint64> JsonParser::parseUser(const QByteArray &data)
     return qMakePair(displayName, userId);
 }
 
+QList<quint64> JsonParser::parseUsers(const QByteArray &data)
+{
+    QList<quint64> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+        for (const auto & user : json["users"].toArray()) {
+            auto userId = user.toObject()["_id"];
+            if (userId.isDouble()) {
+                out.append(static_cast<quint64>(userId.toDouble()));
+            }
+            else {
+                out.append(userId.toString().toULongLong());
+            }
+        }
+    }
+
+    return out;
+}
+
 QMap<int, QMap<int, QString>> JsonParser::parseEmoteSets(const QByteArray &data) {
     QMap<int, QMap<int, QString>> out;
 
@@ -680,4 +703,28 @@ QMap<QString, QList<QString>> JsonParser::parseChatterList(const QByteArray &dat
 
     return out;
     
+}
+
+QList<QString> JsonParser::parseBlockList(const QByteArray &data)
+{
+    QList<QString> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        QJsonArray blocks = json["blocks"].toArray();
+
+        for (const auto & block : blocks) {
+            const auto & blockObj = block.toObject();
+            const auto & name = blockObj["user"].toObject()["name"].toString();
+            if (!name.isEmpty()) {
+                out.append(name);
+            }
+        }
+    }
+
+    return out;
 }

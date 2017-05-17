@@ -408,6 +408,120 @@ void NetworkManager::loadChatterList(const QString channel) {
     connect(reply, SIGNAL(finished()), this, SLOT(chatterListReply()));
 }
 
+void NetworkManager::getBlockedUserList(const QString &access_token, const quint64 userId, const quint32 offset, const quint32 limit) {
+    qDebug() << "Loading blocked user list for user" << userId;
+    const QString url = QString(KRAKEN_API) + QString("/users/") + QString::number(userId) + QString("/blocks?offset=" + QString::number(offset) + "&limit=" + QString::number(limit) );
+    qDebug() << "Request" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(url);
+
+    int nextOffset = offset + limit;
+    request.setAttribute(QNetworkRequest::User, nextOffset);
+
+    QString auth = "OAuth " + access_token;
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(blockedUserListReply()));
+}
+
+void NetworkManager::editUserBlock(const QString &access_token, const quint64 myUserId, const QString & blockUsername, const bool isBlock) {
+    const QString url = QString(KRAKEN_API) + QString("/users?login=") + QUrl::toPercentEncoding(blockUsername);
+
+    QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(url);
+
+    request.setAttribute(QNetworkRequest::User, myUserId);
+    request.setAttribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 1), blockUsername);
+    request.setAttribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 2), isBlock);
+    request.setAttribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 3), access_token);
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, SIGNAL(finished()), this, SLOT(blockUserLookupReply()));
+}
+
+void NetworkManager::blockUserLookupReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+
+    quint64 myUserId = reply->request().attribute(QNetworkRequest::User).toULongLong();
+    QString blockUsername = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 1)).toString();
+    bool isBlock = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 2)).toBool();
+    QString access_token = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 3)).toString();
+
+    QByteArray data = reply->readAll();
+    const auto & userIds = JsonParser::parseUsers(data);
+
+    if (userIds.length() == 0 || userIds[0] == 0) {
+        qDebug() << "userId lookup failed for" << blockUsername;
+    }
+
+    quint64 blockUserId = userIds[0];
+
+    editUserBlockWithId(access_token, myUserId, blockUsername, blockUserId, isBlock);
+}
+
+void NetworkManager::editUserBlockWithId(const QString &access_token, const quint64 myUserId, const QString & blockUsername, const quint64 blockUserId, const bool isBlock) {
+    qDebug() << "Setting block for user" << blockUserId << "to" << isBlock << "for user" << myUserId;
+    const QString url = QString(KRAKEN_API) + QString("/users/") + QString::number(myUserId) + QString("/blocks/") + QString::number(blockUserId);
+    qDebug() << "Request" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(url);
+
+    request.setAttribute(QNetworkRequest::User, myUserId);
+    request.setAttribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 1), blockUsername);
+    request.setAttribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 2), isBlock);
+
+    QString auth = "OAuth " + access_token;
+    request.setRawHeader(QString("Authorization").toUtf8(), auth.toUtf8());
+
+    QNetworkReply *reply;
+    if (isBlock) {
+        reply = operation->put(request, "");
+    }
+    else {
+        reply = operation->deleteResource(request);
+    }
+
+    connect(reply, SIGNAL(finished()), this, SLOT(blockUserReply()));
+}
+
+void NetworkManager::blockUserReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (statusCode == 401) {
+            qWarning() << "Warning: Not authorized to edit blocked users list; logout and log in again to update OAuth scopes";
+        }
+        return;
+    }
+
+    quint64 myUserId = reply->request().attribute(QNetworkRequest::User).toULongLong();
+    QString blockUsername = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 1)).toString();
+    bool isBlock = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 2)).toBool();
+
+    if (isBlock) {
+        emit userBlocked(myUserId, blockUsername);
+    }
+    else {
+        emit userUnblocked(myUserId, blockUsername);
+    }
+}
+
 void NetworkManager::chatterListReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
@@ -422,6 +536,28 @@ void NetworkManager::chatterListReply() {
     QMap<QString, QList<QString>> ret = JsonParser::parseChatterList(data);
 
     emit chatterListLoadOperationFinished(ret);
+
+    reply->deleteLater();
+}
+
+void NetworkManager::blockedUserListReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        if (statusCode == 401) {
+            qWarning() << "Warning: Not authorized to read blocked users list; logout and log in again to update OAuth scopes";
+        }
+        return;
+    }
+
+    QByteArray data = reply->readAll();
+
+    QList<QString> ret = JsonParser::parseBlockList(data);
+
+    int nextOffset = reply->request().attribute(QNetworkRequest::User).toInt();
+
+    emit blockedUserListLoadOperationFinished(ret, nextOffset);
 
     reply->deleteLater();
 }
