@@ -163,6 +163,8 @@ Item {
         }
         height: dp(40)
 
+        visible: root.chatViewVisible
+
         IconButton {
             id: _viewerListButton
             icon: viewerListEnabled ? "times" : "list"
