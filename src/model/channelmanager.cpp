@@ -498,10 +498,6 @@ void ChannelManager::addToFavourites(const quint32 &id){
     }
 }
 
-Channel* ChannelManager::findFavourite(const QString &q){
-    return favouritesModel->find(q);
-}
-
 void ChannelManager::removeFromFavourites(const quint32 &id){
     Channel *chan = favouritesModel->find(id);
 
@@ -597,14 +593,14 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list)
             needsStreamCheck = true;
     }
 
-    resultsModel->addAll(list);
+    int numAdded = resultsModel->addAll(list);
 
     if (needsStreamCheck)
         checkStreams(list);
 
     qDeleteAll(list);
 
-    emit resultsUpdated();
+    emit resultsUpdated(numAdded);
 }
 
 void ChannelManager::getFeatured()

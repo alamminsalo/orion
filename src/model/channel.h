@@ -57,7 +57,7 @@ class Channel: public QObject{
         void setLastSeen(time_t);
         const QString lastOnline();
 		void updateTime();
-        qint64 getTime();
+        qint64 getTime() const;
         const QString getName() const;
         const QString getServiceName() const;
         const QString getFullUri() const;

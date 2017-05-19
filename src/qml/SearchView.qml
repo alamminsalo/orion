@@ -61,6 +61,8 @@ Item {
     Connections {
         target: g_cman
         onResultsUpdated: {
+            channels.adjustItemCount(numAdded);
+
             _spinner.visible = false
             _button.visible = true
             channels.checkScrolled()
@@ -193,6 +195,14 @@ Item {
             if (atYEnd && model.count() === itemCount && itemCount > 0){
                 search(_input.text, itemCount, 25, false);
                 itemCount += 25
+            }
+        }
+
+        function adjustItemCount(numAdded) {
+            // we pre-increased itemCount by the expected size of the result but it's possible that
+            // some results were not included due to duplicates filtering
+            if (numAdded !== 25) {
+                itemCount += numAdded - 25;
             }
         }
 

@@ -132,7 +132,6 @@ public:
     void load();
     void save();
 
-    Channel *findFavourite(const QString&);
     Q_INVOKABLE bool containsFavourite(const quint32&);
 
     void checkStreams(const QList<Channel*>&);
@@ -270,7 +269,7 @@ public:
 
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
-    void resultsUpdated();
+    void resultsUpdated(int numAdded);
     void featuredUpdated();
     void searchingStarted();
     void foundPlaybackStream(const QVariantMap &streams);

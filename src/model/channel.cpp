@@ -146,7 +146,7 @@ void Channel::updateTime(){
     timestamp = QDateTime::currentDateTime().toMSecsSinceEpoch();
 }
 
-qint64 Channel::getTime(){
+qint64 Channel::getTime() const{
 	return timestamp;
 }
 
