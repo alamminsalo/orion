@@ -31,13 +31,19 @@
  * Handles parsing of json documents to business logic-objects
  */
 
+template <typename U>
+struct PagedResult {
+    QList<U> items;
+    int total;
+};
+
 class JsonParser
 {
 public:
     static QList<Channel*> parseStreams(const QByteArray&);
     static QList<Game*> parseGames(const QByteArray&);
     static QList<Channel*> parseChannels(const QByteArray&);
-    static QList<Channel*> parseFavourites(const QByteArray&);
+    static PagedResult<Channel*> parseFavourites(const QByteArray&);
     static QList<Channel*> parseFeatured(const QByteArray&);
     static QList<Vod *> parseVods(const QByteArray&);
     static Game* parseGame(const QJsonObject&);
@@ -56,7 +62,7 @@ public:
     static QMap<QString, QMap<QString, QMap<QString, QString>>> parseBadgeUrlsBetaFormat(const QByteArray &data);
     static QList<ReplayChatMessage> parseVodChatPiece(const QByteArray &data);
     static QMap<QString, QList<QString>> parseChatterList(const QByteArray &data);
-    static QList<QString> parseBlockList(const QByteArray &data);
+    static PagedResult<QString> parseBlockList(const QByteArray &data);
     static void parseBitsData(const QByteArray &data, QMap<QString, QMap<QString, QString>> & outUrls, QMap<QString, QMap<QString, QString>> & outColors);
     static void setHiDpi(bool setting);
 private:

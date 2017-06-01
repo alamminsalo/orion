@@ -328,10 +328,10 @@ private slots:
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerChannelBitsDataLoaded(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
     void innerGlobalBitsDataLoaded(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);
-    void addFollowedResults(const QList<Channel*>&, const quint32);
+    void addFollowedResults(const QList<Channel*>&, const quint32, const quint32);
     void onNetworkAccessChanged(bool);
     void processChatterList(QMap<QString, QList<QString>> chatters);
-    void addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset);
+    void addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset, const quint32 total);
     void innerUserBlocked(quint64 myUserId, const QString & blockedUsername);
     void innerUserUnblocked(quint64 myUserId, const QString & unblockedUsername);
 };

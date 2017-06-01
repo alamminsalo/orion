@@ -953,14 +953,14 @@ void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& of
 }
 
 
-void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quint32 offset)
+void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quint32 offset, const quint32 total)
 {
     //    qDebug() << "Merging channel data for " << list.size()
     //             << " items with " << offset << " offset.";
 
     favouritesModel->mergeAll(list);
 
-    if (list.size() == FOLLOWED_FETCH_LIMIT)
+    if (offset < total)
         getFollowedChannels(FOLLOWED_FETCH_LIMIT, offset);
 
     checkStreams(list);
@@ -978,13 +978,13 @@ void ChannelManager::getBlockedUserList()
     netman->getBlockedUserList(accessToken(), user_id, 0, BLOCKED_USER_LIST_FETCH_LIMIT);
 }
 
-void ChannelManager::addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset)
+void ChannelManager::addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset, const quint32 total)
 {
     if (!user_id || accessToken().isEmpty()) return;
 
     blockedUserListLoading.append(list);
 
-    if (list.size() == BLOCKED_USER_LIST_FETCH_LIMIT) {
+    if (nextOffset < total) {
         netman->getBlockedUserList(accessToken(), user_id, nextOffset, BLOCKED_USER_LIST_FETCH_LIMIT);
     }
     else {

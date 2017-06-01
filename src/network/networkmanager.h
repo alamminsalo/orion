@@ -109,7 +109,7 @@ signals:
     void m3u8OperationFinished(const QVariantMap&);
     void m3u8OperationBFinished(const QVariantMap&);
     void fileOperationFinished(const QByteArray&);
-    void favouritesReplyFinished(const QList<Channel *>&, const quint32);
+    void favouritesReplyFinished(const QList<Channel *>&, const quint32, const quint32);
     void streamGetOperationFinished(const quint64 channelId, const bool online);
     void error(const QString &error);
 
@@ -124,7 +124,7 @@ signals:
     void vodStartGetOperationFinished(double);
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
     void chatterListLoadOperationFinished(QMap<QString, QList<QString>>);
-    void blockedUserListLoadOperationFinished(QList<QString>, const quint32 nextOffset);
+    void blockedUserListLoadOperationFinished(QList<QString>, const quint32 nextOffset, const quint32 total);
 
     void getChannelBitsUrlsOperationFinished(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
     void getGlobalBitsUrlsOperationFinished(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);

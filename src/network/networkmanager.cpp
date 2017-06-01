@@ -553,11 +553,11 @@ void NetworkManager::blockedUserListReply() {
 
     QByteArray data = reply->readAll();
 
-    QList<QString> ret = JsonParser::parseBlockList(data);
+    auto result = JsonParser::parseBlockList(data);
 
     int nextOffset = reply->request().attribute(QNetworkRequest::User).toInt();
 
-    emit blockedUserListLoadOperationFinished(ret, nextOffset);
+    emit blockedUserListLoadOperationFinished(result.items, nextOffset, result.total);
 
     reply->deleteLater();
 }
@@ -1156,7 +1156,8 @@ void NetworkManager::favouritesReply()
 
     int offset = reply->request().attribute(QNetworkRequest::User).toInt();
 
-    emit favouritesReplyFinished(JsonParser::parseFavourites(data), offset);
+    auto result = JsonParser::parseFavourites(data);
+    emit favouritesReplyFinished(result.items, offset, result.total);
 
     reply->deleteLater();
 }

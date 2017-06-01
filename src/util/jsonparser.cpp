@@ -270,22 +270,24 @@ QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
     return channels;
 }
 
-QList<Channel *> JsonParser::parseFavourites(const QByteArray &data)
+PagedResult<Channel *> JsonParser::parseFavourites(const QByteArray &data)
 {
-    QList<Channel*> channels;
+    PagedResult<Channel *> out;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
     if (error.error == QJsonParseError::NoError){
         QJsonObject json = doc.object();
 
+        out.total = json["_total"].toInt();
+
         QJsonArray arr = json["follows"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseChannelJson(item.toObject()["channel"].toObject()));
+            out.items.append(JsonParser::parseChannelJson(item.toObject()["channel"].toObject()));
         }
     }
 
-    return channels;
+    return out;
 }
 
 QList<Channel *> JsonParser::parseFeatured(const QByteArray &data)
@@ -705,9 +707,9 @@ QMap<QString, QList<QString>> JsonParser::parseChatterList(const QByteArray &dat
     
 }
 
-QList<QString> JsonParser::parseBlockList(const QByteArray &data)
+PagedResult<QString> JsonParser::parseBlockList(const QByteArray &data)
 {
-    QList<QString> out;
+    PagedResult<QString> out;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
@@ -715,13 +717,15 @@ QList<QString> JsonParser::parseBlockList(const QByteArray &data)
     if (error.error == QJsonParseError::NoError) {
         QJsonObject json = doc.object();
 
+        out.total = json["_total"].toInt();
+
         QJsonArray blocks = json["blocks"].toArray();
 
         for (const auto & block : blocks) {
             const auto & blockObj = block.toObject();
             const auto & name = blockObj["user"].toObject()["name"].toString();
             if (!name.isEmpty()) {
-                out.append(name);
+                out.items.append(name);
             }
         }
     }
