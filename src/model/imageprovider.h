@@ -70,7 +70,7 @@ public:
     * Returns true if caller should wait for a downloadComplete event before using the emote */
     bool makeAvailable(QString key);
     bool download(QString key);
-    bool downloadsInProgress();
+    bool downloadsInProgress() const;
 
     QHash<QString, QImage*> imageTable();
     void loadImageFile(QString key, QString filename);

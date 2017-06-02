@@ -114,6 +114,7 @@ protected:
     QMap<int, QMap<int, QString>> lastEmoteSets;
     QMap<QString, QMap<QString, QMap<QString, QString>>> channelBadgeUrls;
     QMap<QString, QMap<QString, QMap<QString, QMap<QString, QString>>>> channelBadgeBetaUrls;
+    QMap<QString, QMap<QString, QString>> channelBttvEmotes;
     QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsUrls;
     QMap<int, QMap<QString, QMap<QString, QString>>> channelBitsColors;
 
@@ -178,6 +179,8 @@ public:
     Q_INVOKABLE bool loadChannelBetaBadgeUrls(int channel);
     Q_INVOKABLE bool loadChannelBitsUrls(int channel);
     Q_INVOKABLE void loadChatterList(const QString channel);
+
+    Q_INVOKABLE bool loadChannelBttvEmotes(const QString channel);
 
     Q_INVOKABLE void cancelLastVodChatRequest();
     Q_INVOKABLE void resetVodChat();
@@ -292,6 +295,8 @@ signals:
 
     void channelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls, BitsQStringsMap bitsColors);
 
+    void channelBttvEmotesLoaded(const QString channel, QMap<QString, QString> emotesByCode);
+
     void vodStartGetOperationFinished(double);
     void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
 
@@ -328,6 +333,8 @@ private slots:
     void innerGlobalBadgeBetaUrlsLoaded(const QMap<QString, QMap<QString, QMap<QString, QString>>> badgeData);
     void innerChannelBitsDataLoaded(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
     void innerGlobalBitsDataLoaded(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);
+    void innerChannelBttvEmotesLoaded(const QString channel, QMap<QString, QString> & emotesByCode);
+    void innerGlobalBttvEmotesLoaded(QMap<QString, QString> & emotesByCode);
     void addFollowedResults(const QList<Channel*>&, const quint32, const quint32);
     void onNetworkAccessChanged(bool);
     void processChatterList(QMap<QString, QList<QString>> chatters);

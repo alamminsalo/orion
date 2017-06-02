@@ -736,3 +736,29 @@ PagedResult<QString> JsonParser::parseBlockList(const QByteArray &data)
 
     return out;
 }
+
+
+QMap<QString, QString> JsonParser::parseBttvEmotesData(const QByteArray &data)
+{
+    QMap<QString, QString> out;
+
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+
+        QJsonArray emotes = json["emotes"].toArray();
+
+        for (const auto & emote : emotes) {
+            const auto & emoteObj = emote.toObject();
+            const auto & id = emoteObj["id"].toString();
+            const auto & code = emoteObj["code"].toString();
+            if (!id.isEmpty() && !code.isEmpty()) {
+                out.insert(code, id);
+            }
+        }
+    }
+
+    return out;
+}

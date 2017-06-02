@@ -163,7 +163,7 @@ QQmlImageProviderBase * ImageProvider::getQMLImageProvider() {
     return new CachedImageProvider(_imageTable);
 }
 
-bool ImageProvider::downloadsInProgress() {
+bool ImageProvider::downloadsInProgress() const {
     return activeDownloadCount > 0;
 }
 

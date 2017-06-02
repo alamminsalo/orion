@@ -188,6 +188,9 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     connect(netman, &NetworkManager::getChannelBitsUrlsOperationFinished, this, &ChannelManager::innerChannelBitsDataLoaded);
     connect(netman, &NetworkManager::getGlobalBitsUrlsOperationFinished, this, &ChannelManager::innerGlobalBitsDataLoaded);
 
+    connect(netman, &NetworkManager::getGlobalBttvEmotesOperationFinished, this, &ChannelManager::innerGlobalBttvEmotesLoaded);
+    connect(netman, &NetworkManager::getChannelBttvEmotesOperationFinished, this, &ChannelManager::innerChannelBttvEmotesLoaded);
+
     connect(netman, &NetworkManager::favouritesReplyFinished, this, &ChannelManager::addFollowedResults);
     connect(netman, &NetworkManager::vodStartGetOperationFinished, this, &ChannelManager::vodStartGetOperationFinished);
     connect(netman, &NetworkManager::vodChatPieceGetOperationFinished, this, &ChannelManager::vodChatPieceGetOperationFinished);
@@ -818,6 +821,32 @@ bool ChannelManager::loadChannelBetaBadgeUrls(int channel) {
     return out;
 }
 
+bool ChannelManager::loadChannelBttvEmotes(const QString channel) {
+    bool out = false;
+
+    auto result = channelBttvEmotes.constFind(channel);
+    if (result != channelBttvEmotes.constEnd()) {
+        // deliver cached channel bttv emotes
+        emit channelBttvEmotesLoaded(channel, result.value());
+    }
+    else {
+        netman->getChannelBttvEmotes(channel);
+        out = true;
+    }
+
+    const QString GLOBAL_EMOTES_IDENTIFIER = "GLOBAL";
+    result = channelBttvEmotes.constFind(GLOBAL_EMOTES_IDENTIFIER);
+    if (result != channelBttvEmotes.constEnd()) {
+        emit channelBttvEmotesLoaded(GLOBAL_EMOTES_IDENTIFIER, result.value());
+    }
+    else {
+        netman->getGlobalBttvEmotes();
+        out = true;
+    }
+
+    return out;
+}
+
 /*
 QVariantMap convertBitsUrls(const QMap<QString, QMap<QString, QString>> & bitsUrls) {
     QVariantMap out;
@@ -942,6 +971,19 @@ void ChannelManager::innerGlobalBitsDataLoaded(QMap<QString, QMap<QString, QStri
     channelBitsColors.insert(GLOBAL_BITS_KEY, globalBitsColors);
 
     emit channelBitsUrlsLoaded(GLOBAL_BITS_KEY, globalBitsUrls, globalBitsColors);
+}
+
+void ChannelManager::innerChannelBttvEmotesLoaded(const QString channel, QMap<QString, QString> & emotesByCode) {
+    channelBttvEmotes.remove(channel);
+    channelBttvEmotes.insert(channel, emotesByCode);
+    emit channelBttvEmotesLoaded(channel, emotesByCode);
+}
+
+void ChannelManager::innerGlobalBttvEmotesLoaded(QMap<QString, QString> & emotesByCode) {
+    const QString GLOBAL_EMOTES_KEY = "GLOBAL";
+    channelBttvEmotes.remove(GLOBAL_EMOTES_KEY);
+    channelBttvEmotes.insert(GLOBAL_EMOTES_KEY, emotesByCode);
+    emit channelBttvEmotesLoaded(GLOBAL_EMOTES_KEY, emotesByCode);
 }
 
 void ChannelManager::getFollowedChannels(const quint32& limit, const quint32& offset)

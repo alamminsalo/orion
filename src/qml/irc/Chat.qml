@@ -28,6 +28,7 @@ Item {
     signal bulkDownloadComplete()
     signal channelBadgeUrlsLoaded(int channelId, var badgeUrls)
     signal channelBadgeBetaUrlsLoaded(string channel, var badgeSetData)
+    signal bttvEmotesLoaded(string channel, var emotesByCode)
 
     property alias isAnonymous: chat.anonymous
     property var channel: undefined
@@ -72,6 +73,7 @@ Item {
         g_cman.loadChannelBadgeUrls(channelId);
         g_cman.loadChannelBetaBadgeUrls(channelId);
         g_cman.loadChannelBitsUrls(channelId);
+        g_cman.loadChannelBttvEmotes(channelName);
     }
 
     function joinChannel(channelName, channelId) {
@@ -123,6 +125,14 @@ Item {
         return chat.bulkDownloadEmotes(emotes);
     }
 
+    function downloadBttvEmotesGlobal() {
+        return chat.downloadBttvEmotesGlobal();
+    }
+
+    function downloadBttvEmotesChannel() {
+        return chat.downloadBttvEmotesChannel();
+    }
+
     function reconnect() {
         leaveChannel()
         if (root.channel)
@@ -167,6 +177,10 @@ Item {
 
         onBulkDownloadComplete: {
             root.bulkDownloadComplete();
+        }
+
+        onBttvEmotesLoaded: {
+            root.bttvEmotesLoaded(channel, emotesByCode);
         }
     }
 }

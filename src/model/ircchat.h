@@ -119,6 +119,8 @@ signals:
     bool downloadError();
 
     void bulkDownloadComplete();
+
+    void bttvEmotesLoaded(QString channel, QVariantMap emotesByCode);
     
 public slots:
     void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);
@@ -126,7 +128,8 @@ public slots:
     void login();
 
     void bulkDownloadEmotes(QList<QString> keys);
-
+    void downloadBttvEmotesGlobal();
+    void downloadBttvEmotesChannel();
 private slots:
     void receive();
     void processError(QAbstractSocket::SocketError socketError);
@@ -139,6 +142,8 @@ private slots:
     void userBlocked(const QString & blockedUsername);
     void userUnblocked(const QString & unblockedUsername);
 
+    void handleChannelBttvEmotesLoaded(const QString & channelName, QMap<QString, QString> emotesByCode);
+
 private:
     static bool hiDpi;
 
@@ -148,9 +153,13 @@ private:
     static const QString IMAGE_PROVIDER_EMOTE;
     static const QString EMOTICONS_URL_FORMAT_HIDPI;
     static const QString EMOTICONS_URL_FORMAT_LODPI;
+    static const QString IMAGE_PROVIDER_BTTV_EMOTE;
+    static const QString BTTV_EMOTES_URL_FORMAT_HIDPI;
+    static const QString BTTV_EMOTES_URL_FORMAT_LODPI;
     static const QString IMAGE_PROVIDER_BITS;
 
     URLFormatImageProvider _emoteProvider;
+    URLFormatImageProvider _bttvEmoteProvider;
     BitsImageProvider * _bitsProvider;
     BadgeImageProvider * _badgeProvider;
     ChannelManager * _cman;
@@ -212,7 +221,10 @@ private:
     QMap<QString, QRegExp> lastCurChannelBitsRegexes;
     QMap<QString, QRegExp> lastGlobalBitsRegexes;
 
-    enum ImageEntryKind { emote, bits };
+    QMap<QString, QString> lastGlobalBttvEmoteFixedStrings;
+    QMap<QString, QString> lastCurChannelBttvEmoteFixedStrings;
+
+    enum ImageEntryKind { emote, bits, bttvEmote };
 
     struct InlineImageInfo {
         ImageEntryKind kind;
@@ -224,6 +236,8 @@ private:
     typedef QMap<int, QPair<int, InlineImageInfo>> ImagePositionsMap;
 
     void checkBitsRegex(const QRegExp & regex, const QString & prefix, const QString & message, ImagePositionsMap & mapToUpdate);
+
+    void handleBttvEmote(const QString & id, ImagePositionsMap & mapToUpdate, int pos, int end);
 
     void roomInitCommon(const QString channel, const QString channelId);
 

@@ -831,6 +831,66 @@ void NetworkManager::globalBitsUrlsReply() {
     reply->deleteLater();
 }
 
+void NetworkManager::getChannelBttvEmotes(const QString channel) {
+    QString url = QString(BTTV_API) + QString("/channels/") + QUrl::toPercentEncoding(channel);
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::channelBttvEmotesReply);
+}
+
+void NetworkManager::channelBttvEmotesReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    auto url = reply->url();
+    QString urlString = url.toString();
+    QString channel = urlString.mid(urlString.lastIndexOf("/") + 1);
+
+    auto emotes = JsonParser::parseBttvEmotesData(data);
+
+    emit getChannelBttvEmotesOperationFinished(channel, emotes);
+
+    reply->deleteLater();
+}
+
+void NetworkManager::getGlobalBttvEmotes() {
+    QString url = QString(BTTV_API) + QString("/emotes");
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setUrl(QUrl(url));
+
+    QNetworkReply *reply = operation->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::globalBttvEmotesReply);
+}
+
+void NetworkManager::globalBttvEmotesReply() {
+    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
+
+    if (!handleNetworkError(reply)) {
+        return;
+    }
+    QByteArray data = reply->readAll();
+
+    auto emotes = JsonParser::parseBttvEmotesData(data);
+
+    emit getGlobalBttvEmotesOperationFinished(emotes);
+
+    reply->deleteLater();
+}
+
 void NetworkManager::editUserFavourite(const QString &access_token, const quint64 userId, const quint64 channelId, bool add)
 {
     QString url = QString(KRAKEN_API) + "/users/" + QString::number(userId)

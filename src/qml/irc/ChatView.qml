@@ -58,22 +58,30 @@ Item {
         }
     }
 
+    function cleanupPrevChannel() {
+        if (chat.lastBttvChannelEmotes != null) {
+            _emoteButton.clearChannelSpecificEmotes()
+            chat.lastBttvChannelEmotes = null;
+        }
+        chatModel.clear()
+    }
+
     function joinChannel(channel, channelId) {
         if (channel !== chat.channel || chat.replayMode) {
             viewerListEnabled = false;
-            chatModel.clear()
+            cleanupPrevChannel()
             chat.joinChannel(channel, channelId)
         }
     }
 
     function leaveChannel() {
-        chatModel.clear()
+        cleanupPrevChannel()
         chat.leaveChannel()
     }
 
     function replayChat(channelName, channelId, vodId, startEpochTime) {
         viewerListEnabled = false;
-        chatModel.clear()
+        cleanupPrevChannel()
         chat.leaveChannel()
         chat.replayChat(channelName, channelId, vodId, startEpochTime);
     }
@@ -118,12 +126,20 @@ Item {
 
     function loadEmotes() {
         //console.log("loadEmotes()", chat.lastEmoteSets);
-        if (chat.lastEmoteSets) {
+        if (!_emoteButton.pickerLoaded) {
+            if (chat.lastEmoteSets) {
+                _emotePicker.loading = true;
+                //console.log("downloading chat.lastEmoteSets", chat.lastEmoteSets);
+                _emoteButton.startDownload(chat.lastEmoteSets);
+            }
+        } else if (_emoteButton.pickerChannelLoaded != chat.channel) {
+            // just download channel emotes we don't have yet
             _emotePicker.loading = true;
-            //console.log("downloading chat.lastEmoteSets", chat.lastEmoteSets);
-            _emoteButton.startDownload(chat.lastEmoteSets);
+            _emoteButton.startDownload(null);
         }
+
         _emoteButton.pickerLoaded = true;
+        _emoteButton.pickerChannelLoaded = chat.channel;
     }
 
     Connections {
@@ -548,6 +564,7 @@ Item {
                 property ListModel setsVisible: ListModel { }
 
                 property bool pickerLoaded: false
+                property var pickerChannelLoaded: null
 
                 visible: root.chatViewVisible
 
@@ -564,7 +581,7 @@ Item {
                 Connections {
                     target: _emotePicker
                     onVisibleChanged: {
-                        if (_emotePicker.visible && !_emoteButton.pickerLoaded) {
+                        if (_emotePicker.visible) {
                             loadEmotes();
                         }
                     }
@@ -744,11 +761,42 @@ Item {
 
                 function showLastSet() {
                     //console.log("showing last set", lastSet);
-                    var lastSetMap = lastEmoteSets[lastSet];
-                    for (var i in lastSetMap) {
-                        setsVisible.append({"imageUrl": "image://emote/" + i, "emoteName": decodeHtml(inverseRegex(lastSetMap[i]))})
+                    switch(lastSet) {
+                    case "bttvGlobal":
+                        for (var i in chat.lastBttvGlobalEmotes) {
+                            setsVisible.append({"imageUrl": "image://bttvemote/" + chat.lastBttvGlobalEmotes[i], "emoteName": i});
+                        }
+                        break;
+                    case "bttvChannel":
+                        for (var i in chat.lastBttvChannelEmotes) {
+                            setsVisible.append({"imageUrl": "image://bttvemote/" + chat.lastBttvChannelEmotes[i], "emoteName": i});
+                        }
+                        break;
+                    default:
+                        var lastSetMap = lastEmoteSets[lastSet];
+                        for (var i in lastSetMap) {
+                            setsVisible.append({"imageUrl": "image://emote/" + i, "emoteName": decodeHtml(inverseRegex(lastSetMap[i]))})
+                        }
+                        break;
                     }
                     _emotePicker.updateFilter();
+                }
+
+                function clearChannelSpecificEmotes() {
+                    //console.log("clearChannelSpecificEmotes()")
+                    var channelEmotes = chat.lastBttvChannelEmotes;
+                    if (channelEmotes != null) {
+                        for (var i = 0; i < setsVisible.count; ) {
+                            var obj = setsVisible.get(i);
+                            if (channelEmotes.hasOwnProperty(obj.emoteName)) {
+                                //console.log("remove channel emote", obj.emoteName, i);
+                                setsVisible.remove(i);
+                            } else {
+                                i++;
+                            }
+                        }
+                    }
+                    _emoteButton.pickerChannelLoaded = null;
                 }
 
                 function nextDownload() {
@@ -756,15 +804,22 @@ Item {
                         if (curDownloading < setsToDownload.length) {
                             var curSetID = setsToDownload[curDownloading];
                             lastSet = curSetID;
-                            var curSetMap = lastEmoteSets[curSetID];
-                            var curSetList = [];
-                            for (var i in curSetMap) {
-                                curSetList.push(i);
-                            }
                             curDownloading ++;
                             console.log("Downloading emote set #", curDownloading, curSetID);
-                            chat.bulkDownloadEmotes(curSetList);
+                            if (curSetID == "bttvGlobal") {
+                                chat.downloadBttvEmotesGlobal();
+                            } else if (curSetID == "bttvChannel") {
+                                chat.downloadBttvEmotesChannel();
+                            } else {
+                                var curSetMap = lastEmoteSets[curSetID];
+                                var curSetList = [];
+                                for (var i in curSetMap) {
+                                    curSetList.push(i);
+                                }
+                                chat.bulkDownloadEmotes(curSetList);
+                            }
                         } else {
+                            console.log("Emote set downloads complete");
                             emotePickerDownloadsInProgress = false;
                             _emotePicker.loading = false;
                         }
@@ -773,10 +828,16 @@ Item {
 
                 function startDownload(emoteSets) {
                     curDownloading = 0;
-                    lastEmoteSets = emoteSets;
                     setsToDownload = [];
-                    for (var i in emoteSets) {
-                        setsToDownload.push(i);
+                    if (emoteSets != null) {
+                        lastEmoteSets = emoteSets;
+                        for (var i in emoteSets) {
+                            setsToDownload.push(i);
+                        }
+                        setsToDownload.push("bttvGlobal");
+                    }
+                    if (chat.lastBttvChannelEmotes != null) {
+                        setsToDownload.push("bttvChannel");
                     }
                     //console.log("Starting download of emote sets", setsToDownload);
                     emotePickerDownloadsInProgress = true;
@@ -808,6 +869,8 @@ Item {
         property string emoteDirPath
         property variant lastEmoteSetIDs
         property variant lastEmoteSets
+        property variant lastBttvChannelEmotes
+        property variant lastBttvGlobalEmotes
 
         property variant _textEmotesMap
         property variant _regexEmotesList
@@ -821,6 +884,23 @@ Item {
 
         onLastEmoteSetsChanged: {
             initEmotesMaps();
+        }
+
+        onBttvEmotesLoaded: {
+            /*
+            console.log("received bttv emotes for", channel);
+            for (var i in emotesByCode) {
+                console.log("code", i, "id", emotesByCode[i]);
+            }
+            */
+
+            if (channel == "GLOBAL") {
+                chat.lastBttvGlobalEmotes = emotesByCode;
+            } else if (channel == chat.channel) {
+                chat.lastBttvChannelEmotes = emotesByCode;
+            } else {
+                console.log("bttv emotes loaded for a different channel", channel);
+            }
         }
 
         function regexExactMatch(regex, text) {
@@ -1031,7 +1111,7 @@ Item {
         }
 
         onClear: {
-            chatModel.clear()
+            cleanupPrevChannel()
         }
     }
 }

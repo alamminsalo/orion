@@ -81,6 +81,8 @@ public:
     void getGlobalBadgesUrlsBeta();
     void getChannelBitsUrls(const int channelID);
     void getGlobalBitsUrls();
+    void getChannelBttvEmotes(const QString channel);
+    void getGlobalBttvEmotes();
 
     Q_INVOKABLE void getVodStartTime(quint64 vodId);
     Q_INVOKABLE void getVodChatPiece(quint64 vodId, quint64 offset);
@@ -129,6 +131,9 @@ signals:
     void getChannelBitsUrlsOperationFinished(int channelID, BitsQStringsMap channelBitsUrls, BitsQStringsMap channelBitsColors);
     void getGlobalBitsUrlsOperationFinished(BitsQStringsMap globalBitsUrls, BitsQStringsMap globalBitsColors);
 
+    void getChannelBttvEmotesOperationFinished(const QString channel, QMap<QString, QString> & emotesByCode);
+    void getGlobalBttvEmotesOperationFinished(QMap<QString, QString> & emotesByCode);
+
     void networkAccessChanged(bool up);
 
     void userBlocked(quint64 myUserId, const QString & blockedUsername);
@@ -166,6 +171,8 @@ private slots:
     void channelBitsUrlsReply();
     void globalBitsUrlsReply();
     void blockUserLookupReply();
+    void globalBttvEmotesReply();
+    void channelBttvEmotesReply();
 
 private:
     static const QString CHANNEL_BADGES_URL_PREFIX;
