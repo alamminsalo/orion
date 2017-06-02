@@ -20,9 +20,9 @@ void JsonParser::setHiDpi(bool setting) {
     hiDpi = setting;
 }
 
-QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
+PagedResult<Channel*> JsonParser::parseStreams(const QByteArray &data)
 {
-    QList<Channel*> channels;
+    PagedResult<Channel*> out;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
@@ -32,13 +32,15 @@ QList<Channel*> JsonParser::parseStreams(const QByteArray &data)
         //Online streams
         QJsonArray arr = json["streams"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseStreamJson(item.toObject(), true));
+            out.items.append(JsonParser::parseStreamJson(item.toObject(), true));
         }
+
+        out.total = json["_total"].toInt();
 
         //Caller must use request context to determine offline streams
     }
 
-    return channels;
+    return out;
 }
 
 Channel *JsonParser::parseStream(const QByteArray &data)
@@ -252,9 +254,9 @@ Vod *JsonParser::parseVod(const QJsonObject &json)
     return vod;
 }
 
-QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
+PagedResult<Channel*> JsonParser::parseChannels(const QByteArray &data)
 {
-    QList<Channel*> channels;
+    PagedResult<Channel*> out;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data,&error);
@@ -263,11 +265,13 @@ QList<Channel*> JsonParser::parseChannels(const QByteArray &data)
 
         QJsonArray arr = json["channels"].toArray();
         foreach (const QJsonValue &item, arr){
-            channels.append(JsonParser::parseChannelJson(item.toObject()));
+            out.items.append(JsonParser::parseChannelJson(item.toObject()));
         }
+
+        out.total = json["_total"].toInt();
     }
 
-    return channels;
+    return out;
 }
 
 PagedResult<Channel *> JsonParser::parseFavourites(const QByteArray &data)

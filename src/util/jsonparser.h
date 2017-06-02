@@ -40,9 +40,9 @@ struct PagedResult {
 class JsonParser
 {
 public:
-    static QList<Channel*> parseStreams(const QByteArray&);
+    static PagedResult<Channel*> parseStreams(const QByteArray&);
     static QList<Game*> parseGames(const QByteArray&);
-    static QList<Channel*> parseChannels(const QByteArray&);
+    static PagedResult<Channel*> parseChannels(const QByteArray&);
     static PagedResult<Channel*> parseFavourites(const QByteArray&);
     static QList<Channel*> parseFeatured(const QByteArray&);
     static QList<Vod *> parseVods(const QByteArray&);

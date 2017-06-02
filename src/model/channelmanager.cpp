@@ -581,7 +581,7 @@ void ChannelManager::searchChannels(QString q, const quint32 &offset, const quin
     emit searchingStarted();
 }
 
-void ChannelManager::addSearchResults(const QList<Channel*> &list)
+void ChannelManager::addSearchResults(const QList<Channel*> &list, const int total)
 {
     bool needsStreamCheck = false;
 
@@ -600,7 +600,7 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list)
 
     qDeleteAll(list);
 
-    emit resultsUpdated(numAdded);
+    emit resultsUpdated(numAdded, total);
 }
 
 void ChannelManager::getFeatured()

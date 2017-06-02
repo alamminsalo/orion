@@ -101,9 +101,9 @@ signals:
 
     void allStreamsOperationFinished(const QList<Channel *>&);
     void gamesOperationFinished(const QList<Game *>&);
-    void gameStreamsOperationFinished(const QList<Channel *>&);
+    void gameStreamsOperationFinished(const QList<Channel *>&, const int total);
     void featuredStreamsOperationFinished(const QList<Channel *>&);
-    void searchChannelsOperationFinished(const QList<Channel *>&);
+    void searchChannelsOperationFinished(const QList<Channel *>&, const int total);
     void searchGamesOperationFinished(const QList<Game *>&);
     void broadcastsOperationFinished(const QList<Vod *>&);
     void m3u8OperationFinished(const QVariantMap&);

@@ -65,7 +65,7 @@ Item {
 
             _spinner.visible = false
             _button.visible = true
-            channels.checkScrolled()
+            channels.checkScrolled(total)
         }
 
         onSearchingStarted: {
@@ -191,7 +191,10 @@ Item {
 
         model: g_results
 
-        function checkScrolled(){
+        function checkScrolled(total){
+            if (total != null && itemCount >= total) {
+                return;
+            }
             if (atYEnd && model.count() === itemCount && itemCount > 0){
                 search(_input.text, itemCount, 25, false);
                 itemCount += 25

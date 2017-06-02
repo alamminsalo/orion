@@ -974,11 +974,11 @@ void NetworkManager::allStreamsReply()
         addULongLongStringList(queriedChannelIds, query.queryItemValue("channel").split(","));
     }
 
-    QList<Channel *> out = JsonParser::parseStreams(data);
+    PagedResult<Channel *> out = JsonParser::parseStreams(data);
 
-    addOfflineChannels(out, queriedChannelIds);
+    addOfflineChannels(out.items, queriedChannelIds);
 
-    emit allStreamsOperationFinished(out);
+    emit allStreamsOperationFinished(out.items);
 
     reply->deleteLater();
 }
@@ -1030,11 +1030,11 @@ void NetworkManager::gameStreamsReply()
         addULongLongStringList(queriedChannelIds, query.queryItemValue("channel").split(","));
     }
 
-    QList<Channel *> out = JsonParser::parseStreams(data);
+    PagedResult<Channel *> out = JsonParser::parseStreams(data);
 
-    addOfflineChannels(out, queriedChannelIds);
+    addOfflineChannels(out.items, queriedChannelIds);
 
-    emit gameStreamsOperationFinished(out);
+    emit gameStreamsOperationFinished(out.items, out.total);
 
     reply->deleteLater();
 }
@@ -1066,7 +1066,8 @@ void NetworkManager::searchChannelsReply()
 
     //qDebug() << data;
 
-    emit searchChannelsOperationFinished(JsonParser::parseChannels(data));
+    auto result = JsonParser::parseChannels(data);
+    emit searchChannelsOperationFinished(result.items, result.total);
 
     reply->deleteLater();
 }
