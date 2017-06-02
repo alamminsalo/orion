@@ -196,6 +196,8 @@ void IrcChat::replay(const QString channel, const QString channelId, const quint
 
     replayChatCurrentSeekOffset = playbackOffset;
 
+    replayChatFirstLoadAfterSeek = true;
+
     // Get start timestamp of the chat replay segments as the requests need to be aligned to chunk boundaries from this start
     _cman->getVodStartTime(vodId);
 }
@@ -212,19 +214,25 @@ double quantize(double value, double start, double multiple) {
 
 const double CHAT_CHUNK_TIME = 30.0;
 
+// When seeking, request past chat starting this far back in seconds...
+const double SEEK_HISTORY_TIME = 90.0;
+// ... and display up to this many messages of it.
+const int SEEK_HISTORY_MESSAGE_LIMIT = 15;
+
 void IrcChat::replaySeek(double newOffset) {
     // we set a flag indicating that a request is in flight
     if (replayChatRequestInProgress) {
         _cman->cancelLastVodChatRequest();
     }
     _cman->resetVodChat();
+    replayChatFirstLoadAfterSeek = true;
     replayChatRequestInProgress = true;
-    // we save the offset as the current time
-    replayChatCurrentTime = replayChatVodStartTime + newOffset;
+    // we save the offset to the point we want to start loading chat at as the current time
+    replayChatCurrentTime = replayChatVodStartTime + qMax(newOffset - SEEK_HISTORY_TIME, 0.0);
     qDebug() << "original vod playback start time" << QDateTime::fromMSecsSinceEpoch(replayChatCurrentTime * 1000.0, Qt::UTC);
     nextChatChunkTimestamp = quantize(replayChatCurrentTime, replayChatFirstChunkTime, CHAT_CHUNK_TIME);
     qDebug() << "quantized vod playback start time for chat chunk" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC);
-    // we dump any pending messages from other stuff
+    // we dump any pending messages from the previous playback position
     replayChatMessagesPending.clear();
     // we'll do an initial request for starting offset chat right now.
     _cman->getVodChatPiece(replayVodId, nextChatChunkTimestamp);
@@ -327,29 +335,55 @@ void IrcChat::replayUpdateCommon() {
 
     double curVideoOffsetMS = (replayChatCurrentTime - replayChatVodStartTime) * 1000.0;
 
-    // in a chat update check, we look at the current time emit whatever chat's timestamps are up
-    while (!replayChatMessagesPending.empty() && (replayChatMessagesPending.first().videoOffset) <= curVideoOffsetMS) {
-        auto message = replayChatMessagesPending.first();
-        auto delay = (curVideoOffsetMS - (replayChatMessagesPending.first().videoOffset)) / 1000.0;
+    double nextChatTime = nextChatChunkTimestamp;
+    // if we're close enough to the end of the chat buffer, we need more chat right away
+    bool needMoreChat = replayChatCurrentTime > (nextChatTime - CHAT_TIME_MARGIN);
 
-        if (delay > 1.0 || delay < -1.0) {
-            qDebug() << "**********************************************************";
-            qDebug() << "chat replay delay" << delay << "s -" << message.from << message.message;
-            qDebug() << "**********************************************************";
+    // if it's the first set of replay chunks after seeking, wait until loading has caught up and then apply SEEK_HISTORY_MESSAGE_LIMIT across all the
+    // messages up to the current time from all the chunks
+    if (replayChatFirstLoadAfterSeek && !needMoreChat) {
+        int chatLinesReadyToOutput = 0;
+        for (const auto & entry : replayChatMessagesPending) {
+            if (entry.videoOffset > curVideoOffsetMS) {
+                break;
+            }
+            chatLinesReadyToOutput++;
+        }
+        qDebug() << "first load after seek; have" << chatLinesReadyToOutput << "current lines";
+
+        int removeCount = chatLinesReadyToOutput - SEEK_HISTORY_MESSAGE_LIMIT;
+        if (removeCount > 0) {
+            qDebug() << "skipping" << removeCount << "lines";
+            replayChatMessagesPending.erase(replayChatMessagesPending.begin(), replayChatMessagesPending.begin() + removeCount);
         }
 
-        replayChatMessage(message);
-        replayChatMessagesPending.pop_front();
+    } 
+
+    if (!replayChatFirstLoadAfterSeek || !needMoreChat) {
+        // look at the current time and emit whatever chat messages' timestamps are up
+        while (!replayChatMessagesPending.empty() && (replayChatMessagesPending.first().videoOffset) <= curVideoOffsetMS) {
+            auto message = replayChatMessagesPending.first();
+            auto delay = (curVideoOffsetMS - (replayChatMessagesPending.first().videoOffset)) / 1000.0;
+
+            if ((delay > 1.0 || delay < -1.0) && !replayChatFirstLoadAfterSeek) {
+                qDebug() << "**********************************************************";
+                qDebug() << "chat replay delay" << delay << "s -" << message.from << message.message;
+                qDebug() << "**********************************************************";
+            }
+
+            replayChatMessage(message);
+            replayChatMessagesPending.pop_front();
+        }
+
+        if (replayChatFirstLoadAfterSeek) {
+            replayChatFirstLoadAfterSeek = false;
+        }
     }
 
-    // there is some sketchy logic to figure out what timestamp we actually deem ourselves to have chat up until
-    double nextChatTime = nextChatChunkTimestamp;
-    // then if we're close enough to the end of the chat buffer and there isn't a request in progress, we request some more chat
-    if (!replayChatRequestInProgress && replayChatCurrentTime > (nextChatTime - CHAT_TIME_MARGIN)) {
+    if (!replayChatRequestInProgress && needMoreChat) {
         replayChatRequestInProgress = true;
         _cman->getVodChatPiece(replayVodId, nextChatTime);
     }
-        
 }
 
 void IrcChat::handleDownloadedReplayChat(QList<ReplayChatMessage> messages) {
