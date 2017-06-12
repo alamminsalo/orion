@@ -18,9 +18,12 @@ import "components"
 import "util.js" as Util
 
 Item{
+    id: vodsView
+
     anchors.fill: parent
     property variant selectedChannel
     property int itemCount: 0
+    property var channelVodPositions
 
     function search(channel){
 
@@ -41,6 +44,8 @@ Item{
 
         header.text = "Videos for " + selectedChannel.title;
 
+        channelVodPositions = g_cman.getChannelVodsLastPlaybackPositions(channel.name);
+
         g_vodmgr.search(selectedChannel._id, 0, 35)
 
         itemCount = 35
@@ -58,6 +63,18 @@ Item{
         if (visible) {
             vods.positionViewAtBeginning()
             vods.checkScroll()
+        }
+    }
+
+    Connections {
+        target: g_cman
+        onVodLastPositionUpdated: {
+            //console.log("onVodLastPositionUpdated", channel, vod, position);
+            if (selectedChannel.name == channel) {
+                channelVodPositions[vod] = position;
+                // need binding to update
+                channelVodPositions = channelVodPositions;
+            }
         }
     }
 
@@ -80,17 +97,34 @@ Item{
             views: model.views
             preview: model.preview
             duration: model.duration
+            position: channelVodPositions[model.id] || 0
             game: model.game
             createdAt: model.createdAt
         }
 
         onItemClicked: {
-            playerView.getStreams(selectedChannel, clickedItem)
+            var lastPlaybackPosition = vods.getLastPlaybackPosition(selectedChannel, clickedItem);
+            playerView.getStreams(selectedChannel, clickedItem, lastPlaybackPosition == null? 0 : lastPlaybackPosition);
+        }
+
+        function getLastPlaybackPosition(channel, vod) {
+            console.log("getLastPlaybackPosition", channel.name, vod._id);
+            return g_cman.getVodLastPlaybackPosition(channel.name, vod._id);
         }
 
         onItemRightClicked: {
             _menu.item = clickedItem
-            _menu.popup()
+
+            var lastPlayed = getLastPlaybackPosition(selectedChannel, clickedItem);
+            var haveLastPlayTime = lastPlayed != null;
+            _furthestPlayedMenuItem.enabled = haveLastPlayTime;
+            if (haveLastPlayTime) {
+               _furthestPlayedMenuItem.text = "Watch video from " + Util.getTime(lastPlayed);
+            } else {
+               _furthestPlayedMenuItem.text = "Watch video from furthest played";
+            }
+
+            _menu.popup();
         }
 
         onItemTooltipHover: {
@@ -114,10 +148,17 @@ Item{
         ContextMenu {
             id: _menu
             MenuItem {
-                text: "Watch video"
+                text: "Watch video from start"
                 //text: "Watch;play"
                 onTriggered: {
-                    playerView.getStreams(selectedChannel, _menu.item)
+                    playerView.getStreams(selectedChannel, _menu.item, 0)
+                }
+            }
+
+            MenuItem {
+                id: _furthestPlayedMenuItem
+                onTriggered: {
+                    playerView.getStreams(selectedChannel, _menu.item, vods.getLastPlaybackPosition(selectedChannel, _menu.item))
                 }
             }
         }

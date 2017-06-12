@@ -419,6 +419,17 @@ void ChannelManager::load(){
     }
     settings.endArray();
 
+    int numLastPositions = settings.beginReadArray("lastPositions");
+    for (int i = 0; i < numLastPositions; i++) {
+        settings.setArrayIndex(i);
+        const QString channel = settings.value("channel").toString();
+        const QString vod = settings.value("vod").toString();
+        const quint64 lastPosition = settings.value("position").toULongLong();
+
+        vodLastPlaybackPositionLoaded(channel, vod, lastPosition, i);
+    }
+    settings.endArray();
+
     if (settings.contains("access_token")) {
         setAccessToken(settings.value("access_token").toString());
     } else {
@@ -471,6 +482,87 @@ void ChannelManager::save()
         favouritesModel->getChannels().at(i)->writeToSettings(settings);
     }
     settings.endArray();
+
+    //Write last positions
+    int nextLastPositionEntry = settings.beginReadArray("lastPositions");
+    settings.endArray();
+
+    settings.beginWriteArray("lastPositions");
+    for (auto channelEntry = channelVodLastPositions.begin(); channelEntry != channelVodLastPositions.end(); channelEntry++) {
+        auto & vods = channelEntry.value();
+        for (auto vodEntry = vods.begin(); vodEntry != vods.end(); vodEntry++) {
+            auto & lastPosition = vodEntry.value();
+            if (lastPosition.modified) {
+                if (lastPosition.settingsIndex == -1) {
+                    lastPosition.settingsIndex = nextLastPositionEntry++;
+                }
+
+                settings.setArrayIndex(lastPosition.settingsIndex);
+                settings.setValue("channel", channelEntry.key());
+                settings.setValue("vod", vodEntry.key());
+                settings.setValue("position", vodEntry.value().lastPosition);
+            }
+        }
+    }
+    settings.endArray();
+}
+
+void ChannelManager::setVodLastPlaybackPosition(const QString & channel, const QString & vod, quint64 position) {
+    auto channelEntry = channelVodLastPositions.find(channel);
+    if (channelEntry == channelVodLastPositions.end()) {
+        channelEntry = channelVodLastPositions.insert(channel, QMap<QString, LastPosition>());
+    }
+
+    auto & vodMap = channelEntry.value();
+    auto vodEntry = vodMap.find(vod);
+    if (vodEntry != vodMap.end()) {
+        vodEntry.value().lastPosition = position;
+        vodEntry.value().modified = true;
+    }
+    else {
+        // -1 index to be replaced at settings save time
+        vodMap.insert(vod, {position, true, -1});
+    }
+
+    emit vodLastPositionUpdated(channel, vod, position);
+}
+
+void ChannelManager::vodLastPlaybackPositionLoaded(const QString & channel, const QString & vod, quint64 position, int settingsIndex) {
+    auto channelEntry = channelVodLastPositions.find(channel);
+    if (channelEntry == channelVodLastPositions.end()) {
+        channelEntry = channelVodLastPositions.insert(channel, QMap<QString, LastPosition>());
+    }
+
+    auto & vodMap = channelEntry.value();
+    vodMap.remove(vod);
+    vodMap.insert(vod, {position, false, settingsIndex});
+}
+
+QVariant ChannelManager::getVodLastPlaybackPosition(const QString & channel, const QString & vod) {
+    auto channelEntry = channelVodLastPositions.find(channel);
+    if (channelEntry == channelVodLastPositions.end()) {
+        return QVariant();
+    }
+    
+    auto & vodMap = channelEntry.value();
+    auto vodEntry = vodMap.find(vod);
+    if (vodEntry == vodMap.end()) {
+        return QVariant();
+    }
+
+    return vodEntry.value().lastPosition;
+}
+
+QVariantMap ChannelManager::getChannelVodsLastPlaybackPositions(const QString & channel) {
+    QVariantMap out;
+    auto channelEntry = channelVodLastPositions.find(channel);
+    if (channelEntry != channelVodLastPositions.end()) {
+        auto & vodMap = channelEntry.value();
+        for (auto vodEntry = vodMap.constBegin(); vodEntry != vodMap.constEnd(); vodEntry++) {
+            out.insert(vodEntry.key(), vodEntry.value().lastPosition);
+        }
+    }
+    return out;
 }
 
 void ChannelManager::addToFavourites(const quint32 &id){

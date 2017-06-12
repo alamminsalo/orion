@@ -20,6 +20,7 @@ Rectangle {
     property string title
     property string preview
     property int views
+    property int position
     property int duration
     property string game
     property string createdAt
@@ -87,6 +88,16 @@ Rectangle {
             anchors {
                 left: container.left
                 right: container.right
+                bottom: container.bottom
+            }
+        }
+
+        Rectangle {
+            height: infoRect.height
+            width: container.width * root.position / root.duration
+            color: Styles.purple
+            anchors {
+                left: container.left
                 bottom: container.bottom
             }
         }

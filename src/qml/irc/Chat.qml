@@ -86,8 +86,8 @@ Item {
         messageReceived("notice", null, "", false, false, false, [], true, "Joined channel #" + channelName, false)
     }
 
-    function replayChat(channelName, channelId, vodId, startEpochTime) {
-        chat.replay(channelName, channelId, vodId, startEpochTime, 0)
+    function replayChat(channelName, channelId, vodId, startEpochTime, startPos) {
+        chat.replay(channelName, channelId, vodId, startEpochTime, startPos)
         enterChannelCommon(channelName, channelId);
         root.replayMode = true
         messageReceived("notice", null, "", false, false, false, [], true, "Starting chat replay #" + channelName + " v" + vodId, false)

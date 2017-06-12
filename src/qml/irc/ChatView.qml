@@ -79,11 +79,11 @@ Item {
         chat.leaveChannel()
     }
 
-    function replayChat(channelName, channelId, vodId, startEpochTime) {
+    function replayChat(channelName, channelId, vodId, startEpochTime, startPos) {
         viewerListEnabled = false;
         cleanupPrevChannel()
         chat.leaveChannel()
-        chat.replayChat(channelName, channelId, vodId, startEpochTime);
+        chat.replayChat(channelName, channelId, vodId, startEpochTime, startPos);
     }
 
     function playerSeek(newOffset) {
