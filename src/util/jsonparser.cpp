@@ -358,7 +358,7 @@ QString JsonParser::parseChannelStreamExtractionInfo(const QByteArray &data)
 
         url = QString("http://usher.twitch.tv/api/channel/hls/%1").arg(channel + QString(".m3u8"))
                 + QString("?player=twitchweb")
-                + QString("&token=%1").arg(tokenData)
+                + QString("&token=") + QUrl::toPercentEncoding(tokenData)
                 + QString("&sig=%1").arg(sig)
                 + QString("&allow_source=true&$allow_audio_only=true");
     }
