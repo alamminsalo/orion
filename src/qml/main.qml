@@ -28,7 +28,6 @@ ApplicationWindow {
 
     property variant g_rootWindow: root
     property variant g_tooltip
-    property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
     onG_fullscreenChanged: {
@@ -71,35 +70,20 @@ ApplicationWindow {
         }
     }
 
-    header: SideBar {
-        id: sidebar
+    header: TopBar {
+        id: topbar
         onSelectedViewChanged: {
             view.setSelection(selectedView)
         }
-
-//        Component.onCompleted: toggle()
     }
 
     Views {
         id: view
         anchors.fill: parent
         onRequestSelectionChange: {
-            sidebar.setView(index)
+            topbar.setView(index)
         }
     }
-
-//    Item {
-//        anchors.fill: parent
-
-//        Item {
-//            anchors {
-//                left: sidebar.right
-//                top: parent.top
-//                right: parent.right
-//                bottom: parent.bottom
-//            }
-//        }
-//    }
 
     Component.onCompleted: {
         height=Screen.height * 0.7
@@ -112,7 +96,7 @@ ApplicationWindow {
         g_tooltip = component.createObject(root)
 
         //Initial view
-        g_toolBox.setView(2)
+        topbar.setView(2)
 
 
         if (g_cman.isMinimizeOnStartup())

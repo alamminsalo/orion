@@ -19,7 +19,7 @@ import "styles.js" as Style
 
 Item {
     id: root
-    anchors.fill: parent
+    //anchors.fill: parent
     property int gamesCount: 0
     property bool checked: false
     property string query: ""

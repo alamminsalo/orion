@@ -17,7 +17,7 @@ import QtQuick 2.5
 import "components"
 
 Item{
-    anchors.fill: parent
+    //anchors.fill: parent
 
     ViewHeader{
         id: header

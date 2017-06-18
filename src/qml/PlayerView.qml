@@ -19,10 +19,10 @@ import "irc"
 import "styles.js" as Styles
 
 Item {
-    anchors {
-        left: parent.left
-        bottom: parent.bottom
-    }
+//    anchors {
+//        left: parent.left
+//        bottom: parent.bottom
+//    }
 
     property int duration: -1
     property var currentChannel
@@ -48,16 +48,16 @@ Item {
     }
 
     //Animations, need to be declared BEFORE width, height binds
-    Behavior on width {
-        enabled: smallMode
-        NumberAnimation {
-            duration: 250
-            easing.type: Easing.OutCubic
-        }
-    }
+//    Behavior on width {
+//        enabled: smallMode
+//        NumberAnimation {
+//            duration: 250
+//            easing.type: Easing.OutCubic
+//        }
+//    }
 
-    width: smallMode ? parent.width / 3 : parent.width
-    height: smallMode ? width * 0.5625 : parent.height
+//    width: smallMode ? parent.width / 3 : parent.width
+//    height: smallMode ? width * 0.5625 : parent.height
 
     //Renderer interface
     property alias renderer: loader.item

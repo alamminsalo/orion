@@ -20,7 +20,7 @@ import "styles.js" as Styles
 Item {
     property int itemCount: 0
 
-    anchors.fill: parent
+    //anchors.fill: parent
 
     function focusInput(){
         _input.forceActiveFocus()

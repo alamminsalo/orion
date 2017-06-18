@@ -13,7 +13,7 @@
         <file>components/SpinnerIcon.qml</file>
         <file>components/ContextMenu.qml</file>
         <file>fonts/fontAwesome.js</file>
-        <file>FavouritesView.qml</file>
+        <file>FollowedView.qml</file>
         <file>GamesView.qml</file>
         <file>Views.qml</file>
         <file>FeaturedView.qml</file>
@@ -26,7 +26,7 @@
         <file>components/ViewHeader.qml</file>
         <file>components/PlayerHeader.qml</file>
         <file>OptionsView.qml</file>
-        <file>SideBar.qml</file>
+        <file>TopBar.qml</file>
         <file>components/OptionTextInput.qml</file>
         <file>components/OptionCheckbox.qml</file>
         <file>icon/orion.ico</file>
@@ -53,8 +53,8 @@
         <file>components/CustomFlow.qml</file>
         <file>components/CommonGrid.qml</file>
         <file>components/ChannelGrid.qml</file>
-        <file>components/OptionCornerSelect.qml</file>
         <file>components/StreamSelectorComboBox.qml</file>
         <file>qtquickcontrols2.conf</file>
+        <file>components/OptionCombo.qml</file>
     </qresource>
 </RCC>

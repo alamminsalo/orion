@@ -13,174 +13,123 @@
  */
 
 import QtQuick 2.5
+import QtQuick.Controls 2.1
+import QtQuick.Layouts 1.1
 import "components"
 import "styles.js" as Styles
 
-Item{
-    anchors.fill: parent
+Page {
     id: root
 
-    ViewHeader {
-        id: header
-        text: "Settings"
-    }
+    ColumnLayout {
+        anchors.fill: parent
 
-    Column {
-        width: dp(360)
-
-        spacing: 1
-
-        anchors {
-            top: header.bottom
-            horizontalCenter: parent.horizontalCenter
-        }
-
-        OptionCheckbox {
+        CheckBox {
             id: alertOption
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
             checked: g_cman.isAlert()
             onClicked: {
                 g_cman.setAlert(checked)
             }
             text: "Enable notifications"
+            Layout.alignment: Qt.AlignCenter
         }
 
-
-        OptionCheckbox {
+        CheckBox {
             id: notificationsOption
             enabled: alertOption.checked
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+
             checked: g_cman.offlineNotifications
             onClicked: {
                 g_cman.offlineNotifications = !g_cman.offlineNotifications
             }
             text: "Show offline notifications"
+            Layout.alignment: Qt.AlignCenter
         }
 
-        OptionCornerSelect {
+        OptionCombo {
             id: alertPosition
             selection: g_cman.getAlertPosition()
+            onSelectionChanged: g_cman.setAlertPosition(selection)
 
-            onSelectionChanged: {
-                g_cman.setAlertPosition(selection)
-            }
-
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
             text: "Notification position"
+            model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+
+            Layout.alignment: Qt.AlignCenter
         }
 
-        OptionCheckbox {
+        CheckBox {
             id: minStartupOption
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
             checked: g_cman.isMinimizeOnStartup()
             onClicked: {
                 g_cman.setMinimizeOnStartup(checked)
             }
             text: "Start minimized"
+            Layout.alignment: Qt.AlignCenter
         }
 
-        OptionCheckbox {
+        CheckBox {
             id: closeToTrayOption
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
             checked: g_cman.isCloseToTray()
             onClicked: {
                 g_cman.setCloseToTray(checked)
             }
             text: "Close to tray"
+            Layout.alignment: Qt.AlignCenter
         }
-	
-        OptionCheckbox {
+
+        CheckBox {
             id: chatSwapOption
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
             checked: g_cman.swapChat
             onClicked: {
                 g_cman.swapChat = !g_cman.swapChat
             }
             text: "Swap Chat Side"
+            Layout.alignment: Qt.AlignCenter
         }
 
-        OptionEntry {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+        OptionCombo {
+            id: textScaleFactor
             text: "Chat Text Scale Factor"
+            model: ["0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0"]
 
+            Component.onCompleted: {
+                var entries = model;
 
-            ComboBox {
-                id: textScaleFactor
-                //currentText: g_cman.getTextScaleFactor()
-
-                width: dp(90)
-                height: dp(40)
-
-                anchors {
-                    verticalCenter: parent.verticalCenter
-                    right: parent.right
-                }
-
-                Component.onCompleted: {
-                    var entries = ["0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2", "2.5", "3"];
-                    textScaleFactor.entries = entries;
-
-                    var val = g_cman.textScaleFactor;
-                    for (var i = 0; i < entries.length; i++) {
-                        var cur = entries[i];
-                        if (parseFloat(cur) == val) {
-                            textScaleFactor.selectItem(cur);
-                            break;
-                        }
+                var val = g_cman.textScaleFactor;
+                for (var i = 0; i < entries.length; i++) {
+                    var cur = entries[i];
+                    if (parseFloat(cur) == val) {
+                        selection = i
+                        break;
                     }
-
-                }
-
-                compareFunction: function(a, b) {
-                    return parseFloat(a) - parseFloat(b);
-                }
-
-                onItemChanged: {
-                    g_cman.textScaleFactor = parseFloat(item)
                 }
             }
 
+            onSelectionChanged: {
+                g_cman.textScaleFactor = parseFloat(selection)
+            }
+
+            Layout.alignment: Qt.AlignCenter
         }
 
-        OptionEntry {
+        RowLayout {
             id: loginOption
-            text: "Twitch account"
-            anchors {
-                left: parent.left
-                right: parent.right
+
+            Label {
+                id: twitchName
+                text: "Twitch account"
             }
-            BasicButton {
+
+            Button {
                 id: connectButton
 
-                property bool loggedIn: g_cman.isAccessTokenAvailable()
-                text: loggedIn ? "Log out" : "Log in"
+                text: g_cman.isAccessTokenAvailable() ? "Log out" : "Log in"
                 anchors {
                     verticalCenter: parent.verticalCenter
                     right: parent.right
                 }
                 onClicked: {
-                    if (!loggedIn) {
+                    if (!g_cman.isAccessTokenAvailable()) {
                         httpServer.start();
                         var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
                                 + "&redirect_uri=http://localhost:8979"
@@ -193,7 +142,7 @@ Item{
                     else {
                         g_cman.setAccessToken("")
                         g_cman.checkFavourites()
-                        loginOption.text = "Twitch account"
+                        twitchName.text = "Twitch account"
                     }
                 }
 
@@ -203,22 +152,20 @@ Item{
                         connectButton.loggedIn = g_cman.isAccessTokenAvailable()
                     }
                     onUserNameUpdated: {
-                        loginOption.text = "Logged in as " + name
+                        twitchName.text = "Logged in as " + name
                     }
                 }
             }
+            Layout.alignment: Qt.AlignCenter
         }
     }
 
-    Text {
-        anchors {
-            bottom: parent.bottom
-            right: parent.right
-            margins: dp(10)
+    footer: ToolBar {
+        padding: 10
+        Label {
+            text: app_version
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
         }
-
-        font.pixelSize: dp(14)
-        color: Styles.white
-        text: app_version
     }
 }

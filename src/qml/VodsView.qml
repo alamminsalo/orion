@@ -20,7 +20,7 @@ import "util.js" as Util
 Item{
     id: vodsView
 
-    anchors.fill: parent
+    //anchors.fill: parent
     property variant selectedChannel
     property int itemCount: 0
     property var channelVodPositions

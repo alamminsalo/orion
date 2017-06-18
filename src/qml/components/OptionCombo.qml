@@ -18,15 +18,17 @@ import QtQuick.Layouts 1.1
 import "../styles.js" as Styles
 
 RowLayout {
+    property alias text: label.text
+    property alias selection: combo.currentIndex
+    property alias model: combo.model
+
     id: root
-    property alias text: checkbox.text
-    property bool checked: checkbox.checked
 
-    signal clicked()
+    Label {
+        id: label
+    }
 
-    CheckBox {
-        id: checkbox
-        enabled: root.enabled
-        onClicked: root.clicked()
+    ComboBox {
+        id: combo
     }
 }
