@@ -13,21 +13,11 @@
  */
 
 import QtQuick 2.5
+import QtQuick.Controls 2.1
 import "../styles.js" as Styles
+import QtQuick.Controls.Material 2.1
 
-Rectangle {
-    property string text
-    property bool isSelected: false
-    property string iconStr
-    property int borderWidth: 6
-    property int iconSize: Styles.iconSize
-    property bool highlightOn: false
-    property bool iconRotated: false
-
-    function rotateIcon(){
-        iconRotated = !iconRotated
-    }
-
+Button {
     id: root
     height: dp(60)
     anchors {
@@ -82,7 +72,7 @@ Rectangle {
 
     Text {
         id: textLabel
-        visible: g_toolBox.isOpen
+        //visible: g_toolBox.isOpen
         anchors.centerIn: parent
         text: root.text
         font.bold: true

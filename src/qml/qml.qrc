@@ -55,5 +55,6 @@
         <file>components/ChannelGrid.qml</file>
         <file>components/OptionCornerSelect.qml</file>
         <file>components/StreamSelectorComboBox.qml</file>
+        <file>qtquickcontrols2.conf</file>
     </qresource>
 </RCC>

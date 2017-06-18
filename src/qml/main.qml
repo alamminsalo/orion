@@ -14,7 +14,7 @@
 
 import QtQuick 2.5
 import QtQuick.Window 2.0
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1
 import "styles.js" as Styles
 import "style"
 
@@ -39,7 +39,8 @@ ApplicationWindow {
     property var windowstate: "Windowed"
 
     function dp(number){
-        return Dpi.scale(number)
+        return number;
+        //return Dpi.scale(number)
     }
 
     function fitToAspectRatio() {
@@ -70,42 +71,35 @@ ApplicationWindow {
         }
     }
 
-    Item {
-        anchors.fill: parent
-
-        SideBar {
-            id: sidebar
-            hidden: g_fullscreen
-            anchors {
-                left: parent.left
-                top: parent.top
-                bottom: parent.bottom
-            }
-
-            onSelectedViewChanged: {
-                view.setSelection(selectedView)
-            }
-
-            Component.onCompleted: toggle()
+    header: SideBar {
+        id: sidebar
+        onSelectedViewChanged: {
+            view.setSelection(selectedView)
         }
 
-        Item {
-            anchors {
-                left: sidebar.right
-                top: parent.top
-                right: parent.right
-                bottom: parent.bottom
-            }
+//        Component.onCompleted: toggle()
+    }
 
-            Views {
-                id: view
-                anchors.fill: parent
-                onRequestSelectionChange: {
-                    g_toolBox.setView(index)
-                }
-            }
+    Views {
+        id: view
+        anchors.fill: parent
+        onRequestSelectionChange: {
+            sidebar.setView(index)
         }
     }
+
+//    Item {
+//        anchors.fill: parent
+
+//        Item {
+//            anchors {
+//                left: sidebar.right
+//                top: parent.top
+//                right: parent.right
+//                bottom: parent.bottom
+//            }
+//        }
+//    }
 
     Component.onCompleted: {
         height=Screen.height * 0.7

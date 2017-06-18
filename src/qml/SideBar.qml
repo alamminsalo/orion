@@ -13,22 +13,17 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1
 import "components"
 import "styles.js" as Styles
+import QtQuick.Controls.Material 2.1
+import QtQuick.Layouts 1.1
 
 //ToolBox.qml
-Rectangle {
+ToolBar {
     id: root
-    color: Styles.sidebarBg
-    property int _width: dp(180)
-    property bool hidden: false
-    width: !hidden ? _width : 0
-    clip: true
-    z: 99
-
-    property bool isOpen: true
     property int selectedView: 0
+    visible : !g_fullscreen
 
     Behavior on width {
         NumberAnimation {
@@ -37,84 +32,69 @@ Rectangle {
         }
     }
 
-    function toggle(){
-        root._width = isOpen ? dp(60) : dp(180)
-        isOpen = !isOpen
-        toggleButton.rotateIcon()
+    function setView(index) {
+        selectedView = index
     }
 
-    function setView(index){
-        if (index > -1 && index <= ribbonList.count)
-            ribbonList.currentIndex = index
-    }
+    RowLayout {
+        anchors.fill: parent
+        //spacing: 0
 
-    DrawerRibbon {
-        id: toggleButton
-        iconStr: 'chevron_l'
-        onClick: toggle()
-        highlightOn: false
-    }
-
-    RibbonList {
-        id: ribbonList
-        height: model.count * dp(60)
-
-        onCurrentIndexChanged: {
-            selectedView = currentIndex
+        Button {
+            text: "Search"
+            onClicked: selectedView = 0
+            checked: selectedView == 0
+            checkable: checked
+            Layout.fillWidth: true
+            flat: true
         }
-
-        anchors {
-            top: toggleButton.bottom
-            left: parent.left
-            right: parent.right
+        Button {
+            text: "Featured"
+            onClicked: selectedView = 1
+            checked: selectedView ==1
+            checkable: checked
+            Layout.fillWidth: true
+            flat:true
         }
-
-        model: ListModel {
-            id: model
-            ListElement {
-                label: "Search"
-                icon: "search"
-            }
-            ListElement {
-                label: "Featured"
-                icon: "featured"
-            }
-            ListElement {
-                label: "Followed"
-                icon: "fav"
-            }
-            ListElement {
-                label: "Games"
-                icon: "game"
-            }
-            ListElement {
-                label: "VODs"
-                icon: "video"
-            }
-            ListElement {
-                label: "Watch"
-                icon: "play"
-            }
-            ListElement {
-                label: "Settings"
-                icon: "settings"
-            }
+        Button {
+            text: "Followed"
+            onClicked: selectedView = 2
+            checked: selectedView ==2
+            checkable: checked
+            Layout.fillWidth: true
+            flat:true
         }
-
-        delegate: Ribbon {
-            text: label
-            iconStr: icon
+        Button {
+            text: "Games"
+            onClicked: selectedView = 3
+            checked: selectedView ==3
+            checkable: checked
+            Layout.fillWidth: true
+            flat:true
         }
-    }
-
-    Rectangle {
-        id: border
-        width: dp(1)
-        color: Styles.border
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: parent.left
+        Button {
+            text: "VODs"
+            onClicked: selectedView = 4
+            checked: selectedView == 4
+            checkable: checked
+            Layout.fillWidth: true
+            flat:true
+        }
+        Button {
+            text: "Player"
+            onClicked: selectedView = 5
+            checked: selectedView == 5
+            checkable: checked
+            Layout.fillWidth: true
+            flat:true
+        }
+        Button {
+            text: "Settings"
+            onClicked: selectedView = 6
+            checked: selectedView == 6
+            checkable: checked
+            Layout.fillWidth: true
+            flat:true
         }
     }
 }
