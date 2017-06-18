@@ -253,12 +253,12 @@ Item {
             }
         }
 
-        SpinnerIcon {
-            id: spinner
-            anchors.centerIn: parent
-            iconSize: parent.width * 0.1
-            visible: viewerList.loading && viewerList.enabled
-        }
+//        SpinnerIcon {
+//            id: spinner
+//            anchors.centerIn: parent
+//            iconSize: parent.width * 0.1
+//            visible: viewerList.loading && viewerList.enabled
+//        }
 
         Item {
             id: viewerListHeading

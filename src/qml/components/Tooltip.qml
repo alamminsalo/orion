@@ -15,14 +15,15 @@
 
 import QtQuick 2.5
 import QtQuick.Window 2.0
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 
 Window {
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
 
-    height: dp(320)
-    width: dp(512)
+    height: 320
+    width: 512
 
     property string text
     property string img
@@ -32,47 +33,34 @@ Window {
         anchors.fill: parent
         color: "#000000"
 
-        SpinnerIcon {
+        BusyIndicator {
             id:_spinner
             anchors.fill: parent
-            iconSize: 60
+            running: img.state === Image.Loading
         }
 
         Image {
             id: img
             source: root.img
             anchors.fill: parent
-            onProgressChanged: {
-                if (progress >= 1.0)
-                    _spinner.visible = false
-            }
-
-            onSourceChanged: {
-                _spinner.visible = true
-            }
         }
 
         //Container for text
-        Rectangle {
+        Pane {
             id: header
-            anchors.fill: text
-            color: Styles.shadeColor
-            opacity: 0.7
-            height: text.height
-        }
+            opacity: 0.88
 
-        Text {
-            id: text
-            color: Styles.textColor
-            text: root.text
-            font.pixelSize: Styles.titleFont.smaller
-            anchors{
-                bottom: parent.bottom
+            anchors {
+                top: parent.top
                 left: parent.left
                 right: parent.right
             }
-            wrapMode: Text.WordWrap
-            //renderType: Text.NativeRendering
+
+            Label {
+                id: text
+                text: root.text
+                wrapMode: Text.WordWrap
+            }
         }
     }
 

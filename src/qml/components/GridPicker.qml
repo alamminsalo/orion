@@ -14,8 +14,7 @@
 
 
 import QtQuick 2.5
-import QtQuick.Controls 2.0
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
 
 Rectangle {
     id: root
@@ -50,11 +49,11 @@ Rectangle {
         }
     }
 
-    SpinnerIcon {
+    BusyIndicator {
         id:_spinner
         anchors.fill: parent
-        iconSize: 60
-        visible: root.loading
+        height: 60
+        running: root.loading
         opacity: 0.5
         z: 2
     }
@@ -258,7 +257,7 @@ Rectangle {
             visible: root.filterTextProperty != null
 
             clip:true
-            selectionColor: Styles.purple
+            //selectionColor: Styles.purple
             focus: true
             selectByMouse: true
             font.pixelSize: root.fontPixelSize
@@ -298,7 +297,7 @@ Rectangle {
         height: inputArea.visible ? dp(1) : 0
         color: "#777777"
 
-        opacity: root._opacity
+        opacity: root._opacity || 0
     }
 
     function display(mX, mY){

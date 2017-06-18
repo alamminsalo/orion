@@ -156,6 +156,8 @@ Item {
 
         currentQualityName = streamName
         g_cman.setQuality(streamName);
+
+        spinner.running = true
     }
 
     function getStreams(channel, vod, startPos){
@@ -234,6 +236,8 @@ Item {
 
         pollTimer.restart()
 
+        spinner.running = true
+
         requestSelectionChange(4)
     }
 
@@ -250,8 +254,6 @@ Item {
     }
 
     function loadStreams(streams) {
-
-        console.log("DEBUG STREAMS")
         var sourceNames = []
         for (var k in streams) {
             //console.log(k + " => " + streams[k])
@@ -323,17 +325,17 @@ Item {
 
         onPlayingResumed: {
             setWatchingTitle()
-            spinner.visible = false
+            spinner.running = false
         }
 
         onPlayingPaused: {
             setHeaderText("Paused")
-            spinner.visible = false
+            spinner.running = false
         }
 
         onPlayingStopped: {
             setHeaderText("Playback stopped")
-            spinner.visible = false
+            spinner.running = false
         }
     }
 
@@ -369,11 +371,10 @@ Item {
             }
         }
 
-        SpinnerIcon {
+        BusyIndicator {
             id: spinner
             anchors.centerIn: parent
-            iconSize: parent.width * 0.1
-            visible: false
+            running: false
         }
     }
 

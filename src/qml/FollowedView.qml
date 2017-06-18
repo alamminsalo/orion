@@ -17,13 +17,6 @@ import QtQuick 2.5
 import "components"
 
 Item{
-    //anchors.fill: parent
-
-    ViewHeader{
-        id: header
-        text: "Followed channels"
-        z: favourites.z + 1
-    }
 
     onVisibleChanged: {
         if (visible) {
@@ -37,11 +30,7 @@ Item{
         allFavourites: true
 
         anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
-            bottom : parent.bottom
-            margins: dp(10)
+            fill: parent
         }
 
         model: g_favourites

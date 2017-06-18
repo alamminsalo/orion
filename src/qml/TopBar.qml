@@ -15,9 +15,7 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
-import QtQuick.Layouts 1.1
 
-//ToolBox.qml
 ToolBar {
     id: root
     property int selectedView: 0
@@ -35,7 +33,7 @@ ToolBar {
         anchors.fill: parent
         currentIndex: selectedView
 
-        property bool showIcons: root.width < 666
+        property bool showIcons: root.width < 700
         font.pointSize: !showIcons ? 13 : 16
         font.family: showIcons ? "Material Icons" : "Noto Sans"
 

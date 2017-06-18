@@ -8,7 +8,7 @@ QT     += gui qml quick network widgets
 
 TARGET = orion
 
-VERSION = 1.5.1
+VERSION = 1.6.0
 DEFINES += APP_VERSION=\\\"v$$VERSION\\\"
 
 DEFINES += APP_NAME=\\\"Orion\\\"

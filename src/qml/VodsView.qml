@@ -42,8 +42,6 @@ Item{
             "preview": channel.preview,
         }
 
-        header.text = "Videos for " + selectedChannel.title;
-
         channelVodPositions = g_cman.getChannelVodsLastPlaybackPositions(channel.name);
 
         g_vodmgr.search(selectedChannel._id, 0, 35)
@@ -51,12 +49,6 @@ Item{
         itemCount = 35
 
         requestSelectionChange(3)
-    }
-
-    ViewHeader{
-        id: header
-        text: "Channel vods"
-        z: vods.z + 1
     }
 
     onVisibleChanged: {
@@ -83,11 +75,7 @@ Item{
         tooltipEnabled: true
 
         anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
-            bottom : parent.bottom
-            margins: dp(10)
+            fill: parent
         }
 
         model: vodsModel

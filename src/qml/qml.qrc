@@ -4,19 +4,14 @@
         <file>components/Channel.qml</file>
         <file>components/Tooltip.qml</file>
         <file>styles.js</file>
-        <file>components/PurpleButton.qml</file>
-        <file>components/Ribbon.qml</file>
-        <file>components/RibbonList.qml</file>
         <file>components/Icon.qml</file>
         <file>fonts/fontawesome-webfont.ttf</file>
         <file>SearchView.qml</file>
-        <file>components/SpinnerIcon.qml</file>
         <file>components/ContextMenu.qml</file>
         <file>fonts/fontAwesome.js</file>
         <file>FollowedView.qml</file>
         <file>GamesView.qml</file>
         <file>Views.qml</file>
-        <file>FeaturedView.qml</file>
         <file>fonts/font-awesome.css</file>
         <file>fonts/DroidSans.ttf</file>
         <file>fonts/NotoSans-Regular.ttf</file>

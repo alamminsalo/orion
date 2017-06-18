@@ -5,6 +5,7 @@ import QtQuick.Controls.Material 2.1
 import "components"
 
 ToolBar {
+    id: root
     padding: 20
     height: searchBtn.checked ? implicitHeight : 0
 
@@ -29,7 +30,7 @@ ToolBar {
             onAccepted: submit()
             inputMethodHints: Qt.ImhNoPredictiveText
             Layout.fillWidth: true
-            visible: searchBtn.checked
+            visible: root.height === root.implicitHeight
             font.pointSize: 16
             onVisibleChanged:  {
                 if (visible)
@@ -47,6 +48,7 @@ ToolBar {
             anchors.top: parent.top
             anchors.right: parent.right
             text: "\ue8b6"
+            Material.foreground: "#fff"
             font.pointSize: 20
             padding: 20
             font.family: "Material Icons"

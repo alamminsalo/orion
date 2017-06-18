@@ -28,7 +28,7 @@ Pane {
     property bool favourite: false
     property int viewers
     property string game
-    property int imgSize: dp(148)
+    property int imgSize: 148
     property int containerSize: 180
 
     id: root
@@ -65,7 +65,7 @@ Pane {
             id:_spinner
             anchors.centerIn: parent
             anchors.verticalCenterOffset: -infoRect.height / 2
-            running: true
+            running: channelImage.progress < 1
         }
 
         Image {
@@ -81,18 +81,6 @@ Pane {
                 }
             }
 
-            onProgressChanged: {
-                if (progress > 0.99)
-                    _spinner.running = false
-            }
-
-//            Behavior on width {
-//                NumberAnimation {
-//                    duration: 100
-//                    easing.type: Easing.InCubic
-//                }
-//            }
-
             Rectangle {
                 id: imageShade
                 anchors.fill: parent
@@ -102,7 +90,6 @@ Pane {
                 function refresh(){
                     opacity = root.online ? 0 : .8
                 }
-
             }
         }
 
@@ -112,10 +99,11 @@ Pane {
             font.family: "Material Icons"
             opacity: favourite ? 1 : 0
             color: Material.color(Material.accent)
+            font.pointSize: 14
             anchors {
                 top: container.top
                 right: container.right
-                margins: dp(10)
+                margins: 10
             }
 
             Behavior on opacity{
@@ -126,7 +114,7 @@ Pane {
             }
         }
 
-        Rectangle {
+        Pane {
             id: infoRect
             opacity: .85
             height: parent.height * 0.25
@@ -136,18 +124,18 @@ Pane {
                 right: container.right
                 bottom: container.bottom
             }
-        }
 
-        Label {
-            id: channelTitle
-            text: root.title
-            elide: Text.ElideRight
-            //color: online ? Styles.textColor : Styles.iconColor
-            anchors.fill: infoRect
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
-            font.bold: true
+            Label {
+                id: channelTitle
+                text: root.title
+                elide: Text.ElideRight
+                //color: online ? Styles.textColor : Styles.iconColor
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                font.bold: true
+            }
         }
     }
 
@@ -155,7 +143,7 @@ Pane {
     function setHighlight(isActive){
         //imageShade.visible = !isActive && !root.online
         //channelImage.width = isActive ? Math.floor(imgSize * 1.2) : imgSize
-        root.Material.elevation = isActive ? 8 : 0
+        root.Material.elevation = isActive ? 10 : 0
         //root.color = isActive ? Styles.highlight : "transparent"
         //root.border.color = isActive ? Styles.border : "transparent"
     }
