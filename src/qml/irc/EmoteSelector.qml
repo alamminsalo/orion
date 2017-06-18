@@ -23,14 +23,6 @@ RoundButton {
     
     visible: root.chatViewVisible
     
-    width: height
-    
-    anchors {
-        right: parent.right
-        top: parent.top
-        bottom: parent.bottom
-    }
-    
     font.family: "Material Icons"
     flat: true
     text: "\ue87c"
@@ -77,7 +69,7 @@ RoundButton {
         default:
             var lastSetMap = lastEmoteSets[lastSet];
             for (var i in lastSetMap) {
-                setsVisible.append({"imageUrl": "image://emote/" + i, "emoteName": decodeHtml(inverseRegex(lastSetMap[i]))})
+                setsVisible.append({"imageUrl": "image://emote/" + i, "emoteName": Util.decodeHtml(Util.inverseRegex(lastSetMap[i]))})
             }
             break;
         }

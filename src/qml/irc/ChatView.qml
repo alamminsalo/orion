@@ -16,6 +16,7 @@ import QtQuick 2.0
 //import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 //import "../fonts/fontAwesome.js" as FontAwesome
 //import "../styles.js" as Styles
@@ -26,23 +27,7 @@ import "../"
 Page {
     id: root
 
-    //Visibity status:
-    //0 - hidden
-    //1 - solid visible
-    //2 - opaque
-    property int status: 0
-    onStatusChanged: {
-        if (status > 2)
-            status = 0
-    }
-
     property bool chatViewVisible: root.width > 0
-
-    visible: status > 0
-
-    property real _opacity: root.status > 1 ? 0.6 : 1.0
-    property int chatWidth: width
-
     property bool viewerListEnabled: false
 
     onVisibleChanged: {
@@ -167,26 +152,22 @@ Page {
 
     header: ToolBar {
         id: chatControls
+        Material.background: Material.background
 
-        RoundButton {
+        IconButtonFlat {
             id: _viewerListButton
-            text: "Viewers"
-            //font.family: "Material Icons"
+            text: "\ue7fb"
 
             enabled: (!isVod && currentChannel && currentChannel.name) ? true : false
 
             onClicked: {
                 viewerListEnabled = !viewerListEnabled
-                if (viewerListEnabled && (status == 0)) {
-                    status++;
-                }
             }
 
-            //            ToolTip {
-            //                visible: _viewerListButton.mouseArea.containsMouse
-            //                delay: 666
-            //                text: "Viewer List"
-            //            }
+            ToolTip {
+                delay: 666
+                text: "Viewer List"
+            }
         }
     }
 
@@ -217,7 +198,7 @@ Page {
 
             z: 10
 
-            opacity: root._opacity
+            //opacity: root._opacity
 
             onEnabledChanged: {
                 if (enabled) {
@@ -286,40 +267,24 @@ Page {
                 }
 
                 clip: true
-                delegate: Item {
-                    height: dp(25)
-                    Text {
-                        text: user
-                        color: Styles.textColor
-                        anchors {
-                            fill: parent
-                            leftMargin: dp(5)
-                            rightMargin: dp(5)
-                        }
-                        font.capitalization: Font.Capitalize
+                delegate: Label {
+                    text: user
+                    anchors {
+                        fill: parent
+                        leftMargin: dp(5)
+                        rightMargin: dp(5)
                     }
+                    font.capitalization: Font.Capitalize
                 }
 
                 section {
                     property: "groupName"
                     criteria: ViewSection.FullString
-                    delegate: Item {
+                    delegate: Row {
                         height: dp(50)
-                        Text {
-                            anchors {
-                                leftMargin: dp(5)
-                                rightMargin: dp(5)
-                                bottomMargin: dp(5)
-                                left: parent.left
-                                right: parent.right
-                                bottom: parent.bottom
-                            }
-
+                        Label {
                             font.capitalization: Font.AllUppercase
                             text: section
-                            //color: Styles.textColor
-                            color: Styles.purple
-                            font.pixelSize: Styles.titleFont.smaller
                         }
                     }
 
@@ -353,7 +318,7 @@ Page {
 
             clip: true
             highlightFollowsCurrentItem: false
-            spacing: dp(10)
+            spacing: 10
             boundsBehavior: Flickable.StopAtBounds
 
             delegate: ChatMessage {
@@ -365,7 +330,7 @@ Page {
                 isChannelNotice: model.isChannelNotice
                 systemMessage: model.systemMessage
                 isWhisper: model.isWhisper
-                highlightOpacity: root._opacity
+                //highlightOpacity: root._opacity
 
                 anchors {
                     left: parent.left
@@ -389,7 +354,7 @@ Page {
             }
         }
 
-        GridPicker {
+        EmotePicker {
             id: _emotePicker
 
             visible: false
@@ -433,7 +398,7 @@ Page {
                 }
             }
 
-            color: "#ffffff"
+//            color: "#ffffff"
 
             anchors {
                 bottom: parent.bottom
@@ -454,8 +419,6 @@ Page {
                 _input.focus = true;
             }
         }
-
-
 
         Chat {
             id: chat
@@ -713,12 +676,15 @@ Page {
 
     footer: ToolBar {
         visible: !chat.isAnonymous
+        padding: 5
 
         RowLayout {
             anchors.fill: parent
 
             TextField {
                 id: _input
+                Layout.fillWidth: true
+
                 Keys.onUpPressed: {
                     if (_emotePicker.visible) {
                         _emotePicker.focusEntersFromBottom();

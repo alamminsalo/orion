@@ -31,11 +31,10 @@
         <file>irc/ChatView.qml</file>
         <file>irc/ChatMessage.qml</file>
         <file>MpvBackend.qml</file>
-        <file>components/GridPicker.qml</file>
+        <file>components/EmotePicker.qml</file>
         <file>components/CustomFlow.qml</file>
         <file>components/CommonGrid.qml</file>
         <file>components/ChannelGrid.qml</file>
-        <file>components/StreamSelectorComboBox.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>components/OptionCombo.qml</file>
         <file>fonts/MaterialIcons-Regular.ttf</file>

@@ -31,7 +31,7 @@ Item {
     property int fontSize: Styles.titleFont.smaller * g_cman.textScaleFactor
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
-    property var highlightOpacity: 1.0
+    property real highlightOpacity: 1.0
 
     property string channelNoticeBackgroundColor: "#444444"
 

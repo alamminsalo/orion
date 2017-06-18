@@ -15,10 +15,12 @@
 
 import QtQuick 2.5
 import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 
-Rectangle {
+Page {
     id: root
 
+    Material.background: "#fff"
     property bool loading: false
     property string filterTextProperty
 
@@ -27,8 +29,14 @@ Rectangle {
     property ListModel model
     property ListModel _innerModel
     property ListModel _filteredModel: ListModel {}
-
     property var _filterIndexMap
+
+    onVisibleChanged:  {
+        if (visible) {
+            _filterTextInput.forceActiveFocus()
+        }
+    }
+
     //property int fontPixelSize: Styles.titleFont.smaller
 
     signal itemClicked(int index);
@@ -79,7 +87,6 @@ Rectangle {
                 }
             }
         }
-
     }
 
     function _visibleItemClicked(index) {
@@ -111,7 +118,7 @@ Rectangle {
 
     GridView {
         id: _emotesGrid
-
+        clip: true
         anchors {
             fill: parent
 
@@ -224,47 +231,22 @@ Rectangle {
         }
     }
 
-    MouseArea {
-        id: _filterTextInputArea
+    header: ToolBar {
+        Material.background: Material.background
+        padding: 5
 
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-            leftMargin: dp(5)
-            rightMargin: dp(5)
-        }
-
-        height: dp(40)
-
-        cursorShape: Qt.IBeamCursor
-
-        TextInput {
+        TextField {
             id: _filterTextInput
-
-            z: 1
-
-            anchors {
-                fill: parent
-            }
+            placeholderText: "Filter emotes"
+            inputMethodHints: Qt.ImhNoPredictiveText
+            anchors.fill: parent
 
             onTextChanged: {
                 updateFilter();
             }
-            visible: root.filterTextProperty != null
-
-            clip:true
-            //selectionColor: Styles.purple
-            focus: true
-            selectByMouse: true
-            //font.pixelSize: root.fontPixelSize
-            verticalAlignment: Text.AlignVCenter
-
-            Keys.onReturnPressed: {
-                //console.log("filterTextInput enter pressed");
+            onAccepted: {
                 root._visibleItemClicked(0);
             }
-
             Keys.onEscapePressed: {
                 //console.log("filterTextInput escape pressed");
                 root.closeRequested();
@@ -276,11 +258,6 @@ Rectangle {
                     _emotesGrid.currentIndex = 0;
                 }
             }
-        }
-
-        Rectangle {
-            anchors.fill: _filterTextInput
-            color: "#ffffff"
         }
     }
 

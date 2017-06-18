@@ -16,7 +16,6 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
-//import "components"
 import "irc"
 
 Page {
@@ -43,18 +42,6 @@ Page {
             currentQualityName = savedQuality;
         }
     }
-
-    //Animations, need to be declared BEFORE width, height binds
-    //    Behavior on width {
-    //        enabled: smallMode
-    //        NumberAnimation {
-    //            duration: 250
-    //            easing.type: Easing.OutCubic
-    //        }
-    //    }
-
-    //    width: smallMode ? parent.width / 3 : parent.width
-    //    height: smallMode ? width * 0.5625 : parent.height
 
     //Renderer interface
     property alias renderer: loader.item
@@ -352,189 +339,20 @@ Page {
             anchors.centerIn: parent
             running: false
         }
-    }
 
-    //    Item {
-    //        //Player controls overlay
-    //        visible: false
-    //        z: playerArea.z + 1
+        Drawer {
+            id: chatdrawer
+            edge: g_cman.swapChat ? Qt.LeftEdge : Qt.RightEdge
+            y: 106
 
-    //        anchors {
-    //            top: parent.top
-    //            bottom: parent.bottom
-    //            left: g_cman.swapChat ? chatview.right : parent.left
-    //            right: g_cman.swapChat ? parent.right : chatview.left
-    //        }
+            height: playerArea.height
+            width: 300
+            dim: false
 
-    //        MouseArea{
-    //            anchors.fill: parent
-    //            hoverEnabled: true
-    //            propagateComposedEvents: false
-
-    //            //Hide cursor when headers hide
-    //            cursorShape: cursorHidden ? Qt.BlankCursor : Qt.ArrowCursor
-
-    //            onClicked: {
-    //                if (sourcesBox.open){
-    //                    sourcesBox.close()
-    //                }playBtn
-    //            }
-
-    //            onDoubleClicked: {
-    //                if (smallMode) {
-    //                    requestSelectionChange(4)
-    //                } else {
-    //                    g_fullscreen = !g_fullscreen
-    //                }
-    //            }
-
-    //            onPositionChanged: {
-    //                header.show()
-    //                footer.show()
-    //                headerTimer.restart()
-    //            }
-    //        }
-
-    //        PlayerHeader {playBtn
-    //            id: header
-    //            visible: !smallMode
-
-    //            MouseArea {
-    //                id: mAreaHeader
-    //                hoverEnabled: true
-    //                anchors.fill: parent
-    //                propagateComposedEvents: false
-    //            }
-
-    //            anchors {
-    //                top: parent.top
-    //                left: parent.left
-    //                right: parent.right
-    //            }
-
-    //            Label {
-    //                id: headerText
-    //                anchors {
-    //                    left: parent.left
-    //                    top: parent.top
-    //                    bottom: parent.bottom
-    //                    right: miniModeContainer.left
-    //                    margins: dp(5)
-    //                }
-    //                fontSizeMode: Text.Fit
-    //                verticalAlignment: Text.AlignVCenter
-    //                z: root.z + 1
-    //            }
-
-    //            Item {
-    //                id: miniModeContainer
-    //                anchors {
-    //                    top: parent.top
-    //                    bottom: parent.bottom
-    //                    right: favourite.left
-    //                    rightMargin: dp(5)
-    //                }
-    //                width: dp(50)
-
-    //                IconButton {
-    //                    id: miniModeCheckBox
-    //                    icon: "minimode"
-    //                    checkable: true
-    //                    checked: true
-
-    //                    anchors.centerIn: parent
-    //                }
-
-    //                ToolTip {
-    //                    visible: miniModeCheckBox.mouseArea.containsMouse
-    //                    delay: 666
-    //                    text: "Toggle floating player"
-    //                }
-    //            }
-
-    //            Item {
-    //                id: favourite
-    //                anchors {
-    //                    top: parent.top
-    //                    bottom: parent.bottom
-    //                    right: chatButton.left
-    //                    rightMargin: dp(5)
-    //                }
-    //                width: dp(50)
-
-
-
-    //            Icon {
-    //                id: chatButton
-    //                icon: "chat"
-    //                anchors {
-    //                    top: parent.top
-    //                    bottom: parent.bottom
-    //                    right: parent.right
-    //                }
-    //                width: dp(50)
-    //                height: width
-
-    //                MouseArea {
-    //                    id: chatButtonArea
-    //                    anchors.fill: parent
-    //                    onClicked: {
-    //                        chatview.status++
-    //                    }
-    //                    hoverEnabled: true
-
-    //                    onHoveredChanged: {
-    //                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-    //                    }
-
-    //                    ToolTip {
-    //                        visible: parent.containsMouse
-    //                        delay: 666
-    //                        text: "Toggle chat"
-    //                    }
-    //                }
-    //            }
-    //        }
-
-    //        Icon {
-    //            id: stopButton
-
-    //            icon: "remove"
-
-    //            anchors {
-    //                top: parent.top
-    //                right: parent.right
-    //                rightMargin: dp(5)
-    //            }
-
-    //            visible: smallMode
-    //            width: dp(50)
-    //            height: width
-
-    //            MouseArea {
-    //                anchors.fill: parent
-    //                onClicked: {
-    //                    root.smallMode = false
-    //                    root.enableSmallMode = false
-    //                }
-    //                hoverEnabled: true
-    //                onHoveredChanged: {
-    //                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-    //                }
-    //                propagateComposedEvents: false
-    //            }
-    //        }
-    //    }
-
-    Drawer {
-        id: chatdrawer
-        edge: g_cman.swapChat ? Qt.LeftEdge : Qt.RightEdge
-        height: root.height
-        width: 300
-
-        ChatView {
-            id: chatview
-            width: visible && !smallMode ? parent.width : 0
+            ChatView {
+                id: chatview
+                anchors.fill: parent
+            }
         }
     }
 
@@ -552,11 +370,9 @@ Page {
                 Layout.fillWidth: true
             }
 
-            RoundButton {
+            IconButtonFlat {
                 id: favBtn
-                font.family: "Material Icons"
                 text: "\ue87d"
-                flat: true
 
                 function update() {
                     highlighted = currentChannel.favourite === true
@@ -580,6 +396,7 @@ Page {
 
             IconButtonFlat {
                 id: chatBtn
+                onClicked: chatdrawer.open()
                 text: "\ue0b7"
             }
         }
@@ -599,25 +416,19 @@ Page {
                 left: parent.left
                 right: parent.right
             }
-            //onMoved: seekTo(value)
+            onMoved: seekTo(value)
         }
 
         RowLayout {
             anchors.fill: parent
 
-            RoundButton {
+            IconButtonFlat {
                 id: playBtn
-                font.pointSize: 14
-                font.family: "Material Icons"
-                flat: true
                 text: renderer.status != "PLAYING" ? "\ue037" : "\ue034"
                 onClicked: renderer.togglePause()
             }
-            RoundButton {
+            IconButtonFlat {
                 id: resetBtn
-                font.pointSize: 14
-                font.family: "Material Icons"
-                flat:true
                 text: "\ue5d5"
                 onClicked: reloadStream()
             }
@@ -627,21 +438,15 @@ Page {
                 Layout.fillWidth: true
             }
 
-            RoundButton {
+            IconButtonFlat {
                 id: cropBtn
-                font.pointSize: 14
-                font.family: "Material Icons"
                 text: "\ue3be"
-                flat: true
                 onClicked: fitToAspectRatio()
             }
 
-            RoundButton {
+            IconButtonFlat {
                 id: fsBtn
-                font.pointSize: 14
-                font.family: "Material Icons"
                 text: "\ue5d0"
-                flat: true
                 onClicked: g_fullscreen = !g_fullscreen
             }
 
@@ -658,7 +463,7 @@ Page {
                 onValueChanged: {
                     var val = value
                     if (Qt.platform === "linux" && player_backend === "mpv")
-                        val = Math.round(Math.log(val) / Math.log(100) * 100)
+                        val = Math.round(Math.log(val) / Math.log(100))
 
                     renderer.setVolume(val)
                     g_cman.setVolumeLevel(val);
@@ -667,6 +472,8 @@ Page {
 
             ComboBox {
                 id: sourcesBox
+                font.pointSize: 9
+                font.bold: true
 
                 onActivated: {
                     loadAndPlay(sourcesBox.model[index])
