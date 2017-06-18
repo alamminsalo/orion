@@ -1110,7 +1110,8 @@ void NetworkManager::featuredStreamsReply()
 
     //qDebug() << data;
 
-    emit featuredStreamsOperationFinished(JsonParser::parseFeatured(data));
+    QList<Channel *> channels = JsonParser::parseFeatured(data);
+    emit featuredStreamsOperationFinished(channels, channels.count());
 
     reply->deleteLater();
 }

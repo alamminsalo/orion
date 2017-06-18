@@ -85,9 +85,6 @@ protected:
 
     ChannelListModel* resultsModel;
 
-    ChannelListModel* featuredModel;
-    QSortFilterProxyModel* featuredProxy;
-
     //Games (and game search results)
     GameListModel* gamesModel;
 
@@ -154,8 +151,6 @@ public:
     ChannelListModel *getResultsModel() const;
 
     GameListModel *getGamesModel() const;
-
-    QSortFilterProxyModel *getFeaturedProxy() const;
 
     Q_INVOKABLE bool isAlert() const;
 
@@ -287,7 +282,6 @@ public:
 signals:
     void pushNotification(const QString &title, const QString &message, const QString &imgUrl);
     void resultsUpdated(int numAdded, int total);
-    void featuredUpdated();
     void searchingStarted();
     void foundPlaybackStream(const QVariantMap &streams);
     void deletedChannel(const quint32 &chanid);
@@ -331,14 +325,12 @@ public slots:
     void notify(Channel*);
     void notifyMultipleChannelsOnline(const QList<Channel*> &);
 
-    void getFeatured();
     void findPlaybackStream(const QString&);
     void setAlert(const bool&);
     void setAccessToken(const QString &arg);
 
 private slots:
     void addSearchResults(const QList<Channel*>&, const int total);
-    void addFeaturedResults(const QList<Channel*>&);
     void updateFavourites(const QList<Channel*>&);
     void updateStreams(const QList<Channel*>&);
     void addGames(const QList<Game*>&);

@@ -50,7 +50,7 @@ Item{
 
         itemCount = 35
 
-        requestSelectionChange(4)
+        requestSelectionChange(3)
     }
 
     ViewHeader{

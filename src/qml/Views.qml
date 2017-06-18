@@ -13,17 +13,14 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.2
 import QtQuick.Controls.Material 2.1
-import "components"
-import "styles.js" as Styles
+import QtQuick.Layouts 1.3
 
-
-SwipeView {
+StackLayout {
     id: root
 
     signal requestSelectionChange(int index)
-    interactive: false
 
     function setSelection(sel) {
         currentIndex = sel
@@ -33,11 +30,7 @@ SwipeView {
         id: searchView
     }
 
-    FeaturedView{
-        id: featuredView
-    }
-
-    FollowedView{
+    FollowedView {
         id: favouritesView
     }
 
@@ -51,66 +44,9 @@ SwipeView {
 
     PlayerView {
         id: playerView
-
-//        onSmallModeChanged: {
-//            if (root.selection !== 5)
-//                visible = false
-//        }
     }
 
     OptionsView{
         id: settingsView
     }
-
-    //The gradient that is applied to each view
-//    GradientBottom {
-//        id: gradient
-//        parent: searchView
-//    }
-
-//    Rectangle {
-//        id: connectionErrorRectangle
-//        anchors {
-//            top: parent.top
-//            left: parent.left
-//            right: parent.right
-//        }
-//        height: 0
-//        color: Styles.connectionErrorColor
-//        clip: true
-
-//        Text {
-//            anchors.centerIn: parent
-//            font.pixelSize: Styles.titleFont.bigger
-//            color: Styles.errorTextColor
-//            text: "Connection error"
-//        }
-
-//        Behavior on height {
-//            NumberAnimation {
-//                duration: 200
-//                easing.type: Easing.OutCubic
-//            }
-//        }
-//    }
-
-//    function updateForNetworkAccess(up) {
-//        if (up) {
-//            connectionErrorRectangle.height = 0
-//        }
-//        else {
-//            connectionErrorRectangle.height = dp(50)
-//        }
-//    }
-
-//    Component.onCompleted: {
-//        updateForNetworkAccess(netman.networkAccess());
-//    }
-
-//    Connections {
-//        target: netman
-//        onNetworkAccessChanged: {
-//            updateForNetworkAccess(up);
-//        }
-//    }
 }

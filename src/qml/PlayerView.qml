@@ -234,7 +234,7 @@ Item {
 
         pollTimer.restart()
 
-        requestSelectionChange(5)
+        requestSelectionChange(4)
     }
 
     function setHeaderText(text) {
@@ -404,7 +404,7 @@ Item {
 
             onDoubleClicked: {
                 if (smallMode) {
-                    requestSelectionChange(5)
+                    requestSelectionChange(4)
                 } else {
                     g_fullscreen = !g_fullscreen
                 }

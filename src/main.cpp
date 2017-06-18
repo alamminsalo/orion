@@ -75,10 +75,15 @@ int main(int argc, char *argv[])
     QIcon appIcon = QIcon(":/icon/orion.ico");
 
     //Setup default font
-    if (QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf") == -1)
+    int id = QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf");
+    if (id == -1)
         qDebug() << "Can't open application font!";
     else
-        app.setFont(QFont(":/fonts/NotoSans-Regular.ttf", 10, QFont::Normal, false));
+        app.setFont(QFont(QFontDatabase::applicationFontFamilies(id).first()));
+
+    qDebug() << "App font:" << app.font().family();
+
+    //qDebug() << QFont(":/fonts/NotoSans-Regular.ttf").family();
 
 #ifndef  QT_DEBUG
     if (!showDebugOutput) {
@@ -152,7 +157,6 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_powerman", power);
     rootContext->setContextProperty("g_favourites", cman->getFavouritesProxy());
     rootContext->setContextProperty("g_results", cman->getResultsModel());
-    rootContext->setContextProperty("g_featured", cman->getFeaturedProxy());
     rootContext->setContextProperty("g_games", cman->getGamesModel());
     rootContext->setContextProperty("g_tray", tray);
     rootContext->setContextProperty("g_vodmgr", vod);

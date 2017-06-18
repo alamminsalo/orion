@@ -153,9 +153,6 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     _textScaleFactor = 1.0;
 
     resultsModel = new ChannelListModel();
-
-    featuredModel = new ChannelListModel();
-
     gamesModel = new GameListModel();
 
     //Setup followed channels model and it's signal chain
@@ -166,13 +163,9 @@ ChannelManager::ChannelManager(NetworkManager *netman, bool hiDpi) : netman(netm
     favouritesProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
     favouritesProxy->sort(0, Qt::DescendingOrder);
     favouritesProxy->setSourceModel(favouritesModel);
-    featuredProxy = new QSortFilterProxyModel();
-    featuredProxy->setSourceModel(featuredModel);
-    featuredProxy->setSortRole(ChannelListModel::Roles::ViewersRole);
-    featuredProxy->sort(0, Qt::DescendingOrder);
 
     connect(netman, &NetworkManager::allStreamsOperationFinished, this, &ChannelManager::updateStreams);
-    connect(netman, &NetworkManager::featuredStreamsOperationFinished, this, &ChannelManager::addFeaturedResults);
+    connect(netman, &NetworkManager::featuredStreamsOperationFinished, this, &ChannelManager::addSearchResults);
     connect(netman, &NetworkManager::gamesOperationFinished, this, &ChannelManager::addGames);
     connect(netman, &NetworkManager::gameStreamsOperationFinished, this, &ChannelManager::addSearchResults);
     connect(netman, &NetworkManager::searchChannelsOperationFinished, this, &ChannelManager::addSearchResults);
@@ -211,15 +204,8 @@ ChannelManager::~ChannelManager(){
 
     delete favouritesModel;
     delete resultsModel;
-    delete featuredModel;
     delete gamesModel;
     delete favouritesProxy;
-    delete featuredProxy;
-}
-
-QSortFilterProxyModel *ChannelManager::getFeaturedProxy() const
-{
-    return featuredProxy;
 }
 
 bool ChannelManager::isAlert() const
@@ -265,13 +251,6 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
         if (chan){
             chan->setFavourite(true);
             resultsModel->updateChannelForView(chan);
-        }
-
-        //Update featured also
-        chan = featuredModel->find(channel->getId());
-        if (chan){
-            chan->setFavourite(true);
-            featuredModel->updateChannelForView(chan);
         }
 
         if (!isAccessTokenAvailable())
@@ -568,10 +547,6 @@ QVariantMap ChannelManager::getChannelVodsLastPlaybackPositions(const QString & 
 void ChannelManager::addToFavourites(const quint32 &id){
     Channel *channel = resultsModel->find(id);
 
-    if (!channel){
-        channel = featuredModel->find(id);
-    }
-
     if (channel){
 
         if (isAccessTokenAvailable() && user_id != 0) {
@@ -584,9 +559,6 @@ void ChannelManager::addToFavourites(const quint32 &id){
         emit addedChannel(channel->getId());
 
         resultsModel->updateChannelForView(channel);
-
-        //Update featured also
-        featuredModel->updateChannelForView(channel);
 
         if (!isAccessTokenAvailable())
             save();
@@ -612,13 +584,6 @@ void ChannelManager::removeFromFavourites(const quint32 &id){
 
         channel->setFavourite(false);
         resultsModel->updateChannelForView(channel);
-    }
-
-    //Update featured
-    channel = featuredModel->find(id);
-    if (channel){
-        channel->setFavourite(false);
-        featuredModel->updateChannelForView(channel);
     }
 
     if (!isAccessTokenAvailable())
@@ -665,8 +630,11 @@ void ChannelManager::searchChannels(QString q, const quint32 &offset, const quin
     if (clear)
         resultsModel->clear();
 
-    if (q.startsWith(":game ")){
-        q.replace(":game ", "");
+    if (q.isEmpty()) {
+        netman->getFeaturedStreams();
+    }
+    else if (q.startsWith("/game ")){
+        q.replace("/game ", "");
         netman->getStreamsForGame(q, offset, limit);
 
     } else {
@@ -698,13 +666,6 @@ void ChannelManager::addSearchResults(const QList<Channel*> &list, const int tot
     emit resultsUpdated(numAdded, total);
 }
 
-void ChannelManager::getFeatured()
-{
-    featuredModel->clear();
-
-    netman->getFeaturedStreams();
-}
-
 void ChannelManager::findPlaybackStream(const QString &serviceName)
 {
     netman->getChannelPlaybackStream(serviceName);
@@ -713,20 +674,6 @@ void ChannelManager::findPlaybackStream(const QString &serviceName)
 void ChannelManager::setAlert(const bool &val)
 {
     alert = val;
-}
-
-void ChannelManager::addFeaturedResults(const QList<Channel *> &list)
-{
-    foreach (Channel *channel, list){
-        if (favouritesModel->find(channel->getId()))
-            channel->setFavourite(true);
-    }
-
-    featuredModel->addAll(list);
-
-    qDeleteAll(list);
-
-    emit featuredUpdated();
 }
 
 void ChannelManager::updateFavourites(const QList<Channel*> &list)
@@ -744,7 +691,6 @@ bool ChannelManager::containsFavourite(const quint32 &q)
 void ChannelManager::updateStreams(const QList<Channel*> &list)
 {
     favouritesModel->updateStreams(list);
-    featuredModel->updateStreams(list);
     resultsModel->updateStreams(list);
     qDeleteAll(list);
 }
@@ -1152,7 +1098,6 @@ void ChannelManager::onNetworkAccessChanged(bool up)
         qDebug() << "Network went down";
         favouritesModel->setAllChannelsOffline();
         resultsModel->setAllChannelsOffline();
-        featuredModel->setAllChannelsOffline();
     }
 }
 int ChannelManager::getVolumeLevel() const {

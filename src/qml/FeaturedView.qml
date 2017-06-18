@@ -13,49 +13,24 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1
 import "components"
 
-Item {
-    //anchors.fill: parent
-
-    ViewHeader{
-        id: header
-        text: "Featured channels"
-        z: featured.z + 1
-    }
-
+Page {
     ChannelGrid {
+        id: featured
         property bool checked: false
 
-        id: featured
-
         anchors {
-            top: header.bottom
-            left: parent.left
-            right: parent.right
-            bottom : parent.bottom
-            margins: dp(10)
+            fill: parent
         }
 
         onVisibleChanged: {
-            if (visible && !checked){
-                g_cman.getFeatured()
-                checked = true
-                timer.restart()
-            }
+
         }
 
         model: g_featured
 
-        Timer {
-            id: timer
-            interval: 30000
-            running: false
-            repeat: false
-            onTriggered: {
-                featured.checked = false
-            }
-        }
+
     }
 }

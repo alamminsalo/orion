@@ -13,10 +13,11 @@
  */
 
 import QtQuick 2.5
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 
 //Channel.qml
-Rectangle {
+Pane {
     property int _id
     property string name
     property string title
@@ -28,18 +29,21 @@ Rectangle {
     property int viewers
     property string game
     property int imgSize: dp(148)
-    property int containerSize: dp(200)
+    property int containerSize: 180
 
     id: root
 
     width: containerSize
     height: width
-    border.color: "transparent"
-    border.width: dp(1)
+
     antialiasing: false
-    clip:true
-    color: "transparent"
-    radius: dp(5)
+    Material.elevation: 0
+
+    Behavior on Material.elevation {
+        NumberAnimation {
+            duration: 200
+        }
+    }
 
     Component.onCompleted: {
         imageShade.refresh()
@@ -57,10 +61,11 @@ Rectangle {
         clip: true
         color: "#000000"
 
-        SpinnerIcon {
+        BusyIndicator {
             id:_spinner
-            iconSize: dp(30)
-            anchors.fill: parent
+            anchors.centerIn: parent
+            anchors.verticalCenterOffset: -infoRect.height / 2
+            running: true
         }
 
         Image {
@@ -70,7 +75,6 @@ Rectangle {
             width: imgSize
             anchors.centerIn: container
 
-
             Component.onCompleted: {
                 if (root.scaleImage){
                     width = height
@@ -79,15 +83,15 @@ Rectangle {
 
             onProgressChanged: {
                 if (progress > 0.99)
-                    _spinner.visible = false
+                    _spinner.running = false
             }
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: 100
-                    easing.type: Easing.InCubic
-                }
-            }
+//            Behavior on width {
+//                NumberAnimation {
+//                    duration: 100
+//                    easing.type: Easing.InCubic
+//                }
+//            }
 
             Rectangle {
                 id: imageShade
@@ -102,12 +106,12 @@ Rectangle {
             }
         }
 
-        Icon {
+        Label {
             id: favIcon
-            icon: "fav"
+            text: "\ue87d"
+            font.family: "Material Icons"
             opacity: favourite ? 1 : 0
-            iconSize: dp(20)
-            iconColor: Styles.purple
+            color: Material.color(Material.accent)
             anchors {
                 top: container.top
                 right: container.right
@@ -124,9 +128,8 @@ Rectangle {
 
         Rectangle {
             id: infoRect
-            color: favourite ? Styles.purple : Styles.shadeColor
             opacity: .85
-            height: Math.floor(parent.height * 0.25)
+            height: parent.height * 0.25
 
             anchors {
                 left: container.left
@@ -135,15 +138,14 @@ Rectangle {
             }
         }
 
-        Text {
+        Label {
             id: channelTitle
             text: root.title
             elide: Text.ElideRight
-            color: online ? Styles.textColor : Styles.iconColor
+            //color: online ? Styles.textColor : Styles.iconColor
             anchors.fill: infoRect
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: Styles.titleFont.smaller
             wrapMode: Text.WordWrap
             font.bold: true
         }
@@ -152,8 +154,9 @@ Rectangle {
 
     function setHighlight(isActive){
         //imageShade.visible = !isActive && !root.online
-        channelImage.width = isActive ? Math.floor(imgSize * 1.2) : imgSize
-        root.color = isActive ? Styles.highlight : "transparent"
-        root.border.color = isActive ? Styles.border : "transparent"
+        //channelImage.width = isActive ? Math.floor(imgSize * 1.2) : imgSize
+        root.Material.elevation = isActive ? 8 : 0
+        //root.color = isActive ? Styles.highlight : "transparent"
+        //root.border.color = isActive ? Styles.border : "transparent"
     }
 }

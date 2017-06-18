@@ -15,8 +15,7 @@
 import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Controls 2.1
-import "styles.js" as Styles
-import "style"
+import QtQuick.Controls.Material 2.1
 
 ApplicationWindow {
     id: root
@@ -43,7 +42,7 @@ ApplicationWindow {
     }
 
     function fitToAspectRatio() {
-        height = view.width * 0.5625
+        height = view.width * 0.5625 + topbar.height
     }
 
     onClosing: {
@@ -85,6 +84,31 @@ ApplicationWindow {
         }
     }
 
+    footer: ToolBar {
+        id: connectionErrorRectangle
+
+        Label {
+            anchors.centerIn: parent
+            text: "Connection error"
+        }
+    }
+
+    function updateForNetworkAccess(up) {
+        if (up) {
+            connectionErrorRectangle.visible = false
+        }
+        else {
+            connectionErrorRectangle.visible = true
+        }
+    }
+
+    Connections {
+        target: netman
+        onNetworkAccessChanged: {
+            updateForNetworkAccess(up);
+        }
+    }
+
     Component.onCompleted: {
         height=Screen.height * 0.7
         width=height * 1.2
@@ -109,6 +133,8 @@ ApplicationWindow {
 
         g_cman.checkFavourites()
         pollTimer.start()
+
+        updateForNetworkAccess(netman.networkAccess());
     }
 
     Timer {
@@ -119,6 +145,16 @@ ApplicationWindow {
         onTriggered: {
             g_cman.checkFavourites()
         }
+    }
+
+    FontLoader {
+        source: "fonts/MaterialIcons-Regular.ttf"
+        name: "Material Icons"
+    }
+
+    FontLoader {
+        source: "fonts/NotoSans-Regular.ttf"
+        name: "Noto Sans"
     }
 }
 

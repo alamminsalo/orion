@@ -27,9 +27,9 @@ GridView {
     id: root
 
     highlightFollowsCurrentItem: false
-    cellHeight: dp(200)
-    maximumFlickVelocity: 800
+    cellHeight: 200
     cellWidth: cellHeight
+    maximumFlickVelocity: 800
 
     add: Transition {
         NumberAnimation {

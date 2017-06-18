@@ -22,19 +22,20 @@ Page {
     id: root
 
     ColumnLayout {
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
 
-        CheckBox {
+        Switch {
             id: alertOption
             checked: g_cman.isAlert()
             onClicked: {
                 g_cman.setAlert(checked)
             }
             text: "Enable notifications"
-            Layout.alignment: Qt.AlignCenter
         }
 
-        CheckBox {
+        Switch {
             id: notificationsOption
             enabled: alertOption.checked
 
@@ -43,7 +44,6 @@ Page {
                 g_cman.offlineNotifications = !g_cman.offlineNotifications
             }
             text: "Show offline notifications"
-            Layout.alignment: Qt.AlignCenter
         }
 
         OptionCombo {
@@ -53,38 +53,33 @@ Page {
 
             text: "Notification position"
             model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
-
-            Layout.alignment: Qt.AlignCenter
         }
 
-        CheckBox {
+        Switch {
             id: minStartupOption
             checked: g_cman.isMinimizeOnStartup()
             onClicked: {
                 g_cman.setMinimizeOnStartup(checked)
             }
             text: "Start minimized"
-            Layout.alignment: Qt.AlignCenter
         }
 
-        CheckBox {
+        Switch {
             id: closeToTrayOption
             checked: g_cman.isCloseToTray()
             onClicked: {
                 g_cman.setCloseToTray(checked)
             }
             text: "Close to tray"
-            Layout.alignment: Qt.AlignCenter
         }
 
-        CheckBox {
+        Switch {
             id: chatSwapOption
             checked: g_cman.swapChat
             onClicked: {
                 g_cman.swapChat = !g_cman.swapChat
             }
             text: "Swap Chat Side"
-            Layout.alignment: Qt.AlignCenter
         }
 
         OptionCombo {
@@ -108,8 +103,6 @@ Page {
             onSelectionChanged: {
                 g_cman.textScaleFactor = parseFloat(selection)
             }
-
-            Layout.alignment: Qt.AlignCenter
         }
 
         RowLayout {
@@ -156,7 +149,6 @@ Page {
                     }
                 }
             }
-            Layout.alignment: Qt.AlignCenter
         }
     }
 

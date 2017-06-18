@@ -14,8 +14,6 @@
 
 import QtQuick 2.5
 import QtQuick.Controls 2.1
-import "components"
-import "styles.js" as Styles
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 
@@ -25,76 +23,45 @@ ToolBar {
     property int selectedView: 0
     visible : !g_fullscreen
 
-    Behavior on width {
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
-        }
-    }
+    //Base font color
+    Material.foreground: Material.Grey
 
     function setView(index) {
         selectedView = index
     }
 
-    RowLayout {
+    TabBar {
+        id: tab
         anchors.fill: parent
-        //spacing: 0
+        currentIndex: selectedView
 
-        Button {
-            text: "Search"
+        property bool showIcons: root.width < 666
+        font.pointSize: !showIcons ? 13 : 16
+        font.family: showIcons ? "Material Icons" : "Noto Sans"
+
+        TabButton {
+            text: !tab.showIcons ? "Channels" : "\ue8b6"
             onClicked: selectedView = 0
-            checked: selectedView == 0
-            checkable: checked
-            Layout.fillWidth: true
-            flat: true
         }
-        Button {
-            text: "Featured"
+        TabButton {
+            text: !tab.showIcons ? "Followed" : "\ue87d"
             onClicked: selectedView = 1
-            checked: selectedView ==1
-            checkable: checked
-            Layout.fillWidth: true
-            flat:true
         }
-        Button {
-            text: "Followed"
+        TabButton {
+            text: !tab.showIcons ? "Games" : "\ue021"
             onClicked: selectedView = 2
-            checked: selectedView ==2
-            checkable: checked
-            Layout.fillWidth: true
-            flat:true
         }
-        Button {
-            text: "Games"
+        TabButton {
+            text: !tab.showIcons ? "VODs" : "\ue63a"
             onClicked: selectedView = 3
-            checked: selectedView ==3
-            checkable: checked
-            Layout.fillWidth: true
-            flat:true
         }
-        Button {
-            text: "VODs"
+        TabButton {
+            text: !tab.showIcons ? "Player" : "\ue038"
             onClicked: selectedView = 4
-            checked: selectedView == 4
-            checkable: checked
-            Layout.fillWidth: true
-            flat:true
         }
-        Button {
-            text: "Player"
+        TabButton {
+            text: !tab.showIcons ? "Settings" : "\ue8b8"
             onClicked: selectedView = 5
-            checked: selectedView == 5
-            checkable: checked
-            Layout.fillWidth: true
-            flat:true
-        }
-        Button {
-            text: "Settings"
-            onClicked: selectedView = 6
-            checked: selectedView == 6
-            checkable: checked
-            Layout.fillWidth: true
-            flat:true
         }
     }
 }
