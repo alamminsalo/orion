@@ -368,7 +368,7 @@ Page {
         Drawer {
             id: chatdrawer
             edge: g_cman.swapChat ? Qt.LeftEdge : Qt.RightEdge
-            y: 106
+            y: 96
 
             height: playerArea.height
             width: 300
