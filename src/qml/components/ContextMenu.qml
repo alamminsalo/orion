@@ -13,13 +13,10 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
 
 Menu {
     property variant item
-    property int state
 
     id: root
     visible: false
@@ -34,32 +31,4 @@ Menu {
     onAboutToHide: {
         g_contextMenuVisible = false
     }
-
-//    style: MenuStyle {
-//        frame: Rectangle {
-//                color: Styles.sidebarBg
-//        }
-
-//        itemDelegate {
-
-//            label: Text {
-//                id:_label
-//                text: styleData.text.split(";")[0]
-//                color: styleData.enabled ? Styles.textColor : Styles.disabled
-//                font.pixelSize: Styles.titleFont.smaller
-//                verticalAlignment: Text.AlignVCenter
-//                anchors {
-////                    top: _icon.top
-////                    bottom: _icon.bottom
-////                    left: _icon.right
-//                }
-//            }
-
-//            background: Rectangle {
-//                color: "#ffffff"
-//                opacity: 0.1
-//                visible: styleData.selected && styleData.enabled
-//            }
-//        }
-//    }
 }

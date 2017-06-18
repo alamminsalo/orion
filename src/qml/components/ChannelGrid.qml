@@ -31,12 +31,9 @@ CommonGrid {
     onItemRightClicked: {
         _menu.item = clickedItem
 
-        _watchLive.enabled = _menu.item.online
-
         _fav.text = (!allFavourites && !_menu.item.favourite) ? "Follow" : "Unfollow"
-        _menu.state = (!allFavourites && !_menu.item.favourite) ? 1 : 2
 
-        _menu.popup()
+        _menu.open()
     }
 
     onItemTooltipHover: {
@@ -67,27 +64,15 @@ CommonGrid {
     ContextMenu {
         id: _menu
 
-        function addRemoveFavourite(){
-            if (state === 1){
-                g_cman.addToFavourites(_menu.item._id)
-            } else if (state === 2){
-                g_cman.removeFromFavourites(_menu.item._id)
-            }
-        }
-
         MenuItem {
-            id: _watchLive
             text: "Watch live"
-            //text: "Watch;play"
             onTriggered: {
-                if (_menu.item.online){
-                    playerView.getStreams(_menu.item)
-                }
+                playerView.getStreams(_menu.item)
             }
         }
 
         MenuItem {
-            text: "Past broadcasts"
+            text: "VODs"
             //text: "Videos;video"
             onTriggered: {
                 vodsView.search(_menu.item)
@@ -104,7 +89,11 @@ CommonGrid {
         MenuItem {
             id: _fav
             onTriggered: {
-                _menu.addRemoveFavourite()
+                if (text === "Follow") {
+                    g_cman.addToFavourites(_menu.item._id)
+                } else {
+                    g_cman.removeFromFavourites(_menu.item._id)
+                }
             }
         }
     }

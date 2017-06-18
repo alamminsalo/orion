@@ -675,6 +675,8 @@ Page {
     }
 
     footer: ToolBar {
+        Material.background: Material.background
+        Material.elevation: 10
         visible: !chat.isAnonymous
         padding: 5
 

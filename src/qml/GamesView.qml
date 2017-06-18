@@ -95,7 +95,7 @@ Page {
 
         onItemRightClicked: {
             _menu.item = clickedItem
-            _menu.popup()
+            _menu.open()
         }
 
         onItemTooltipHover: {

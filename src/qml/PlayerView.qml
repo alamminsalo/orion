@@ -27,8 +27,7 @@ Page {
     property bool streamOnline: true
     property string curVodId
     property int lastSetPosition
-
-    property bool cursorHidden: false
+    property bool headersVisible: true
     property string currentQualityName
 
     //Minimode, bit ugly
@@ -334,6 +333,32 @@ Page {
             }
         }
 
+        MouseArea {
+            id: pArea
+            anchors.fill: parent
+            onDoubleClicked: g_fullscreen = !g_fullscreen
+            hoverEnabled: true
+            cursorShape: headersVisible ? Qt.ArrowCursor : Qt.BlankCursor
+            onPositionChanged: {
+                if (!timer.running)
+                    root.headersVisible = true
+                timer.restart()
+            }
+        }
+
+        Timer {
+            id: timer
+            interval: 3000
+            running: false
+            repeat: false
+            onTriggered: {
+                console.log("triggered!")
+                if (!footerArea.containsMouse && !headerArea.containsMouse) {
+                    headersVisible = false
+                }
+            }
+        }
+
         BusyIndicator {
             id: spinner
             anchors.centerIn: parent
@@ -357,8 +382,15 @@ Page {
     }
 
     header: ToolBar {
+        visible: root.headersVisible
         padding: 5
         Material.background: Material.background
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            id: headerArea
+        }
 
         RowLayout {
             anchors.fill: parent
@@ -368,6 +400,8 @@ Page {
                 font.bold: true
                 font.pointSize: 10
                 Layout.fillWidth: true
+                horizontalAlignment: Qt.AlignHCenter
+                clip: true
             }
 
             IconButtonFlat {
@@ -403,8 +437,15 @@ Page {
     }
 
     footer: ToolBar {
+        visible: root.headersVisible
         padding: 0
         Material.background: Material.background
+
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            id: footerArea
+        }
 
         Slider {
             id: seekBar
