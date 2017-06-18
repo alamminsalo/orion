@@ -13,16 +13,17 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
+import QtQuick.Layouts 1.1
 import "components"
 import "irc"
-import "styles.js" as Styles
 
-Item {
-//    anchors {
-//        left: parent.left
-//        bottom: parent.bottom
-//    }
+Page {
+    //    anchors {
+    //        left: parent.left
+    //        bottom: parent.bottom
+    //    }
 
     property int duration: -1
     property var currentChannel
@@ -37,7 +38,7 @@ Item {
 
     //Minimode, bit ugly
     property bool smallMode: false
-    property alias enableSmallMode: miniModeCheckBox.checked
+    //property alias enableSmallMode: miniModeCheckBox.checked
 
     Component.onCompleted: {
         var savedQuality = g_cman.getQuality();
@@ -48,16 +49,16 @@ Item {
     }
 
     //Animations, need to be declared BEFORE width, height binds
-//    Behavior on width {
-//        enabled: smallMode
-//        NumberAnimation {
-//            duration: 250
-//            easing.type: Easing.OutCubic
-//        }
-//    }
+    //    Behavior on width {
+    //        enabled: smallMode
+    //        NumberAnimation {
+    //            duration: 250
+    //            easing.type: Easing.OutCubic
+    //        }
+    //    }
 
-//    width: smallMode ? parent.width / 3 : parent.width
-//    height: smallMode ? width * 0.5625 : parent.height
+    //    width: smallMode ? parent.width / 3 : parent.width
+    //    height: smallMode ? width * 0.5625 : parent.height
 
     //Renderer interface
     property alias renderer: loader.item
@@ -78,7 +79,7 @@ Item {
             console.log("Added channel")
             if (currentChannel && currentChannel._id == chanid){
                 currentChannel.favourite = true
-                _favIcon.update()
+                favBtn.update()
             }
         }
 
@@ -86,7 +87,7 @@ Item {
             console.log("Deleted channel")
             if (currentChannel && currentChannel._id == chanid){
                 currentChannel.favourite = false
-                _favIcon.update()
+                favBtn.update()
             }
         }
 
@@ -214,8 +215,7 @@ Item {
                                              "preview": channel.preview,
         }
 
-        _favIcon.update()
-        _label.visible = false
+        favBtn.update()
         setWatchingTitle()
 
         if (isVod) {
@@ -242,7 +242,7 @@ Item {
     }
 
     function setHeaderText(text) {
-        headerText.text = text
+        title.text = text
     }
 
     function setWatchingTitle(){
@@ -256,19 +256,17 @@ Item {
     function loadStreams(streams) {
         var sourceNames = []
         for (var k in streams) {
-            //console.log(k + " => " + streams[k])
-            sourceNames.push(k)
+            sourceNames.splice(0, 0, k) //revert order
         }
 
         streamMap = streams
-
-        sourcesBox.entries = sourceNames
+        sourcesBox.model = sourceNames
 
         if (currentQualityName && streamMap[currentQualityName]) {
             sourcesBox.selectItem(currentQualityName);
             loadAndPlay(currentQualityName)
         } else {
-            sourcesBox.selectFirst();
+            sourcesBox.currentIndex = 0
         }
     }
 
@@ -302,15 +300,6 @@ Item {
     Connections {
         target: renderer
 
-        onStatusChanged: {
-            //console.log("Renderer status changed to " + renderer.status)
-            togglePause.icon = renderer.status != "PLAYING" ? "play" : "pause"
-        }
-
-        onVolumeChanged: {
-            //console.log("Renderer volume changed to " + renderer.volume)
-        }
-
         onPositionChanged: {
             var newPos = renderer.position;
             chatview.playerPositionUpdate(newPos);
@@ -341,12 +330,7 @@ Item {
 
     Item {
         id: playerArea
-        anchors {
-            top: parent.top
-            left: g_cman.swapChat ? (chatview.status == 1 ? chatview.right : parent.left) : parent.left
-            right: g_cman.swapChat ? (parent.right) : (chatview.status == 1 ? chatview.left : parent.right)
-            bottom: parent.bottom
-        }
+        anchors.fill: parent
 
         Loader {
             id: loader
@@ -378,487 +362,197 @@ Item {
         }
     }
 
-    Item {
-        //Player controls overlay
-        z: playerArea.z + 1
-
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: g_cman.swapChat ? chatview.right : parent.left
-            right: g_cman.swapChat ? parent.right : chatview.left
-        }
-
-        MouseArea{
-            anchors.fill: parent
-            hoverEnabled: true
-            propagateComposedEvents: false
-
-            //Hide cursor when headers hide
-            cursorShape: cursorHidden ? Qt.BlankCursor : Qt.ArrowCursor
-
-            onClicked: {
-                if (sourcesBox.open){
-                    sourcesBox.close()
-                }
-            }
-
-            onDoubleClicked: {
-                if (smallMode) {
-                    requestSelectionChange(4)
-                } else {
-                    g_fullscreen = !g_fullscreen
-                }
-            }
-
-            onPositionChanged: {
-                header.show()
-                footer.show()
-                headerTimer.restart()
-            }
-        }
-
-        PlayerHeader {
-            id: header
-            visible: !smallMode
-
-            MouseArea {
-                id: mAreaHeader
-                hoverEnabled: true
-                anchors.fill: parent
-                propagateComposedEvents: false
-            }
-
-            anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
-            }
-
-            Text {
-                id: headerText
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: miniModeContainer.left
-                    margins: dp(5)
-                }
-                fontSizeMode: Text.Fit
-                verticalAlignment: Text.AlignVCenter
-                color: Styles.textColor
-                font.pixelSize: Styles.titleFont.bigger
-                z: root.z + 1
-            }
-
-            Item {
-                id: miniModeContainer
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: favourite.left
-                    rightMargin: dp(5)
-                }
-                width: dp(50)
-
-                IconButton {
-                    id: miniModeCheckBox
-                    icon: "minimode"
-                    checkable: true
-                    checked: true
-
-                    anchors.centerIn: parent
-                }
-
-                ToolTip {
-                    visible: miniModeCheckBox.mouseArea.containsMouse
-                    delay: 666
-                    text: "Toggle floating player"
-                }
-            }
-
-            Item {
-                id: favourite
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: chatButton.left
-                    rightMargin: dp(5)
-                }
-                width: dp(50)
-
-                Icon {
-                    id: _favIcon
-                    icon: "fav"
-
-                    anchors.centerIn: parent
-
-                    function update(){
-                        if (currentChannel)
-                            iconColor= currentChannel.favourite ? Styles.purple : Styles.iconColor
-                        else
-                            iconColor= Styles.iconColor
-                    }
-                }
-
-                MouseArea {
-                    id: favArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onHoveredChanged: {
-                        if (containsMouse){
-                            _favIcon.iconColor = Styles.white
-                        } else {
-                            _favIcon.update()
-                        }
-                    }
-
-                    onClicked: {
-                        if (currentChannel){
-                            if (currentChannel.favourite)
-                                g_cman.removeFromFavourites(currentChannel._id)
-                            else{
-                                //console.log(currentChannel)
-                                g_cman.addToFavourites(currentChannel._id, currentChannel.name,
-                                                       currentChannel.title, currentChannel.info,
-                                                       currentChannel.logo, currentChannel.preview,
-                                                       currentChannel.game, currentChannel.viewers,
-                                                       currentChannel.online)
-                            }
-                        }
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle followed"
-                    }
-                }
-            }
-
-            Icon {
-                id: chatButton
-                icon: "chat"
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: parent.right
-                }
-                width: dp(50)
-                height: width
-
-                MouseArea {
-                    id: chatButtonArea
-                    anchors.fill: parent
-                    onClicked: {
-                        chatview.status++
-                    }
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle chat"
-                    }
-                }
-            }
-        }
-
-        PlayerHeader {
-            id: footer
-            //z: playerArea.z + 1
-            visible: !smallMode
-
-            anchors {
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-            }
-
-            MouseArea {
-                id: mAreaFooter
-                hoverEnabled: true
-                anchors.fill: parent
-                propagateComposedEvents: false
-            }
-
-            Item {
-                id: pauseButton
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    left: parent.left
-                    leftMargin: dp(5)
-                }
-
-                width: dp(50)
-
-                Icon {
-                    id: togglePause
-                    anchors.centerIn: parent
-                    icon: "play"//renderer.status != "PLAYING" ? "play" : "pause"
-                }
-
-                MouseArea {
-                    id: pauseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        renderer.togglePause()
-                    }
-
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        togglePause.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle playback"
-                    }
-                }
-            }
-
-            Icon {
-                id: reloadButton
-                icon: "reload"
-                anchors {
-                    left: pauseButton.right
-                    leftMargin: dp(5)
-                    verticalCenter: parent.verticalCenter
-                }
-
-                MouseArea {
-                    id: reloadArea
-                    anchors.fill: parent
-                    onClicked: reloadStream()
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        reloadButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Reload stream"
-                    }
-                }
-            }
-
-            SeekBar {
-                id: seekBar
-                visible: isVod
-
-                onUserChangedPosition: {
-                    seekTo(position)
-                }
-
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    left: reloadButton.right
-                    right: fitButton.left
-                }
-            }
-
-            Icon {
-                id: fitButton
-                icon: "crop"
-                anchors {
-                    right: vol.left
-                    verticalCenter: parent.verticalCenter
-                }
-                width: !g_fullscreen ? dp(50) : 0
-                height: width
-                visible: !g_fullscreen
-
-                MouseArea {
-                    id: fitButtonArea
-                    anchors.fill: parent
-                    onClicked: {
-                        if (!g_fullscreen) {
-                            g_rootWindow.fitToAspectRatio()
-                        }
-                    }
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Fit to 16:9 aspect ratio"
-                    }
-                }
-            }
-
-            VolumeSlider {
-                id: vol
-                z: parent.z + 1
-
-                anchors {
-                    right: fsButton.left
-                    verticalCenter: parent.verticalCenter
-                }
-                Component.onCompleted: {
-                    vol.value = g_cman.getVolumeLevel()
-                }
-
-                onValueChanged: {
-                    var val
-                    if (Qt.platform === "linux" && player_backend === "mpv")
-                        val = Math.max(0, Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
-                    else
-                        val = Math.max(0, Math.min(100, value))
-
-                    renderer.setVolume(val)
-                    g_cman.setVolumeLevel(val);
-                }
-            }
-
-            Icon {
-                id: fsButton
-                icon: !g_fullscreen ? "expand" : "compress"
-                anchors {
-                    right: sourcesBox.left
-                    verticalCenter: parent.verticalCenter
-                    rightMargin: dp(5)
-                }
-                width: dp(50)
-                height: width
-
-                MouseArea {
-                    id: fsButtonArea
-                    anchors.fill: parent
-                    onClicked: g_fullscreen = !g_fullscreen
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle fullscreen"
-                    }
-                }   
-            }
-
-            StreamSelectorComboBox {
-                //Contains data for sources
-                id: sourcesBox
-                width: dp(90)
-                height: dp(40)
-
-                anchors {
-                    right: parent.right
-                    verticalCenter: parent.verticalCenter
-                    rightMargin: dp(5)
-                }
-
-                onItemChanged: {
-                    loadAndPlay(item)
-                }
-            }
-        }
-
-        onVisibleChanged: {
-            if (visible){
-                header.show()
-                footer.show()
-            }
-        }
-
-        Text {
-            id: _label
-            text: "No stream currently playing"
-            font.pixelSize: Styles.titleFont.bigger
-            color: Styles.iconColor
-            anchors.centerIn: parent
-        }
-
-        Timer {
-            id: headerTimer
-            interval: 3000
-            running: false
-            repeat: false
-            onTriggered: {
-                if (canHideHeaders()) {
-                    header.hide()
-                    footer.hide()
-
-                    cursorHidden = true
-                }
-
-                else
-                    restart()
-            }
-            onRunningChanged: {
-                if (running) {
-                    cursorHidden = false
-                }
-            }
-        }
-
-        Icon {
-            id: stopButton
-
-            icon: "remove"
-
-            anchors {
-                top: parent.top
-                right: parent.right
-                rightMargin: dp(5)
-            }
-
-            visible: smallMode
-            width: dp(50)
-            height: width
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    root.smallMode = false
-                    root.enableSmallMode = false
-                }
-                hoverEnabled: true
-                onHoveredChanged: {
-                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                }
-                propagateComposedEvents: false
-            }
-        }
-    }
+    //    Item {
+    //        //Player controls overlay
+    //        visible: false
+    //        z: playerArea.z + 1
+
+    //        anchors {
+    //            top: parent.top
+    //            bottom: parent.bottom
+    //            left: g_cman.swapChat ? chatview.right : parent.left
+    //            right: g_cman.swapChat ? parent.right : chatview.left
+    //        }
+
+    //        MouseArea{
+    //            anchors.fill: parent
+    //            hoverEnabled: true
+    //            propagateComposedEvents: false
+
+    //            //Hide cursor when headers hide
+    //            cursorShape: cursorHidden ? Qt.BlankCursor : Qt.ArrowCursor
+
+    //            onClicked: {
+    //                if (sourcesBox.open){
+    //                    sourcesBox.close()
+    //                }playBtn
+    //            }
+
+    //            onDoubleClicked: {
+    //                if (smallMode) {
+    //                    requestSelectionChange(4)
+    //                } else {
+    //                    g_fullscreen = !g_fullscreen
+    //                }
+    //            }
+
+    //            onPositionChanged: {
+    //                header.show()
+    //                footer.show()
+    //                headerTimer.restart()
+    //            }
+    //        }
+
+    //        PlayerHeader {playBtn
+    //            id: header
+    //            visible: !smallMode
+
+    //            MouseArea {
+    //                id: mAreaHeader
+    //                hoverEnabled: true
+    //                anchors.fill: parent
+    //                propagateComposedEvents: false
+    //            }
+
+    //            anchors {
+    //                top: parent.top
+    //                left: parent.left
+    //                right: parent.right
+    //            }
+
+    //            Label {
+    //                id: headerText
+    //                anchors {
+    //                    left: parent.left
+    //                    top: parent.top
+    //                    bottom: parent.bottom
+    //                    right: miniModeContainer.left
+    //                    margins: dp(5)
+    //                }
+    //                fontSizeMode: Text.Fit
+    //                verticalAlignment: Text.AlignVCenter
+    //                z: root.z + 1
+    //            }
+
+    //            Item {
+    //                id: miniModeContainer
+    //                anchors {
+    //                    top: parent.top
+    //                    bottom: parent.bottom
+    //                    right: favourite.left
+    //                    rightMargin: dp(5)
+    //                }
+    //                width: dp(50)
+
+    //                IconButton {
+    //                    id: miniModeCheckBox
+    //                    icon: "minimode"
+    //                    checkable: true
+    //                    checked: true
+
+    //                    anchors.centerIn: parent
+    //                }
+
+    //                ToolTip {
+    //                    visible: miniModeCheckBox.mouseArea.containsMouse
+    //                    delay: 666
+    //                    text: "Toggle floating player"
+    //                }
+    //            }
+
+    //            Item {
+    //                id: favourite
+    //                anchors {
+    //                    top: parent.top
+    //                    bottom: parent.bottom
+    //                    right: chatButton.left
+    //                    rightMargin: dp(5)
+    //                }
+    //                width: dp(50)
+
+
+
+    //            Icon {
+    //                id: chatButton
+    //                icon: "chat"
+    //                anchors {
+    //                    top: parent.top
+    //                    bottom: parent.bottom
+    //                    right: parent.right
+    //                }
+    //                width: dp(50)
+    //                height: width
+
+    //                MouseArea {
+    //                    id: chatButtonArea
+    //                    anchors.fill: parent
+    //                    onClicked: {
+    //                        chatview.status++
+    //                    }
+    //                    hoverEnabled: true
+
+    //                    onHoveredChanged: {
+    //                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+    //                    }
+
+    //                    ToolTip {
+    //                        visible: parent.containsMouse
+    //                        delay: 666
+    //                        text: "Toggle chat"
+    //                    }
+    //                }
+    //            }
+    //        }
+
+    //        Icon {
+    //            id: stopButton
+
+    //            icon: "remove"
+
+    //            anchors {
+    //                top: parent.top
+    //                right: parent.right
+    //                rightMargin: dp(5)
+    //            }
+
+    //            visible: smallMode
+    //            width: dp(50)
+    //            height: width
+
+    //            MouseArea {
+    //                anchors.fill: parent
+    //                onClicked: {
+    //                    root.smallMode = false
+    //                    root.enableSmallMode = false
+    //                }
+    //                hoverEnabled: true
+    //                onHoveredChanged: {
+    //                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+    //                }
+    //                propagateComposedEvents: false
+    //            }
+    //        }
+    //    }
 
     ChatView {
         id: chatview
 
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-        }
+        edge: Qt.RightEdge
+        height: root.height
+        //width: 300
 
         // Use JS for side anchors so we can control the order the anchors are set when we change them.
         // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
 
         function updateAnchors() {
-            console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
-            if (g_cman.swapChat) {
-                anchors.right = undefined;
-                anchors.left = parent.left;
-            } else {
-                anchors.left = undefined;
-                anchors.right = parent.right;
-            }
+            //            console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
+            //            if (g_cman.swapChat) {
+            //                anchors.right = undefined;
+            //                anchors.left = parent.left;
+            //            } else {
+            //                anchors.left = undefined;
+            //                anchors.right = parent.right;
+            //            }
         }
 
         Component.onCompleted: {
@@ -873,7 +567,7 @@ Item {
         }
 
         width: visible && !smallMode ? chatWidth : 0
-        chatWidth: dp(250) * g_cman.textScaleFactor
+        chatWidth: 250 * g_cman.textScaleFactor
 
         Behavior on width {
             NumberAnimation {
@@ -883,34 +577,134 @@ Item {
         }
     }
 
-    function canHideHeaders() {
-        if (mAreaHeader.containsMouse)
-            return false
-        if (mAreaFooter.containsMouse)
-            return false
-        if (vol.open)
-            return false
-        if (sourcesBox.open)
-            return false
-        if (pauseArea.containsMouse)
-            return false
-        if (seekBar.containsMouse)
-            return false
-        if (reloadArea.containsMouse)
-            return false
-        if (chatButtonArea.containsMouse)
-            return false
-        if (fsButtonArea.containsMouse)
-            return false
-        if (miniModeCheckBox.mouseArea.containsMouse)
-            return false
-        if (fitButtonArea.containsMouse)
-            return false
-        if (favArea.containsMouse)
-            return false
-        if (sourcesBox.mouseArea.containsMouse)
-            return false
+    header: ToolBar {
+        padding: 5
+        Material.background: Material.background
 
-        return true
+        RowLayout {
+            anchors.fill: parent
+
+            Label {
+                id: title
+                font.bold: true
+                font.pointSize: 10
+                Layout.fillWidth: true
+            }
+
+            RoundButton {
+                id: favBtn
+                text: "Follow"
+                flat: true
+
+                function update() {
+                    highlighted = currentChannel.favourite === true
+                }
+
+                onClicked: {
+                    if (currentChannel){
+                        if (currentChannel.favourite)
+                            g_cman.removeFromFavourites(currentChannel._id)
+                        else{
+                            //console.log(currentChannel)
+                            g_cman.addToFavourites(currentChannel._id, currentChannel.name,
+                                                   currentChannel.title, currentChannel.info,
+                                                   currentChannel.logo, currentChannel.preview,
+                                                   currentChannel.game, currentChannel.viewers,
+                                                   currentChannel.online)
+                        }
+                    }
+                }
+            }
+
+            RoundButton {
+                id: chatBtn
+                text: "Chat"
+                onClicked: chatview.open()
+            }
+        }
+    }
+
+    footer: ToolBar {
+        padding: 0
+        Material.background: Material.background
+
+        SeekBar {
+            id: seekBar
+            visible: isVod
+            anchors {
+                verticalCenter: parent.top
+                left: parent.left
+                right: parent.right
+            }
+            onMoved: seekTo(value * position)
+        }
+
+        RowLayout {
+            anchors.fill: parent
+
+            RoundButton {
+                id: playBtn
+                //font.family: "Material Icons"
+                flat: true
+                text: renderer.status != "PLAYING" ? "play" : "pause"
+                onClicked: renderer.togglePause()
+            }
+            RoundButton {
+                id: resetBtn
+                //font.family: "Material Icons"
+                flat:true
+                text: "reset"
+                onClicked: reloadStream()
+            }
+
+            RoundButton {
+                id: cropBtn
+                text: "crop"
+                flat: true
+                onClicked: fitToAspectRatio()
+            }
+            RoundButton {
+                id: fsBtn
+                text: "FS"
+                flat: true
+                onClicked: g_fullscreen = !g_fullscreen
+            }
+
+            Slider {
+                id: volumeSlider
+
+                Component.onCompleted: {
+                    value = g_cman.getVolumeLevel() / 100.0
+                }
+
+                onValueChanged: {
+                    var val = value * 100.0
+                    if (Qt.platform === "linux" && player_backend === "mpv")
+                        val = Math.round(Math.log(val) / Math.log(100) * 100)
+
+                    renderer.setVolume(val)
+                    g_cman.setVolumeLevel(val);
+                }
+            }
+
+            ComboBox {
+                id: sourcesBox
+
+                onActivated: {
+                    loadAndPlay(sourcesBox.model[index])
+                }
+
+                function selectItem(name) {
+                    for (var i in sourcesBox.model) {
+                        if (sourcesBox.model[i] === name) {
+                            currentIndex = i;
+                            return;
+                        }
+                    }
+                    //None found, attempt to select first item
+                    currentIndex = 0
+                }
+            }
+        }
     }
 }

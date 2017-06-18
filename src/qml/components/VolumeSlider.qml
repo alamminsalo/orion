@@ -13,7 +13,7 @@
  */
 
 import QtQuick 2.5
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
 
 Item {
     property double value: 100
@@ -54,7 +54,7 @@ Item {
         anchors.fill: parent
         hoverEnabled: true
         onHoveredChanged: {
-            icon.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+            //icon.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
             refresh()
         }
 
@@ -80,7 +80,7 @@ Item {
 
     Rectangle {
         id: slider
-        color: Styles.shadeColor
+        //color: Styles.shadeColor
         height: open ? dp(160) : 0
         clip: true
 
@@ -121,7 +121,7 @@ Item {
 
 
         Rectangle {
-            color: Styles.iconColor
+            //color: Styles.iconColor
             id: sliderBar
             width: dp(4)
 

@@ -13,153 +13,134 @@
  */
 
 import QtQuick 2.5
-
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
 import "../util.js" as Util
 
-Item {
-    property int duration: 0
-    property int position: 0
-    property alias containsMouse: mouseArea.containsMouse
+Slider {
+    property int _duration: 0
+    property int _position: 0
+    //property alias containsMouse: mouseArea.containsMouse
 
     id: root
 
     signal userChangedPosition(int position)
 
     function setPosition(position, duration){
-        root.duration = duration
-        root.position = position
+        _duration = duration
+        _position = position
 
-        var fraction = position / duration
-        fillBar.width = Math.min(seekBar.width, Math.floor(fraction * seekBar.width))
-
-        time.updateTime()
+        if (position && duration)
+            value = position / duration
+        //time.updateTime()
     }
 
-    onDurationChanged: {
-        if (isVod)
-            time.duration = Util.getTime(duration)
-    }
+////    onDurationChanged: {
+////        if (isVod)
+////            time.duration = Util.getTime(duration)
+////    }
 
-    onPositionChanged: {
-        if (isVod)
-            time.position = Util.getTime(position)
-    }
+////    onPositionChanged: {
+////        if (isVod)
+////            time.position = Util.getTime(position)
+////    }
 
-    Rectangle {
-        id: seekBar
-        color: Styles.seekBar
+//    Slider {
+//        id: seekBar
+//        //color: Styles.seekBar
 
-        anchors {
-            left: parent.left
-            right: parent.right
-            leftMargin: dp(10)
-            rightMargin: dp(10)
+//        anchors {
+//            left: parent.left
+//            right: parent.right
+//            verticalCenter: parent.verticalCenter
+//        }
+//    }
 
-            verticalCenter: parent.verticalCenter
-        }
+//    MouseArea {
+//        id: mouseArea
+//        visible: isVod
+//        enabled: visible
+//        anchors {
+//            top: parent.top
+//            bottom: parent.bottom
+//            left: seekBar.left
+//            right: seekBar.right
+//            topMargin: dp(10)
+//            bottomMargin: dp(10)
+//        }
 
-        height: dp(6)
+//        cursorShape: Qt.PointingHandCursor
 
-        Rectangle {
-            color: "white"
-            id: fillBar
+//        hoverEnabled: true
 
-            width: 0
-            anchors {
-                left: parent.left
-                top: parent.top
-                bottom: parent.bottom
-            }
-        }
-    }
+//        propagateComposedEvents: false
+//        onClicked: {
+//            var _pos = Math.round((mouseX / seekBar.width) * duration)
+//            console.log("User changed pos: ", _pos, duration)
+//            userChangedPosition(_pos)
+//        }
 
-    MouseArea {
-        id: mouseArea
-        visible: isVod
-        enabled: visible
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: seekBar.left
-            right: seekBar.right
-            topMargin: dp(10)
-            bottomMargin: dp(10)
-        }
+//        onPositionChanged: {
+//            var _pos = Math.round((mouseX / seekBar.width) * duration)
+//            hoverlabel.text = Util.getTime(_pos)
+//        }
 
-        cursorShape: Qt.PointingHandCursor
+//        Rectangle {
+//            id: hoverlabel
+//            property alias text: _label.text
 
-        hoverEnabled: true
+//            anchors.bottom: parent.top
+//            height: dp(40)
+//            width: dp(100)
+//            visible: parent.containsMouse
+//            color: Styles.bg
 
-        propagateComposedEvents: false
-        onClicked: {
-            var _pos = Math.round((mouseX / seekBar.width) * duration)
-            console.log("User changed pos: ", _pos, duration)
-            userChangedPosition(_pos)
-        }
+//            x: mouseArea.mouseX - width / 2
 
-        onPositionChanged: {
-            var _pos = Math.round((mouseX / seekBar.width) * duration)
-            hoverlabel.text = Util.getTime(_pos)
-        }
+//            radius: dp(7)
 
-        Rectangle {
-            id: hoverlabel
-            property alias text: _label.text
+//            border {
+//                color: Styles.border
+//                width: dp(1)
+//            }
 
-            anchors.bottom: parent.top
-            height: dp(40)
-            width: dp(100)
-            visible: parent.containsMouse
-            color: Styles.bg
+//            Text {
+//                id: _label
+//                anchors.fill: parent
+//                verticalAlignment: Text.AlignVCenter
+//                horizontalAlignment: Text.AlignHCenter
+//                color: Styles.textColor
+//                font.pixelSize: Styles.titleFont.regular
+//            }
+//        }
+//    }
 
-            x: mouseArea.mouseX - width / 2
+//    Item {
 
-            radius: dp(7)
+//        property string duration
+//        property string position
 
-            border {
-                color: Styles.border
-                width: dp(1)
-            }
+//        id: time
+//        anchors {
+//            top: parent.top
+//            topMargin: dp(6)
+//            horizontalCenter: parent.horizontalCenter
+//        }
 
-            Text {
-                id: _label
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                color: Styles.textColor
-                font.pixelSize: Styles.titleFont.regular
-            }
-        }
-    }
+//        height: _time.contentHeight
+//        width: _time.contentWidth
 
-    Item {
+//        function updateTime() {
+//            _time.text = position + "/" + duration
+//        }
 
-        property string duration
-        property string position
-
-        id: time
-        anchors {
-            top: parent.top
-            topMargin: dp(6)
-            horizontalCenter: parent.horizontalCenter
-        }
-
-        height: _time.contentHeight
-        width: _time.contentWidth
-
-        function updateTime() {
-            _time.text = position + "/" + duration
-        }
-
-        Text {
-            id: _time
-            text: "hh:mm:ss / hh:mm:ss"
-            color: Styles.iconColor
-            font.bold: true
-            font.pixelSize: Styles.titleFont.extrasmall
-            wrapMode: Text.WordWrap
-            //renderType: Text.NativeRendering
-        }
-    }
+//        Text {
+//            id: _time
+//            text: "hh:mm:ss / hh:mm:ss"
+//            color: Styles.iconColor
+//            font.bold: true
+//            font.pixelSize: Styles.titleFont.extrasmall
+//            wrapMode: Text.WordWrap
+//            //renderType: Text.NativeRendering
+//        }
+//    }
 }
