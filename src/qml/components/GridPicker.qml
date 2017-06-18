@@ -29,7 +29,7 @@ Rectangle {
     property ListModel _filteredModel: ListModel {}
 
     property var _filterIndexMap
-    property int fontPixelSize: Styles.titleFont.smaller
+    //property int fontPixelSize: Styles.titleFont.smaller
 
     signal itemClicked(int index);
     signal closeRequested();
@@ -113,10 +113,7 @@ Rectangle {
         id: _emotesGrid
 
         anchors {
-            top: spacer.bottom
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
+            fill: parent
 
             topMargin: dp(5)
             bottomMargin: dp(5)
@@ -260,7 +257,7 @@ Rectangle {
             //selectionColor: Styles.purple
             focus: true
             selectByMouse: true
-            font.pixelSize: root.fontPixelSize
+            //font.pixelSize: root.fontPixelSize
             verticalAlignment: Text.AlignVCenter
 
             Keys.onReturnPressed: {
@@ -285,19 +282,6 @@ Rectangle {
             anchors.fill: _filterTextInput
             color: "#ffffff"
         }
-    }
-
-    Rectangle {
-        id: spacer
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: _filterTextInputArea.bottom
-        }
-        height: inputArea.visible ? dp(1) : 0
-        color: "#777777"
-
-        opacity: root._opacity || 0
     }
 
     function display(mX, mY){

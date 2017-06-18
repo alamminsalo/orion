@@ -16,14 +16,10 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
-import "components"
+//import "components"
 import "irc"
 
 Page {
-    //    anchors {
-    //        left: parent.left
-    //        bottom: parent.bottom
-    //    }
 
     property int duration: -1
     property var currentChannel
@@ -67,10 +63,6 @@ Page {
 
     //Fix minimode header bar
     clip: true
-
-    function isPlaying() {
-        return (renderer.status === "PLAYING")
-    }
 
     Connections {
         target: g_cman
@@ -197,7 +189,7 @@ Page {
 
                 console.log("Setting up VOD, duration " + vod.duration)
 
-                seekBar.setPosition(startPos, duration)
+                seekBar.value = startPos
             }
         } else {
             isVod = false;
@@ -309,7 +301,7 @@ Page {
                     g_cman.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
                 }
             }
-            seekBar.setPosition(newPos, duration);
+            seekBar.value = newPos
         }
 
         onPlayingResumed: {
@@ -534,46 +526,15 @@ Page {
     //        }
     //    }
 
-    ChatView {
-        id: chatview
-
-        edge: Qt.RightEdge
+    Drawer {
+        id: chatdrawer
+        edge: g_cman.swapChat ? Qt.LeftEdge : Qt.RightEdge
         height: root.height
-        //width: 300
+        width: 300
 
-        // Use JS for side anchors so we can control the order the anchors are set when we change them.
-        // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
-
-        function updateAnchors() {
-            //            console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
-            //            if (g_cman.swapChat) {
-            //                anchors.right = undefined;
-            //                anchors.left = parent.left;
-            //            } else {
-            //                anchors.left = undefined;
-            //                anchors.right = parent.right;
-            //            }
-        }
-
-        Component.onCompleted: {
-            chatview.updateAnchors();
-        }
-
-        Connections {
-            target: g_cman
-            onSwapChatChanged: {
-                chatview.updateAnchors();
-            }
-        }
-
-        width: visible && !smallMode ? chatWidth : 0
-        chatWidth: 250 * g_cman.textScaleFactor
-
-        Behavior on width {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
-            }
+        ChatView {
+            id: chatview
+            width: visible && !smallMode ? parent.width : 0
         }
     }
 
@@ -593,7 +554,8 @@ Page {
 
             RoundButton {
                 id: favBtn
-                text: "Follow"
+                font.family: "Material Icons"
+                text: "\ue87d"
                 flat: true
 
                 function update() {
@@ -616,10 +578,9 @@ Page {
                 }
             }
 
-            RoundButton {
+            IconButtonFlat {
                 id: chatBtn
-                text: "Chat"
-                onClicked: chatview.open()
+                text: "\ue0b7"
             }
         }
     }
@@ -628,15 +589,17 @@ Page {
         padding: 0
         Material.background: Material.background
 
-        SeekBar {
+        Slider {
             id: seekBar
+            from: 0
+            to: duration
             visible: isVod
             anchors {
                 verticalCenter: parent.top
                 left: parent.left
                 right: parent.right
             }
-            onMoved: seekTo(value * position)
+            //onMoved: seekTo(value)
         }
 
         RowLayout {
@@ -644,41 +607,56 @@ Page {
 
             RoundButton {
                 id: playBtn
-                //font.family: "Material Icons"
+                font.pointSize: 14
+                font.family: "Material Icons"
                 flat: true
-                text: renderer.status != "PLAYING" ? "play" : "pause"
+                text: renderer.status != "PLAYING" ? "\ue037" : "\ue034"
                 onClicked: renderer.togglePause()
             }
             RoundButton {
                 id: resetBtn
-                //font.family: "Material Icons"
+                font.pointSize: 14
+                font.family: "Material Icons"
                 flat:true
-                text: "reset"
+                text: "\ue5d5"
                 onClicked: reloadStream()
+            }
+
+            //spacer
+            Item {
+                Layout.fillWidth: true
             }
 
             RoundButton {
                 id: cropBtn
-                text: "crop"
+                font.pointSize: 14
+                font.family: "Material Icons"
+                text: "\ue3be"
                 flat: true
                 onClicked: fitToAspectRatio()
             }
+
             RoundButton {
                 id: fsBtn
-                text: "FS"
+                font.pointSize: 14
+                font.family: "Material Icons"
+                text: "\ue5d0"
                 flat: true
                 onClicked: g_fullscreen = !g_fullscreen
             }
 
             Slider {
                 id: volumeSlider
+                from: 0
+                to: 100
+                width: 80
 
                 Component.onCompleted: {
-                    value = g_cman.getVolumeLevel() / 100.0
+                    value = g_cman.getVolumeLevel()
                 }
 
                 onValueChanged: {
-                    var val = value * 100.0
+                    var val = value
                     if (Qt.platform === "linux" && player_backend === "mpv")
                         val = Math.round(Math.log(val) / Math.log(100) * 100)
 
