@@ -38,7 +38,8 @@
         <file>fonts/MaterialIcons-Regular.ttf</file>
         <file>SearchBar.qml</file>
         <file>irc/EmoteSelector.qml</file>
-        <file>IconButtonFlat.qml</file>
+        <file>components/IconButtonFlat.qml</file>
         <file>irc/ViewerList.qml</file>
+        <file>components/InfoDrawer.qml</file>
     </qresource>
 </RCC>

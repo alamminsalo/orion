@@ -82,11 +82,11 @@ Item {
 //                    }
 //                }
 
-                Component.onCompleted: {
-                    if (root.scaleImage){
-                        width = height
-                    }
-                }
+//                Component.onCompleted: {
+//                    if (root.scaleImage){
+//                        width = height
+//                    }
+//                }
             }
 
             Rectangle {

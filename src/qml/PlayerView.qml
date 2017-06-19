@@ -17,6 +17,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 import "irc"
+import "components"
 
 Page {
 
@@ -383,7 +384,6 @@ Page {
 
     header: ToolBar {
         visible: root.headersVisible
-        padding: 5
         Material.background: Material.background
 
         MouseArea {
@@ -431,7 +431,7 @@ Page {
             IconButtonFlat {
                 id: chatBtn
                 onClicked: chatdrawer.open()
-                text: "\ue0b7"
+                text: "\ue0ca"
             }
         }
     }

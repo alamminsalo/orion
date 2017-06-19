@@ -12,7 +12,7 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1
 import QtQuick 2.5
 
 CommonGrid {
@@ -22,19 +22,7 @@ CommonGrid {
     tooltipEnabled: true
 
     onItemClicked: {
-        if (currentItem.online){
-            playerView.getStreams(clickedItem)
-        } else {
-            playerView.getChat(clickedItem)
-        }
-    }
-
-    onItemRightClicked: {
-        _menu.item = clickedItem
-
-        _fav.text = (!allFavourites && !_menu.item.favourite) ? "Follow" : "Unfollow"
-
-        _menu.open()
+        infoDrawer.show(clickedItem)
     }
 
     onItemTooltipHover: {
@@ -62,43 +50,6 @@ CommonGrid {
         }
     }
 
-    ContextMenu {
-        id: _menu
-
-        MenuItem {
-            text: "Watch live"
-            onTriggered: {
-                playerView.getStreams(_menu.item)
-            }
-        }
-
-        MenuItem {
-            text: "VODs"
-            //text: "Videos;video"
-            onTriggered: {
-                vodsView.search(_menu.item)
-            }
-        }
-
-        MenuItem {
-            text: "Open chat"
-            onTriggered: {
-                playerView.getChat(_menu.item);
-            }
-        }
-
-        MenuItem {
-            id: _fav
-            onTriggered: {
-                if (text === "Follow") {
-                    g_cman.addToFavourites(_menu.item._id)
-                } else {
-                    g_cman.removeFromFavourites(_menu.item._id)
-                }
-            }
-        }
-    }
-
     delegate: Channel {
         _id: model.id
         name: model.serviceName
@@ -113,4 +64,9 @@ CommonGrid {
         width: root.cellWidth
     }
 
+    InfoDrawer {
+        id: infoDrawer
+        edge: Qt.BottomEdge
+        width: parent.width
+    }
 }

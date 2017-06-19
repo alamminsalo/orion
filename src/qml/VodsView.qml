@@ -12,7 +12,7 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1
 import QtQuick 2.5
 import "components"
 import "util.js" as Util
@@ -79,15 +79,19 @@ Item{
         }
 
         model: vodsModel
+
         delegate: Video {
             _id: model.id
             title: model.title
             views: model.views
             preview: model.preview
+            logo: preview
             duration: model.duration
             position: channelVodPositions[model.id] || 0
             game: model.game
             createdAt: model.createdAt
+
+            width: vods.cellWidth
         }
 
         onItemClicked: {
@@ -112,7 +116,7 @@ Item{
                _furthestPlayedMenuItem.text = "Watch video from furthest played";
             }
 
-            _menu.popup();
+            _menu.open()
         }
 
         onItemTooltipHover: {
