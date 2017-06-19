@@ -81,6 +81,7 @@ Page {
             preview: model.preview
             viewers: model.viewers
             online: true
+            width: games.cellWidth
         }
 
         function checkScroll(){
@@ -115,11 +116,6 @@ Page {
         }
 
         onAtYEndChanged: checkScroll()
-
-        Connections {
-            target: g_cman
-
-        }
 
         ContextMenu {
             id: _menu

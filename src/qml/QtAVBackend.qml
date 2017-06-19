@@ -14,9 +14,6 @@
 
 import QtQuick 2.5
 import QtAV 1.7
-import "components"
-import "irc"
-import "styles.js" as Styles
 
 /* Interface for backend Mpv
 

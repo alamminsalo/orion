@@ -16,16 +16,20 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import "components"
-import "styles.js" as Styles
 
 Page {
     id: root
     padding: 20
 
-    property int itemWidth: 400
+    property int itemWidth: 300
 
     Flow {
-        anchors.fill: parent
+        anchors {
+            top: parent.top
+            bottom: parent.bottom
+            horizontalCenter: parent.horizontalCenter
+        }
+
         flow: Flow.TopToBottom
         spacing: 20
 

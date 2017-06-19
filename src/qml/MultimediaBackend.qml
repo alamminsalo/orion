@@ -14,9 +14,6 @@
 
 import QtQuick 2.5
 import QtMultimedia 5.5
-import "components"
-import "irc"
-import "styles.js" as Styles
 
 /* Interface for backend Multimedia
 

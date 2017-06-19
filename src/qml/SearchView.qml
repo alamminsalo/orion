@@ -79,9 +79,7 @@ Page {
     ChannelGrid {
         id: channels
 
-        anchors {
-            fill: parent
-        }
+        anchors.fill: parent
 
         model: g_results
 

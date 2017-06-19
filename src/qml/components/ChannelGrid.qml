@@ -16,6 +16,7 @@ import QtQuick.Controls 1.4
 import QtQuick 2.5
 
 CommonGrid {
+    id: root
     property bool allFavourites : false
 
     tooltipEnabled: true
@@ -109,6 +110,7 @@ CommonGrid {
         online: model.online
         game: model.game
         favourite: model.favourite
+        width: root.cellWidth
     }
 
 }

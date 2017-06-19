@@ -13,10 +13,7 @@
  */
 
 import QtQuick 2.5
-import "components"
 import mpv 1.0
-import "irc"
-import "styles.js" as Styles
 
 /* Interface for backend Mpv
 

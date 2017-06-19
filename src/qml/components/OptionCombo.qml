@@ -15,7 +15,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
-import "../styles.js" as Styles
 
 RowLayout {
     property alias text: label.text
@@ -30,5 +29,6 @@ RowLayout {
 
     ComboBox {
         id: combo
+        font.pointSize: 10
     }
 }

@@ -27,9 +27,10 @@ GridView {
     id: root
 
     highlightFollowsCurrentItem: false
-    cellHeight: 200
-    cellWidth: cellHeight
-    maximumFlickVelocity: 800
+
+    cellWidth: width / Math.floor(width / 190) - 1
+    cellHeight: cellWidth
+    maximumFlickVelocity: 1000
 
     add: Transition {
         NumberAnimation {
@@ -50,7 +51,6 @@ GridView {
     }
 
     function setFocus(){
-
         if (mArea.containsMouse) {
             root.currentIndex = indexAt(contentX + mArea.mouseX, contentY + mArea.mouseY)
             if (tooltipEnabled)

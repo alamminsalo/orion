@@ -17,7 +17,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 
 //Channel.qml
-Pane {
+Item {
     property int _id
     property string name
     property string title
@@ -28,16 +28,11 @@ Pane {
     property bool favourite: false
     property int viewers
     property string game
-    property int imgSize: 148
-    property int containerSize: 180
+    property int imgSize: width - 24
 
     id: root
-
-    width: containerSize
+    implicitWidth: 180
     height: width
-
-    antialiasing: false
-    Material.elevation: 0
 
     Behavior on Material.elevation {
         NumberAnimation {
@@ -53,31 +48,44 @@ Pane {
         imageShade.refresh()
     }
 
-    Rectangle {
-        id: container
+    Pane {
+        id: innerPane
+        Material.elevation: 0
         height: imgSize
         width: height
         anchors.centerIn: parent
-        clip: true
-        color: "#000000"
 
-        BusyIndicator {
-            id:_spinner
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: -infoRect.height / 2
-            running: channelImage.progress < 1
-        }
+        Rectangle {
+            id: container
+            clip: true
+            color: "#000000"
+            anchors.fill: parent
+            anchors.margins: 10
 
-        Image {
-            id: channelImage
-            source: root.logo
-            fillMode: Image.PreserveAspectFit
-            width: imgSize
-            anchors.centerIn: container
+            BusyIndicator {
+                id:_spinner
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: -infoRect.height / 2
+                running: channelImage.progress < 1
+            }
 
-            Component.onCompleted: {
-                if (root.scaleImage){
-                    width = height
+            Image {
+                id: channelImage
+                source: root.logo
+                fillMode: Image.PreserveAspectFit
+                width: imgSize - 20
+                anchors.centerIn: parent
+
+//                Behavior on width {
+//                    NumberAnimation {
+//                        duration: 100
+//                    }
+//                }
+
+                Component.onCompleted: {
+                    if (root.scaleImage){
+                        width = height
+                    }
                 }
             }
 
@@ -91,60 +99,55 @@ Pane {
                     opacity = root.online ? 0 : .8
                 }
             }
-        }
-
-        Label {
-            id: favIcon
-            text: "\ue87d"
-            font.family: "Material Icons"
-            opacity: favourite ? 1 : 0
-            color: Material.color(Material.accent)
-            font.pointSize: 14
-            anchors {
-                top: container.top
-                right: container.right
-                margins: 10
-            }
-
-            Behavior on opacity{
-                NumberAnimation{
-                    duration: 200
-                    easing.type: Easing.OutCubic
-                }
-            }
-        }
-
-        Pane {
-            id: infoRect
-            opacity: .85
-            height: parent.height * 0.25
-
-            anchors {
-                left: container.left
-                right: container.right
-                bottom: container.bottom
-            }
 
             Label {
-                id: channelTitle
-                text: root.title
-                elide: Text.ElideRight
-                //color: online ? Styles.textColor : Styles.iconColor
-                anchors.fill: parent
-                verticalAlignment: Text.AlignVCenter
-                horizontalAlignment: Text.AlignHCenter
-                wrapMode: Text.WordWrap
-                font.bold: true
+                id: favIcon
+                text: "\ue87d"
+                font.family: "Material Icons"
+                opacity: favourite ? 1 : 0
+                color: Material.color(Material.accent)
+                font.pointSize: 14
+                anchors {
+                    top: container.top
+                    right: container.right
+                    margins: 10
+                }
+
+                Behavior on opacity{
+                    NumberAnimation{
+                        duration: 200
+                        easing.type: Easing.OutCubic
+                    }
+                }
+            }
+
+            Pane {
+                id: infoRect
+                opacity: .85
+                height: parent.height * 0.25
+
+                anchors {
+                    left: container.left
+                    right: container.right
+                    bottom: container.bottom
+                }
+
+                Label {
+                    id: channelTitle
+                    text: root.title
+                    elide: Text.ElideRight
+                    anchors.fill: parent
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    wrapMode: Text.WordWrap
+                    font.bold: true
+                }
             }
         }
     }
 
-
     function setHighlight(isActive){
-        //imageShade.visible = !isActive && !root.online
-        //channelImage.width = isActive ? Math.floor(imgSize * 1.2) : imgSize
-        root.Material.elevation = isActive ? 10 : 0
-        //root.color = isActive ? Styles.highlight : "transparent"
-        //root.border.color = isActive ? Styles.border : "transparent"
+        //channelImage.width = isActive ? imgSize : imgSize - 20
+        innerPane.Material.elevation = isActive ? 12 : 0
     }
 }
