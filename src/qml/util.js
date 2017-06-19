@@ -194,3 +194,42 @@ function inverseRegex(s) {
 
     return out;
 }
+
+function regexExactMatch(regex, text) {
+    var match = regex.exec(text);
+    return match && match[0] === text;
+}
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    var minBrightness = 85;
+    var maxBrightness = 240;
+    var brightnessRange = maxBrightness - minBrightness + 1;
+    for (var i = 0; i < 3; i++ ) {
+        var colorVal = minBrightness + Math.floor(brightnessRange * Math.random());
+        color += letters[Math.floor(colorVal / 16)] + letters[colorVal % 16];
+    }
+    return color;
+}
+
+function keysStr(obj) {
+    var parts = [];
+    for (var i in obj) {
+        parts.push(i);
+    }
+    return parts.join(", ");
+}
+
+function objectAssign() {
+    var target = arguments[0];
+    for (var i = 1; i < arguments.length; i++) {
+        var source = arguments[i];
+        for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+                target[key] = source[key];
+            }
+        }
+    }
+    return target;
+}

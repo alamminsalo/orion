@@ -41,5 +41,6 @@
         <file>components/IconButtonFlat.qml</file>
         <file>irc/ViewerList.qml</file>
         <file>components/InfoDrawer.qml</file>
+        <file>irc/ChatMessagesView.qml</file>
     </qresource>
 </RCC>

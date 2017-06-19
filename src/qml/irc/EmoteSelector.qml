@@ -21,8 +21,6 @@ RoundButton {
     property bool pickerLoaded: false
     property var pickerChannelLoaded: null
     
-    visible: root.chatViewVisible
-    
     font.family: "Material Icons"
     flat: true
     text: "\ue87c"

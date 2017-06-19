@@ -12,23 +12,15 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.0
-//import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
-import QtQuick.Layouts 1.1
-//import "../fonts/fontAwesome.js" as FontAwesome
-//import "../styles.js" as Styles
+import QtQuick.Layouts 1.3
 import "../components"
 import "../util.js" as Util
-import "../"
 
 Page {
     id: root
-
-    property bool chatViewVisible: root.width > 0
-    property bool viewerListEnabled: false
 
     onVisibleChanged: {
         if (visible) {
@@ -43,12 +35,12 @@ Page {
             _emoteButton.clearChannelSpecificEmotes()
             chat.lastBttvChannelEmotes = null;
         }
-        chatModel.clear()
+        list.chatModel.clear()
     }
 
     function joinChannel(channel, channelId) {
         if (channel !== chat.channel || chat.replayMode) {
-            viewerListEnabled = false;
+            chatContainer.currentIndex = 0
             cleanupPrevChannel()
             chat.joinChannel(channel, channelId)
         }
@@ -60,7 +52,7 @@ Page {
     }
 
     function replayChat(channelName, channelId, vodId, startEpochTime, startPos) {
-        viewerListEnabled = false;
+        chatContainer.currentIndex = 0
         cleanupPrevChannel()
         chat.leaveChannel()
         chat.replayChat(channelName, channelId, vodId, startEpochTime, startPos);
@@ -159,87 +151,25 @@ Page {
             text: "\ue7fb"
 
             enabled: (!isVod && currentChannel && currentChannel.name) ? true : false
+            highlighted: chatContainer.currentIndex === 1
 
             onClicked: {
-                viewerListEnabled = !viewerListEnabled
-            }
-
-            ToolTip {
-                delay: 666
-                text: "Viewer List"
+                chatContainer.currentIndex = chatContainer.currentIndex === 1  ? 0 : 1
             }
         }
     }
 
-    Item {
+    StackLayout {
         id: chatContainer
 
         anchors.fill: parent
 
-        ViewerList {
-            id: viewerList
-            enabled: viewerListEnabled
+        ChatMessagesView {
+            id: list
         }
 
-        ListView {
-            id: list
-
-            visible: !viewerList.enabled && root.chatViewVisible
-
-            property bool lock: true
-            property int scrollbuf: 0
-            property int previousY: 0
-
-            model: ListModel {
-                id: chatModel
-
-                onCountChanged: {
-                    if (list.lock)
-                        list.positionViewAtEnd()
-
-                    //Limit msg count in list
-                    if (chatModel.count > 300) {
-                        chatModel.remove(0, 1)
-                    }
-                }
-            }
-
-            clip: true
-            highlightFollowsCurrentItem: false
-            spacing: 10
-            boundsBehavior: Flickable.StopAtBounds
-
-            delegate: ChatMessage {
-                user: model.user
-                msg: model.message
-                jsonBadgeEntries: model.jsonBadgeEntries
-                isAction: model.isAction
-                emoteDirPath: chat.emoteDirPath
-                isChannelNotice: model.isChannelNotice
-                systemMessage: model.systemMessage
-                isWhisper: model.isWhisper
-                //highlightOpacity: root._opacity
-
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                }
-            }
-
-            anchors {
-                fill: parent
-            }
-
-            onContentYChanged: {
-                if (atYEnd)
-                    lock = true;
-                else if (scrollbuf < 0)
-                    lock = false
-                else if (previousY > contentY)
-                    scrollbuf--
-
-                previousY = contentY
-            }
+        ViewerList {
+            id: viewerList
         }
 
         EmotePicker {
@@ -349,24 +279,19 @@ Page {
                 }
             }
 
-            function regexExactMatch(regex, text) {
-                var match = regex.exec(text);
-                return match && match[0] === text;
-            }
-
             function initEmotesMaps() {
                 var plainText = /^[\da-z]+$/i;
-                _textEmotesMap = {};
-                _regexEmotesList = [];
+                chat._textEmotesMap = {};
+                chat._regexEmotesList = [];
                 var emoteSets = lastEmoteSets;
                 for (var i in emoteSets) {
                     //console.log("  ", i);
                     var entry = emoteSets[i];
                     for (var emoteId in entry) {
                         var emoteText = entry[emoteId];
-                        if (regexExactMatch(plainText, emoteText)) {
+                        if (Util.regexExactMatch(plainText, emoteText)) {
                             //console.log("adding plain text emote", emoteText, emoteId);
-                            _textEmotesMap[emoteText] = emoteId;
+                            chat._textEmotesMap[emoteText] = emoteId;
                         } else {
                             //Just checking whether our invert text has entities is fine for all the existing global emotes
                             //TODO actually parse the entire regex so we don't miss any cases that match html entities
@@ -374,7 +299,7 @@ Page {
                             var decodedText = Util.decodeHtml(htmlText);
                             var useHtmlDomain = htmlText != decodedText;
                             //console.log("adding regex emote", emoteText, emoteId, "useHtmlDomain:", useHtmlDomain);
-                            _regexEmotesList.push({"regex": new RegExp(emoteText), "emoteId": emoteId, "useHtmlDomain": useHtmlDomain});
+                            chat._regexEmotesList.push({"regex": new RegExp(emoteText), "emoteId": emoteId, "useHtmlDomain": useHtmlDomain});
                         }
                     }
                 }
@@ -394,36 +319,15 @@ Page {
                         matchInput = Util.encodeHtml(word);
                         //console.log(matchInput)
                     }
-                    if (regexExactMatch(entry.regex, matchInput)) {
+                    if (Util.regexExactMatch(entry.regex, matchInput)) {
                         return entry.emoteId;
                     }
                 }
                 return null;
             }
 
-            function getRandomColor() {
-                var letters = '0123456789ABCDEF';
-                var color = '#';
-                var minBrightness = 85;
-                var maxBrightness = 240;
-                var brightnessRange = maxBrightness - minBrightness + 1;
-                for (var i = 0; i < 3; i++ ) {
-                    var colorVal = minBrightness + Math.floor(brightnessRange * Math.random());
-                    color += letters[Math.floor(colorVal / 16)] + letters[colorVal % 16];
-                }
-                return color;
-            }
-
             onSetEmotePath: {
                 emoteDirPath = value
-            }
-
-            function keysStr(obj) {
-                var parts = [];
-                for (var i in obj) {
-                    parts.push(i);
-                }
-                return parts.join(", ");
             }
 
             onMessageReceived: {
@@ -434,7 +338,7 @@ Page {
                 }
 
                 if (!colors[user]) {
-                    colors[user] = getRandomColor()
+                    colors[user] = Util.getRandomColor()
                 }
 
                 // ListElement doesn't support putting in an array value, ugh.
@@ -466,7 +370,7 @@ Page {
                         var versionObj = badgeSetData[versionStr];
                         if (versionObj == null) {
                             console.log("  beta badge set for", badgeName, "has no version entry for", versionStr);
-                            console.log("  available versions are", keysStr(badgeSetData))
+                            console.log("  available versions are", Util.keysStr(badgeSetData))
                         } else {
                             var devicePixelRatio = 1.0;
                             if (Util.endsWith(badgeLocalUrl, "-image_url_2x")) {
@@ -503,7 +407,7 @@ Page {
 
                 var jsonBadgeEntries = JSON.stringify(badgeEntries);
 
-                chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
+                list.chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
                 list.scrollbuf = 6
             }
 
@@ -523,19 +427,6 @@ Page {
                 }
             }
 
-            function objectAssign() {
-                var target = arguments[0];
-                for (var i = 1; i < arguments.length; i++) {
-                    var source = arguments[i];
-                    for (var key in source) {
-                        if (source.hasOwnProperty(key)) {
-                            target[key] = source[key];
-                        }
-                    }
-                }
-                return target;
-            }
-
             onChannelBadgeBetaUrlsLoaded: {
                 console.log("onChannelBadgeBetaUrlsLoaded for channel", channel, "current channel is", chat.channelId.toString());
                 if (channel == chat.channelId.toString()) {
@@ -553,7 +444,7 @@ Page {
                 }
 
                 // assemble
-                lastBetaBadgeSetData = objectAssign({}, globalBetaBadgeSetData, lastChannelBetaBadgeSetData);
+                lastBetaBadgeSetData = Util.objectAssign({}, globalBetaBadgeSetData, lastChannelBetaBadgeSetData);
             }
 
             onClear: {

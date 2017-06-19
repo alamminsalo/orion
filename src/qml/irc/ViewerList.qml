@@ -1,16 +1,11 @@
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
-import "../components"
-import "../util.js" as Util
-import "../"
 
-Rectangle {
-    id: viewerList
+Item {
+    id: root
     property bool loading: true
-
-   // height: enabled ? parent.height : 0
     
     anchors {
         bottom: parent.bottom
@@ -18,21 +13,10 @@ Rectangle {
         right: parent.right
     }
     
-    Behavior on height {
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
-        }
-    }
-    
-    z: 10
-    
-    //opacity: root._opacity
-    
-    onEnabledChanged: {
-        if (enabled) {
-            viewerList.loading = true;
-            viewerListModel.clear();
+    onVisibleChanged: {
+        if (visible) {
+            root.loading = true;
+            viewerListModel.clear()
             g_cman.loadChatterList(chat.channel);
         }
     }
@@ -40,35 +24,12 @@ Rectangle {
     BusyIndicator {
         id: spinner
         anchors.centerIn: parent
-        running: viewerList.loading && viewerList.enabled
-    }
-    
-    Item {
-        id: viewerListHeading
-        visible: viewerList.enabled
-        anchors {
-            bottom: parent.top
-            left: parent.left
-            right: parent.right
-        }
-        
-        height: dp(40)
-        
-        Label {
-            anchors.centerIn: parent
-            text: "Viewer List"
-            font.bold: true
-        }
+        running: root.loading
     }
     
     ListView {
-        anchors {
-            bottom: parent.bottom
-            left: parent.left
-            right: parent.right
-            top: viewerListHeading.bottom
-        }
-        
+        anchors.fill: parent
+
         model: ListModel {
             id: viewerListModel
         }
@@ -76,10 +37,10 @@ Rectangle {
         Connections {
             target: g_cman
             onChatterListLoaded: {
-                viewerList.loading = false;
-                
+                root.loading = false;
                 var groupOrder = ["staff", "global_mods", "admins", "moderators", "viewers"];
-                
+
+                var viewers = []
                 for (var j = 0; j < groupOrder.length; j++) {
                     var groupName = groupOrder[j];
                     var group = chatters[groupName];
@@ -98,12 +59,7 @@ Rectangle {
         clip: true
         delegate: Label {
             text: user
-            anchors {
-                fill: parent
-                leftMargin: dp(5)
-                rightMargin: dp(5)
-            }
-            font.capitalization: Font.Capitalize
+            //font.capitalization: Font.Capitalize
         }
         
         section {
@@ -112,6 +68,7 @@ Rectangle {
             delegate: Row {
                 height: dp(50)
                 Label {
+                    anchors.verticalCenter: parent.verticalCenter
                     font.capitalization: Font.AllUppercase
                     text: section
                 }

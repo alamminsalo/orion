@@ -221,7 +221,7 @@ Item {
                 }
               }
 
-              Label {
+              Text {
                   id: _emoteImgSuffixText
                   text: msgItem.textSuffix
                   color: msgItem.textSuffixColor
