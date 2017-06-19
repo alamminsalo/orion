@@ -34,13 +34,14 @@ Drawer {
         fillMode: Image.PreserveAspectFit
         anchors {
             top: parent.top
+            left: parent.left
             bottom: parent.bottom
         }
     }
 
     RowLayout {
         anchors.fill: parent
-        anchors.rightMargin: 10
+        anchors.margins: 10
 
         ColumnLayout {
             Layout.fillHeight: true
@@ -82,10 +83,6 @@ Drawer {
                     }
                     close()
                 }
-
-                ToolTip {
-                    text: "Start watching"
-                }
             }
 
             IconButtonFlat {
@@ -94,14 +91,11 @@ Drawer {
                 highlighted: item ? item.favourite : false
                 onClicked: {
                     if (item) {
-                        if (item.favourite)
+                        if (item.favourite === true)
                             g_cman.addToFavourites(item)
                         else
                             g_cman.removeFromFavourites(item)
                     }
-                }
-                ToolTip {
-                    text: !favoriteBtn.highlighted ? "Add favourite" : "Remove favourite"
                 }
             }
 
@@ -114,9 +108,6 @@ Drawer {
                     }
                     close()
                 }
-                ToolTip {
-                    text: "Videos"
-                }
             }
 
             IconButtonFlat {
@@ -127,9 +118,6 @@ Drawer {
                         playerView.getChat(item)
                     }
                     close()
-                }
-                ToolTip {
-                    text: "Videos"
                 }
             }
         }
