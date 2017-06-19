@@ -94,11 +94,6 @@ Page {
             root.searchChannels(clickedItem)
         }
 
-        onItemRightClicked: {
-            _menu.item = clickedItem
-            _menu.open()
-        }
-
         onItemTooltipHover: {
             g_tooltip.text = ""
 
@@ -116,17 +111,6 @@ Page {
         }
 
         onAtYEndChanged: checkScroll()
-
-        ContextMenu {
-            id: _menu
-            MenuItem {
-                text: "Search streams"
-                //text: "Find streams;search"
-                onTriggered: {
-                    root.searchChannels(_menu.item)
-                }
-            }
-        }
 
         Timer {
             id: timer
