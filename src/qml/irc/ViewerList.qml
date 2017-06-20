@@ -2,6 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
+import app.orion.viewers 1.0
 
 Item {
     id: root
@@ -17,7 +18,7 @@ Item {
         if (visible) {
             root.loading = true;
             viewerListModel.clear()
-            g_cman.loadChatterList(chat.channel);
+            Viewers.loadChatterList(chat.channel);
         }
     }
     
@@ -35,7 +36,7 @@ Item {
         }
         
         Connections {
-            target: g_cman
+            target: Viewers
             onChatterListLoaded: {
                 root.loading = false;
                 var groupOrder = ["staff", "global_mods", "admins", "moderators", "viewers"];

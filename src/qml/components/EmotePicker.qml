@@ -59,7 +59,7 @@ Page {
 
     BusyIndicator {
         id:_spinner
-        anchors.fill: parent
+        anchors.centerIn: parent
         height: 60
         running: root.loading
         opacity: 0.5
@@ -238,6 +238,7 @@ Page {
         TextField {
             id: _filterTextInput
             placeholderText: "Filter emotes"
+            Material.foreground: "black"
             inputMethodHints: Qt.ImhNoPredictiveText
             anchors.fill: parent
 

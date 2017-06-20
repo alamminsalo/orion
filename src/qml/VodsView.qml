@@ -16,6 +16,7 @@ import QtQuick.Controls 2.1
 import QtQuick 2.5
 import "components"
 import "util.js" as Util
+import app.orion.vods 1.0
 
 Item{
     id: vodsView
@@ -42,27 +43,32 @@ Item{
             "preview": channel.preview,
         }
 
-        channelVodPositions = g_cman.getChannelVodsLastPlaybackPositions(channel.name);
+        channelVodPositions = VodManager.getChannelVodsLastPlaybackPositions(channel.name);
 
-        g_vodmgr.search(selectedChannel._id, 0, 35)
+        VodManager.search(selectedChannel._id, 0, 35)
 
         itemCount = 35
 
         requestSelectionChange(3)
     }
 
+    function getLastPlaybackPosition(channel, vod) {
+        console.log("getLastPlaybackPosition", channel.name, vod._id);
+        return VodManager.getVodLastPlaybackPosition(channel.name, vod._id);
+    }
+
     onVisibleChanged: {
         if (visible) {
-            vods.positionViewAtBeginning()
-            vods.checkScroll()
+            vodgrid.positionViewAtBeginning()
+            vodgrid.checkScroll()
         }
     }
 
     Connections {
-        target: g_cman
+        target: VodManager
         onVodLastPositionUpdated: {
             //console.log("onVodLastPositionUpdated", channel, vod, position);
-            if (selectedChannel.name == channel) {
+            if (selectedChannel.name === channel) {
                 channelVodPositions[vod] = position;
                 // need binding to update
                 channelVodPositions = channelVodPositions;
@@ -71,7 +77,7 @@ Item{
     }
 
     CommonGrid {
-        id: vods
+        id: vodgrid
         tooltipEnabled: true
 
         anchors {
@@ -91,17 +97,12 @@ Item{
             game: model.game
             createdAt: model.createdAt
 
-            width: vods.cellWidth
+            width: vodgrid.cellWidth
         }
 
         onItemClicked: {
-            var lastPlaybackPosition = vods.getLastPlaybackPosition(selectedChannel, clickedItem);
+            var lastPlaybackPosition = getLastPlaybackPosition(selectedChannel, clickedItem);
             playerView.getStreams(selectedChannel, clickedItem, lastPlaybackPosition == null? 0 : lastPlaybackPosition);
-        }
-
-        function getLastPlaybackPosition(channel, vod) {
-            console.log("getLastPlaybackPosition", channel.name, vod._id);
-            return g_cman.getVodLastPlaybackPosition(channel.name, vod._id);
         }
 
         onItemRightClicked: {
@@ -150,7 +151,7 @@ Item{
             MenuItem {
                 id: _furthestPlayedMenuItem
                 onTriggered: {
-                    playerView.getStreams(selectedChannel, _menu.item, vods.getLastPlaybackPosition(selectedChannel, _menu.item))
+                    playerView.getStreams(selectedChannel, _menu.item, VodManager.getLastPlaybackPosition(selectedChannel, _menu.item))
                 }
             }
         }
@@ -159,7 +160,7 @@ Item{
 
         function checkScroll(){
             if (atYEnd && model.count() === itemCount && itemCount > 0){
-                g_vodmgr.search(selectedChannel._id, itemCount, 25)
+                VodManager.search(selectedChannel._id, itemCount, 25)
                 itemCount += 25
             }
         }

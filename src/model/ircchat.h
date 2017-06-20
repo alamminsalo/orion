@@ -35,7 +35,11 @@
 //#include "messagelistmodel.h"
 //#include "message.h"
 #include "imageprovider.h"
-#include "channelmanager.h"
+//#include "channelmanager.h"
+#include "../network/networkmanager.h"
+#include "badgecontainer.h"
+
+#define BLOCKED_USER_LIST_FETCH_LIMIT 100
 
 //#define TWITCH_EMOTE_URI "https://static-cdn.jtvnw.net/emoticons/v1/%d/1.0"
 
@@ -58,6 +62,15 @@ struct ChatMessage {
 class IrcChat : public QObject
 {
     Q_OBJECT
+
+    NetworkManager *netman;
+
+    //emote download
+    QDir emoteDir;
+    QString emoteDirPathImpl;
+    QList<int> _emoteSetIDs;
+    QList<QString> blockedUserListLoading;
+
 public:
     IrcChat(QObject *parent = 0);
     ~IrcChat();
@@ -79,9 +92,8 @@ public:
     Q_INVOKABLE void disconnect();
     Q_INVOKABLE void reopenSocket();
     Q_INVOKABLE void initProviders();
-    Q_INVOKABLE void hookupChannelProviders(ChannelManager * cman);
+    Q_INVOKABLE void hookupChannelProviders();
     Q_INVOKABLE QString getBadgeLocalUrl(QString key);
-    Q_INVOKABLE bool getHiDpi();
 
     //# User
     QString username, userpass;
@@ -96,15 +108,11 @@ public:
     bool connected();
     inline bool inRoom() { return !room.isEmpty(); }
 
-    //emote download
-    QDir emoteDir;
-    QString emoteDirPathImpl;
-    QList<int> _emoteSetIDs;
     QList<int> emoteSetIDs();
 
     void RegisterEngineProviders(QQmlEngine & engine);
 
-    static void setHiDpi(bool setting);
+    void editUserBlock(const QString & blockUserName, const bool isBlock);
 
 signals:
     void errorOccured(QString errorDescription);    
@@ -113,14 +121,16 @@ signals:
     void anonymousChanged();
     void messageReceived(QString user, QVariantList message, QString chatColor, bool subscriber, bool turbo, bool mod, bool isAction, QVariantList badges, bool isChannelNotice, QString systemMessage, bool isWhisper);
     void noticeReceived(QString message);
-    void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
 
+    void myBadgesForChannel(QString channel, QList<QPair<QString, QString>> badges);
     void downloadComplete();
     bool downloadError();
 
     void bulkDownloadComplete();
 
     void bttvEmotesLoaded(QString channel, QVariantMap emotesByCode);
+    void userBlocked(const QString & blockedUsername);
+    void userUnblocked(const QString & unblockedUsername);
     
 public slots:
     void sendMessage(const QString &msg, const QVariantMap &relevantEmotes);
@@ -138,14 +148,19 @@ private slots:
     void handleVodStartTime(double);
     void handleDownloadedReplayChat(QList<ReplayChatMessage>);
     void handleChannelBitsUrlsLoaded(const int channelID, BitsQStringsMap bitsUrls);
+
     void blockedUsersLoaded(const QSet<QString> &);
-    void userBlocked(const QString & blockedUsername);
-    void userUnblocked(const QString & unblockedUsername);
+    void userBlockedSlot(quint64 myUserId, const QString & blockedUsername);
+    void userUnblockedSlot(quint64 myUserId, const QString & unblockedUsername);
 
     void handleChannelBttvEmotesLoaded(const QString & channelName, QMap<QString, QString> emotesByCode);
+    void addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset, const quint32 total);
+    void innerUserBlocked(quint64 myUserId, const QString & blockedUsername);
+    void innerUserUnblocked(quint64 myUserId, const QString & unblockedUsername);
+    void getBlockedUserList();
 
 private:
-    static bool hiDpi;
+    qint16 user_id;
 
     static const qint16 PORT;
     static const QString HOST;
@@ -162,7 +177,6 @@ private:
     URLFormatImageProvider _bttvEmoteProvider;
     BitsImageProvider * _bitsProvider;
     BadgeImageProvider * _badgeProvider;
-    ChannelManager * _cman;
     
     QList<ChatMessage> msgQueue;
 
@@ -243,6 +257,8 @@ private:
     void roomInitCommon(const QString channel, const QString channelId);
 
     void setUserBlock(const QString & username, const bool blocked);
+
+
 };
 
 #endif // IRCCHAT_H

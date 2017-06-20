@@ -12,10 +12,9 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.0
-//import Communi 3.0
+import QtQuick 2.5
 import aldrog.twitchtube.ircchat 1.0
-
+import app.orion.emotes 1.0
 
 Item {
     id: root
@@ -36,12 +35,8 @@ Item {
     property var singleShot: undefined
     property var replayMode: false
 
-    function getHiDpi() {
-        return chat.getHiDpi();
-    }
-
     Component.onCompleted: {
-        chat.hookupChannelProviders(g_cman)
+        chat.hookupChannelProviders()
         chat.initProviders()
     }
 
@@ -55,6 +50,10 @@ Item {
 
             chat.reopenSocket()
         }
+    }
+
+    Connections {
+        target: Emotes
 
         onChannelBadgeUrlsLoaded: {
             console.log("onChannelBadgeUrlsLoaded", "channel", channel, "badgeUrls", badgeUrls);
@@ -70,10 +69,10 @@ Item {
     function enterChannelCommon(channelName, channelId) {
         root.channel = channelName
         root.channelId = channelId
-        g_cman.loadChannelBadgeUrls(channelId);
-        g_cman.loadChannelBetaBadgeUrls(channelId);
-        g_cman.loadChannelBitsUrls(channelId);
-        g_cman.loadChannelBttvEmotes(channelName);
+        Emotes.loadChannelBadgeUrls(channelId);
+        Emotes.loadChannelBetaBadgeUrls(channelId);
+        Emotes.loadChannelBitsUrls(channelId);
+        Emotes.loadChannelBttvEmotes(channelName);
     }
 
     function joinChannel(channelName, channelId) {

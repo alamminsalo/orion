@@ -34,6 +34,10 @@
 #include "model/ircchat.h"
 #include "network/httpserver.h"
 #include <QFont>
+#include "model/viewersmodel.h"
+
+#include "global.h"
+//extern bool global::hiDpi;
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
@@ -99,7 +103,7 @@ int main(int argc, char *argv[])
 
     //Prime network manager
     QNetworkProxyFactory::setUseSystemConfiguration(true);
-    NetworkManager *netman = new NetworkManager(engine.networkAccessManager());
+    NetworkManager::initialize(engine.networkAccessManager());
 
     // detect hi dpi screens
     qDebug() << "Screens:";
@@ -112,18 +116,17 @@ int main(int argc, char *argv[])
         qDebug() << "  Screen #" << screens << screen->name() << ": devicePixelRatio" << curPixelRatio;
     }
     qDebug() << "maxDevicePixelRatio" << maxDevicePixelRatio;
-    bool hiDpi = maxDevicePixelRatio > 1.0;
-    qDebug() << "hiDpi" << hiDpi;
-    IrcChat::setHiDpi(hiDpi);
+    global::hiDpi = maxDevicePixelRatio > 1.0;
+    qDebug() << "hiDpi" << global::hiDpi;
 
     //Create channels manager
-    ChannelManager *cman = new ChannelManager(netman, hiDpi);
+    ChannelManager *cman = ChannelManager::getInstance();
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
 
     //Create vods manager
-    VodManager *vod = new VodManager(netman);
+    VodManager *vod = VodManager::getInstance();
 
     //Http server used for auth
     HttpServer *httpserver = new HttpServer(&app);
@@ -151,7 +154,7 @@ int main(int argc, char *argv[])
 
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
-    rootContext->setContextProperty("netman", netman);
+    rootContext->setContextProperty("netman", NetworkManager::getInstance());
     rootContext->setContextProperty("g_cman", cman);
     rootContext->setContextProperty("g_guard", &guard);
     rootContext->setContextProperty("g_powerman", power);
@@ -159,10 +162,11 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_results", cman->getResultsModel());
     rootContext->setContextProperty("g_games", cman->getGamesModel());
     rootContext->setContextProperty("g_tray", tray);
-    rootContext->setContextProperty("g_vodmgr", vod);
+    //rootContext->setContextProperty("g_vodmgr", vod);
     rootContext->setContextProperty("vodsModel", vod->getModel());
     rootContext->setContextProperty("app_version", APP_VERSION);
     rootContext->setContextProperty("httpServer", httpserver);
+    rootContext->setContextProperty("hiDPI", global::hiDpi);
 
 #ifdef MPV_PLAYER
     rootContext->setContextProperty("player_backend", "mpv");
@@ -176,6 +180,9 @@ int main(int argc, char *argv[])
 #endif
 
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
+    qmlRegisterSingletonType<BadgeContainer>("app.orion.emotes", 1, 0, "Emotes", &BadgeContainer::provider);
+    qmlRegisterSingletonType<ViewersModel>("app.orion.viewers", 1, 0, "Viewers", &ViewersModel::provider);
+    qmlRegisterSingletonType<VodManager>("app.orion.vods", 1, 0, "VodManager", &VodManager::provider);
 
     engine.load(QUrl("qrc:/main.qml"));
 
@@ -193,7 +200,6 @@ int main(int argc, char *argv[])
     //Cleanup
     delete vod;
     delete tray;
-    delete netman;
     delete cman;
     delete notificationManager;
 

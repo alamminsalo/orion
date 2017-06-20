@@ -19,6 +19,8 @@ import QtQuick.Layouts 1.1
 import "irc"
 import "components"
 
+import app.orion.vods 1.0
+
 Page {
 
     property int duration: -1
@@ -167,7 +169,7 @@ Page {
                 duration = -1
             }
             else {
-                g_vodmgr.getBroadcasts(vod._id)
+                VodManager.getBroadcasts(vod._id)
                 isVod = true
                 root.curVodId = vod._id
                 root.lastSetPosition = startPos
@@ -263,7 +265,7 @@ Page {
     }
 
     Connections {
-        target: g_vodmgr
+        target: VodManager
         onStreamsGetFinished: {
             loadStreams(items)
         }
@@ -369,9 +371,10 @@ Page {
         Drawer {
             id: chatdrawer
             edge: g_cman.swapChat ? Qt.LeftEdge : Qt.RightEdge
-            y: 96
 
-            height: playerArea.height
+            height: g_rootWindow.height - 40
+            y: (g_rootWindow.height - height) / 2
+
             width: 300
             dim: false
 
@@ -385,6 +388,8 @@ Page {
     header: ToolBar {
         visible: root.headersVisible
         Material.background: Material.background
+        leftPadding: 5
+        rightPadding: 5
 
         MouseArea {
             anchors.fill: parent
@@ -438,7 +443,8 @@ Page {
 
     footer: ToolBar {
         visible: root.headersVisible
-        padding: 0
+        leftPadding: 5
+        rightPadding: 5
         Material.background: Material.background
 
         MouseArea {
@@ -476,6 +482,7 @@ Page {
 
             //spacer
             Item {
+                Layout.minimumWidth: 0
                 Layout.fillWidth: true
             }
 
@@ -483,19 +490,21 @@ Page {
                 id: cropBtn
                 text: "\ue3be"
                 onClicked: fitToAspectRatio()
+                visible: parent.width > 440
             }
 
             IconButtonFlat {
                 id: fsBtn
                 text: "\ue5d0"
                 onClicked: g_fullscreen = !g_fullscreen
+                visible: parent.width > 380
             }
 
             Slider {
                 id: volumeSlider
                 from: 0
                 to: 100
-                width: 80
+                Layout.maximumWidth: 100
 
                 Component.onCompleted: {
                     value = g_cman.getVolumeLevel()

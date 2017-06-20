@@ -37,6 +37,27 @@ function getTime(totalSec){
     return result
 }
 
+function makeUrl(str) {
+    var pref = "";
+    if (str.length && (str.charAt(0) === " ")) {
+        pref = "&nbsp;";
+        str = str.substring(1);
+    }
+
+    var urlPattern = / ?\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
+    var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+    var out = pref + str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
+
+    //console.log("makeUrl", str, out);
+    return out;
+}
+
+function isUrl(str) {
+    var result = str.match(/^ ?(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/);
+    //console.log("isUrl", str, result);
+    return result
+}
+
 function endsWith(s, suffix) {
     return s.length >= suffix.length && s.substring(s.length - suffix.length) === suffix;
 }

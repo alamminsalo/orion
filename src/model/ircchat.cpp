@@ -32,6 +32,9 @@
 #include <QtMath>
 #include <QDateTime>
 #include "../util/jsonparser.h"
+#include "badgecontainer.h"
+#include "vodmanager.h"
+#include "../global.h"
 
 const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
 const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
@@ -44,26 +47,15 @@ const QString IrcChat::BTTV_EMOTES_URL_FORMAT_HIDPI = "https://cdn.betterttv.net
 const qint16 IrcChat::PORT = 443;
 const QString IrcChat::HOST = "irc.chat.twitch.tv";
 
-bool IrcChat::hiDpi = false;
-
-void IrcChat::setHiDpi(bool setting) {
-    hiDpi = setting;
-    JsonParser::setHiDpi(setting);
-}
-
-bool IrcChat::getHiDpi() {
-    return hiDpi;
-}
-
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
-    _emoteProvider(IMAGE_PROVIDER_EMOTE, hiDpi? EMOTICONS_URL_FORMAT_HIDPI : EMOTICONS_URL_FORMAT_LODPI, ".png", hiDpi? "emotes_2x" : "emotes"),
-    _bttvEmoteProvider(IMAGE_PROVIDER_BTTV_EMOTE, hiDpi? BTTV_EMOTES_URL_FORMAT_HIDPI : BTTV_EMOTES_URL_FORMAT_LODPI, ".png", hiDpi? "bttv_emotes_2x" : "bttv_emotes"),
+    _emoteProvider(IMAGE_PROVIDER_EMOTE, global::hiDpi ? EMOTICONS_URL_FORMAT_HIDPI : EMOTICONS_URL_FORMAT_LODPI, ".png", global::hiDpi ? "emotes_2x" : "emotes"),
+    _bttvEmoteProvider(IMAGE_PROVIDER_BTTV_EMOTE, global::hiDpi ? BTTV_EMOTES_URL_FORMAT_HIDPI : BTTV_EMOTES_URL_FORMAT_LODPI, ".png", global::hiDpi ? "bttv_emotes_2x" : "bttv_emotes"),
     _bitsProvider(nullptr),
     _badgeProvider(nullptr),
-    _cman(nullptr),
     sock(nullptr),
-    replayMode(false)
+    replayMode(false),
+    netman(NetworkManager::getInstance())
     {
 
     logged_in = false;
@@ -77,6 +69,15 @@ IrcChat::IrcChat(QObject *parent) :
     room = "";
 
 	emoteDirPathImpl = _emoteProvider.getBaseUrl();
+
+    connect(netman, &NetworkManager::blockedUserListLoadOperationFinished, this, &IrcChat::addBlockedUserResults);
+    connect(netman, &NetworkManager::userBlocked, this, &IrcChat::innerUserBlocked);
+    connect(netman, &NetworkManager::userUnblocked, this, &IrcChat::innerUserUnblocked);
+
+    connect(netman, &NetworkManager::userOperationFinished, this, [this](const QString &/*name*/, const quint64 id){
+        user_id = id;
+        getBlockedUserList();
+    });
 }
 
 void IrcChat::initSocket() {
@@ -116,24 +117,18 @@ void IrcChat::RegisterEngineProviders(QQmlEngine & engine) {
     }
 }
 
-void IrcChat::hookupChannelProviders(ChannelManager * cman) {
-    if (cman) {
-        _badgeProvider = cman->getBadgeImageProvider();
-        _bitsProvider = cman->getBitsImageProvider();
-        connect(_badgeProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
-        connect(_bitsProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
-        _cman = cman;
-        connect(_cman, &ChannelManager::vodStartGetOperationFinished, this, &IrcChat::handleVodStartTime);
-        connect(_cman, &ChannelManager::vodChatPieceGetOperationFinished, this, &IrcChat::handleDownloadedReplayChat);
-        connect(_cman, &ChannelManager::channelBitsUrlsLoaded, this, &IrcChat::handleChannelBitsUrlsLoaded);
-        connect(_cman, &ChannelManager::channelBttvEmotesLoaded, this, &IrcChat::handleChannelBttvEmotesLoaded);
-        connect(_cman, &ChannelManager::blockedUsersLoaded, this, &IrcChat::blockedUsersLoaded);
-        connect(_cman, &ChannelManager::userBlocked, this, &IrcChat::userBlocked);
-        connect(_cman, &ChannelManager::userUnblocked, this, &IrcChat::userUnblocked);
-    }
-    else {
-        qDebug() << "hookupChannelProviders got null";
-    }
+void IrcChat::hookupChannelProviders() {
+    _badgeProvider = BadgeContainer::getInstance()->getBadgeImageProvider();
+    _bitsProvider = BadgeContainer::getInstance()->getBitsImageProvider();
+    connect(_badgeProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+    connect(_bitsProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
+    connect(VodManager::getInstance(), &VodManager::vodStartGetOperationFinished, this, &IrcChat::handleVodStartTime);
+    connect(NetworkManager::getInstance(), &NetworkManager::vodChatPieceGetOperationFinished, this, &IrcChat::handleDownloadedReplayChat);
+    connect(BadgeContainer::getInstance(), &BadgeContainer::channelBitsUrlsLoaded, this, &IrcChat::handleChannelBitsUrlsLoaded);
+    connect(BadgeContainer::getInstance(), &BadgeContainer::channelBttvEmotesLoaded, this, &IrcChat::handleChannelBttvEmotesLoaded);
+    //connect(BadgeContainer::getInstance(), &BadgeContainer::blockedUsersLoaded, this, &IrcChat::blockedUsersLoaded);
+    connect(NetworkManager::getInstance(), &NetworkManager::userBlocked, this, &IrcChat::userBlockedSlot);
+    connect(NetworkManager::getInstance(), &NetworkManager::userUnblocked, this, &IrcChat::userUnblockedSlot);
 }
 
 bool IrcChat::allDownloadsComplete() {
@@ -199,7 +194,7 @@ void IrcChat::replay(const QString channel, const QString channelId, const quint
     replayChatFirstLoadAfterSeek = true;
 
     // Get start timestamp of the chat replay segments as the requests need to be aligned to chunk boundaries from this start
-    _cman->getVodStartTime(vodId);
+    NetworkManager::getInstance()->getVodStartTime(vodId);
 }
 
 void IrcChat::handleVodStartTime(double startTime) {
@@ -222,9 +217,9 @@ const int SEEK_HISTORY_MESSAGE_LIMIT = 15;
 void IrcChat::replaySeek(double newOffset) {
     // we set a flag indicating that a request is in flight
     if (replayChatRequestInProgress) {
-        _cman->cancelLastVodChatRequest();
+        VodManager::getInstance()->cancelLastVodChatRequest();
     }
-    _cman->resetVodChat();
+    VodManager::getInstance()->resetVodChat();
     replayChatFirstLoadAfterSeek = true;
     replayChatRequestInProgress = true;
     // we save the offset to the point we want to start loading chat at as the current time
@@ -235,7 +230,7 @@ void IrcChat::replaySeek(double newOffset) {
     // we dump any pending messages from the previous playback position
     replayChatMessagesPending.clear();
     // we'll do an initial request for starting offset chat right now.
-    _cman->getVodChatPiece(replayVodId, nextChatChunkTimestamp);
+    VodManager::getInstance()->getVodChatPiece(replayVodId, nextChatChunkTimestamp);
     // time passes in the front end as the vod plays back.
 }
 
@@ -382,7 +377,7 @@ void IrcChat::replayUpdateCommon() {
 
     if (!replayChatRequestInProgress && needMoreChat) {
         replayChatRequestInProgress = true;
-        _cman->getVodChatPiece(replayVodId, nextChatTime);
+        VodManager::getInstance()->getVodChatPiece(replayVodId, nextChatTime);
     }
 }
 
@@ -402,10 +397,10 @@ void IrcChat::handleDownloadedReplayChat(QList<ReplayChatMessage> messages) {
 
 void IrcChat::replayStop() {
     if (replayChatRequestInProgress) {
-        _cman->cancelLastVodChatRequest();
+        VodManager::getInstance()->cancelLastVodChatRequest();
         replayChatRequestInProgress = false;
     }
-    _cman->resetVodChat();
+    VodManager::getInstance()->resetVodChat();
     replayChatMessagesPending.clear();
 }
 
@@ -893,7 +888,7 @@ void IrcChat::checkBitsRegex(const QRegExp & regex, const QString & prefix, cons
             info.kind = ImageEntryKind::bits;
             info.key = _bitsProvider->getCanonicalKey(key);
             info.textSuffix = bitsCount;
-            _cman->getChannelBitsColor(roomChannelId.toInt(), prefix, minBits, info.textSuffixColor);
+            BadgeContainer::getInstance()->getChannelBitsColor(roomChannelId.toInt(), prefix, minBits, info.textSuffixColor);
             mapToUpdate.insert(prefixStart, qMakePair(bitsCountEnd, info));
             _bitsProvider->makeAvailable(key);
         }
@@ -1012,7 +1007,7 @@ void IrcChat::createMessageList(const QMap<int, QPair<int, int>> & emotePosition
             if (_bitsProvider) {
                 imgEntry = createImageEntry(_bitsProvider->getImageProviderName(), imageId, originalText);
                 // currently QML AnimatedImage doesn't support using images from a QQuickImageProvider
-                imgEntry.insert("sourceUrl", _cman->getBitsUrlForKey(imageId).toString());
+                imgEntry.insert("sourceUrl", BadgeContainer::getInstance()->getBitsUrlForKey(imageId).toString());
             }
             else {
                 doInsert = false;
@@ -1358,10 +1353,10 @@ void IrcChat::blockedUsersLoaded(const QSet<QString> & newBlockedUsers) {
 }
 
 void IrcChat::setUserBlock(const QString & username, const bool blocked) {
-    _cman->editUserBlock(username, blocked);
+    editUserBlock(username, blocked);
 }
 
-void IrcChat::userBlocked(const QString & blockedUsername) {
+void IrcChat::userBlockedSlot(quint64 /*myUserId*/, const QString & blockedUsername) {
     QString newBlockedUsername = blockedUsername.toLower();
     emit noticeReceived("User " + blockedUsername + " successfully ignored");
     if (!blockedUsers.contains(newBlockedUsername)) {
@@ -1369,7 +1364,7 @@ void IrcChat::userBlocked(const QString & blockedUsername) {
     }
 }
 
-void IrcChat::userUnblocked(const QString & unblockedUsername) {
+void IrcChat::userUnblockedSlot(quint64 /*myUserId*/, const QString & unblockedUsername) {
     QString newUnblockedUsername = unblockedUsername.toLower();
     emit noticeReceived("User " + newUnblockedUsername + " successfully unignored");
     if (blockedUsers.contains(newUnblockedUsername)) {
@@ -1396,5 +1391,43 @@ void IrcChat::handleChannelBttvEmotesLoaded(const QString & channelName, QMap<QS
     }
 
     emit bttvEmotesLoaded(channelName, toVariantMap(emotesByCode));
+}
+
+void IrcChat::innerUserBlocked(quint64 myUserId, const QString & blockedUsername) {
+    if (user_id == myUserId) {
+        emit userBlocked(blockedUsername);
+    }
+}
+
+void IrcChat::innerUserUnblocked(quint64 myUserId, const QString & unblockedUsername) {
+    if (user_id == myUserId) {
+        emit userUnblocked(unblockedUsername);
+    }
+}
+
+void IrcChat::getBlockedUserList()
+{
+    blockedUserListLoading.clear();
+    netman->getBlockedUserList(user_id, 0, BLOCKED_USER_LIST_FETCH_LIMIT);
+}
+
+void IrcChat::addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset, const quint32 total)
+{
+    if (!user_id || netman->getAccessToken().isEmpty()) return;
+
+    blockedUserListLoading.append(list);
+
+    if (nextOffset < total) {
+        netman->getBlockedUserList(user_id, nextOffset, BLOCKED_USER_LIST_FETCH_LIMIT);
+    }
+    else {
+        blockedUsersLoaded(blockedUserListLoading.toSet());
+    }
+}
+
+void IrcChat::editUserBlock(const QString & blockUserName, const bool isBlock) {
+    if (!netman->getAccessToken().isEmpty()) {
+        netman->editUserBlock(user_id, blockUserName, isBlock);
+    }
 }
 

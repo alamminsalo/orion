@@ -124,7 +124,7 @@ Window {
                 color: Styles.textColor
                 wrapMode: Text.WordWrap
                 font.bold: true
-                font.pixelSize: Styles.titleFont.bigger
+                font.pointSize: Styles.titleFont.bigger
                 //renderType: Text.NativeRendering
             }
 
@@ -138,7 +138,7 @@ Window {
                 text: root.description
                 wrapMode: Text.WordWrap
                 color: Styles.textColor
-                font.pixelSize: Styles.titleFont.smaller
+                font.pointSize: Styles.titleFont.smaller
             }
         }
     }

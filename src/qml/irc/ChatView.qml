@@ -16,6 +16,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.3
+import app.orion.emotes 1.0
 import "../components"
 import "../util.js" as Util
 
@@ -35,7 +36,7 @@ Page {
             _emoteButton.clearChannelSpecificEmotes()
             chat.lastBttvChannelEmotes = null;
         }
-        list.chatModel.clear()
+        chatList.chatModel.clear()
     }
 
     function joinChannel(channel, channelId) {
@@ -84,7 +85,7 @@ Page {
         }
         chat.sendChatMessage(message, relevantEmotes)
         _input.text = ""
-        list.positionViewAtEnd()
+        chatList.positionViewAtEnd()
     }
 
     function loadEmoteSets() {
@@ -92,7 +93,7 @@ Page {
         //console.log(chat.lastEmoteSetIDs)
         if (chat.lastEmoteSetIDs) {
             // load the emote sets so that we know what icons to display
-            g_cman.loadEmoteSets(false, chat.lastEmoteSetIDs);
+            Emotes.loadEmoteSets(false, chat.lastEmoteSetIDs);
         }
     }
 
@@ -115,7 +116,7 @@ Page {
     }
 
     Connections {
-        target: g_cman
+        target: Emotes
         onEmoteSetsLoaded: {
             //console.log("emote sets loaded:");
             for (var i in emoteSets) {
@@ -137,35 +138,34 @@ Page {
         target: g_rootWindow
 
         onHeightChanged: {
-            list.positionViewAtEnd()
+            chatList.positionViewAtEnd()
         }
     }
 
 
-    header: ToolBar {
-        id: chatControls
+    // Tab bar header for switching chat/viewers
+    header: TabBar {
         Material.background: Material.background
+        font.family: "Material Icons"
+        currentIndex: chatContainer.currentIndex
 
-        IconButtonFlat {
-            id: _viewerListButton
+        TabButton {
+            text: "\ue0b7"
+            onClicked: chatContainer.currentIndex = 0
+        }
+
+        TabButton {
             text: "\ue7fb"
-
-            enabled: (!isVod && currentChannel && currentChannel.name) ? true : false
-            highlighted: chatContainer.currentIndex === 1
-
-            onClicked: {
-                chatContainer.currentIndex = chatContainer.currentIndex === 1  ? 0 : 1
-            }
+            onClicked: chatContainer.currentIndex = 1
         }
     }
 
     StackLayout {
         id: chatContainer
-
         anchors.fill: parent
 
         ChatMessagesView {
-            id: list
+            id: chatList
         }
 
         ViewerList {
@@ -178,7 +178,7 @@ Page {
             visible: false
             height: 0
 
-            devicePixelRatio: chat.getHiDpi()? 2.0 : 1.0
+            devicePixelRatio: hiDPI ? 2.0 : 1.0
 
             //fontPixelSize: Styles.titleFont.smaller * g_cman.textScaleFactor
 
@@ -407,8 +407,8 @@ Page {
 
                 var jsonBadgeEntries = JSON.stringify(badgeEntries);
 
-                list.chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
-                list.scrollbuf = 6
+                chatList.chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
+                chatList.scrollbuf = 6
             }
 
             onEmoteSetIDsChanged: {
@@ -456,7 +456,7 @@ Page {
     footer: ToolBar {
         Material.background: Material.background
         Material.elevation: 10
-        visible: !chat.isAnonymous
+        visible: chatContainer.currentIndex === 0 && !chat.isAnonymous
         padding: 5
 
         RowLayout {
@@ -464,6 +464,7 @@ Page {
 
             TextField {
                 id: _input
+                placeholderText: "Send your message"
                 Layout.fillWidth: true
 
                 Keys.onUpPressed: {
