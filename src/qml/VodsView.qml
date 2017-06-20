@@ -16,7 +16,9 @@ import QtQuick.Controls 2.1
 import QtQuick 2.5
 import "components"
 import "util.js" as Util
+
 import app.orion.vods 1.0
+import app.orion.channels 1.0
 
 Item{
     id: vodsView
@@ -37,7 +39,7 @@ Item{
             "game": channel.game,
             "title": channel.title,
             "online": channel.online,
-            "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
+            "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
             "viewers": channel.viewers,
             "logo": channel.logo,
             "preview": channel.preview,

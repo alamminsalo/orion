@@ -20,6 +20,7 @@ import "irc"
 import "components"
 
 import app.orion.vods 1.0
+import app.orion.channels 1.0
 
 Page {
 
@@ -38,7 +39,7 @@ Page {
     //property alias enableSmallMode: miniModeCheckBox.checked
 
     Component.onCompleted: {
-        var savedQuality = g_cman.getQuality();
+        var savedQuality = ChannelManager.getQuality();
         console.log("Loaded saved quality", savedQuality);
         if (savedQuality) {
             currentQualityName = savedQuality;
@@ -54,7 +55,7 @@ Page {
     clip: true
 
     Connections {
-        target: g_cman
+        target: ChannelManager
 
         onAddedChannel: {
             console.log("Added channel")
@@ -137,7 +138,7 @@ Page {
         renderer.load(url, start, description)
 
         currentQualityName = streamName
-        g_cman.setQuality(streamName);
+        ChannelManager.setQuality(streamName);
 
         spinner.running = true
     }
@@ -163,7 +164,7 @@ Page {
 
         if (wantVideo) {
             if (!vod || typeof vod === "undefined") {
-                g_cman.findPlaybackStream(channel.name)
+                ChannelManager.findPlaybackStream(channel.name)
                 isVod = false
 
                 duration = -1
@@ -190,7 +191,7 @@ Page {
             "game": isVod ? vod.game : channel.game,
                             "title": isVod ? vod.title : channel.title,
                                              "online": channel.online,
-                                             "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
+                                             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
                                              "viewers": channel.viewers,
                                              "logo": channel.logo,
                                              "preview": channel.preview,
@@ -369,7 +370,7 @@ Page {
 
         Drawer {
             id: chatdrawer
-            edge: g_cman.swapChat ? Qt.LeftEdge : Qt.RightEdge
+            edge: ChannelManager.swapChat ? Qt.LeftEdge : Qt.RightEdge
 
             height: g_rootWindow.height - 40
             y: (g_rootWindow.height - height) / 2
@@ -419,10 +420,10 @@ Page {
                 onClicked: {
                     if (currentChannel){
                         if (currentChannel.favourite)
-                            g_cman.removeFromFavourites(currentChannel._id)
+                            ChannelManager.removeFromFavourites(currentChannel._id)
                         else{
                             //console.log(currentChannel)
-                            g_cman.addToFavourites(currentChannel._id, currentChannel.name,
+                            ChannelManager.addToFavourites(currentChannel._id, currentChannel.name,
                                                    currentChannel.title, currentChannel.info,
                                                    currentChannel.logo, currentChannel.preview,
                                                    currentChannel.game, currentChannel.viewers,
@@ -506,7 +507,7 @@ Page {
                 Layout.maximumWidth: 100
 
                 Component.onCompleted: {
-                    value = g_cman.getVolumeLevel()
+                    value = ChannelManager.getVolumeLevel()
                 }
 
                 onValueChanged: {
@@ -515,7 +516,7 @@ Page {
                         val = Math.round(Math.log(val) / Math.log(100))
 
                     renderer.setVolume(val)
-                    g_cman.setVolumeLevel(val);
+                    ChannelManager.setVolumeLevel(val);
                 }
             }
 

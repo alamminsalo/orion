@@ -17,6 +17,8 @@ import QtQuick.Window 2.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 
+import app.orion.channels 1.0
+
 ApplicationWindow {
     id: root
     visible: true
@@ -46,7 +48,7 @@ ApplicationWindow {
     }
 
     onClosing: {
-        if (!g_cman.isCloseToTray()) {
+        if (!ChannelManager.isCloseToTray()) {
             Qt.quit()
         }
     }
@@ -123,7 +125,7 @@ ApplicationWindow {
         topbar.setView(2)
 
 
-        if (g_cman.isMinimizeOnStartup())
+        if (ChannelManager.isMinimizeOnStartup())
             root.hide();
 
         console.log("Pixel density", Screen.pixelDensity)
@@ -131,7 +133,7 @@ ApplicationWindow {
         console.log("Logical pixel density", Screen.logicalPixelDensity)
         console.log("Orientation", Screen.orientation)
 
-        g_cman.checkFavourites()
+        ChannelManager.checkFavourites()
         pollTimer.start()
 
         updateForNetworkAccess(netman.networkAccess());
@@ -143,7 +145,7 @@ ApplicationWindow {
         running: false
         repeat: true
         onTriggered: {
-            g_cman.checkFavourites()
+            ChannelManager.checkFavourites()
         }
     }
 

@@ -15,6 +15,7 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.1
 import "components"
+import app.orion.channels 1.0
 
 Page {
     id: root
@@ -33,7 +34,7 @@ Page {
         if (clear) {
             gamesCount = 0
         }
-        g_cman.searchGames(searchBar.text, gamesCount, 100);
+        ChannelManager.searchGames(searchBar.text, gamesCount, 100);
         gamesCount += 100
     }
 
@@ -43,7 +44,7 @@ Page {
     }
 
     Connections {
-        target: g_cman
+        target: ChannelManager
 
         onGamesSearchStarted: {
             busyIndicator.running = true

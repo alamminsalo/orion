@@ -17,6 +17,8 @@ import QtQuick.Window 2.0
 import "../styles.js" as Styles
 import "../style"
 
+import app.orion.channels 1.0
+
 Window {
     property string title
     property string description
@@ -26,7 +28,7 @@ Window {
     signal clicked()
 
     //Locations: 0 - topleft, 1 - topright, 2 - bottomleft, 3 - bottomright
-    property int location: g_cman.getAlertPosition()
+    property int location: ChannelManager.getAlertPosition()
 
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint | Qt.Popup

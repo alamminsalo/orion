@@ -16,9 +16,11 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.3
-import app.orion.emotes 1.0
 import "../components"
 import "../util.js" as Util
+
+import app.orion.channels 1.0
+import app.orion.emotes 1.0
 
 Page {
     id: root
@@ -180,7 +182,7 @@ Page {
 
             devicePixelRatio: hiDPI ? 2.0 : 1.0
 
-            //fontPixelSize: Styles.titleFont.smaller * g_cman.textScaleFactor
+            //fontPixelSize: Styles.titleFont.smaller * ChannelManager.textScaleFactor
 
             onVisibleChanged: {
                 if (visible) {

@@ -18,6 +18,8 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls.Material 2.1
 import "components"
 
+import app.orion.channels 1.0
+
 Page {
     id: root
     property int itemCount: 0
@@ -44,7 +46,7 @@ Page {
             clear = true
         }
 
-        g_cman.searchChannels(str, offset, limit, clear)
+        ChannelManager.searchChannels(str, offset, limit, clear)
         if (clear){
             itemCount = limit
         }
@@ -64,7 +66,7 @@ Page {
     }
 
     Connections {
-        target: g_cman
+        target: ChannelManager
         onResultsUpdated: {
             channels.adjustItemCount(numAdded);
             channels.checkScrolled(total)

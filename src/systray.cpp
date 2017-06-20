@@ -16,7 +16,8 @@
 
 #include <QAction>
 
-SysTray::SysTray()
+SysTray::SysTray(QObject *parent):
+    QSystemTrayIcon(parent)
 {
     menu = new QMenu();
 

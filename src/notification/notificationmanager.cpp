@@ -16,7 +16,9 @@
 #include <QVariant>
 #include <QDebug>
 
-NotificationManager::NotificationManager(QQmlApplicationEngine *engine, QNetworkAccessManager *nm) : net(nm)
+NotificationManager::NotificationManager(QQmlApplicationEngine *engine, QNetworkAccessManager *nm, QObject *parent) :
+    QObject(parent),
+    net(nm)
 {
     currentObject = 0;
 

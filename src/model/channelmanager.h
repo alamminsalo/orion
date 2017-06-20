@@ -22,6 +22,8 @@
 
 #include <QSettings>
 #include <QSortFilterProxyModel>
+#include <QQmlEngine>
+#include <QJSEngine>
 
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 
@@ -74,6 +76,11 @@ protected:
     ChannelManager();
 public:
     static ChannelManager *getInstance();
+
+    static QObject *provider(QQmlEngine */*eng*/, QJSEngine */*jseng*/) {
+        QQmlEngine::setObjectOwnership(getInstance(), QQmlEngine::CppOwnership);
+        return getInstance();
+    }
 
     ~ChannelManager();
 

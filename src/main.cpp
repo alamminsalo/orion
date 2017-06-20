@@ -35,9 +35,7 @@
 #include "network/httpserver.h"
 #include <QFont>
 #include "model/viewersmodel.h"
-
 #include "global.h"
-//extern bool global::hiDpi;
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
@@ -75,7 +73,6 @@ int main(int argc, char *argv[])
 
     //Init engine
     QQmlApplicationEngine engine;
-
     QIcon appIcon = QIcon(":/icon/orion.ico");
 
     //Setup default font
@@ -84,10 +81,7 @@ int main(int argc, char *argv[])
         qDebug() << "Can't open application font!";
     else
         app.setFont(QFont(QFontDatabase::applicationFontFamilies(id).first()));
-
     qDebug() << "App font:" << app.font().family();
-
-    //qDebug() << QFont(":/fonts/NotoSans-Regular.ttf").family();
 
 #ifndef  QT_DEBUG
     if (!showDebugOutput) {
@@ -96,8 +90,9 @@ int main(int argc, char *argv[])
 #endif
     app.setWindowIcon(appIcon);
 
-    SysTray *tray = new SysTray();
+    SysTray *tray = new SysTray(&app);
     tray->setIcon(appIcon);
+    tray->show();
 
     QObject::connect(tray, &SysTray::closeEventTriggered, &app, &CustomApp::quit);
 
@@ -119,15 +114,12 @@ int main(int argc, char *argv[])
     global::hiDpi = maxDevicePixelRatio > 1.0;
     qDebug() << "hiDpi" << global::hiDpi;
 
-    //Create channels manager
-    ChannelManager *cman = ChannelManager::getInstance();
-
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
 
     //Http server used for auth
     HttpServer *httpserver = new HttpServer(&app);
-    QObject::connect(httpserver, &HttpServer::codeReceived, cman, &ChannelManager::setAccessToken);
+    QObject::connect(httpserver, &HttpServer::codeReceived, ChannelManager::getInstance(), &ChannelManager::setAccessToken);
     //-------------------------------------------------------------------------------------------------------------------//
 
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
@@ -152,12 +144,12 @@ int main(int argc, char *argv[])
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
     rootContext->setContextProperty("netman", NetworkManager::getInstance());
-    rootContext->setContextProperty("g_cman", cman);
+    //rootContext->setContextProperty("g_cman", cman);
     rootContext->setContextProperty("g_guard", &guard);
     rootContext->setContextProperty("g_powerman", power);
-    rootContext->setContextProperty("g_favourites", cman->getFavouritesProxy());
-    rootContext->setContextProperty("g_results", cman->getResultsModel());
-    rootContext->setContextProperty("g_games", cman->getGamesModel());
+    rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
+    rootContext->setContextProperty("g_results", ChannelManager::getInstance()->getResultsModel());
+    rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());
     rootContext->setContextProperty("g_tray", tray);
     rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
     rootContext->setContextProperty("app_version", APP_VERSION);
@@ -175,29 +167,23 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("player_backend", "multimedia");
 #endif
 
+    qmlRegisterSingletonType<ChannelManager>("app.orion.channels", 1, 0, "ChannelManager", &ChannelManager::provider);
     qmlRegisterSingletonType<BadgeContainer>("app.orion.emotes", 1, 0, "Emotes", &BadgeContainer::provider);
     qmlRegisterSingletonType<ViewersModel>("app.orion.viewers", 1, 0, "Viewers", &ViewersModel::provider);
     qmlRegisterSingletonType<VodManager>("app.orion.vods", 1, 0, "VodManager", &VodManager::provider);
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
+    //Setup obj parents for cleanup
+    ChannelManager::getInstance()->setParent(&app);
+    BadgeContainer::getInstance()->setParent(&app);
+    ViewersModel::getInstance()->setParent(&app);
+    VodManager::getInstance()->setParent(&app);
+
     engine.load(QUrl("qrc:/main.qml"));
 
     //Set up notifications
-    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager());
-    QObject::connect(cman, &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
+    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
+    QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
 
-    qDebug() << "Starting window...";
-    tray->show();
-
-    app.exec();
-
-    //-------------------------------------------------------------------------------------------------------------------//
-
-    //Cleanup
-    delete tray;
-    delete cman;
-    delete notificationManager;
-
-    qDebug() << "Closing application...";
-    return 0;
+    return app.exec();
 }

@@ -25,7 +25,7 @@ class SysTray: public QSystemTrayIcon
     Q_OBJECT
 
 public:
-    SysTray();
+    SysTray(QObject *parent = 0);
     ~SysTray();
 
 signals:

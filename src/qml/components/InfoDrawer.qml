@@ -1,7 +1,8 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
-import "."
+
+import app.orion.channels 1.0
 
 Drawer {
     id: root
@@ -92,9 +93,9 @@ Drawer {
                 onClicked: {
                     if (item) {
                         if (item.favourite === true)
-                            g_cman.addToFavourites(item)
+                            ChannelManager.addToFavourites(item)
                         else
-                            g_cman.removeFromFavourites(item)
+                            ChannelManager.removeFromFavourites(item)
                     }
                 }
             }

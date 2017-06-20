@@ -16,6 +16,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import "components"
+import app.orion.channels 1.0
 
 Page {
     id: root
@@ -42,9 +43,9 @@ Page {
             ColumnLayout {
                 Switch {
                     id: alertOption
-                    checked: g_cman.isAlert()
+                    checked: ChannelManager.isAlert()
                     onClicked: {
-                        g_cman.setAlert(checked)
+                        ChannelManager.setAlert(checked)
                     }
                     text: "Enable notifications"
                 }
@@ -53,17 +54,17 @@ Page {
                     id: notificationsOption
                     enabled: alertOption.checked
 
-                    checked: g_cman.offlineNotifications
+                    checked: ChannelManager.offlineNotifications
                     onClicked: {
-                        g_cman.offlineNotifications = !g_cman.offlineNotifications
+                        ChannelManager.offlineNotifications = !ChannelManager.offlineNotifications
                     }
                     text: "Show offline notifications"
                 }
 
                 OptionCombo {
                     id: alertPosition
-                    selection: g_cman.getAlertPosition()
-                    onSelectionChanged: g_cman.setAlertPosition(selection)
+                    selection: ChannelManager.getAlertPosition()
+                    onSelectionChanged: ChannelManager.setAlertPosition(selection)
 
                     text: "Notification position"
                     model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
@@ -80,18 +81,18 @@ Page {
             ColumnLayout {
                 Switch {
                     id: minStartupOption
-                    checked: g_cman.isMinimizeOnStartup()
+                    checked: ChannelManager.isMinimizeOnStartup()
                     onClicked: {
-                        g_cman.setMinimizeOnStartup(checked)
+                        ChannelManager.setMinimizeOnStartup(checked)
                     }
                     text: "Start minimized"
                 }
 
                 Switch {
                     id: closeToTrayOption
-                    checked: g_cman.isCloseToTray()
+                    checked: ChannelManager.isCloseToTray()
                     onClicked: {
-                        g_cman.setCloseToTray(checked)
+                        ChannelManager.setCloseToTray(checked)
                     }
                     text: "Close to tray"
                 }
@@ -107,9 +108,9 @@ Page {
             ColumnLayout {
                 Switch {
                     id: chatSwapOption
-                    checked: g_cman.swapChat
+                    checked: ChannelManager.swapChat
                     onClicked: {
-                        g_cman.swapChat = !g_cman.swapChat
+                        ChannelManager.swapChat = !ChannelManager.swapChat
                     }
                     text: "Swap Chat Side"
                 }
@@ -122,7 +123,7 @@ Page {
                     Component.onCompleted: {
                         var entries = model;
 
-                        var val = g_cman.textScaleFactor;
+                        var val = ChannelManager.textScaleFactor;
                         for (var i = 0; i < entries.length; i++) {
                             var cur = entries[i];
                             if (parseFloat(cur) == val) {
@@ -133,7 +134,7 @@ Page {
                     }
 
                     onSelectionChanged: {
-                        g_cman.textScaleFactor = parseFloat(selection)
+                        ChannelManager.textScaleFactor = parseFloat(selection)
                     }
                 }
             }
@@ -173,16 +174,16 @@ Page {
 
                         }
                         else {
-                            g_cman.setAccessToken("")
-                            g_cman.checkFavourites()
+                            ChannelManager.setAccessToken("")
+                            ChannelManager.checkFavourites()
                             twitchName.text = "Not logged in"
                         }
                     }
 
                     Connections {
-                        target: g_cman
+                        target: ChannelManager
                         onAccessTokenUpdated: {
-                            connectButton.loggedIn = g_cman.isAccessTokenAvailable()
+                            connectButton.loggedIn = ChannelManager.isAccessTokenAvailable()
                         }
                         onUserNameUpdated: {
                             twitchName.text = "Logged in as " + name

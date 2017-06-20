@@ -19,6 +19,8 @@ import QtQuick.Controls.Material 2.1
 import "../components"
 import "../util.js" as Util
 
+import app.orion.channels 1.0
+
 Item {
     id: root
     property string user
@@ -29,7 +31,7 @@ Item {
     property bool isChannelNotice
     property bool isWhisper
     property string systemMessage
-    property real fontSize: 12//g_cman.textScaleFactor * 10
+    property real fontSize: 12//ChannelManager.textScaleFactor * 10
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
     property real highlightOpacity: 1.0
@@ -192,8 +194,8 @@ Item {
               Image {
                 id: _emoteImg
 
-                width: sourceSize.width/(hiDPI ? 2.0 : 1.0) * g_cman.textScaleFactor
-                height: sourceSize.height/(hiDPI ? 2.0 : 1.0) * g_cman.textScaleFactor
+                width: sourceSize.width/(hiDPI ? 2.0 : 1.0) * ChannelManager.textScaleFactor
+                height: sourceSize.height/(hiDPI ? 2.0 : 1.0) * ChannelManager.textScaleFactor
 
                 Component.onCompleted: {
                   source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
@@ -230,8 +232,8 @@ Item {
                 id: _animatedImg
 
                 // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
-                width: 28 * g_cman.textScaleFactor
-                height: 28 * g_cman.textScaleFactor
+                width: 28 * ChannelManager.textScaleFactor
+                height: 28 * ChannelManager.textScaleFactor
 
                 Component.onCompleted: {
                   source = msgItem.sourceUrl;
@@ -268,8 +270,8 @@ Item {
               source = badgeEntry.url;
             }
 
-            width: sourceSize.width / badgeEntry.devicePixelRatio * g_cman.textScaleFactor
-            height: sourceSize.height / badgeEntry.devicePixelRatio * g_cman.textScaleFactor
+            width: sourceSize.width / badgeEntry.devicePixelRatio * ChannelManager.textScaleFactor
+            height: sourceSize.height / badgeEntry.devicePixelRatio * ChannelManager.textScaleFactor
 
 //            onStatusChanged: {
 //                if (status == Image.Ready) {

@@ -14,7 +14,9 @@
 
 import QtQuick 2.5
 import aldrog.twitchtube.ircchat 1.0
+
 import app.orion.emotes 1.0
+import app.orion.channels 1.0
 
 Item {
     id: root
@@ -41,7 +43,7 @@ Item {
     }
 
     Connections {
-        target: g_cman
+        target: ChannelManager
 
         onLogin: {
             //console.log("Login command: ", username, password)
