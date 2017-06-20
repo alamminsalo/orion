@@ -72,8 +72,8 @@ Item {
             left: parent.left
             right: parent.right
             margins: {
-                leftMargin: dp(2)
-                rightMargin: dp(2)
+                leftMargin: 2
+                rightMargin: 2
             }
         }
 
@@ -93,8 +93,8 @@ Item {
           left: parent.left
           right: parent.right
           margins: {
-              leftMargin: dp(2)
-              rightMargin: dp(2)
+              leftMargin: 2
+              rightMargin: 2
           }
       }
 
@@ -262,7 +262,7 @@ Item {
       MouseArea {
           id: _badgeImgMouseArea
           hoverEnabled: true
-          width: _badgeImg.width + dp(2)
+          width: _badgeImg.width + 2
           height: _badgeImg.height
           Image {
             id: _badgeImg

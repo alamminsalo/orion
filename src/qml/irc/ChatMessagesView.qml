@@ -43,10 +43,6 @@ ListView {
         isWhisper: model.isWhisper
         //highlightOpacity: root._opacity
         width: parent.width
-        //                anchors {
-        //                    left: parent.left
-        //                    right: parent.right
-        //                }
     }
     
     anchors {

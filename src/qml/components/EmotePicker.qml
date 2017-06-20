@@ -122,15 +122,15 @@ Page {
         anchors {
             fill: parent
 
-            topMargin: dp(5)
-            bottomMargin: dp(5)
-            leftMargin: dp(17)
-            rightMargin: dp(17)
+            topMargin: 2
+            bottomMargin: 2
+            leftMargin: 17
+            rightMargin: 17
         }
         model: root._innerModel
 
-        cellWidth: dp(42)
-        cellHeight: dp(42)
+        cellWidth: 42
+        cellHeight: 42
 
         highlight: highlight
         highlightFollowsCurrentItem: true
@@ -186,10 +186,10 @@ Page {
         }
 
         delegate: Item {
-            height: dp(42)
-            width: dp(42)
+            height: 42
+            width: 42
 
-            anchors.margins: dp(1)
+            anchors.margins: 1
 
             MouseArea {
                 id: _imageMouseArea
@@ -268,10 +268,10 @@ Page {
             return
         }
 
-        root.x = mX + dp(20)
+        root.x = mX + 20
 
         if (root.x + root.width > Screen.width)
-            root.x -= root.width + dp(40)
+            root.x -= root.width + 40
 
         root.y = mY
 

@@ -12,6 +12,7 @@ Item {
         bottom: parent.bottom
         left: parent.left
         right: parent.right
+        margins: 10
     }
     
     onVisibleChanged: {
@@ -67,11 +68,12 @@ Item {
             property: "groupName"
             criteria: ViewSection.FullString
             delegate: Row {
-                height: dp(50)
+                height: 50
                 Label {
                     anchors.verticalCenter: parent.verticalCenter
                     font.capitalization: Font.AllUppercase
                     text: section
+                    font.bold: true
                 }
             }
         }

@@ -24,6 +24,10 @@ import app.orion.emotes 1.0
 
 Page {
     id: root
+//    background: Rectangle {
+//        color: "black"
+//        opacity: 0.5
+//    }
 
     onVisibleChanged: {
         if (visible) {
@@ -149,6 +153,7 @@ Page {
     header: TabBar {
         Material.background: Material.background
         font.family: "Material Icons"
+        font.pointSize: 12
         currentIndex: chatContainer.currentIndex
 
         TabButton {
@@ -187,7 +192,7 @@ Page {
             onVisibleChanged: {
                 if (visible) {
                     focusFilterInput();
-                    height = dp(320);
+                    height = 320
                 }
             }
 
