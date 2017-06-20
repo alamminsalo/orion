@@ -16,7 +16,7 @@ import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
-
+import "irc"
 import app.orion.channels 1.0
 
 ApplicationWindow {
@@ -68,6 +68,22 @@ ApplicationWindow {
         onAnotherProcessTriggered: {
             root.show()
             root.raise()
+        }
+    }
+
+    Drawer {
+        id: chatdrawer
+        edge: ChannelManager.swapChat ? Qt.LeftEdge : Qt.RightEdge
+
+        height: g_rootWindow.height - 40
+        y: (g_rootWindow.height - height) / 2
+
+        width: 300
+        dim: false
+
+        ChatView {
+            id: chatview
+            anchors.fill: parent
         }
     }
 

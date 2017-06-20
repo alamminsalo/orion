@@ -139,7 +139,8 @@ Drawer {
                 text: "\ue0ca"
                 onClicked: {
                     if (item) {
-                        playerView.getChat(item)
+                        chatview.joinChannel(item.name, item._id);
+                        chatdrawer.open()
                     }
                     close()
                 }
