@@ -355,7 +355,6 @@ Page {
             running: false
             repeat: false
             onTriggered: {
-                console.log("triggered!")
                 if (!footerArea.containsMouse && !headerArea.containsMouse) {
                     headersVisible = false
                 }

@@ -72,15 +72,20 @@ Item {
             Image {
                 id: channelImage
                 source: root.logo
-                fillMode: Image.PreserveAspectFit
+
+                function isLandscape() {
+                    return sourceSize.width >= sourceSize.height
+                }
+
+                fillMode: isLandscape() ? Image.PreserveAspectFit : Image.PreserveAspectCrop
                 width: imgSize - 20
                 anchors.centerIn: parent
 
-//                Behavior on width {
-//                    NumberAnimation {
-//                        duration: 100
-//                    }
-//                }
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 100
+                    }
+                }
 
 //                Component.onCompleted: {
 //                    if (root.scaleImage){
@@ -124,7 +129,8 @@ Item {
             Pane {
                 id: infoRect
                 opacity: .85
-                height: parent.height * 0.25
+                //height: parent.height * 0.25
+                Material.background: "black"
 
                 anchors {
                     left: container.left
@@ -140,6 +146,7 @@ Item {
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
+                    fontSizeMode: Text.Fit
                     font.bold: true
                 }
             }
@@ -147,7 +154,7 @@ Item {
     }
 
     function setHighlight(isActive){
-        //channelImage.width = isActive ? imgSize : imgSize - 20
+        channelImage.width = isActive ? imgSize : imgSize - 20
         innerPane.Material.elevation = isActive ? 12 : 0
     }
 }

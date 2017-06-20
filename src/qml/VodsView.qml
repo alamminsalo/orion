@@ -105,20 +105,20 @@ Item{
             playerView.getStreams(selectedChannel, clickedItem, lastPlaybackPosition == null? 0 : lastPlaybackPosition);
         }
 
-        onItemRightClicked: {
-            _menu.item = clickedItem
+//        onItemRightClicked: {
+//            _menu.item = clickedItem
 
-            var lastPlayed = getLastPlaybackPosition(selectedChannel, clickedItem);
-            var haveLastPlayTime = lastPlayed != null;
-            _furthestPlayedMenuItem.enabled = haveLastPlayTime;
-            if (haveLastPlayTime) {
-               _furthestPlayedMenuItem.text = "Watch video from " + Util.getTime(lastPlayed);
-            } else {
-               _furthestPlayedMenuItem.text = "Watch video from furthest played";
-            }
+//            var lastPlayed = getLastPlaybackPosition(selectedChannel, clickedItem);
+//            var haveLastPlayTime = lastPlayed != null;
+//            _furthestPlayedMenuItem.enabled = haveLastPlayTime;
+//            if (haveLastPlayTime) {
+//               _furthestPlayedMenuItem.text = "Watch video from " + Util.getTime(lastPlayed);
+//            } else {
+//               _furthestPlayedMenuItem.text = "Watch video from furthest played";
+//            }
 
-            _menu.open()
-        }
+//            _menu.open()
+//        }
 
         onItemTooltipHover: {
             g_tooltip.text = ""
@@ -138,23 +138,23 @@ Item{
             g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
         }
 
-        ContextMenu {
-            id: _menu
-            MenuItem {
-                text: "Watch video from start"
-                //text: "Watch;play"
-                onTriggered: {
-                    playerView.getStreams(selectedChannel, _menu.item, 0)
-                }
-            }
+//        ContextMenu {
+//            id: _menu
+//            MenuItem {
+//                text: "Watch video from start"
+//                //text: "Watch;play"
+//                onTriggered: {
+//                    playerView.getStreams(selectedChannel, _menu.item, 0)
+//                }
+//            }
 
-            MenuItem {
-                id: _furthestPlayedMenuItem
-                onTriggered: {
-                    playerView.getStreams(selectedChannel, _menu.item, VodManager.getLastPlaybackPosition(selectedChannel, _menu.item))
-                }
-            }
-        }
+//            MenuItem {
+//                id: _furthestPlayedMenuItem
+//                onTriggered: {
+
+//                }
+//            }
+//        }
 
         onAtYEndChanged: checkScroll()
 
