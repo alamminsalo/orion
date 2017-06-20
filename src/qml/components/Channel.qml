@@ -129,7 +129,6 @@ Item {
             Pane {
                 id: infoRect
                 opacity: .85
-                //height: parent.height * 0.25
                 Material.background: "black"
 
                 anchors {
@@ -148,6 +147,7 @@ Item {
                     wrapMode: Text.WordWrap
                     fontSizeMode: Text.Fit
                     font.bold: true
+                    maximumLineCount: 3
                 }
             }
         }
