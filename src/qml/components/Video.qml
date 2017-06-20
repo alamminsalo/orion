@@ -13,6 +13,8 @@
  */
 
 import QtQuick 2.5
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 
 Channel {
     property string _id
@@ -21,4 +23,19 @@ Channel {
     property int position
     property string createdAt
     online: true
+
+    Label {
+        id: resumePlaybackIcon
+        font.family: "Material Icons"
+        text: "\ue923"
+        font.pointSize: 20
+        anchors {
+            top: parent.top
+            right: parent.right
+            margins: parent.width * 0.2
+        }
+
+        Material.foreground: Material.accent
+        visible: position > 0
+    }
 }
