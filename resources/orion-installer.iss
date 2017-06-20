@@ -3,9 +3,11 @@
 
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING .ISS SCRIPT FILES!
 
+#define AppVersion GetFileVersion("release\orion.exe")
+
 [Setup]
 AppName=Orion
-AppVersion=1.0
+AppVersion={#AppVersion}
 DefaultDirName={pf}\Orion
 DefaultGroupName=Orion
 UninstallDisplayIcon={app}\orion.exe
