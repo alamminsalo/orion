@@ -287,7 +287,7 @@ Page {
             if (root.isVod) {
                 if (Math.abs(newPos - root.lastSetPosition) > 10) {
                     root.lastSetPosition = newPos;
-                    g_cman.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
+                    VodManager.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
                 }
             }
             seekBar.value = newPos

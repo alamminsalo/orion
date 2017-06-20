@@ -15,9 +15,12 @@
 #include "vodmanager.h"
 #include <QSettings>
 
-VodManager::VodManager() : netman(NetworkManager::getInstance())
+VodManager::VodManager(QObject *parent) :
+    QObject(parent),
+    netman(NetworkManager::getInstance())
 {
-    model = new VodListModel();
+    qmlRegisterInterface<VodListModel>("VodListModel");
+    _model = new VodListModel(this);
 
     connect(netman, &NetworkManager::broadcastsOperationFinished, this, &VodManager::onSearchFinished);
     connect(netman, &NetworkManager::m3u8OperationBFinished, this, &VodManager::streamsGetFinished);
@@ -35,6 +38,8 @@ VodManager::VodManager() : netman(NetworkManager::getInstance())
         vodLastPlaybackPositionLoaded(channel, vod, lastPosition, i);
     }
     settings.endArray();
+
+    emit modelChanged();
 }
 
 VodManager *VodManager::instance = 0;
@@ -67,13 +72,13 @@ VodManager::~VodManager()
     }
     settings.endArray();
 
-    delete model;
+    delete _model;
 }
 
 void VodManager::search(const quint64 channelId, const quint32 offset, const quint32 limit)
 {
     if (offset == 0) {
-        model->clear();
+        _model->clear();
         emit searchStarted();
     }
 
@@ -82,7 +87,7 @@ void VodManager::search(const quint64 channelId, const quint32 offset, const qui
 
 void VodManager::onSearchFinished(QList<Vod *> items)
 {
-    model->addAll(items);
+    _model->addAll(items);
 
     qDeleteAll(items);
     items.clear();
@@ -92,7 +97,7 @@ void VodManager::onSearchFinished(QList<Vod *> items)
 
 VodListModel *VodManager::getModel() const
 {
-    return model;
+    return _model;
 }
 
 QString VodManager::getGame() const

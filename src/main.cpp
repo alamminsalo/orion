@@ -125,9 +125,6 @@ int main(int argc, char *argv[])
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
 
-    //Create vods manager
-    VodManager *vod = VodManager::getInstance();
-
     //Http server used for auth
     HttpServer *httpserver = new HttpServer(&app);
     QObject::connect(httpserver, &HttpServer::codeReceived, cman, &ChannelManager::setAccessToken);
@@ -162,8 +159,7 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_results", cman->getResultsModel());
     rootContext->setContextProperty("g_games", cman->getGamesModel());
     rootContext->setContextProperty("g_tray", tray);
-    //rootContext->setContextProperty("g_vodmgr", vod);
-    rootContext->setContextProperty("vodsModel", vod->getModel());
+    rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
     rootContext->setContextProperty("app_version", APP_VERSION);
     rootContext->setContextProperty("httpServer", httpserver);
     rootContext->setContextProperty("hiDPI", global::hiDpi);
@@ -179,10 +175,10 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("player_backend", "multimedia");
 #endif
 
-    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
     qmlRegisterSingletonType<BadgeContainer>("app.orion.emotes", 1, 0, "Emotes", &BadgeContainer::provider);
     qmlRegisterSingletonType<ViewersModel>("app.orion.viewers", 1, 0, "Viewers", &ViewersModel::provider);
     qmlRegisterSingletonType<VodManager>("app.orion.vods", 1, 0, "VodManager", &VodManager::provider);
+    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
     engine.load(QUrl("qrc:/main.qml"));
 
@@ -198,7 +194,6 @@ int main(int argc, char *argv[])
     //-------------------------------------------------------------------------------------------------------------------//
 
     //Cleanup
-    delete vod;
     delete tray;
     delete cman;
     delete notificationManager;

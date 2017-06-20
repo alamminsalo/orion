@@ -155,14 +155,14 @@ Page {
 
                 Button {
                     id: connectButton
-
-                    text: g_cman.isAccessTokenAvailable() ? "Log out" : "Log in"
+                    property bool loggedIn: false
+                    text: loggedIn ? "Log out" : "Log in"
                     anchors {
                         verticalCenter: parent.verticalCenter
                         right: parent.right
                     }
                     onClicked: {
-                        if (!g_cman.isAccessTokenAvailable()) {
+                        if (!loggedIn) {
                             httpServer.start();
                             var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
                                     + "&redirect_uri=http://localhost:8979"

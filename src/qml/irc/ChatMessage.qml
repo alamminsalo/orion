@@ -29,7 +29,7 @@ Item {
     property bool isChannelNotice
     property bool isWhisper
     property string systemMessage
-    property real fontSize: g_cman.textScaleFactor * 10
+    property real fontSize: 12//g_cman.textScaleFactor * 10
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
     property real highlightOpacity: 1.0
@@ -43,13 +43,13 @@ Item {
 
     height: childrenRect.height
 
-    onFontSizeChanged: {
-        console.log(fontSize)
-        // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
-//        Qt.callLater(function() {
-//            _messageLineFlow.updatePositions()
-//        })
-    }
+//    onFontSizeChanged: {
+//        //console.log(fontSize)
+//        // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
+////        Qt.callLater(function() {
+////            _messageLineFlow.updatePositions()
+////        })
+//    }
 
     Rectangle {
         anchors {

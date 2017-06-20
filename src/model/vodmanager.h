@@ -27,15 +27,16 @@ struct LastPosition {
     int settingsIndex;
 };
 
-
 class VodManager: public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(VodListModel model READ getModel NOTIFY modelChanged)
+
     QMap<QString, QMap<QString, LastPosition>> channelVodLastPositions;
 
     static VodManager *instance;
-    VodManager();
+    explicit VodManager(QObject *parent = 0);
 
 public:
     static VodManager *getInstance() {
@@ -71,6 +72,7 @@ public slots:
     void vodLastPlaybackPositionLoaded(const QString & channel, const QString & vod, quint64 position, int settingsIndex);
 
 signals:
+    void modelChanged();
     void searchStarted();
     void searchFinished();
     void streamsGetFinished(QVariantMap items);
@@ -81,7 +83,7 @@ signals:
 
 private:
     QString game;
-    VodListModel *model;
+    VodListModel *_model;
     NetworkManager *netman;
 };
 
