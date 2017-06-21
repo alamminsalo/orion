@@ -25,7 +25,7 @@ ApplicationWindow {
     visible: true
 
     title: "Orion"
-    flags: Qt.FramelessWindowHint | Qt.SplashScreen
+    //flags: Qt.FramelessWindowHint | Qt.SplashScreen
     visibility: g_fullscreen ? "FullScreen" : windowstate
 
     property variant g_rootWindow: root
