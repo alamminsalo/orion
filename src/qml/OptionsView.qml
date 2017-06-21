@@ -183,7 +183,7 @@ Page {
                     Connections {
                         target: ChannelManager
                         onAccessTokenUpdated: {
-                            connectButton.loggedIn = Settings.hasAccessToken()
+                            connectButton.loggedIn = Settings.hasAccessToken
                         }
                         onUserNameUpdated: {
                             twitchName.text = "Logged in as " + name
@@ -200,7 +200,7 @@ Page {
             Layout.alignment: Qt.AlignCenter
 
             Label {
-                text: app_version
+                text: Settings.appVersion
             }
         }
     }

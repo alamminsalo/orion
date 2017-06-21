@@ -9,15 +9,28 @@ SettingsManager::SettingsManager(QObject *parent) :
     settings = new QSettings("orion.application", "Orion", this);
 
     //Initial values
-    setAlert(true);
-    setCloseToTray(false);
-    setAlertPosition(1);
-    setMinimizeOnStartup(false);
-    setTextScaleFactor(1.0);
-    setVolumeLevel(100);
-    setOfflineNotifications(false);
-    setAccessToken("");
+    mAlert = true;
+    mCloseToTray = false;
+    mAlertPosition = 1;
+    mMinimizeOnStartup = false;
+    mTextScaleFactor = 1.0;
+    mVolumeLevel = 100;
+    mOfflineNotifications = false;
+    mAccessToken = "";
 
+    //Connections
+    connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
+}
+
+SettingsManager *SettingsManager::getInstance()
+{
+    if (!instance)
+        instance = new SettingsManager();
+    return instance;
+}
+
+void SettingsManager::load()
+{
     //Load values from settings, notifying changes as needed
     if (settings->contains("alert")) {
         setAlert(settings->value("alert").toBool());
@@ -55,18 +68,9 @@ SettingsManager::SettingsManager(QObject *parent) :
         setOfflineNotifications(settings->value("offlineNotifications").toBool());
     }
 
-    if (settings->contains("accessToken"))
+    if (settings->contains("accessToken")) {
         setAccessToken(settings->value("accessToken").toString());
-
-    //Connections
-    connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
-}
-
-SettingsManager *SettingsManager::getInstance()
-{
-    if (!instance)
-        instance = new SettingsManager();
-    return instance;
+    }
 }
 
 bool SettingsManager::alert() const
@@ -79,8 +83,10 @@ void SettingsManager::setAlert(bool alert)
     if (mAlert != alert) {
         mAlert = alert;
         settings->setValue("alert", alert);
-        emit alertChanged();
+
+        qDebug() << "alert changed to" << alert;
     }
+    emit alertChanged();
 }
 
 bool SettingsManager::closeToTray() const
@@ -93,8 +99,10 @@ void SettingsManager::setCloseToTray(bool closeToTray)
     if (mCloseToTray != closeToTray) {
         mCloseToTray = closeToTray;
         settings->setValue("closeToTray", closeToTray);
-        emit closeToTrayChanged();
+
+        qDebug() << "closeToTray changed to" << closeToTray;
     }
+    emit closeToTrayChanged();
 }
 
 int SettingsManager::alertPosition() const
@@ -106,9 +114,11 @@ void SettingsManager::setAlertPosition(int alertPosition)
 {
     if (alertPosition != mAlertPosition) {
         mAlertPosition = alertPosition;
-        emit alertPositionChanged();
         settings->setValue("alertPosition", alertPosition);
+
+        qDebug() << "alertPosition changed to" << alertPosition;
     }
+    emit alertPositionChanged();
 }
 
 int SettingsManager::volumeLevel() const
@@ -121,8 +131,10 @@ void SettingsManager::setVolumeLevel(int volumeLevel)
     if (mVolumeLevel != volumeLevel) {
         mVolumeLevel = volumeLevel;
         settings->setValue("volumeLevel", volumeLevel);
-        emit volumeLevelChanged();
+
+        qDebug() << "volumeLevel changed to" << volumeLevel;
     }
+    emit volumeLevelChanged();
 }
 
 bool SettingsManager::minimizeOnStartup() const
@@ -135,8 +147,10 @@ void SettingsManager::setMinimizeOnStartup(bool minimizeOnStartup)
     if (mMinimizeOnStartup != minimizeOnStartup) {
         mMinimizeOnStartup = minimizeOnStartup;
         settings->setValue("minimizeOnStartup", minimizeOnStartup);
-        emit minimizeOnStartupChanged();
+
+        qDebug() << "minimizeOnStartup changed to" << minimizeOnStartup;
     }
+    emit minimizeOnStartupChanged();
 }
 
 bool SettingsManager::swapChat() const
@@ -149,8 +163,10 @@ void SettingsManager::setSwapChat(bool swapChat)
     if (mSwapChat != swapChat) {
         mSwapChat = swapChat;
         settings->setValue("swapChat", swapChat);
-        emit swapChatChanged();
+
+        qDebug() << "swapChat changed to" << swapChat;
     }
+    emit swapChatChanged();
 }
 
 bool SettingsManager::offlineNotifications() const
@@ -163,8 +179,10 @@ void SettingsManager::setOfflineNotifications(bool offlineNotifications)
     if (mOfflineNotifications != offlineNotifications) {
         mOfflineNotifications = offlineNotifications;
         settings->setValue("offlineNotifications", offlineNotifications);
-        emit offlineNotificationsChanged();
+
+        qDebug() << "offlineNotifications changed to" << offlineNotifications;
     }
+    emit offlineNotificationsChanged();
 }
 
 double SettingsManager::textScaleFactor() const
@@ -177,8 +195,10 @@ void SettingsManager::setTextScaleFactor(double textScaleFactor)
     if (mTextScaleFactor != textScaleFactor) {
         mTextScaleFactor = textScaleFactor;
         settings->setValue("textScaleFactor", textScaleFactor);
-        emit textScaleFactorChanged();
+
+        qDebug() << "textScaleFactor changed to" << textScaleFactor;
     }
+    emit textScaleFactorChanged();
 }
 
 QString SettingsManager::quality() const
@@ -191,8 +211,10 @@ void SettingsManager::setQuality(const QString &quality)
     if (mQuality != quality) {
         mQuality = quality;
         settings->setValue("quality", quality);
-        emit qualityChanged();
+
+        qDebug() << "quality changed to" << quality;
     }
+    emit qualityChanged();
 }
 
 QString SettingsManager::accessToken() const
@@ -205,8 +227,10 @@ void SettingsManager::setAccessToken(const QString accessToken)
     if (mAccessToken != accessToken) {
         mAccessToken = accessToken;
         settings->setValue("accessToken", accessToken);
-        emit accessTokenChanged(accessToken);
+
+        qDebug() << "accessToken changed!";
     }
+    emit accessTokenChanged(accessToken);
 }
 
 bool SettingsManager::hasAccessToken() const

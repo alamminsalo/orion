@@ -48,7 +48,7 @@ ApplicationWindow {
     }
 
     onClosing: {
-        if (!Settings.isCloseToTray()) {
+        if (!Settings.closeToTray) {
             Qt.quit()
         }
     }
@@ -140,6 +140,8 @@ ApplicationWindow {
         //Initial view
         topbar.setView(2)
 
+        //Load settings
+        Settings.load()
 
         if (Settings.minimizeOnStartup)
             root.hide();

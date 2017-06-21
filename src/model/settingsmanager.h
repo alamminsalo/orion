@@ -19,7 +19,10 @@ class SettingsManager : public QObject
     Q_PROPERTY(bool offlineNotifications READ offlineNotifications WRITE setOfflineNotifications NOTIFY offlineNotificationsChanged)
     Q_PROPERTY(double textScaleFactor READ textScaleFactor WRITE setTextScaleFactor NOTIFY textScaleFactorChanged)
     Q_PROPERTY(QString quality READ quality WRITE setQuality NOTIFY qualityChanged)
-    Q_PROPERTY(QString accessToken READ accessToken NOTIFY accessTokenChanged)
+    Q_PROPERTY(QString accessToken READ accessToken WRITE setAccessToken NOTIFY accessTokenChanged)
+    Q_PROPERTY(bool hasAccessToken READ hasAccessToken NOTIFY accessTokenChanged)
+    Q_PROPERTY(QString appVersion READ appVersion)
+    Q_PROPERTY(QString appName READ appName)
 
     bool mAlert;
     bool mCloseToTray;
@@ -66,6 +69,13 @@ public:
 
     QString accessToken() const;
 
+    QString appName() const {
+        return APP_NAME;
+    }
+    QString appVersion() const {
+        return APP_VERSION;
+    }
+
 signals:
     void alertChanged();
     void closeToTrayChanged();
@@ -81,6 +91,7 @@ signals:
 public slots:
     void setAccessToken(const QString accessToken);
     bool hasAccessToken() const;
+    void load();
 
 private:
     QSettings *settings;

@@ -146,7 +146,6 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());
     rootContext->setContextProperty("g_tray", tray);
     rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
-    rootContext->setContextProperty("app_version", APP_VERSION);
     rootContext->setContextProperty("hiDPI", global::hiDpi);
 
 #ifdef MPV_PLAYER
