@@ -422,8 +422,6 @@ Page {
 
     footer: ToolBar {
         visible: root.headersVisible
-        leftPadding: 5
-        rightPadding: 5
         Material.background: Material.background
 
         MouseArea {
@@ -437,6 +435,7 @@ Page {
             from: 0
             to: duration
             visible: isVod
+            padding: 0
             anchors {
                 verticalCenter: parent.top
                 left: parent.left
@@ -449,7 +448,11 @@ Page {
         }
 
         RowLayout {
-            anchors.fill: parent
+            anchors {
+                fill: parent
+                rightMargin: 5
+                leftMargin: 5
+            }
 
             IconButtonFlat {
                 id: playBtn
