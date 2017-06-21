@@ -77,7 +77,7 @@ Page {
     }
 
     Connections {
-        target: netman
+        target: Network
 
         onNetworkAccessChanged: {
             if (up && currentChannel && !renderer.status !== "PAUSED") {
@@ -119,7 +119,7 @@ Page {
         repeat: true
         onTriggered: {
             if (currentChannel && currentChannel._id)
-                netman.getStream(currentChannel._id)
+                Network.getStream(currentChannel._id)
         }
     }
 

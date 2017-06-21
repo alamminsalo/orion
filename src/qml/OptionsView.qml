@@ -170,7 +170,7 @@ Page {
                         onClicked: {
                             if (!loggedIn) {
                                 LoginService.start();
-                                var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
+                                var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + Network.getClientId()
                                         + "&redirect_uri=http://localhost:8979"
                                         + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
                                         + "&force_verify=true";

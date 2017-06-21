@@ -17,10 +17,11 @@
 #include <QQmlComponent>
 #include <QQuickView>
 #include <QScreen>
-#include <QMainWindow>
+//Nothing seems to happen when excluded. Are these needed?
+//#include <QMainWindow>
+//#include <QtSvg/QGraphicsSvgItem>
+//#include <QString>
 #include <QQmlContext>
-#include <QString>
-#include <QtSvg/QGraphicsSvgItem>
 #include <QFontDatabase>
 #include <QResource>
 #include "util/runguard.h"
@@ -134,14 +135,10 @@ int main(int argc, char *argv[])
 
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
-    rootContext->setContextProperty("netman", NetworkManager::getInstance());
-    //rootContext->setContextProperty("g_cman", cman);
-    rootContext->setContextProperty("g_guard", &guard);
     rootContext->setContextProperty("g_powerman", power);
     rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
     rootContext->setContextProperty("g_results", ChannelManager::getInstance()->getResultsModel());
     rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());
-    rootContext->setContextProperty("g_tray", tray);
     rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
     rootContext->setContextProperty("hiDPI", global::hiDpi);
 
@@ -162,6 +159,7 @@ int main(int argc, char *argv[])
     qmlRegisterSingletonType<VodManager>("app.orion", 1, 0, "VodManager", &VodManager::provider);
     qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
     qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
+    qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
     //Setup obj parents for cleanup
@@ -176,6 +174,28 @@ int main(int argc, char *argv[])
     NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
     QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
 
+    // Load QML content
     engine.load(QUrl("qrc:/main.qml"));
+
+    // Load app settings
+    SettingsManager::getInstance()->load();
+
+    // Get QML root window, add connections
+    QQuickWindow *rootWin = (QQuickWindow *) engine.rootObjects().first();
+    if (rootWin) {
+        if (SettingsManager::getInstance()->minimizeOnStartup())
+            rootWin->hide();
+
+        //Connect to tray and runguard events
+        QObject::connect(&guard, &RunGuard::anotherProcessTriggered, rootWin, &QQuickWindow::show);
+        QObject::connect(tray, &SysTray::showTriggered, rootWin, [rootWin](){
+            if (rootWin->isVisible())
+                rootWin->hide();
+            else
+                rootWin->show();
+        });
+    }
+
+    // Start
     return app.exec();
 }

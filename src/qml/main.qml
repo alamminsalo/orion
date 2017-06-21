@@ -53,24 +53,6 @@ ApplicationWindow {
         }
     }
 
-    Connections {
-        target: g_tray
-        onShowTriggered: {
-            if (root.visible)
-                root.hide()
-            else
-                root.show()
-        }
-    }
-
-    Connections {
-        target: g_guard
-        onAnotherProcessTriggered: {
-            root.show()
-            root.raise()
-        }
-    }
-
     Drawer {
         id: chatdrawer
         edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
@@ -104,26 +86,12 @@ ApplicationWindow {
 
     footer: ToolBar {
         id: connectionErrorRectangle
+        Material.background: Material.Amber
+        visible: !Network.up
 
         Label {
             anchors.centerIn: parent
             text: "Connection error"
-        }
-    }
-
-    function updateForNetworkAccess(up) {
-        if (up) {
-            connectionErrorRectangle.visible = false
-        }
-        else {
-            connectionErrorRectangle.visible = true
-        }
-    }
-
-    Connections {
-        target: netman
-        onNetworkAccessChanged: {
-            updateForNetworkAccess(up);
         }
     }
 
@@ -140,20 +108,12 @@ ApplicationWindow {
         //Initial view
         topbar.setView(2)
 
-        //Load settings
-        Settings.load()
-
-        if (Settings.minimizeOnStartup)
-            root.hide();
-
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
         console.log("Logical pixel density", Screen.logicalPixelDensity)
         console.log("Orientation", Screen.orientation)
 
         pollTimer.start()
-
-        updateForNetworkAccess(netman.networkAccess());
     }
 
     Timer {

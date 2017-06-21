@@ -34,6 +34,7 @@
 #include "../model/vod.h"
 
 #include "replaychat.h"
+#include "../model/singletonprovider.h"
 
 #define ONLY_BROADCASTS true
 #define USE_HLS true
@@ -44,9 +45,10 @@ typedef QMap<QString, QMap<QString, QString>> BitsQStringsMap;
 
 class NetworkManager: public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
-protected:
+    Q_PROPERTY(bool up READ networkAccess NOTIFY networkAccessChanged)
 
     enum M3U8TYPE {
         LIVE = QNetworkRequest::CustomVerbAttribute + 1,
