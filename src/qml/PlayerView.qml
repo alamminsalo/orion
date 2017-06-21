@@ -136,7 +136,7 @@ Page {
         renderer.load(url, start, description)
 
         currentQualityName = streamName
-        ChannelManager.setQuality(streamName);
+        Settings.quality = streamName;
 
         spinner.running = true
     }
