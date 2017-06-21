@@ -12,7 +12,6 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick.Controls 1.4
 import QtQuick 2.5
 import app.orion 1.0
 import "components"
