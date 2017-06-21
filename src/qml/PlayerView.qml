@@ -147,9 +147,6 @@ Page {
 
     function getChat(channel) {
         getChannel(channel, null, false, 0);
-//        if (chatview.status == 0) {
-//            chatview.status++;
-//        }
     }
 
     function getChannel(channel, vod, wantVideo, startPos){
@@ -445,7 +442,10 @@ Page {
                 left: parent.left
                 right: parent.right
             }
-            onMoved: seekTo(value)
+            onPressedChanged: {
+                if (!pressed)
+                    seekTo(value)
+            }
         }
 
         RowLayout {
