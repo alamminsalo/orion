@@ -102,7 +102,7 @@ void HttpServer::onRead() {
 
     else {
         content = "<!DOCTYPE html><html>"
-                  "<body><h1>Success!</h1></body></html>";
+                  "<body><h1>Success!</h1><p>You can close this page now</p></body></html>";
     }
 
     QString response = "HTTP/1.1 200 OK\n";
