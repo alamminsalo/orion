@@ -8,7 +8,6 @@
         <file>FollowedView.qml</file>
         <file>GamesView.qml</file>
         <file>Views.qml</file>
-        <file>fonts/font-awesome.css</file>
         <file>fonts/NotoSans-Regular.ttf</file>
         <file>MultimediaBackend.qml</file>
         <file>QtAVBackend.qml</file>
@@ -17,8 +16,6 @@
         <file>TopBar.qml</file>
         <file>icon/orion.ico</file>
         <file>components/Notification.qml</file>
-        <file>style/Dpi.qml</file>
-        <file>style/qmldir</file>
         <file>VodsView.qml</file>
         <file>components/Video.qml</file>
         <file>util.js</file>
@@ -39,5 +36,6 @@
         <file>irc/ViewerList.qml</file>
         <file>components/InfoDrawer.qml</file>
         <file>irc/ChatMessagesView.qml</file>
+        <file>components/UILabel.qml</file>
     </qresource>
 </RCC>

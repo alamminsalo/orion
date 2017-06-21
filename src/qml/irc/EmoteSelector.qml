@@ -1,10 +1,7 @@
 import QtQuick 2.0
-//import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
-//import "../fonts/fontAwesome.js" as FontAwesome
-//import "../styles.js" as Styles
 import "../components"
 import "../util.js" as Util
 import "../"

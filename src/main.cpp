@@ -73,14 +73,6 @@ int main(int argc, char *argv[])
 
     bool showDebugOutput = parser.isSet(debugOption);
 
-    //Setup default font
-    int id = QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf");
-    if (id == -1)
-        qDebug() << "Can't open application font!";
-    else
-        app.setFont(QFont(QFontDatabase::applicationFontFamilies(id).first()));
-    qDebug() << "App font:" << app.font().family();
-
 #ifndef  QT_DEBUG
     if (!showDebugOutput) {
         qInstallMessageHandler(noisyFailureMsgHandler);

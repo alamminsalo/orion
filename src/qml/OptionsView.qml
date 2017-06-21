@@ -56,6 +56,7 @@ Page {
                     Switch {
                         id: notificationsOption
                         enabled: alertOption.checked
+                        font.family: mainFont.name
 
                         checked: Settings.offlineNotifications
                         onClicked: {
@@ -119,33 +120,33 @@ Page {
                         text: "Swap chat side"
                     }
 
-                    Label {
-                        text: "Font scale"
-                    }
+//                    UILabel {
+//                        text: "Font scale"
+//                    }
 
-                    SpinBox {
-                        id: textScaleFactor
-                        padding: 0
-                        font.pointSize: 10
-                        from: 50
-                        to: 300
-                        stepSize: 25
+//                    SpinBox {
+//                        id: textScaleFactor
+//                        padding: 0
+//                        font.pointSize: 10
+//                        from: 50
+//                        to: 300
+//                        stepSize: 25
 
-                        property real realValue: value / 100
-                        value: Settings.textScaleFactor * 100
+//                        property real realValue: value / 100
+//                        value: Settings.textScaleFactor * 100
 
-                        textFromValue: function(value, locale) {
-                            return Number(value / 100).toLocaleString(locale, 'f', 2)
-                        }
+//                        textFromValue: function(value, locale) {
+//                            return Number(value / 100).toLocaleString(locale, 'f', 2)
+//                        }
 
-                        valueFromText: function(text, locale) {
-                            return Number.fromLocaleString(locale, text) * 100
-                        }
+//                        valueFromText: function(text, locale) {
+//                            return Number.fromLocaleString(locale, text) * 100
+//                        }
 
-                        onValueModified: {
-                            Settings.textScaleFactor = realValue
-                        }
-                    }
+//                        onValueModified: {
+//                            Settings.textScaleFactor = realValue
+//                        }
+//                    }
                 }
             }
 
@@ -156,7 +157,7 @@ Page {
                 Layout.alignment: Qt.AlignCenter
 
                 RowLayout {
-                    Label {
+                    UILabel {
                         id: twitchName
                         text: "Not logged in"
                         Layout.fillWidth: true
@@ -200,7 +201,7 @@ Page {
                 padding: 10
                 width: root.itemWidth
                 Layout.alignment: Qt.AlignCenter
-                Label {
+                UILabel {
                     text: Settings.appName() + " " + Settings.appVersion()
                 }
             }

@@ -192,6 +192,10 @@ double SettingsManager::textScaleFactor() const
 
 void SettingsManager::setTextScaleFactor(double textScaleFactor)
 {
+    //Validate min/max
+    if (textScaleFactor < 0.5 || textScaleFactor > 3.0)
+        return;
+
     if (mTextScaleFactor != textScaleFactor) {
         mTextScaleFactor = textScaleFactor;
         settings->setValue("textScaleFactor", textScaleFactor);

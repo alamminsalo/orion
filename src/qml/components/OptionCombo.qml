@@ -25,7 +25,7 @@ RowLayout {
 
     signal activated(int index)
 
-    Label {
+    UILabel {
         id: label
     }
 

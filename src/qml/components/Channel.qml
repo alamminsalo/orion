@@ -105,7 +105,7 @@ Item {
                 }
             }
 
-            Label {
+            UILabel {
                 id: favIcon
                 text: "\ue87d"
                 font.family: "Material Icons"
@@ -137,7 +137,7 @@ Item {
                     bottom: container.bottom
                 }
 
-                Label {
+                UILabel {
                     id: channelTitle
                     text: root.title
                     elide: Text.ElideRight

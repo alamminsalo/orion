@@ -17,6 +17,7 @@ import QtQuick.Window 2.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import "irc"
+import "components"
 import app.orion 1.0
 
 ApplicationWindow {
@@ -37,11 +38,6 @@ ApplicationWindow {
     }
 
     property var windowstate: "Windowed"
-
-    function dp(number){
-        return number;
-        //return Dpi.scale(number)
-    }
 
     function fitToAspectRatio() {
         height = view.width * 0.5625 + topbar.height
@@ -89,7 +85,7 @@ ApplicationWindow {
         Material.background: Material.Amber
         visible: !Network.up
 
-        Label {
+        UILabel {
             anchors.centerIn: parent
             text: "Connection error"
         }
@@ -133,6 +129,7 @@ ApplicationWindow {
     }
 
     FontLoader {
+        id: mainFont
         source: "fonts/NotoSans-Regular.ttf"
         name: "Noto Sans"
     }

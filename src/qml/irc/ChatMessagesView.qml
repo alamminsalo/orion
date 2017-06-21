@@ -4,10 +4,11 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 import "../components"
 import "../util.js" as Util
+import app.orion 1.0
 
 ListView {
     id: list
-    
+
     property bool lock: true
     property int scrollbuf: 0
     property int previousY: 0
@@ -58,5 +59,15 @@ ListView {
             scrollbuf--
         
         previousY = contentY
+    }
+
+    MouseArea {
+        id: mArea
+        anchors.fill: parent
+        onWheel: {
+            if (wheel.modifiers & Qt.ControlModifier) {
+                Settings.textScaleFactor += (0.1 * wheel.angleDelta.y / 120)
+            }
+        }
     }
 }

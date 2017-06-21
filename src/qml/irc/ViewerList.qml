@@ -3,6 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 import app.orion 1.0
+import "../components"
 
 Item {
     id: root
@@ -59,9 +60,8 @@ Item {
         }
         
         clip: true
-        delegate: Label {
+        delegate: UILabel {
             text: user
-            //font.capitalization: Font.Capitalize
         }
         
         section {
@@ -69,7 +69,7 @@ Item {
             criteria: ViewSection.FullString
             delegate: Row {
                 height: 50
-                Label {
+                UILabel {
                     anchors.verticalCenter: parent.verticalCenter
                     font.capitalization: Font.AllUppercase
                     text: section

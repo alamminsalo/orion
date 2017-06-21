@@ -66,7 +66,7 @@ Item {
         opacity: root.highlightOpacity
     }
 
-    Label {
+    UILabel {
         id: _systemMessageLine
         anchors {
             left: parent.left
@@ -111,7 +111,7 @@ Item {
         }
       }
 
-      Label {
+      UILabel {
         id: userName
         // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
         visible: showUsernameLine
@@ -154,7 +154,7 @@ Item {
     }
 
     property Component msgText: Component {
-      Label {
+      UILabel {
         verticalAlignment: Text.AlignVCenter
         color: isAction? chat.colors[user] : Material.foreground
         font.pointSize: fontSize
@@ -202,7 +202,7 @@ Item {
                 }
               }
 
-              Label {
+              UILabel {
                   id: _emoteImgSuffixText
                   text: msgItem.textSuffix
                   color: msgItem.textSuffixColor

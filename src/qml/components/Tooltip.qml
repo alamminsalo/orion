@@ -56,7 +56,7 @@ Window {
                 right: parent.right
             }
 
-            Label {
+            UILabel {
                 id: text
                 text: root.text
                 wrapMode: Text.WordWrap
@@ -70,10 +70,10 @@ Window {
             return
         }
 
-        root.x = mX + dp(20)
+        root.x = mX + 20
 
         if (root.x + root.width > Screen.width)
-            root.x -= root.width + dp(40)
+            root.x -= root.width + 40
 
         root.y = mY
 

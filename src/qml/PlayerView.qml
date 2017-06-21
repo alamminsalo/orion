@@ -382,7 +382,7 @@ Page {
         RowLayout {
             anchors.fill: parent
 
-            Label {
+            UILabel {
                 id: title
                 font.bold: true
                 font.pointSize: 10

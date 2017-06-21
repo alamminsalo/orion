@@ -24,7 +24,7 @@ Channel {
     property string createdAt
     online: true
 
-    Label {
+    UILabel {
         id: resumePlaybackIcon
         font.family: "Material Icons"
         text: "\ue923"
