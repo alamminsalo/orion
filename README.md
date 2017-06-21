@@ -54,6 +54,29 @@ qmake ../
 make && sudo make install
 ```
 
+## Building on MacOS
+
+#### Install needed libraries and software
+
+```
+brew install qt mpv
+brew link --force qt
+```
+You need to force link qt to get qmake. Note that this can cause problems with other make tools. For more information see `brew info qt`.
+
+#### Get orion from github and install
+
+```
+git clone https://github.com/alamminsalo/orion
+cd orion
+mkdir build && cd build
+qmake ../
+make
+```
+
+There will now be an orion.app application in the build directory.
+
+
 ## Windows troubleshooting
 
 You need Visual C++ 2015-runtime installed. 
