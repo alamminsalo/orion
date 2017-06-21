@@ -45,13 +45,13 @@ Item {
 
     height: childrenRect.height
 
-//    onFontSizeChanged: {
-//        //console.log(fontSize)
-//        // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
-////        Qt.callLater(function() {
-////            _messageLineFlow.updatePositions()
-////        })
-//    }
+
+    onFontSizeChanged: {
+        // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
+        Qt.callLater(function() {
+            _messageLineFlow.updatePositions()
+        })
+    }
 
     Rectangle {
         anchors {
@@ -85,9 +85,9 @@ Item {
         height: showSystemMessageLine? contentHeight : 0
     }
 
-    Flow {
+    CustomFlow {
       id: _messageLineFlow
-      //ySpacing: 1
+      ySpacing: 1
       anchors {
           top: _systemMessageLine.bottom
           left: parent.left
@@ -98,7 +98,7 @@ Item {
           }
       }
 
-      //vAlign: vAlignCenter
+      vAlign: vAlignCenter
 
       Repeater {
         model: visibleBadgeEntries
@@ -122,11 +122,12 @@ Item {
 
         height: showUsernameLine? contentHeight : 0
 
-        MouseArea {
-            anchors.fill: parent
-            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-            acceptedButtons: Qt.NoButton
-        }
+        // Disabled as performance regression
+//        MouseArea {
+//            anchors.fill: parent
+//            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+//            acceptedButtons: Qt.NoButton
+//        }
       }
 
       Repeater {
