@@ -157,6 +157,8 @@ Page {
                 Layout.alignment: Qt.AlignCenter
 
                 RowLayout {
+                    width: parent.width
+
                     UILabel {
                         id: twitchName
                         text: "Not logged in"
@@ -167,6 +169,7 @@ Page {
                     Button {
                         id: connectButton
                         property bool loggedIn: Settings.hasAccessToken
+                        font.family: mainFont.name
                         text: loggedIn ? "Log out" : "Log in"
                         onClicked: {
                             if (!loggedIn) {
@@ -189,7 +192,7 @@ Page {
                         Connections {
                             target: ChannelManager
                             onUserNameUpdated: {
-                                twitchName.text = "Logged in as " + name
+                                twitchName.text = name
                             }
                         }
                     }
