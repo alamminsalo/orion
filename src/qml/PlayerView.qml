@@ -30,19 +30,10 @@ Page {
     property string curVodId
     property int lastSetPosition
     property bool headersVisible: true
-    property string currentQualityName
 
     //Minimode, bit ugly
     property bool smallMode: false
     //property alias enableSmallMode: miniModeCheckBox.checked
-
-    Component.onCompleted: {
-        var savedQuality = Settings.quality;
-        console.log("Loaded saved quality", savedQuality);
-        if (savedQuality) {
-            currentQualityName = savedQuality;
-        }
-    }
 
     //Renderer interface
     property alias renderer: loader.item
@@ -82,7 +73,7 @@ Page {
         onNetworkAccessChanged: {
             if (up && currentChannel && !renderer.status !== "PAUSED") {
                 //console.log("Network up. Resuming playback...")
-                loadAndPlay(currentQualityName)
+                loadAndPlay()
             }
         }
 
@@ -91,7 +82,7 @@ Page {
             if (channelId === currentChannel._id) {
                 if (online && !root.streamOnline) {
                     console.log("Stream back online, resuming playback")
-                    loadAndPlay(currentQualityName)
+                    loadAndPlay()
                 }
                 root.streamOnline = online
             }
@@ -124,19 +115,16 @@ Page {
     }
 
 
-    function loadAndPlay(streamName){
+    function loadAndPlay(){
         var description = setWatchingTitle();
 
         var start = !isVod ? -1 : seekBar.position
 
-        var url = streamMap[streamName]
+        var url = streamMap[Settings.quality]
 
         console.debug("Loading: ", url)
 
         renderer.load(url, start, description)
-
-        currentQualityName = streamName
-        Settings.quality = streamName;
 
         spinner.running = true
     }
@@ -239,12 +227,8 @@ Page {
         streamMap = streams
         sourcesBox.model = sourceNames
 
-        if (currentQualityName && streamMap[currentQualityName]) {
-            sourcesBox.selectItem(currentQualityName);
-            loadAndPlay(currentQualityName)
-        } else {
-            sourcesBox.currentIndex = 0
-        }
+        sourcesBox.selectItem(Settings.quality);
+        loadAndPlay()
     }
 
     function seekTo(position) {
@@ -257,7 +241,7 @@ Page {
 
     function reloadStream() {
         renderer.stop()
-        loadAndPlay(currentQualityName)
+        loadAndPlay()
     }
 
     Connections {
@@ -510,8 +494,9 @@ Page {
                 font.pointSize: 9
                 font.bold: true
 
-                onActivated: {
-                    loadAndPlay(sourcesBox.model[index])
+                onCurrentIndexChanged: {
+                    Settings.quality = sourcesBox.model[currentIndex]
+                    loadAndPlay()
                 }
 
                 function selectItem(name) {

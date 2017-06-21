@@ -92,8 +92,8 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        height=Screen.height * 0.7
-        width=height * 1.2
+        height = Screen.height * 0.7
+        width = height * 1.2
 
         setX(Screen.width / 2 - width / 2);
         setY(Screen.height / 2 - height / 2);
@@ -101,13 +101,13 @@ ApplicationWindow {
         var component = Qt.createComponent("components/Tooltip.qml")
         g_tooltip = component.createObject(root)
 
-        //Initial view
-        topbar.setView(2)
-
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
         console.log("Logical pixel density", Screen.logicalPixelDensity)
         console.log("Orientation", Screen.orientation)
+
+        //Initial view
+        topbar.setView(1)
 
         pollTimer.start()
     }

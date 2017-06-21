@@ -17,6 +17,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mVolumeLevel = 100;
     mOfflineNotifications = false;
     mAccessToken = "";
+    mQuality = "source";
 
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
