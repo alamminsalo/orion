@@ -54,6 +54,12 @@ ToolBar {
             font.family: "Material Icons"
             checkable: true
             checked: false
+
+            onDoubleClicked: {
+                //Clear search bar and submit, this makes it easy to quickly search for featured streams, games
+                _input.clear()
+                submit()
+            }
         }
     }
 }

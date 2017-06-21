@@ -129,13 +129,13 @@ Page {
                         font.pointSize: 10
                         from: 50
                         to: 300
-                        stepSize: 50
+                        stepSize: 25
 
                         property real realValue: value / 100
                         value: Settings.textScaleFactor * 100
 
                         textFromValue: function(value, locale) {
-                            return Number(value / 100).toLocaleString(locale, 'f', 1)
+                            return Number(value / 100).toLocaleString(locale, 'f', 2)
                         }
 
                         valueFromText: function(text, locale) {

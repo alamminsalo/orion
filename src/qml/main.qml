@@ -78,7 +78,7 @@ ApplicationWindow {
         height: g_rootWindow.height - 40
         y: (g_rootWindow.height - height) / 2
 
-        width: 300
+        width: 330
         dim: false
 
         ChatView {
