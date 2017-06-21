@@ -24,183 +24,185 @@ Page {
 
     property int itemWidth: 300
 
-    Flow {
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-        }
+    RowLayout {
+        anchors.fill: parent
 
-        flow: Flow.TopToBottom
-        spacing: 20
+        Flow {
+            Layout.fillHeight: true
+            Layout.alignment: Layout.Center
+            Layout.maximumWidth: parent.width
 
-        GroupBox {
-            title: "Notification settings"
-            padding: 10
-            width: root.itemWidth
-            Layout.alignment: Qt.AlignCenter
+            flow: Flow.TopToBottom
+            spacing: 15
 
-            ColumnLayout {
-                Switch {
-                    id: alertOption
-                    checked: Settings.alert
-                    onClicked: {
-                        Settings.alert = checked
+            GroupBox {
+                title: "Notification settings"
+                padding: 10
+                width: root.itemWidth
+                Layout.alignment: Qt.AlignCenter
+
+                Column {
+                    width: parent.width
+
+                    Switch {
+                        id: alertOption
+                        checked: Settings.alert
+                        onClicked: {
+                            Settings.alert = checked
+                        }
+                        text: "Enable notifications"
                     }
-                    text: "Enable notifications"
-                }
 
-                Switch {
-                    id: notificationsOption
-                    enabled: alertOption.checked
+                    Switch {
+                        id: notificationsOption
+                        enabled: alertOption.checked
 
-                    checked: Settings.offlineNotifications
-                    onClicked: {
-                        Settings.offlineNotifications = !Settings.offlineNotifications
+                        checked: Settings.offlineNotifications
+                        onClicked: {
+                            Settings.offlineNotifications = !Settings.offlineNotifications
+                        }
+                        text: "Show offline notifications"
                     }
-                    text: "Show offline notifications"
-                }
 
-                OptionCombo {
-                    id: alertPosition
-                    selection: Settings.alertPosition
-                    onSelectionChanged: Settings.alertPosition = selection
+                    OptionCombo {
+                        id: alertPosition
+                        width: parent.width
+                        selection: Settings.alertPosition
+                        onActivated: Settings.alertPosition = index
 
-                    text: "Notification position"
-                    model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+                        text: "Notification position"
+                        model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+                    }
                 }
             }
-        }
 
-        GroupBox {
-            title: "Tray options"
-            padding: 10
-            width: root.itemWidth
-            Layout.alignment: Qt.AlignCenter
+            GroupBox {
+                title: "Tray options"
+                padding: 10
+                width: root.itemWidth
+                Layout.alignment: Qt.AlignCenter
 
-            ColumnLayout {
-                Switch {
-                    id: minStartupOption
-                    checked: Settings.minimizeOnStartup
-                    onClicked: {
-                        Settings.minimizeOnStartup = !Settings.minimizeOnStartup
+                Column {
+                    Switch {
+                        id: minStartupOption
+                        checked: Settings.minimizeOnStartup
+                        onClicked: {
+                            Settings.minimizeOnStartup = !Settings.minimizeOnStartup
+                        }
+                        text: "Start minimized"
                     }
-                    text: "Start minimized"
-                }
 
-                Switch {
-                    id: closeToTrayOption
-                    checked: Settings.closeToTray
-                    onClicked: {
-                        Settings.closeToTray = checked
+                    Switch {
+                        id: closeToTrayOption
+                        checked: Settings.closeToTray
+                        onClicked: {
+                            Settings.closeToTray = checked
+                        }
+                        text: "Close to tray"
                     }
-                    text: "Close to tray"
                 }
             }
-        }
 
-        GroupBox {
-            title: "Chat options"
-            padding: 10
-            width: root.itemWidth
-            Layout.alignment: Qt.AlignCenter
+            GroupBox {
+                title: "Chat options"
+                padding: 10
+                width: root.itemWidth
+                Layout.alignment: Qt.AlignCenter
 
-            ColumnLayout {
-                Switch {
-                    id: chatSwapOption
-                    checked: Settings.swapChat
-                    onClicked: {
-                        Settings.swapChat = !Settings.swapChat
+                Column {
+                    Switch {
+                        id: chatSwapOption
+                        checked: Settings.swapChat
+                        onClicked: {
+                            Settings.swapChat = !Settings.swapChat
+                        }
+                        text: "Swap chat side"
                     }
-                    text: "Swap Chat Side"
+
+                    Label {
+                        text: "Font scale"
+                    }
+
+                    SpinBox {
+                        id: textScaleFactor
+                        padding: 0
+                        font.pointSize: 10
+                        from: 50
+                        to: 300
+                        stepSize: 50
+
+                        property real realValue: value / 100
+                        value: Settings.textScaleFactor * 100
+
+                        textFromValue: function(value, locale) {
+                            return Number(value / 100).toLocaleString(locale, 'f', 1)
+                        }
+
+                        valueFromText: function(text, locale) {
+                            return Number.fromLocaleString(locale, text) * 100
+                        }
+
+                        onValueModified: {
+                            Settings.textScaleFactor = realValue
+                        }
+                    }
                 }
+            }
 
-                OptionCombo {
-                    id: textScaleFactor
-                    text: "Chat Text Scale Factor"
-                    model: ["0.5", "0.75", "1.0", "1.25", "1.5", "1.75", "2.0", "2.5", "3.0"]
+            GroupBox {
+                title: "Twitch login"
+                padding: 10
+                width: root.itemWidth
+                Layout.alignment: Qt.AlignCenter
 
-                    Component.onCompleted: {
-                        var entries = model;
+                RowLayout {
+                    Label {
+                        id: twitchName
+                        text: "Not logged in"
+                        Layout.fillWidth: true
+                        clip: true
+                    }
 
-                        var val = Settings.textScaleFactor;
-                        for (var i = 0; i < entries.length; i++) {
-                            var cur = entries[i];
-                            if (parseFloat(cur) == val) {
-                                selection = i
-                                break;
+                    Button {
+                        id: connectButton
+                        property bool loggedIn: Settings.hasAccessToken
+                        text: loggedIn ? "Log out" : "Log in"
+                        onClicked: {
+                            if (!loggedIn) {
+                                LoginService.start();
+                                var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
+                                        + "&redirect_uri=http://localhost:8979"
+                                        + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
+                                        + "&force_verify=true";
+                                Qt.openUrlExternally(url);
+
+
+                            }
+                            else {
+                                Settings.accessToken = ""
+                                ChannelManager.checkFavourites()
+                                twitchName.text = "Not logged in"
+                            }
+                        }
+
+                        Connections {
+                            target: ChannelManager
+                            onUserNameUpdated: {
+                                twitchName.text = "Logged in as " + name
                             }
                         }
                     }
-
-                    onSelectionChanged: {
-                        Settings.textScaleFactor = parseFloat(selection)
-                    }
                 }
             }
-        }
 
-        GroupBox {
-            title: "Twitch login"
-            padding: 10
-            width: root.itemWidth
-            Layout.alignment: Qt.AlignCenter
-
-            RowLayout {
-                id: loginOption
-
+            GroupBox {
+                title: "Version info"
+                padding: 10
+                width: root.itemWidth
+                Layout.alignment: Qt.AlignCenter
                 Label {
-                    id: twitchName
-                    text: "Not logged in"
+                    text: Settings.appName() + " " + Settings.appVersion()
                 }
-
-                Button {
-                    id: connectButton
-                    property bool loggedIn: false
-                    text: loggedIn ? "Log out" : "Log in"
-                    anchors {
-                        verticalCenter: parent.verticalCenter
-                        right: parent.right
-                    }
-                    onClicked: {
-                        if (!loggedIn) {
-                            LoginService.start();
-                            var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
-                                    + "&redirect_uri=http://localhost:8979"
-                                    + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
-                                    + "&force_verify=true";
-                            Qt.openUrlExternally(url);
-
-
-                        }
-                        else {
-                            Settings.accessToken = ""
-                            ChannelManager.checkFavourites()
-                            twitchName.text = "Not logged in"
-                        }
-                    }
-
-                    Connections {
-                        target: ChannelManager
-                        onAccessTokenUpdated: {
-                            connectButton.loggedIn = Settings.hasAccessToken
-                        }
-                        onUserNameUpdated: {
-                            twitchName.text = "Logged in as " + name
-                        }
-                    }
-                }
-            }
-        }
-
-        GroupBox {
-            title: "Version info"
-            padding: 10
-            width: root.itemWidth
-            Layout.alignment: Qt.AlignCenter
-
-            Label {
-                text: Settings.appVersion
             }
         }
     }

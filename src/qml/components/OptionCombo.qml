@@ -17,11 +17,13 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 
 RowLayout {
+    id: root
+
     property alias text: label.text
     property alias selection: combo.currentIndex
     property alias model: combo.model
 
-    id: root
+    signal activated(int index)
 
     Label {
         id: label
@@ -30,5 +32,7 @@ RowLayout {
     ComboBox {
         id: combo
         font.pointSize: 10
+        Layout.fillWidth: true
+        onActivated: root.activated(index)
     }
 }

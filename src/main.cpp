@@ -51,6 +51,9 @@ int main(int argc, char *argv[])
     CustomApp app(argc, argv);
     app.setApplicationVersion(APP_VERSION);
 
+    const QIcon appIcon = QIcon(":/icon/orion.ico");
+    app.setWindowIcon(appIcon);
+
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
     if ( !guard.tryToRun() ){
@@ -64,16 +67,10 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug", "show debug output");
-
     parser.addOption(debugOption);
-
     parser.process(app);
 
     bool showDebugOutput = parser.isSet(debugOption);
-
-    //Init engine
-    QQmlApplicationEngine engine;
-    QIcon appIcon = QIcon(":/icon/orion.ico");
 
     //Setup default font
     int id = QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf");
@@ -88,7 +85,6 @@ int main(int argc, char *argv[])
         qInstallMessageHandler(noisyFailureMsgHandler);
     }
 #endif
-    app.setWindowIcon(appIcon);
 
     SysTray *tray = new SysTray(&app);
     tray->setIcon(appIcon);
@@ -98,6 +94,7 @@ int main(int argc, char *argv[])
 
     //Prime network manager
     QNetworkProxyFactory::setUseSystemConfiguration(true);
+    QQmlApplicationEngine engine;
     NetworkManager::initialize(engine.networkAccessManager());
 
     // detect hi dpi screens
@@ -175,11 +172,10 @@ int main(int argc, char *argv[])
     SettingsManager::getInstance()->setParent(&app);
     HttpServer::getInstance()->setParent(&app);
 
-    engine.load(QUrl("qrc:/main.qml"));
-
     //Set up notifications
     NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
     QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
 
+    engine.load(QUrl("qrc:/main.qml"));
     return app.exec();
 }
