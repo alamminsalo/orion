@@ -464,7 +464,7 @@ Page {
 
             IconButtonFlat {
                 id: fsBtn
-                text: "\ue5d0"
+                text: !g_fullscreen ? "\ue5d0" : "\ue5d1"
                 onClicked: g_fullscreen = !g_fullscreen
                 visible: parent.width > 380
             }
