@@ -31,7 +31,7 @@ Item {
     property bool isChannelNotice
     property bool isWhisper
     property string systemMessage
-    property real fontSize: 12//Settings.textScaleFactor * 10
+    property real fontSize: Settings.textScaleFactor * 12
     property var pmsg: JSON.parse(msg)
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
     property real highlightOpacity: 1.0

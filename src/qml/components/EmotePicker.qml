@@ -37,8 +37,6 @@ Page {
         }
     }
 
-    //property int fontPixelSize: Styles.titleFont.smaller
-
     signal itemClicked(int index);
     signal closeRequested();
     signal moveFocusDown();

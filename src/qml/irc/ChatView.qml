@@ -186,8 +186,6 @@ Page {
 
             devicePixelRatio: hiDPI ? 2.0 : 1.0
 
-            //fontPixelSize: Styles.titleFont.smaller * Settings.textScaleFactor
-
             onVisibleChanged: {
                 if (visible) {
                     focusFilterInput();
