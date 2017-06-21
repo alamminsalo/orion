@@ -13,11 +13,13 @@ Features:
 
 ## Screencaptures
 
-![mac](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/7.png)
+![0](https://user-images.githubusercontent.com/5585454/27404298-2e015506-56d6-11e7-937a-79556703ea31.png)
 
-![linux](https://cloud.githubusercontent.com/assets/5585454/25102163/dc5b1dac-23bf-11e7-9285-d8234ab9d12b.png)
+![1](https://user-images.githubusercontent.com/5585454/27404242-031e59a6-56d6-11e7-8956-a9d63dcc6034.png)
 
-![android](https://raw.githubusercontent.com/alamminsalo/orion/master/resources/screenshots/8.jpeg)
+![2](https://user-images.githubusercontent.com/5585454/27404330-47ba6708-56d6-11e7-96d5-1283224a17dc.png)
+
+![3](https://user-images.githubusercontent.com/5585454/27404337-541ead74-56d6-11e7-91f4-ce3803a458a2.png)
 
 ## Dependencies
 
