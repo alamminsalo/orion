@@ -5,11 +5,11 @@
 #include "imageprovider.h"
 #include "badgeimageprovider.h"
 
-#include <QQmlEngine>
-#include <QJSEngine>
+#include "singletonprovider.h"
 
 class BadgeContainer: public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
     bool haveEmoteSets;
@@ -31,11 +31,6 @@ class BadgeContainer: public QObject
     BadgeContainer();
 public:
     static BadgeContainer *getInstance();
-
-    static QObject *provider(QQmlEngine */*eng*/, QJSEngine */*jseng*/) {
-        QQmlEngine::setObjectOwnership(getInstance(), QQmlEngine::CppOwnership);
-        return getInstance();
-    }
 
     BadgeImageProvider * getBadgeImageProvider() {
         return &badgeImageProvider;

@@ -17,7 +17,7 @@ import QtQuick.Window 2.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import "irc"
-import app.orion.channels 1.0
+import app.orion 1.0
 
 ApplicationWindow {
     id: root
@@ -48,7 +48,7 @@ ApplicationWindow {
     }
 
     onClosing: {
-        if (!ChannelManager.isCloseToTray()) {
+        if (!Settings.isCloseToTray()) {
             Qt.quit()
         }
     }
@@ -73,7 +73,7 @@ ApplicationWindow {
 
     Drawer {
         id: chatdrawer
-        edge: ChannelManager.swapChat ? Qt.LeftEdge : Qt.RightEdge
+        edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
 
         height: g_rootWindow.height - 40
         y: (g_rootWindow.height - height) / 2
@@ -141,7 +141,7 @@ ApplicationWindow {
         topbar.setView(2)
 
 
-        if (ChannelManager.isMinimizeOnStartup())
+        if (Settings.minimizeOnStartup)
             root.hide();
 
         console.log("Pixel density", Screen.pixelDensity)
@@ -149,7 +149,6 @@ ApplicationWindow {
         console.log("Logical pixel density", Screen.logicalPixelDensity)
         console.log("Orientation", Screen.orientation)
 
-        ChannelManager.checkFavourites()
         pollTimer.start()
 
         updateForNetworkAccess(netman.networkAccess());
@@ -160,6 +159,7 @@ ApplicationWindow {
         interval: 30000
         running: false
         repeat: true
+        triggeredOnStart: true
         onTriggered: {
             ChannelManager.checkFavourites()
         }

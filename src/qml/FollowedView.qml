@@ -14,7 +14,7 @@
 
 import QtQuick.Controls 1.4
 import QtQuick 2.5
-import app.orion.channels 1.0
+import app.orion 1.0
 import "components"
 
 Item{

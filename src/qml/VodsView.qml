@@ -17,8 +17,7 @@ import QtQuick 2.5
 import "components"
 import "util.js" as Util
 
-import app.orion.vods 1.0
-import app.orion.channels 1.0
+import app.orion 1.0
 
 Item{
     id: vodsView

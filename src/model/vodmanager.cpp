@@ -42,6 +42,12 @@ VodManager::VodManager(QObject *parent) :
     emit modelChanged();
 }
 
+VodManager *VodManager::getInstance() {
+    if (!instance)
+        instance = new VodManager();
+    return instance;
+}
+
 VodManager *VodManager::instance = 0;
 
 VodManager::~VodManager()

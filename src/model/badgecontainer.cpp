@@ -1,4 +1,5 @@
 #include "badgecontainer.h"
+#include "settingsmanager.h"
 
 BadgeContainer *BadgeContainer::instance = 0;
 BadgeContainer *BadgeContainer::getInstance()
@@ -104,7 +105,7 @@ bool BadgeContainer::loadEmoteSets(bool reload, const QList<int> &emoteSetIDs) {
     }
 
     if (reload) {
-        if (netman->hasAccessToken()) {
+        if (SettingsManager::getInstance()->hasAccessToken()) {
             haveEmoteSets = false;
             lastRequestedEmoteSetIDs = emoteSetIDs;
             netman->getEmoteSets(emoteSetIDs);

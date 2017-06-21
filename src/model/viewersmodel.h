@@ -2,12 +2,12 @@
 #define VIEWERSMODEL_H
 
 #include <QObject>
-#include <QQmlEngine>
-#include <QJSEngine>
+#include "singletonprovider.h"
 #include "../network/networkmanager.h"
 
 class ViewersModel : public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
     NetworkManager *netman;
@@ -20,11 +20,6 @@ public:
         if (!instance)
             instance = new ViewersModel();
         return instance;
-    }
-
-    static QObject *provider(QQmlEngine */*eng*/, QJSEngine */*jseng*/) {
-        QQmlEngine::setObjectOwnership(getInstance(), QQmlEngine::CppOwnership);
-        return getInstance();
     }
 
 signals:

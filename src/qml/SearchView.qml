@@ -18,7 +18,7 @@ import QtQuick.Layouts 1.1
 import QtQuick.Controls.Material 2.1
 import "components"
 
-import app.orion.channels 1.0
+import app.orion 1.0
 
 Page {
     id: root

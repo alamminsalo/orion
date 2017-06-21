@@ -109,10 +109,6 @@ public:
     Q_INVOKABLE QString getClientId() const { return QString(CLIENT_ID); }
     Q_INVOKABLE bool networkAccess();
 
-    QString getAccessToken() const;
-    void setAccessToken(const QString &accessToken);
-    bool hasAccessToken() { return !access_token.isEmpty(); }
-
 signals:
     void finishedConnectionTest();
 
@@ -188,6 +184,8 @@ private slots:
     void blockUserLookupReply();
     void globalBttvEmotesReply();
     void channelBttvEmotesReply();
+
+    void setAccessToken(const QString &accessToken);
 
 private:
     static const QString CHANNEL_BADGES_URL_PREFIX;

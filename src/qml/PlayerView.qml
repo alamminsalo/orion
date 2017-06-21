@@ -18,8 +18,7 @@ import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 import "components"
 
-import app.orion.vods 1.0
-import app.orion.channels 1.0
+import app.orion 1.0
 
 Page {
 
@@ -38,7 +37,7 @@ Page {
     //property alias enableSmallMode: miniModeCheckBox.checked
 
     Component.onCompleted: {
-        var savedQuality = ChannelManager.getQuality();
+        var savedQuality = Settings.quality;
         console.log("Loaded saved quality", savedQuality);
         if (savedQuality) {
             currentQualityName = savedQuality;
@@ -490,7 +489,7 @@ Page {
                 Layout.maximumWidth: 100
 
                 Component.onCompleted: {
-                    value = ChannelManager.getVolumeLevel()
+                    value = Settings.volumeLevel
                 }
 
                 onValueChanged: {
@@ -499,7 +498,7 @@ Page {
                         val = Math.round(Math.log(val) / Math.log(100))
 
                     renderer.setVolume(val)
-                    ChannelManager.setVolumeLevel(val);
+                    Settings.volumeLevel = val;
                 }
             }
 

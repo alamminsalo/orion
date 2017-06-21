@@ -2,7 +2,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
-import app.orion.viewers 1.0
+import app.orion 1.0
 
 Item {
     id: root

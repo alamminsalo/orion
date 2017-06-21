@@ -19,26 +19,22 @@
 #include "gamelistmodel.h"
 #include "game.h"
 #include "../network/networkmanager.h"
+#include "settingsmanager.h"
 
 #include <QSettings>
 #include <QSortFilterProxyModel>
-#include <QQmlEngine>
-#include <QJSEngine>
+
+#include "singletonprovider.h"
 
 #define DEFAULT_LOGO_URL    "http://static-cdn.jtvnw.net/jtv_user_pictures/xarth/404_user_150x150.png"
 
 class ChannelManager: public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
-    Q_PROPERTY(bool swapChat READ getSwapChat WRITE setSwapChat NOTIFY swapChatChanged)
-    Q_PROPERTY(double textScaleFactor READ getTextScaleFactor WRITE setTextScaleFactor NOTIFY textScaleFactorChanged)
-    Q_PROPERTY(bool offlineNotifications READ getOfflineNotifications WRITE setOfflineNotifications NOTIFY notificationsChanged)
-
-    static ChannelManager *instance;
-
-protected:
     NetworkManager* netman;
+    SettingsManager *settingsManager;
 
     ChannelListModel* tempFavourites;
 
@@ -50,21 +46,9 @@ protected:
     //Games (and game search results)
     GameListModel* gamesModel;
 
-    //TODO: move settings to own class
-    bool alert;
-    bool closeToTray;
-    int alertPosition;
-    int volumeLevel;
-    bool minimizeOnStartup;
-    bool _swapChat;
-    bool offlineNotifications;
-    double _textScaleFactor;
-    QString quality;
-
     //Oauth
     QString user_name;
     quint64 user_id;
-    QString access_token;
 
     /**
      * @brief createFollowedChannelsModel
@@ -73,14 +57,11 @@ protected:
      */
     ChannelListModel *createFollowedChannelsModel();
 
+    static ChannelManager *instance;
     ChannelManager();
+
 public:
     static ChannelManager *getInstance();
-
-    static QObject *provider(QQmlEngine */*eng*/, QJSEngine */*jseng*/) {
-        QQmlEngine::setObjectOwnership(getInstance(), QQmlEngine::CppOwnership);
-        return getInstance();
-    }
 
     ~ChannelManager();
 
@@ -96,43 +77,14 @@ public:
     QSortFilterProxyModel *getFavouritesProxy() const;
 
     ChannelListModel *getResultsModel() const;
-
     GameListModel *getGamesModel() const;
-
-    Q_INVOKABLE bool isAlert() const;
-
-    Q_INVOKABLE int getAlertPosition() const;
-    Q_INVOKABLE void setAlertPosition(const int &value);
-
-    Q_INVOKABLE QString getQuality() const;
-    Q_INVOKABLE void setQuality(const QString & quality);
-
-    Q_INVOKABLE int getVolumeLevel() const;
-    Q_INVOKABLE void setVolumeLevel(const int &value);
-
     Q_INVOKABLE void addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
                                      const  QString &info, const QString &logo, const QString &preview,
                                      const QString& game, const qint32 &viewers, bool online);
-    Q_INVOKABLE bool isCloseToTray() const;
-    Q_INVOKABLE void setCloseToTray(bool arg);
     Q_INVOKABLE void getFollowedChannels(const quint32 &limit = FOLLOWED_FETCH_LIMIT, const quint32 &offset = 0);
     Q_INVOKABLE void searchGames(QString, const quint32&, const quint32&);
-
     Q_INVOKABLE QString username() const;
-    Q_INVOKABLE QString accessToken() const;
-
-    Q_INVOKABLE bool isAccessTokenAvailable() { return !access_token.isEmpty(); }
-
-    Q_INVOKABLE bool isMinimizeOnStartup() const;
-    Q_INVOKABLE void setMinimizeOnStartup(bool value);
-
-    void setSwapChat(bool value);
-    bool getSwapChat();
-    void setTextScaleFactor(double value);
-    double getTextScaleFactor();
-
-    void setOfflineNotifications(bool value);
-    bool getOfflineNotifications();
+    Q_INVOKABLE bool isAccessTokenAvailable() { return settingsManager->hasAccessToken(); }
 
     quint64 getUser_id() const;
 
@@ -146,9 +98,6 @@ signals:
     void gamesSearchStarted();
     void gamesUpdated();
     void followedUpdated();
-    void swapChatChanged();
-    void textScaleFactorChanged();
-    void notificationsChanged();
 
     //oauth methods
     void accessTokenUpdated();
@@ -160,13 +109,9 @@ public slots:
     void addToFavourites(const quint32&);
     void removeFromFavourites(const quint32&);
     void searchChannels(QString, const quint32&, const quint32&, bool);
-
     void notify(Channel*);
     void notifyMultipleChannelsOnline(const QList<Channel*> &);
-
     void findPlaybackStream(const QString&);
-    void setAlert(const bool&);
-    void setAccessToken(const QString &arg);
 
 private slots:
     void addSearchResults(const QList<Channel*>&, const int total);
@@ -175,5 +120,6 @@ private slots:
     void addGames(const QList<Game*>&);
     void onUserUpdated(const QString &name, const quint64 userId);
     void addFollowedResults(const QList<Channel*>&, const quint32, const quint32);
-    void onNetworkAccessChanged(bool);
+    void slotNetworkAccessChanged(bool);
+    void updateAccessToken(QString accessToken);
 };

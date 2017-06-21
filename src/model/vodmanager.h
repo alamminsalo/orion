@@ -18,8 +18,7 @@
 #include <QObject>
 #include "../network/networkmanager.h"
 #include "vodlistmodel.h"
-#include <QQmlEngine>
-#include <QJSEngine>
+#include "singletonprovider.h"
 
 struct LastPosition {
     quint64 lastPosition;
@@ -29,6 +28,7 @@ struct LastPosition {
 
 class VodManager: public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
     Q_PROPERTY(VodListModel model READ getModel NOTIFY modelChanged)
@@ -39,18 +39,9 @@ class VodManager: public QObject
     explicit VodManager(QObject *parent = 0);
 
 public:
-    static VodManager *getInstance() {
-        if (!instance)
-            instance = new VodManager();
-        return instance;
-    }
+    static VodManager *getInstance();
 
     ~VodManager();
-
-    static QObject *provider(QQmlEngine */*eng*/, QJSEngine */*jseng*/) {
-        QQmlEngine::setObjectOwnership(getInstance(), QQmlEngine::CppOwnership);
-        return getInstance();
-    }
 
     Q_INVOKABLE void search(const quint64 channelId, const quint32 offset, const quint32 limit);
 

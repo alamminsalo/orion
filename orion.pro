@@ -34,7 +34,9 @@ SOURCES += src/main.cpp\
     src/model/imageprovider.cpp \
     src/model/badgeimageprovider.cpp \
     src/model/badgecontainer.cpp \
-    src/model/viewersmodel.cpp
+    src/model/viewersmodel.cpp \
+    src/model/settingsmanager.cpp \
+    src/network/httpserver.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -61,7 +63,9 @@ HEADERS  += src/model/channel.h \
     src/model/badgeimageprovider.h \
     src/model/badgecontainer.h \
     src/global.h \
-    src/model/viewersmodel.h
+    src/model/viewersmodel.h \
+    src/model/settingsmanager.h \
+    src/model/singletonprovider.h
 
 #Backend for player, uses mpv as default
 !qtav: !multimedia {

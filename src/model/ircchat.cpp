@@ -35,6 +35,7 @@
 #include "badgecontainer.h"
 #include "vodmanager.h"
 #include "../global.h"
+#include "settingsmanager.h"
 
 const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
 const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
@@ -1413,7 +1414,7 @@ void IrcChat::getBlockedUserList()
 
 void IrcChat::addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset, const quint32 total)
 {
-    if (!user_id || netman->getAccessToken().isEmpty()) return;
+    if (!user_id || !SettingsManager::getInstance()->hasAccessToken()) return;
 
     blockedUserListLoading.append(list);
 
@@ -1426,7 +1427,7 @@ void IrcChat::addBlockedUserResults(const QList<QString> & list, const quint32 n
 }
 
 void IrcChat::editUserBlock(const QString & blockUserName, const bool isBlock) {
-    if (!netman->getAccessToken().isEmpty()) {
+    if (SettingsManager::getInstance()->hasAccessToken()) {
         netman->editUserBlock(user_id, blockUserName, isBlock);
     }
 }

@@ -116,12 +116,6 @@ int main(int argc, char *argv[])
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
-
-    //Http server used for auth
-    HttpServer *httpserver = new HttpServer(&app);
-    QObject::connect(httpserver, &HttpServer::codeReceived, ChannelManager::getInstance(), &ChannelManager::setAccessToken);
-    //-------------------------------------------------------------------------------------------------------------------//
-
     qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
 
 #ifdef Q_OS_WIN
@@ -153,7 +147,6 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_tray", tray);
     rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
     rootContext->setContextProperty("app_version", APP_VERSION);
-    rootContext->setContextProperty("httpServer", httpserver);
     rootContext->setContextProperty("hiDPI", global::hiDpi);
 
 #ifdef MPV_PLAYER
@@ -167,10 +160,12 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("player_backend", "multimedia");
 #endif
 
-    qmlRegisterSingletonType<ChannelManager>("app.orion.channels", 1, 0, "ChannelManager", &ChannelManager::provider);
-    qmlRegisterSingletonType<BadgeContainer>("app.orion.emotes", 1, 0, "Emotes", &BadgeContainer::provider);
-    qmlRegisterSingletonType<ViewersModel>("app.orion.viewers", 1, 0, "Viewers", &ViewersModel::provider);
-    qmlRegisterSingletonType<VodManager>("app.orion.vods", 1, 0, "VodManager", &VodManager::provider);
+    qmlRegisterSingletonType<ChannelManager>("app.orion", 1, 0, "ChannelManager", &ChannelManager::provider);
+    qmlRegisterSingletonType<BadgeContainer>("app.orion", 1, 0, "Emotes", &BadgeContainer::provider);
+    qmlRegisterSingletonType<ViewersModel>("app.orion", 1, 0, "Viewers", &ViewersModel::provider);
+    qmlRegisterSingletonType<VodManager>("app.orion", 1, 0, "VodManager", &VodManager::provider);
+    qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
+    qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
     //Setup obj parents for cleanup
@@ -178,6 +173,8 @@ int main(int argc, char *argv[])
     BadgeContainer::getInstance()->setParent(&app);
     ViewersModel::getInstance()->setParent(&app);
     VodManager::getInstance()->setParent(&app);
+    SettingsManager::getInstance()->setParent(&app);
+    HttpServer::getInstance()->setParent(&app);
 
     engine.load(QUrl("qrc:/main.qml"));
 

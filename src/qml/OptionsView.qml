@@ -16,7 +16,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import "components"
-import app.orion.channels 1.0
+import app.orion 1.0
 
 Page {
     id: root
@@ -43,9 +43,9 @@ Page {
             ColumnLayout {
                 Switch {
                     id: alertOption
-                    checked: ChannelManager.isAlert()
+                    checked: Settings.alert
                     onClicked: {
-                        ChannelManager.setAlert(checked)
+                        Settings.alert = checked
                     }
                     text: "Enable notifications"
                 }
@@ -54,17 +54,17 @@ Page {
                     id: notificationsOption
                     enabled: alertOption.checked
 
-                    checked: ChannelManager.offlineNotifications
+                    checked: Settings.offlineNotifications
                     onClicked: {
-                        ChannelManager.offlineNotifications = !ChannelManager.offlineNotifications
+                        Settings.offlineNotifications = !Settings.offlineNotifications
                     }
                     text: "Show offline notifications"
                 }
 
                 OptionCombo {
                     id: alertPosition
-                    selection: ChannelManager.getAlertPosition()
-                    onSelectionChanged: ChannelManager.setAlertPosition(selection)
+                    selection: Settings.alertPosition
+                    onSelectionChanged: Settings.alertPosition = selection
 
                     text: "Notification position"
                     model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
@@ -81,18 +81,18 @@ Page {
             ColumnLayout {
                 Switch {
                     id: minStartupOption
-                    checked: ChannelManager.isMinimizeOnStartup()
+                    checked: Settings.minimizeOnStartup
                     onClicked: {
-                        ChannelManager.setMinimizeOnStartup(checked)
+                        Settings.minimizeOnStartup = !Settings.minimizeOnStartup
                     }
                     text: "Start minimized"
                 }
 
                 Switch {
                     id: closeToTrayOption
-                    checked: ChannelManager.isCloseToTray()
+                    checked: Settings.closeToTray
                     onClicked: {
-                        ChannelManager.setCloseToTray(checked)
+                        Settings.closeToTray = checked
                     }
                     text: "Close to tray"
                 }
@@ -108,9 +108,9 @@ Page {
             ColumnLayout {
                 Switch {
                     id: chatSwapOption
-                    checked: ChannelManager.swapChat
+                    checked: Settings.swapChat
                     onClicked: {
-                        ChannelManager.swapChat = !ChannelManager.swapChat
+                        Settings.swapChat = !Settings.swapChat
                     }
                     text: "Swap Chat Side"
                 }
@@ -123,7 +123,7 @@ Page {
                     Component.onCompleted: {
                         var entries = model;
 
-                        var val = ChannelManager.textScaleFactor;
+                        var val = Settings.textScaleFactor;
                         for (var i = 0; i < entries.length; i++) {
                             var cur = entries[i];
                             if (parseFloat(cur) == val) {
@@ -134,7 +134,7 @@ Page {
                     }
 
                     onSelectionChanged: {
-                        ChannelManager.textScaleFactor = parseFloat(selection)
+                        Settings.textScaleFactor = parseFloat(selection)
                     }
                 }
             }
@@ -164,7 +164,7 @@ Page {
                     }
                     onClicked: {
                         if (!loggedIn) {
-                            httpServer.start();
+                            LoginService.start();
                             var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + netman.getClientId()
                                     + "&redirect_uri=http://localhost:8979"
                                     + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
@@ -174,7 +174,7 @@ Page {
 
                         }
                         else {
-                            ChannelManager.setAccessToken("")
+                            Settings.accessToken = ""
                             ChannelManager.checkFavourites()
                             twitchName.text = "Not logged in"
                         }
@@ -183,7 +183,7 @@ Page {
                     Connections {
                         target: ChannelManager
                         onAccessTokenUpdated: {
-                            connectButton.loggedIn = ChannelManager.isAccessTokenAvailable()
+                            connectButton.loggedIn = Settings.hasAccessToken()
                         }
                         onUserNameUpdated: {
                             twitchName.text = "Logged in as " + name

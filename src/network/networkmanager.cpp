@@ -20,6 +20,7 @@
 #include <QEventLoop>
 #include <QSet>
 #include <QUrlQuery>
+#include "../model/settingsmanager.h"
 
 NetworkManager *NetworkManager::singleton = 0;
 
@@ -43,12 +44,10 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man) : QObject(man)
     offlinePoller.setInterval(2000);
     connect(&offlinePoller, &QTimer::timeout, this, &NetworkManager::testNetworkInterface);
 
-    lastVodChatRequest = nullptr;
-}
+    //Set up listening to access token changes
+    connect(SettingsManager::getInstance(), &SettingsManager::accessTokenChanged, this, &NetworkManager::setAccessToken);
 
-QString NetworkManager::getAccessToken() const
-{
-    return access_token;
+    lastVodChatRequest = nullptr;
 }
 
 void NetworkManager::setAccessToken(const QString &accessToken)

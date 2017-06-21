@@ -32,16 +32,12 @@ ChannelListModel *ChannelManager::createFollowedChannelsModel()
     return model;
 }
 
-ChannelManager::ChannelManager() : netman(NetworkManager::getInstance()) {
+ChannelManager::ChannelManager() :
+    netman(NetworkManager::getInstance()),
+    settingsManager(SettingsManager::getInstance())
+{
     user_id = 0;
-    access_token = "";
     tempFavourites = 0;
-
-    alert = true;
-    closeToTray = false;
-    alertPosition = 1;
-    minimizeOnStartup = false;
-    setTextScaleFactor(1.0);
 
     resultsModel = new ChannelListModel();
     gamesModel = new GameListModel();
@@ -67,7 +63,9 @@ ChannelManager::ChannelManager() : netman(NetworkManager::getInstance()) {
 
     connect(netman, &NetworkManager::favouritesReplyFinished, this, &ChannelManager::addFollowedResults);
 
-    connect(netman, &NetworkManager::networkAccessChanged, this, &ChannelManager::onNetworkAccessChanged);
+    connect(netman, &NetworkManager::networkAccessChanged, this, &ChannelManager::slotNetworkAccessChanged);
+    connect(settingsManager, &SettingsManager::accessTokenChanged, this, &ChannelManager::updateAccessToken);
+
     load();
 }
 
@@ -86,21 +84,6 @@ ChannelManager::~ChannelManager(){
     delete resultsModel;
     delete gamesModel;
     delete favouritesProxy;
-}
-
-bool ChannelManager::isAlert() const
-{
-    return alert;
-}
-
-int ChannelManager::getAlertPosition() const
-{
-    return alertPosition;
-}
-
-void ChannelManager::setAlertPosition(const int &value)
-{
-    alertPosition = value;
 }
 
 void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
@@ -138,16 +121,6 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
     }
 }
 
-bool ChannelManager::isCloseToTray() const
-{
-    return closeToTray;
-}
-
-void ChannelManager::setCloseToTray(bool arg)
-{
-    closeToTray = arg;
-}
-
 void ChannelManager::searchGames(QString q, const quint32 &offset, const quint32 &limit)
 {
     if (offset == 0 || !q.isEmpty())
@@ -169,16 +142,8 @@ QString ChannelManager::username() const
     return user_name;
 }
 
-QString ChannelManager::accessToken() const
+void ChannelManager::updateAccessToken(QString /*accessToken*/)
 {
-    return access_token;
-}
-
-void ChannelManager::setAccessToken(const QString &arg)
-{
-    access_token = arg;
-    netman->setAccessToken(access_token);
-
     if (isAccessTokenAvailable()) {
         //Fetch display name for logged in user
         netman->getUser();
@@ -231,36 +196,8 @@ ChannelListModel *ChannelManager::getResultsModel() const
     return resultsModel;
 }
 
-QString ChannelManager::getQuality() const {
-    return quality;
-}
-
-void ChannelManager::setQuality(const QString & value) {
-    quality = value;
-}
-
 void ChannelManager::load(){
     QSettings settings("orion.application", "Orion");
-
-    if (settings.contains("alert")) {
-        alert = settings.value("alert").toBool();
-    }
-
-    if (settings.contains("alertPosition")) {
-        alertPosition = settings.value("alertPosition").toInt();
-    }
-
-    if (settings.contains("closeToTray")) {
-        closeToTray = settings.value("closeToTray").toBool();
-    }
-
-    if (settings.contains("minimizeOnStartup")) {
-        minimizeOnStartup = settings.value("minimizeOnStartup").toBool();
-    }
-
-    if (settings.contains("quality")) {
-        quality = settings.value("quality").toString();
-    }
 
     int size = settings.beginReadArray("channels");
     if (size > 0) {
@@ -278,26 +215,6 @@ void ChannelManager::load(){
         qDeleteAll(_channels);
     }
     settings.endArray();
-
-    if (settings.contains("access_token")) {
-        setAccessToken(settings.value("access_token").toString());
-    } else {
-        setAccessToken("");
-    }
-    if (settings.contains("volumeLevel")) {
-        setVolumeLevel(settings.value("volumeLevel").toInt());
-    } else {
-        setVolumeLevel(100);
-    }
-    if(!settings.value("swapChat").isNull()) {
-        _swapChat = settings.value("swapChat").toBool();
-    }
-    if (!settings.value("textScaleFactor").isNull()) {
-        _textScaleFactor = settings.value("textScaleFactor").toDouble();
-    }
-    if(!settings.value("notifications").isNull()) {
-        offlineNotifications = settings.value("notifications").toBool();
-    }
 }
 
 void ChannelManager::save()
@@ -312,17 +229,6 @@ void ChannelManager::save()
         favouritesModel = tempFavourites;
         tempFavourites = 0;
     }
-
-    settings.setValue("alert", alert);
-    settings.setValue("alertPosition", alertPosition);
-    settings.setValue("closeToTray", closeToTray);
-    settings.setValue("access_token", access_token);
-    settings.setValue("volumeLevel", volumeLevel);
-    settings.setValue("minimizeOnStartup", minimizeOnStartup);
-    settings.setValue("swapChat", _swapChat);
-    settings.setValue("notifications", offlineNotifications);
-    settings.setValue("textScaleFactor", _textScaleFactor);
-    settings.setValue("quality", quality);
 
     //Write channels
     settings.beginWriteArray("channels");
@@ -461,11 +367,6 @@ void ChannelManager::findPlaybackStream(const QString &serviceName)
     netman->getChannelPlaybackStream(serviceName);
 }
 
-void ChannelManager::setAlert(const bool &val)
-{
-    alert = val;
-}
-
 void ChannelManager::updateFavourites(const QList<Channel*> &list)
 {
     favouritesModel->updateChannels(list);
@@ -496,9 +397,9 @@ void ChannelManager::addGames(const QList<Game*> &list)
 
 void ChannelManager::notify(Channel *channel)
 {
-    if (alert && channel){
+    if (settingsManager->alert() && channel){
 
-        if (!channel->isOnline() && !offlineNotifications)
+        if (!channel->isOnline() && !settingsManager->offlineNotifications())
             //Skip offline notifications if set
             return;
 
@@ -515,7 +416,7 @@ void ChannelManager::notifyMultipleChannelsOnline(const QList<Channel*> &channel
         notify(channels.at(0));
     }
 
-    else if (alert) {
+    else if (settingsManager->alert()) {
         //Send multi-notification
         QString str;
 
@@ -543,7 +444,7 @@ void ChannelManager::onUserUpdated(const QString &name, const quint64 userId)
     emit userNameUpdated(user_name);
 
     if (isAccessTokenAvailable()) {
-        emit login(user_name, access_token);
+        emit login(user_name, settingsManager->accessToken());
 
         //Start using user followed channels
         getFollowedChannels(FOLLOWED_FETCH_LIMIT, 0);
@@ -575,7 +476,7 @@ void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quin
     emit followedUpdated();
 }
 
-void ChannelManager::onNetworkAccessChanged(bool up)
+void ChannelManager::slotNetworkAccessChanged(bool up)
 {
     if (up) {
         if (isAccessTokenAvailable()) {
@@ -588,47 +489,4 @@ void ChannelManager::onNetworkAccessChanged(bool up)
         favouritesModel->setAllChannelsOffline();
         resultsModel->setAllChannelsOffline();
     }
-}
-int ChannelManager::getVolumeLevel() const {
-    return volumeLevel;
-}
-void ChannelManager::setVolumeLevel(const int &value) {
-    volumeLevel = value;
-}
-
-bool ChannelManager::isMinimizeOnStartup() const
-{
-    return minimizeOnStartup;
-}
-
-void ChannelManager::setMinimizeOnStartup(bool value)
-{
-    minimizeOnStartup = value;
-}
-
-void ChannelManager::setSwapChat(bool value) {
-    _swapChat = value;
-    emit swapChatChanged();
-}
-
-bool ChannelManager::getSwapChat() {
-    return _swapChat;
-}
-
-double ChannelManager::getTextScaleFactor() {
-    return _textScaleFactor;
-}
-
-void ChannelManager::setTextScaleFactor(double value) {
-    _textScaleFactor = value;
-    emit textScaleFactorChanged();
-}
-
-void ChannelManager::setOfflineNotifications(bool value) {
-    offlineNotifications = value;
-    emit notificationsChanged();
-}
-
-bool ChannelManager::getOfflineNotifications() {
-    return offlineNotifications;
 }
