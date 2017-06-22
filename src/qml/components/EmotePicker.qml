@@ -212,9 +212,9 @@ Page {
                 }
 
 
-                Label {
-                    text: model.imageUrl
-                }
+//                Label {
+//                    text: model.imageUrl
+//                }
 
                 ToolTip {
                     visible: (_imageMouseArea.containsMouse || (_emotesGrid.focus && index == _emotesGrid.currentIndex)) && root.filterTextProperty != null
