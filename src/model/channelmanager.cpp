@@ -13,24 +13,8 @@
  */
 
 #include "channelmanager.h"
-#include "../util/fileutils.h"
 
 ChannelManager *ChannelManager::instance = 0;
-
-quint64 ChannelManager::getUser_id() const
-{
-    return user_id;
-}
-
-ChannelListModel *ChannelManager::createFollowedChannelsModel()
-{
-    ChannelListModel *model = new ChannelListModel();
-
-    connect(model, &ChannelListModel::channelOnlineStateChanged, this, &ChannelManager::notify);
-    connect(model, &ChannelListModel::multipleChannelsChangedOnline, this, &ChannelManager::notifyMultipleChannelsOnline);
-
-    return model;
-}
 
 ChannelManager::ChannelManager() :
     netman(NetworkManager::getInstance()),
@@ -67,6 +51,9 @@ ChannelManager::ChannelManager() :
     connect(settingsManager, &SettingsManager::accessTokenChanged, this, &ChannelManager::updateAccessToken);
 
     load();
+
+    //Start polling timer, setting id as property
+    setProperty("pollTimer", startTimer(30000, Qt::VeryCoarseTimer));
 }
 
 ChannelManager *ChannelManager::getInstance() {
@@ -174,6 +161,11 @@ void ChannelManager::updateAccessToken(QString /*accessToken*/)
     }
 
     emit accessTokenUpdated();
+}
+
+void ChannelManager::timerEvent(QTimerEvent *event)
+{
+    checkFavourites();
 }
 
 ChannelListModel *ChannelManager::getFavouritesModel() const
@@ -489,4 +481,19 @@ void ChannelManager::slotNetworkAccessChanged(bool up)
         favouritesModel->setAllChannelsOffline();
         resultsModel->setAllChannelsOffline();
     }
+}
+
+quint64 ChannelManager::getUser_id() const
+{
+    return user_id;
+}
+
+ChannelListModel *ChannelManager::createFollowedChannelsModel()
+{
+    ChannelListModel *model = new ChannelListModel();
+
+    connect(model, &ChannelListModel::channelOnlineStateChanged, this, &ChannelManager::notify);
+    connect(model, &ChannelListModel::multipleChannelsChangedOnline, this, &ChannelManager::notifyMultipleChannelsOnline);
+
+    return model;
 }

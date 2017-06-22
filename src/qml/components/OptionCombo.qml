@@ -25,7 +25,7 @@ RowLayout {
 
     signal activated(int index)
 
-    UILabel {
+    Label {
         id: label
     }
 
@@ -34,5 +34,6 @@ RowLayout {
         font.pointSize: 10
         Layout.fillWidth: true
         onActivated: root.activated(index)
+        flat: true
     }
 }

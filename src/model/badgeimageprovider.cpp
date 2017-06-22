@@ -1,6 +1,6 @@
 #include "badgeimageprovider.h"
-#include "../global.h"
 #include "badgecontainer.h"
+#include "settingsmanager.h"
 
 BadgeImageProvider::BadgeImageProvider() : ImageProvider("badge", ".png") {
 
@@ -10,7 +10,7 @@ QString BadgeImageProvider::getCanonicalKey(QString key) {
     /** Resolve a key with just a badge name and version, specific to the current room, to a globally unique key for an official API or beta API badge */
     QString url;
 
-    const QString betaImageFormat = global::hiDpi ? "image_url_2x" : "image_url_1x";
+    const QString betaImageFormat = SettingsManager::getInstance()->hiDpi() ? "image_url_2x" : "image_url_1x";
     const QString officialImageFormat = "image";
 
     int splitPos = key.indexOf("-");
@@ -67,7 +67,7 @@ QString BitsImageProvider::getCanonicalKey(QString key) {
 
     const QString theme = "dark";
     const QString type = "animated";
-    const QString size = global::hiDpi ? "2" : "1";
+    const QString size = SettingsManager::getInstance()->hiDpi() ? "2" : "1";
 
     int splitPos = key.indexOf('-');
     if (splitPos != -1) {

@@ -10,7 +10,6 @@ TARGET = orion
 
 VERSION = 1.6.0
 DEFINES += APP_VERSION=\\\"v$$VERSION\\\"
-
 DEFINES += APP_NAME=\\\"Orion\\\"
 
 SOURCES += src/main.cpp\
@@ -23,9 +22,7 @@ SOURCES += src/main.cpp\
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
     src/power/power.cpp \
-    src/systray.cpp \
     src/util/runguard.cpp \
-    src/customapp.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
@@ -49,9 +46,7 @@ HEADERS  += src/model/channel.h \
     src/model/gamelistmodel.h \
     src/util/m3u8parser.h \
     src/power/power.h \
-    src/systray.h \
     src/util/runguard.h \
-    src/customapp.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
@@ -62,7 +57,6 @@ HEADERS  += src/model/channel.h \
     src/network/httpserver.h \
     src/model/badgeimageprovider.h \
     src/model/badgecontainer.h \
-    src/global.h \
     src/model/viewersmodel.h \
     src/model/settingsmanager.h \
     src/model/singletonprovider.h
@@ -76,6 +70,7 @@ mpv {
     message(Selecting mpv as backend)
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
+    DEFINES += PLAYER_BACKEND=\\\"mpv\\\"
     SOURCES +=  src/player/mpvrenderer.cpp \
                 src/player/mpvobject.cpp
 
@@ -90,13 +85,13 @@ mpv {
 qtav {
     message(Selecting qtav as backend)
     QT += av
-    DEFINES += QTAV_PLAYER
+    DEFINES += PLAYER_BACKEND=\\\"qtav\\\"
 }
 
 multimedia {
     message(Selecting qt multimedia as backend)
     QT += multimedia
-    DEFINES += MULTIMEDIA_PLAYER
+    DEFINES += PLAYER_BACKEND=\\\"multimedia\\\"
     macx: {
         LIBS += -framework AVFoundation
         INCLUDEPATH += /System/Library/Frameworks/AVFoundation.framework/Versions/Current/Headers

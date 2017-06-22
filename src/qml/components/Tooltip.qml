@@ -46,21 +46,27 @@ Window {
         }
 
         //Container for text
-        Pane {
+        Rectangle {
             id: header
-            opacity: 0.88
+            opacity: 0.7
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "black"}
+                GradientStop { position: 0.5; color: "transparent" }
+            }
 
             anchors {
-                top: parent.top
-                left: parent.left
-                right: parent.right
+                fill: parent
             }
+        }
 
-            UILabel {
-                id: text
-                text: root.text
-                wrapMode: Text.WordWrap
-            }
+        Label {
+            id: text
+            text: root.text
+            wrapMode: Text.WordWrap
+            width: parent.width
+            maximumLineCount: 6
+            elide: Text.ElideRight
+            clip: true
         }
     }
 

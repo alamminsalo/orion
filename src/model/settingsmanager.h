@@ -2,8 +2,8 @@
 #define SETTINGSMANAGER_H
 
 #include <QObject>
-#include "singletonprovider.h"
 #include <QSettings>
+#include "singletonprovider.h"
 
 class SettingsManager : public QObject
 {
@@ -32,6 +32,8 @@ class SettingsManager : public QObject
     double mTextScaleFactor;
     QString mQuality;
     QString mAccessToken;
+
+    bool mHiDpi;
 
     explicit SettingsManager(QObject *parent = nullptr);
     static SettingsManager *instance;
@@ -67,6 +69,8 @@ public:
 
     QString accessToken() const;
 
+    void setHiDpi(bool dpi);
+
 signals:
     void alertChanged();
     void closeToTrayChanged();
@@ -84,12 +88,10 @@ public slots:
     bool hasAccessToken() const;
     void load();
 
-    QString appName() const {
-        return APP_NAME;
-    }
-    QString appVersion() const {
-        return APP_VERSION;
-    }
+    bool hiDpi() const;
+    QString appName() const;
+    QString appVersion() const;
+    QString appPlayerBackend() const;
 
 private:
     QSettings *settings;

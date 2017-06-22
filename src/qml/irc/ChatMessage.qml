@@ -66,7 +66,7 @@ Item {
         opacity: root.highlightOpacity
     }
 
-    UILabel {
+    Label {
         id: _systemMessageLine
         anchors {
             left: parent.left
@@ -111,7 +111,7 @@ Item {
         }
       }
 
-      UILabel {
+      Label {
         id: userName
         // if this ChatMessage is a channel notice with no user message text, don't show a user chat line
         visible: showUsernameLine
@@ -155,7 +155,7 @@ Item {
     }
 
     property Component msgText: Component {
-      UILabel {
+      Label {
         verticalAlignment: Text.AlignVCenter
         color: isAction? chat.colors[user] : Material.foreground
         font.pointSize: fontSize
@@ -165,7 +165,7 @@ Item {
       }
     }
     property Component msgLink: Component {
-      Text {
+      Label {
         verticalAlignment: Text.AlignVCenter
         color: isAction? chat.colors[user] : Material.foreground
         font.pointSize: fontSize
@@ -195,15 +195,15 @@ Item {
               Image {
                 id: _emoteImg
 
-                width: sourceSize.width/(hiDPI ? 2.0 : 1.0) * Settings.textScaleFactor
-                height: sourceSize.height/(hiDPI ? 2.0 : 1.0) * Settings.textScaleFactor
+                width: sourceSize.width/(Settings.hiDpi() ? 2.0 : 1.0) * Settings.textScaleFactor
+                height: sourceSize.height/(Settings.hiDpi() ? 2.0 : 1.0) * Settings.textScaleFactor
 
                 Component.onCompleted: {
                   source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
                 }
               }
 
-              UILabel {
+              Label {
                   id: _emoteImgSuffixText
                   text: msgItem.textSuffix
                   color: msgItem.textSuffixColor
@@ -212,7 +212,6 @@ Item {
                   verticalAlignment: Text.AlignVCenter
                   height: _emoteImg.height
               }
-
           }
 
           ToolTip {
@@ -241,7 +240,7 @@ Item {
                 }
               }
 
-              Text {
+              Label {
                   id: _animatedImgSuffixText
                   text: msgItem.textSuffix
                   color: msgItem.textSuffixColor

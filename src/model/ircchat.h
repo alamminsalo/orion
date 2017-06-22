@@ -32,12 +32,10 @@
 #include <QHash>
 #include <QDir>
 #include <QQuickImageProvider>
-//#include "messagelistmodel.h"
-//#include "message.h"
 #include "imageprovider.h"
-//#include "channelmanager.h"
 #include "../network/networkmanager.h"
 #include "badgecontainer.h"
+#include "settingsmanager.h"
 
 #define BLOCKED_USER_LIST_FETCH_LIMIT 100
 
@@ -64,6 +62,7 @@ class IrcChat : public QObject
     Q_OBJECT
 
     NetworkManager *netman;
+    SettingsManager *settings;
 
     //emote download
     QDir emoteDir;

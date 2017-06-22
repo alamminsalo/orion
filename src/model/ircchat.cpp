@@ -34,8 +34,6 @@
 #include "../util/jsonparser.h"
 #include "badgecontainer.h"
 #include "vodmanager.h"
-#include "../global.h"
-#include "settingsmanager.h"
 
 const QString IrcChat::IMAGE_PROVIDER_EMOTE = "emote";
 const QString IrcChat::IMAGE_PROVIDER_BITS = "bits";
@@ -50,8 +48,9 @@ const QString IrcChat::HOST = "irc.chat.twitch.tv";
 
 IrcChat::IrcChat(QObject *parent) :
     QObject(parent),
-    _emoteProvider(IMAGE_PROVIDER_EMOTE, global::hiDpi ? EMOTICONS_URL_FORMAT_HIDPI : EMOTICONS_URL_FORMAT_LODPI, ".png", global::hiDpi ? "emotes_2x" : "emotes"),
-    _bttvEmoteProvider(IMAGE_PROVIDER_BTTV_EMOTE, global::hiDpi ? BTTV_EMOTES_URL_FORMAT_HIDPI : BTTV_EMOTES_URL_FORMAT_LODPI, ".png", global::hiDpi ? "bttv_emotes_2x" : "bttv_emotes"),
+    settings(SettingsManager::getInstance()),
+    _emoteProvider(IMAGE_PROVIDER_EMOTE, settings->hiDpi() ? EMOTICONS_URL_FORMAT_HIDPI : EMOTICONS_URL_FORMAT_LODPI, ".png", settings->hiDpi() ? "emotes_2x" : "emotes"),
+    _bttvEmoteProvider(IMAGE_PROVIDER_BTTV_EMOTE, settings->hiDpi() ? BTTV_EMOTES_URL_FORMAT_HIDPI : BTTV_EMOTES_URL_FORMAT_LODPI, ".png", settings->hiDpi() ? "bttv_emotes_2x" : "bttv_emotes"),
     _bitsProvider(nullptr),
     _badgeProvider(nullptr),
     sock(nullptr),
@@ -1414,7 +1413,7 @@ void IrcChat::getBlockedUserList()
 
 void IrcChat::addBlockedUserResults(const QList<QString> & list, const quint32 nextOffset, const quint32 total)
 {
-    if (!user_id || !SettingsManager::getInstance()->hasAccessToken()) return;
+    if (!user_id || !settings->hasAccessToken()) return;
 
     blockedUserListLoading.append(list);
 
@@ -1427,7 +1426,7 @@ void IrcChat::addBlockedUserResults(const QList<QString> & list, const quint32 n
 }
 
 void IrcChat::editUserBlock(const QString & blockUserName, const bool isBlock) {
-    if (SettingsManager::getInstance()->hasAccessToken()) {
+    if (settings->hasAccessToken()) {
         netman->editUserBlock(user_id, blockUserName, isBlock);
     }
 }

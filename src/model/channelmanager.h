@@ -122,4 +122,8 @@ private slots:
     void addFollowedResults(const QList<Channel*>&, const quint32, const quint32);
     void slotNetworkAccessChanged(bool);
     void updateAccessToken(QString accessToken);
+
+    // QObject interface
+protected:
+    void timerEvent(QTimerEvent *event);
 };

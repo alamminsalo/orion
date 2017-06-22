@@ -35,7 +35,7 @@ ToolBar {
 
         property bool showIcons: root.width < 700
         font.pointSize: !showIcons ? 13 : 16
-        font.family: showIcons ? "Material Icons" : mainFont.name
+        font.family: showIcons ? "Material Icons" : g_rootWindow.font.name
 
         TabButton {
             text: !tab.showIcons ? "Channels" : "\ue8b6"

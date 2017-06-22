@@ -56,7 +56,7 @@ Drawer {
             Layout.fillHeight: true
             Layout.maximumWidth: 500
 
-            UILabel {
+            Label {
                 id: title
                 Layout.fillWidth: true
                 font.pointSize: 12
@@ -64,7 +64,7 @@ Drawer {
                 wrapMode: Text.WordWrap
             }
 
-            UILabel {
+            Label {
                 id: viewerCount
                 Layout.fillWidth: true
                 font.pointSize: 12
@@ -72,7 +72,7 @@ Drawer {
                 wrapMode: Text.WordWrap
             }
 
-            UILabel {
+            Label {
                 id: description
                 Layout.fillWidth: true
                 font.pointSize: 10

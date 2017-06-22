@@ -12,31 +12,23 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QApplication>
 #include <QQmlApplicationEngine>
-#include <QtQml>
-#include <QQmlComponent>
-#include <QQuickView>
 #include <QScreen>
-//Nothing seems to happen when excluded. Are these needed?
-//#include <QMainWindow>
-//#include <QtSvg/QGraphicsSvgItem>
-//#include <QString>
 #include <QQmlContext>
+#include <QCommandLineParser>
+#include <QNetworkProxyFactory>
 #include <QFontDatabase>
-#include <QResource>
+
 #include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "network/networkmanager.h"
 #include "power/power.h"
-#include "systray.h"
-#include "customapp.h"
 #include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
 #include "model/ircchat.h"
 #include "network/httpserver.h"
-#include <QFont>
 #include "model/viewersmodel.h"
-#include "global.h"
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
@@ -47,13 +39,42 @@ inline void noisyFailureMsgHandler(QtMsgType /*type*/, const QMessageLogContext 
 
 }
 
+void registerQmlComponents(QObject *parent)
+{
+    qmlRegisterSingletonType<ChannelManager>("app.orion", 1, 0, "ChannelManager", &ChannelManager::provider);
+    qmlRegisterSingletonType<BadgeContainer>("app.orion", 1, 0, "Emotes", &BadgeContainer::provider);
+    qmlRegisterSingletonType<ViewersModel>("app.orion", 1, 0, "Viewers", &ViewersModel::provider);
+    qmlRegisterSingletonType<VodManager>("app.orion", 1, 0, "VodManager", &VodManager::provider);
+    qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
+    qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
+    qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
+    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
+
+#ifdef MPV_PLAYER
+    qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
+#endif
+
+    //Setup obj parents for cleanup
+    ChannelManager::getInstance()->setParent(parent);
+    BadgeContainer::getInstance()->setParent(parent);
+    ViewersModel::getInstance()->setParent(parent);
+    VodManager::getInstance()->setParent(parent);
+    SettingsManager::getInstance()->setParent(parent);
+    HttpServer::getInstance()->setParent(parent);
+}
+
 int main(int argc, char *argv[])
 {
-    CustomApp app(argc, argv);
+    //Override QT_QUICK_CONTROLS_STYLE environment variable
+    qputenv("QT_QUICK_CONTROLS_STYLE", "material");
+
+    QApplication app(argc, argv);
     app.setApplicationVersion(APP_VERSION);
 
     const QIcon appIcon = QIcon(":/icon/orion.ico");
     app.setWindowIcon(appIcon);
+
+    QQmlApplicationEngine engine;
 
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
@@ -63,7 +84,7 @@ int main(int argc, char *argv[])
     }
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("Desktop client for Twitch.tv");
+    parser.setApplicationDescription("Twitch.tv client");
     parser.addHelpOption();
     parser.addVersionOption();
 
@@ -79,15 +100,8 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    SysTray *tray = new SysTray(&app);
-    tray->setIcon(appIcon);
-    tray->show();
-
-    QObject::connect(tray, &SysTray::closeEventTriggered, &app, &CustomApp::quit);
-
     //Prime network manager
     QNetworkProxyFactory::setUseSystemConfiguration(true);
-    QQmlApplicationEngine engine;
     NetworkManager::initialize(engine.networkAccessManager());
 
     // detect hi dpi screens
@@ -101,66 +115,22 @@ int main(int argc, char *argv[])
         qDebug() << "  Screen #" << screens << screen->name() << ": devicePixelRatio" << curPixelRatio;
     }
     qDebug() << "maxDevicePixelRatio" << maxDevicePixelRatio;
-    global::hiDpi = maxDevicePixelRatio > 1.0;
-    qDebug() << "hiDpi" << global::hiDpi;
+
+    SettingsManager::getInstance()->setHiDpi(maxDevicePixelRatio > 1.0);
 
     //Screensaver mngr
     Power *power = new Power(static_cast<QApplication *>(&app));
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
-
-#ifdef Q_OS_WIN
-    dpiMultiplier /= 96;
-
-#elif defined(Q_OS_LINUX)
-    dpiMultiplier /= 96;
-
-#elif defined(Q_OS_MAC)
-    dpiMultiplier /= 72;
-
-#endif
-
-    //Small adjustment to sizing overall
-    dpiMultiplier *= .8;
-
-    qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
-    qDebug() <<"DPI mult: "<< dpiMultiplier;
 
     QQmlContext *rootContext = engine.rootContext();
-    rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
+    //rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
     rootContext->setContextProperty("g_powerman", power);
     rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
     rootContext->setContextProperty("g_results", ChannelManager::getInstance()->getResultsModel());
     rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());
     rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
-    rootContext->setContextProperty("hiDPI", global::hiDpi);
 
-#ifdef MPV_PLAYER
-    rootContext->setContextProperty("player_backend", "mpv");
-    qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
-
-#elif defined (QTAV_PLAYER)
-    rootContext->setContextProperty("player_backend", "qtav");
-
-#elif defined (MULTIMEDIA_PLAYER)
-    rootContext->setContextProperty("player_backend", "multimedia");
-#endif
-
-    qmlRegisterSingletonType<ChannelManager>("app.orion", 1, 0, "ChannelManager", &ChannelManager::provider);
-    qmlRegisterSingletonType<BadgeContainer>("app.orion", 1, 0, "Emotes", &BadgeContainer::provider);
-    qmlRegisterSingletonType<ViewersModel>("app.orion", 1, 0, "Viewers", &ViewersModel::provider);
-    qmlRegisterSingletonType<VodManager>("app.orion", 1, 0, "VodManager", &VodManager::provider);
-    qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
-    qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
-    qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
-    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
-
-    //Setup obj parents for cleanup
-    ChannelManager::getInstance()->setParent(&app);
-    BadgeContainer::getInstance()->setParent(&app);
-    ViewersModel::getInstance()->setParent(&app);
-    VodManager::getInstance()->setParent(&app);
-    SettingsManager::getInstance()->setParent(&app);
-    HttpServer::getInstance()->setParent(&app);
+    // Register qml components
+    registerQmlComponents(&app);
 
     //Set up notifications
     NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
@@ -178,14 +148,8 @@ int main(int argc, char *argv[])
         if (SettingsManager::getInstance()->minimizeOnStartup())
             rootWin->hide();
 
-        //Connect to tray and runguard events
+        //Connect to runguard events
         QObject::connect(&guard, &RunGuard::anotherProcessTriggered, rootWin, &QQuickWindow::show);
-        QObject::connect(tray, &SysTray::showTriggered, rootWin, [rootWin](){
-            if (rootWin->isVisible())
-                rootWin->hide();
-            else
-                rootWin->show();
-        });
     }
 
     // Start

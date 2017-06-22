@@ -4,7 +4,8 @@
 SettingsManager *SettingsManager::instance = 0;
 
 SettingsManager::SettingsManager(QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    mHiDpi(false)
 {
     settings = new QSettings("orion.application", "Orion", this);
 
@@ -241,4 +242,29 @@ void SettingsManager::setAccessToken(const QString accessToken)
 bool SettingsManager::hasAccessToken() const
 {
     return !mAccessToken.isEmpty();
+}
+
+bool SettingsManager::hiDpi() const {
+    return mHiDpi;
+}
+
+void SettingsManager::setHiDpi(bool dpi)
+{
+    mHiDpi = dpi;
+    qDebug() << "hiDpi" << mHiDpi;
+}
+
+QString SettingsManager::appName() const
+{
+    return APP_NAME;
+}
+
+QString SettingsManager::appVersion() const
+{
+    return APP_VERSION;
+}
+
+QString SettingsManager::appPlayerBackend() const
+{
+    return PLAYER_BACKEND;
 }

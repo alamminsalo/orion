@@ -103,7 +103,8 @@ Page {
         id: highlight
         Rectangle {
             width: _emotesGrid.cellWidth; height: _emotesGrid.cellHeight
-            color: "lightsteelblue"; radius: 5
+            color: Material.color(Material.primary)
+            radius: 5
             x: _emotesGrid.currentItem.x
             y: _emotesGrid.currentItem.y
             z: 10
@@ -210,11 +211,10 @@ Page {
                     height: sourceSize.height / root.devicePixelRatio
                 }
 
-                /*
-                Text {
+
+                Label {
                     text: model.imageUrl
                 }
-                */
 
                 ToolTip {
                     visible: (_imageMouseArea.containsMouse || (_emotesGrid.focus && index == _emotesGrid.currentIndex)) && root.filterTextProperty != null

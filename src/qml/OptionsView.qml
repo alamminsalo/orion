@@ -47,6 +47,7 @@ Page {
                     Switch {
                         id: alertOption
                         checked: Settings.alert
+
                         onClicked: {
                             Settings.alert = checked
                         }
@@ -56,7 +57,6 @@ Page {
                     Switch {
                         id: notificationsOption
                         enabled: alertOption.checked
-                        font.family: mainFont.name
 
                         checked: Settings.offlineNotifications
                         onClicked: {
@@ -105,12 +105,24 @@ Page {
             }
 
             GroupBox {
-                title: "Chat options"
+                title: "User interface"
                 padding: 10
                 width: root.itemWidth
                 Layout.alignment: Qt.AlignCenter
 
                 Column {
+                    width: parent.width
+
+                    OptionCombo {
+                        id: fontOption
+                        text: "Font"
+                        model: Qt.fontFamilies()
+                        width: parent.width
+                        onActivated: {
+                            g_rootWindow.font.family = model[index]
+                        }
+                    }
+
                     Switch {
                         id: chatSwapOption
                         checked: Settings.swapChat
@@ -119,34 +131,6 @@ Page {
                         }
                         text: "Swap chat side"
                     }
-
-//                    UILabel {
-//                        text: "Font scale"
-//                    }
-
-//                    SpinBox {
-//                        id: textScaleFactor
-//                        padding: 0
-//                        font.pointSize: 10
-//                        from: 50
-//                        to: 300
-//                        stepSize: 25
-
-//                        property real realValue: value / 100
-//                        value: Settings.textScaleFactor * 100
-
-//                        textFromValue: function(value, locale) {
-//                            return Number(value / 100).toLocaleString(locale, 'f', 2)
-//                        }
-
-//                        valueFromText: function(text, locale) {
-//                            return Number.fromLocaleString(locale, text) * 100
-//                        }
-
-//                        onValueModified: {
-//                            Settings.textScaleFactor = realValue
-//                        }
-//                    }
                 }
             }
 
@@ -159,7 +143,7 @@ Page {
                 RowLayout {
                     width: parent.width
 
-                    UILabel {
+                    Label {
                         id: twitchName
                         text: "Not logged in"
                         Layout.fillWidth: true
@@ -169,7 +153,7 @@ Page {
                     Button {
                         id: connectButton
                         property bool loggedIn: Settings.hasAccessToken
-                        font.family: mainFont.name
+                        highlighted: loggedIn
                         text: loggedIn ? "Log out" : "Log in"
                         onClicked: {
                             if (!loggedIn) {
@@ -204,7 +188,7 @@ Page {
                 padding: 10
                 width: root.itemWidth
                 Layout.alignment: Qt.AlignCenter
-                UILabel {
+                Label {
                     text: Settings.appName() + " " + Settings.appVersion()
                 }
             }

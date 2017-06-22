@@ -14,7 +14,7 @@
 
 import QtQuick 2.5
 import QtQuick.Window 2.0
-
+import QtQuick.Controls 2.1
 import app.orion 1.0
 
 Window {
@@ -30,8 +30,8 @@ Window {
 
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint | Qt.Popup
-    width: Dpi.scale(400)
-    height: Dpi.scale(120)
+    width: 400
+    height: 120
 
     function close(){
         //console.log("Destroying notification")
@@ -113,7 +113,7 @@ Window {
             height: Dpi.scale(100)
             clip: true
 
-            Text {
+            Label {
                 id: titleText
                 anchors {
                     top: parent.top
@@ -128,7 +128,7 @@ Window {
                 //renderType: Text.NativeRendering
             }
 
-            Text {
+            Label {
                 id: descriptionText
                 anchors {
                     top: titleText.bottom

@@ -60,7 +60,7 @@ Item {
         }
         
         clip: true
-        delegate: UILabel {
+        delegate: Label {
             text: user
         }
         
@@ -69,7 +69,7 @@ Item {
             criteria: ViewSection.FullString
             delegate: Row {
                 height: 50
-                UILabel {
+                Label {
                     anchors.verticalCenter: parent.verticalCenter
                     font.capitalization: Font.AllUppercase
                     text: section

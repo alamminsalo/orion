@@ -105,7 +105,7 @@ Item {
                 }
             }
 
-            UILabel {
+            Label {
                 id: favIcon
                 text: "\ue87d"
                 font.family: "Material Icons"
@@ -137,7 +137,7 @@ Item {
                     bottom: container.bottom
                 }
 
-                UILabel {
+                Label {
                     id: channelTitle
                     text: root.title
                     elide: Text.ElideRight
@@ -146,7 +146,7 @@ Item {
                     horizontalAlignment: Text.AlignHCenter
                     wrapMode: Text.WordWrap
                     fontSizeMode: Text.Fit
-                    font.bold: true
+                    //font.bold: true
                     maximumLineCount: 3
                 }
             }

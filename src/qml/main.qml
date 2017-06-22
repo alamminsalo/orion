@@ -19,14 +19,18 @@ import QtQuick.Controls.Material 2.1
 import "irc"
 import "components"
 import app.orion 1.0
+import Qt.labs.platform 1.0
 
 ApplicationWindow {
     id: root
     visible: true
 
+    //Application main font
+    font.family: appFont.name
+
     title: "Orion"
-    //flags: Qt.FramelessWindowHint | Qt.SplashScreen
     visibility: g_fullscreen ? "FullScreen" : windowstate
+    //flags: Qt.FramelessWindowHint | Qt.SplashScreen
 
     property variant g_rootWindow: root
     property variant g_tooltip
@@ -85,7 +89,7 @@ ApplicationWindow {
         Material.background: Material.Amber
         visible: !Network.up
 
-        UILabel {
+        Label {
             anchors.centerIn: parent
             text: "Connection error"
         }
@@ -108,19 +112,6 @@ ApplicationWindow {
 
         //Initial view
         topbar.setView(1)
-
-        pollTimer.start()
-    }
-
-    Timer {
-        id: pollTimer
-        interval: 30000
-        running: false
-        repeat: true
-        triggeredOnStart: true
-        onTriggered: {
-            ChannelManager.checkFavourites()
-        }
     }
 
     FontLoader {
@@ -129,9 +120,14 @@ ApplicationWindow {
     }
 
     FontLoader {
-        id: mainFont
-        source: "fonts/NotoSans-Regular.ttf"
+        id: appFont
+        source: "fonts/overpass-regular.otf"
+        //source: "fonts/NotoSans-Regular.ttf"
         name: "Noto Sans"
+    }
+
+    AppTray {
+        id: appTray
     }
 }
 

@@ -184,7 +184,7 @@ Page {
             visible: false
             height: 0
 
-            devicePixelRatio: hiDPI ? 2.0 : 1.0
+            devicePixelRatio: Settings.hiDpi() ? 2.0 : 1.0
 
             onVisibleChanged: {
                 if (visible) {

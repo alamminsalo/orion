@@ -298,7 +298,7 @@ Page {
             anchors.fill: parent
 
             source: {
-                switch (player_backend) {
+                switch (Settings.appPlayerBackend()) {
                 case "mpv":
                     return "MpvBackend.qml";
 
@@ -363,7 +363,7 @@ Page {
         RowLayout {
             anchors.fill: parent
 
-            UILabel {
+            Label {
                 id: title
                 font.bold: true
                 font.pointSize: 10
@@ -493,6 +493,7 @@ Page {
                 id: sourcesBox
                 font.pointSize: 9
                 font.bold: true
+                flat: true
 
                 onCurrentIndexChanged: {
                     Settings.quality = sourcesBox.model[currentIndex]

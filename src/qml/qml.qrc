@@ -36,6 +36,7 @@
         <file>irc/ViewerList.qml</file>
         <file>components/InfoDrawer.qml</file>
         <file>irc/ChatMessagesView.qml</file>
-        <file>components/UILabel.qml</file>
+        <file>components/AppTray.qml</file>
+        <file>fonts/overpass-regular.otf</file>
     </qresource>
 </RCC>
