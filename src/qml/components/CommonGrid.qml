@@ -16,6 +16,8 @@ import QtQuick 2.5
 
 //ChannelList.qml
 GridView {
+    id: root
+
     property variant selectedItem
     property bool tooltipEnabled: false
     property string title
@@ -24,22 +26,13 @@ GridView {
     signal itemRightClicked(int index, Item clickedItem)
     signal itemTooltipHover(int index, real mX, real mY)
 
-    id: root
-
     highlightFollowsCurrentItem: false
 
     cellWidth: width / Math.floor(width / 190) - 1
     cellHeight: cellWidth
     maximumFlickVelocity: 1000
 
-    add: Transition {
-        NumberAnimation {
-            properties: "y"
-            from: contentY-200
-            duration: 200
-            easing.type: Easing.OutCubic
-        }
-    }
+    add: FadeUpTransition {}
 
     remove: Transition {
         NumberAnimation {

@@ -38,5 +38,6 @@
         <file>irc/ChatMessagesView.qml</file>
         <file>components/AppTray.qml</file>
         <file>fonts/overpass-regular.otf</file>
+        <file>components/FadeUpTransition.qml</file>
     </qresource>
 </RCC>

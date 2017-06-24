@@ -28,7 +28,8 @@ Item {
     property bool favourite: false
     property int viewers
     property string game
-    property int imgSize: width - 24
+    property int containerSize: width - 10
+    property int imageSize: containerSize - 20
 
     id: root
     implicitWidth: 180
@@ -51,52 +52,52 @@ Item {
     Pane {
         id: innerPane
         Material.elevation: 0
-        height: imgSize
+        height: containerSize
         width: height
         anchors.centerIn: parent
+        padding: 0
 
         Rectangle {
             id: container
             clip: true
-            color: "#000000"
+            color: "black"
             anchors.fill: parent
             anchors.margins: 10
 
             BusyIndicator {
                 id:_spinner
                 anchors.centerIn: parent
-                anchors.verticalCenterOffset: -infoRect.height / 2
-                running: channelImage.progress < 1
+                anchors.verticalCenterOffset: -title.height / 2
+                running: image.progress < 1
             }
 
             Image {
-                id: channelImage
+                id: image
                 source: root.logo
+                property bool isLandscape: sourceSize.width >= sourceSize.height
 
-                function isLandscape() {
-                    return sourceSize.width >= sourceSize.height
-                }
-
-                fillMode: isLandscape() ? Image.PreserveAspectFit : Image.PreserveAspectCrop
-                width: imgSize - 20
+                fillMode: isLandscape ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+                width: isLandscape ? undefined : imageSize
+                height: isLandscape ? imageSize : undefined
                 anchors.centerIn: parent
 
-                Behavior on width {
+                Behavior on height {
+                    enabled: image.isLandscape
                     NumberAnimation {
                         duration: 100
                     }
                 }
-
-//                Component.onCompleted: {
-//                    if (root.scaleImage){
-//                        width = height
-//                    }
-//                }
+                Behavior on width {
+                    enabled: !image.isLandscape
+                    NumberAnimation {
+                        duration: 100
+                    }
+                }
             }
 
             Rectangle {
                 id: imageShade
-                anchors.fill: parent
+                anchors.fill: image
                 color: "#000000"
                 opacity: 0
 
@@ -113,8 +114,8 @@ Item {
                 color: Material.color(Material.accent)
                 font.pointSize: 14
                 anchors {
-                    top: container.top
-                    right: container.right
+                    top: parent.top
+                    right: parent.right
                     margins: 10
                 }
 
@@ -126,35 +127,43 @@ Item {
                 }
             }
 
-            Pane {
-                id: infoRect
-                opacity: .85
-                Material.background: "black"
-
+            Rectangle {
+                id: titleBg
+                color: "black"
+                opacity: 0.7
                 anchors {
-                    left: container.left
-                    right: container.right
-                    bottom: container.bottom
+                    bottom: parent.bottom
+                    left: image.left
+                    right: image.right
                 }
+                height: 33
+            }
 
-                Label {
-                    id: channelTitle
-                    text: root.title
-                    elide: Text.ElideRight
-                    anchors.fill: parent
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    wrapMode: Text.WordWrap
-                    fontSizeMode: Text.Fit
-                    //font.bold: true
-                    maximumLineCount: 3
+            Label {
+                id: title
+                text: root.title
+                elide: Text.ElideRight
+                anchors {
+                    top: titleBg.top
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
                 }
+                fontSizeMode: Text.Fit
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
             }
         }
     }
 
     function setHighlight(isActive){
-        channelImage.width = isActive ? imgSize : imgSize - 20
+        if (image.isLandscape)
+            image.height = isActive ? containerSize : imageSize
+        else
+            image.width = isActive ? containerSize : imageSize
+
         innerPane.Material.elevation = isActive ? 12 : 0
     }
 }
