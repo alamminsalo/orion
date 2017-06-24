@@ -68,6 +68,7 @@ Page {
                     OptionCombo {
                         id: alertPosition
                         width: parent.width
+                        visible: Qt.platform.os === "windows"
                         selection: Settings.alertPosition
                         onActivated: Settings.alertPosition = index
 
