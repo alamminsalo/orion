@@ -41,27 +41,27 @@ Window {
     function setPosition(){
         switch (location){
         case 0:
-            x =  Dpi.scale(50)
+            x =  50
             y = -height
-            destY = Dpi.scale(50)
+            destY = 50
             break
 
         case 1:
-            x = Screen.width - width  - Dpi.scale(50)
+            x = Screen.width - width - 50
             y = -height
-            destY = Dpi.scale(50)
+            destY = 50
             break
 
         case 2:
-            x = Dpi.scale(50)
+            x = 50
             y = Screen.height
-            destY = Screen.height - height  - Dpi.scale(50)
+            destY = Screen.height - height  - 50
             break
 
         case 3:
-            x = Screen.width - width  - Dpi.scale(50)
+            x = Screen.width - width  - 50
             y = Screen.height
-            destY = Screen.height - height - Dpi.scale(50)
+            destY = Screen.height - height - 50
             break
         }
     }
@@ -87,17 +87,17 @@ Window {
 
     Rectangle {
         anchors.fill: parent
-        color: Styles.bg
+        color: "#333"
 
         Image {
             id: img
             source: imgSrc
             fillMode: Image.PreserveAspectFit
-            width: Dpi.scale(80)
+            width: 80
             height: width
             anchors {
                 left: parent.left
-                leftMargin: Dpi.scale(10)
+                leftMargin: 10
                 verticalCenter: parent.verticalCenter
             }
         }
@@ -106,11 +106,11 @@ Window {
             anchors {
                 left: img.right
                 right: parent.right
-                leftMargin: Dpi.scale(10)
-                rightMargin: Dpi.scale(10)
+                leftMargin: 10
+                rightMargin: 10
                 top: img.top
             }
-            height: Dpi.scale(100)
+            height: 100
             clip: true
 
             Label {
@@ -121,11 +121,9 @@ Window {
                     right: parent.right
                 }
                 text: root.title
-                color: Styles.textColor
                 wrapMode: Text.WordWrap
                 font.bold: true
-                font.pointSize: Styles.titleFont.bigger
-                //renderType: Text.NativeRendering
+                font.pointSize: 10
             }
 
             Label {
@@ -137,8 +135,6 @@ Window {
                 }
                 text: root.description
                 wrapMode: Text.WordWrap
-                color: Styles.textColor
-                font.pointSize: Styles.titleFont.smaller
             }
         }
     }
