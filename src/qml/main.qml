@@ -57,8 +57,8 @@ ApplicationWindow {
         id: chatdrawer
         edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
 
-        height: chatview.pinned ? g_rootWindow.height : g_rootWindow.height - 40
-        y: chatview.pinned ?  0 : (g_rootWindow.height - height) / 2
+        height: view.height
+        y: header.height
         interactive: !chatview.pinned
         modal: interactive
 
@@ -89,8 +89,8 @@ ApplicationWindow {
     }
 
     header: TopBar {
-        leftPadding: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-        rightPadding: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+//        leftPadding: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+//        rightPadding: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         id: topbar
         onSelectedViewChanged: {
             view.setSelection(selectedView)
