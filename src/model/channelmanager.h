@@ -56,6 +56,7 @@ class ChannelManager: public QObject
      * @return
      */
     ChannelListModel *createFollowedChannelsModel();
+    bool isAccessTokenAvailable() { return settingsManager->hasAccessToken(); }
 
     static ChannelManager *instance;
     ChannelManager();
@@ -78,13 +79,6 @@ public:
 
     ChannelListModel *getResultsModel() const;
     GameListModel *getGamesModel() const;
-    Q_INVOKABLE void addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
-                                     const  QString &info, const QString &logo, const QString &preview,
-                                     const QString& game, const qint32 &viewers, bool online);
-    Q_INVOKABLE void getFollowedChannels(const quint32 &limit = FOLLOWED_FETCH_LIMIT, const quint32 &offset = 0);
-    Q_INVOKABLE void searchGames(QString, const quint32&, const quint32&);
-    Q_INVOKABLE QString username() const;
-    Q_INVOKABLE bool isAccessTokenAvailable() { return settingsManager->hasAccessToken(); }
 
     quint64 getUser_id() const;
 
@@ -112,6 +106,12 @@ public slots:
     void notify(Channel*);
     void notifyMultipleChannelsOnline(const QList<Channel*> &);
     void findPlaybackStream(const QString&);
+    void addToFavourites(const quint32 &id, const QString &serviceName, const QString &title,
+                                     const  QString &info, const QString &logo, const QString &preview,
+                                     const QString& game, const qint32 &viewers, bool online);
+    void getFollowedChannels(const quint32 &limit = FOLLOWED_FETCH_LIMIT, const quint32 &offset = 0);
+    void searchGames(QString, const quint32&, const quint32&);
+    QString username() const;
 
 private slots:
     void addSearchResults(const QList<Channel*>&, const int total);
