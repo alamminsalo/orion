@@ -490,6 +490,7 @@ Page {
                 }
 
                 onAccepted: {
+                    _emotePicker.startClosing()
                     sendMessage()
                 }
             }
