@@ -120,6 +120,10 @@ Item {
     MediaPlayer {
         id: renderer
 
+        onError: {
+            console.error(errorString)
+        }
+
         onStatusChanged: {
             if (status === MediaPlayer.Buffering)
                 root.status = "BUFFERING"

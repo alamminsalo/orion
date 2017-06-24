@@ -257,7 +257,6 @@ Page {
         target: renderer
 
         onPositionChanged: {
-            console.log("pos changed")
             var newPos = renderer.position;
             chatview.playerPositionUpdate(newPos);
             if (root.isVod) {
@@ -282,7 +281,7 @@ Page {
         }
 
         onStatusChanged: {
-            PowerManager.screensaver = (status !== "PLAYING")
+            PowerManager.screensaver = (renderer.status !== "PLAYING")
         }
     }
 
