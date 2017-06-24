@@ -13,6 +13,8 @@ ListView {
     property int scrollbuf: 0
     property int previousY: 0
     property alias chatModel: chatModel
+
+    ScrollIndicator.vertical: ScrollIndicator {}
     
     model: ListModel {
         id: chatModel

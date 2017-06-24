@@ -190,10 +190,10 @@ Page {
             } else {
                 var vodIdNum = parseInt(vod._id.substring(1));
                 console.log("replaying chat for vod", vodIdNum, "starting at", startEpochTime);
-                chatview.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
+                chat.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
             }
         } else {
-            chatview.joinChannel(currentChannel.name, currentChannel._id);
+            chat.joinChannel(currentChannel.name, currentChannel._id);
         }
 
         pollTimer.restart()
@@ -229,7 +229,7 @@ Page {
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
-            chatview.playerSeek(position)
+            chat.playerSeek(position)
             renderer.seekTo(position)
         }
     }
@@ -258,7 +258,7 @@ Page {
 
         onPositionChanged: {
             var newPos = renderer.position;
-            chatview.playerPositionUpdate(newPos);
+            chat.playerPositionUpdate(newPos);
             if (root.isVod) {
                 if (Math.abs(newPos - root.lastSetPosition) > 10) {
                     root.lastSetPosition = newPos;

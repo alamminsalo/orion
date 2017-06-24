@@ -36,6 +36,8 @@ ApplicationWindow {
     property variant g_tooltip
     property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
+    property var chat: chatdrawer.chat
+
     onG_fullscreenChanged: {
         if (g_fullscreen)
             windowstate = visibility
@@ -53,34 +55,16 @@ ApplicationWindow {
         }
     }
 
-    Drawer {
+    ChatDrawer {
         id: chatdrawer
-        edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
-
-        height: view.height
-        y: header.visible ? header.height : 0
-        interactive: !chatview.pinned
-        modal: interactive
-
-        onAboutToHide: {
-            chatview.pinned = false
-        }
-
-        width: 330
-        dim: false
-
-        ChatView {
-            id: chatview
-            anchors.fill: parent
-        }
     }
 
     Views {
         id: view
         anchors {
             fill: parent
-            leftMargin: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-            rightMargin: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+            leftMargin: chatdrawer.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+            rightMargin: chatdrawer.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         }
 
         onRequestSelectionChange: {
@@ -89,8 +73,6 @@ ApplicationWindow {
     }
 
     header: TopBar {
-//        leftPadding: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-//        rightPadding: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         id: topbar
         onSelectedViewChanged: {
             view.setSelection(selectedView)
@@ -99,8 +81,8 @@ ApplicationWindow {
 
     footer: ToolBar {
         id: connectionErrorRectangle
-        leftPadding: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-        rightPadding: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+        leftPadding: chatdrawer.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+        rightPadding: chatdrawer.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         Material.background: Material.Amber
         visible: !Network.up
 

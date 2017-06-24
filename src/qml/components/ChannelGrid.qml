@@ -122,7 +122,7 @@ CommonGrid {
             text: "Open chat"
             onTriggered: {
                 if (menu.channel !== undefined)
-                    chatview.joinChannel(menu.channel.name, menu.channel._id);
+                    chat.joinChannel(menu.channel.name, menu.channel._id);
                 chatdrawer.open()
                 menu.channel = undefined
             }
