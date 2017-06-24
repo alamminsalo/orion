@@ -23,7 +23,7 @@ GridView {
     property string title
 
     signal itemClicked(int index, Item clickedItem)
-    signal itemRightClicked(int index, Item clickedItem)
+    signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
     signal itemTooltipHover(int index, real mX, real mY)
 
     highlightFollowsCurrentItem: false
@@ -124,7 +124,7 @@ GridView {
                 if (mouse.button === Qt.LeftButton)
                     itemClicked(clickedIndex, clickedItem)
                 else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(clickedIndex, clickedItem)
+                    itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y)
                 }
             }
         }
@@ -139,7 +139,7 @@ GridView {
             var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
             if (clickedIndex !== -1){
                 var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
-                itemRightClicked(clickedIndex, clickedItem);
+                itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y);
             }
         }
     }

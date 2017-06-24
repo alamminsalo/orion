@@ -37,10 +37,8 @@ class ChannelManager: public QObject
     SettingsManager *settingsManager;
 
     ChannelListModel* tempFavourites;
-
     ChannelListModel* favouritesModel;
     QSortFilterProxyModel* favouritesProxy;
-
     ChannelListModel* resultsModel;
 
     //Games (and game search results)

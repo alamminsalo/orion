@@ -128,7 +128,7 @@ Drawer {
                 }
                 Label {
                     visible: labelsVisible
-                    text: "Favourite"
+                    text: item && !item.favourite ? "Follow" : "Unfollow"
                 }
             }
 

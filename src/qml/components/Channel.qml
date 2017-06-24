@@ -25,11 +25,12 @@ Item {
     property string info
     property string preview
     property bool online
-    property bool favourite: false
+    property bool favourite
     property int viewers
     property string game
     property int containerSize: width - 10
     property int imageSize: containerSize - 20
+    property bool showFavIcon: true
 
     id: root
     implicitWidth: 180
@@ -113,6 +114,7 @@ Item {
                 opacity: favourite ? 1 : 0
                 color: Material.color(Material.accent)
                 font.pointSize: 14
+                visible: showFavIcon
                 anchors {
                     top: parent.top
                     right: parent.right

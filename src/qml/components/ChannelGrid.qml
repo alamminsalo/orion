@@ -14,15 +14,23 @@
 
 import QtQuick.Controls 2.1
 import QtQuick 2.5
+import app.orion 1.0
 
 CommonGrid {
     id: root
-    property bool allFavourites : false
+    property bool showFavIcons : true
 
     tooltipEnabled: true
 
     onItemClicked: {
         infoDrawer.show(clickedItem)
+    }
+
+    onItemRightClicked: {
+        menu.x = mX
+        menu.y = mY
+        menu.channel = clickedItem
+        menu.open()
     }
 
     onItemTooltipHover: {
@@ -61,6 +69,7 @@ CommonGrid {
         online: model.online
         game: model.game
         favourite: model.favourite
+        showFavIcon: showFavIcons
         width: root.cellWidth
     }
 
@@ -69,4 +78,55 @@ CommonGrid {
         edge: Qt.BottomEdge
         width: parent.width
     }
+
+    Menu {
+        id: menu
+        modal: true
+        dim: false
+
+        property var channel: undefined
+
+        MenuItem {
+            text: "Watch"
+            onTriggered: {
+                if (menu.channel !== undefined)
+                    playerView.getStreams(menu.channel)
+                menu.channel = undefined
+            }
+        }
+        MenuItem {
+            text: menu.channel !== undefined && !menu.channel.favourite ? "Follow" : "Unfollow"
+            onTriggered: {
+                if (menu.channel !== undefined) {
+                    if (menu.channel.favourite === false)
+                        ChannelManager.addToFavourites(menu.channel._id, menu.channel.name,
+                                                       menu.channel.title, menu.channel.info,
+                                                       menu.channel.logo, menu.channel.preview,
+                                                       menu.channel.game, menu.channel.viewers,
+                                                       menu.channel.online)
+                    else
+                        ChannelManager.removeFromFavourites(menu.channel._id)
+                }
+                menu.channel = undefined
+            }
+        }
+        MenuItem {
+            text: "Videos"
+            onTriggered: {
+                if (menu.channel !== undefined)
+                    vodsView.search(menu.channel)
+                menu.channel = undefined
+            }
+        }
+        MenuItem {
+            text: "Open chat"
+            onTriggered: {
+                if (menu.channel !== undefined)
+                    chatview.joinChannel(menu.channel.name, menu.channel._id);
+                chatdrawer.open()
+                menu.channel = undefined
+            }
+        }
+    }
 }
+

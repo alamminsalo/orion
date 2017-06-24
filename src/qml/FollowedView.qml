@@ -16,8 +16,7 @@ import QtQuick 2.5
 import app.orion 1.0
 import "components"
 
-Item{
-
+Item {
     onVisibleChanged: {
         if (visible) {
             ChannelManager.getFollowedChannels()
@@ -27,7 +26,7 @@ Item{
     ChannelGrid {
         id: favourites
 
-        allFavourites: true
+        showFavIcons: false
 
         anchors {
             fill: parent

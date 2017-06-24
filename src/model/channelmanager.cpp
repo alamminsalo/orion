@@ -88,6 +88,7 @@ void ChannelManager::addToFavourites(const quint32 &id, const QString &serviceNa
         channel->setGame(game);
         channel->setOnline(online);
         channel->setViewers(viewers);
+        channel->setFavourite(true);
 
         if (isAccessTokenAvailable() && user_id != 0) {
             netman->editUserFavourite(user_id, channel->getId(), true);
@@ -198,7 +199,7 @@ void ChannelManager::load(){
         for (int i = 0; i < size; i++) {
             settings.setArrayIndex(i);
             Channel * channel = new Channel(settings);
-            channel->setFavourite(false); // for visual consistency we don't want to show favourite highlight on entries in the favourites model
+            channel->setFavourite(true);
             _channels.append(channel);
         }
 
@@ -241,9 +242,9 @@ void ChannelManager::addToFavourites(const quint32 &id){
             netman->editUserFavourite(user_id, channel->getId(), true);
         }
 
+        channel->setFavourite(true);
         favouritesModel->addChannel(new Channel(*channel));
 
-        channel->setFavourite(true);
         emit addedChannel(channel->getId());
 
         resultsModel->updateChannelForView(channel);
@@ -361,6 +362,9 @@ void ChannelManager::findPlaybackStream(const QString &serviceName)
 
 void ChannelManager::updateFavourites(const QList<Channel*> &list)
 {
+    foreach (Channel *c, list)
+        c->setFavourite(true);
+
     favouritesModel->updateChannels(list);
     qDeleteAll(list);
 }
@@ -455,6 +459,9 @@ void ChannelManager::addFollowedResults(const QList<Channel *> &list, const quin
 {
     //    qDebug() << "Merging channel data for " << list.size()
     //             << " items with " << offset << " offset.";
+
+    foreach (Channel *c, list)
+        c->setFavourite(true);
 
     favouritesModel->mergeAll(list);
 
