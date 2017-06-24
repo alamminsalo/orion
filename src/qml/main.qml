@@ -58,7 +58,7 @@ ApplicationWindow {
         edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
 
         height: view.height
-        y: header.height
+        y: header.visible ? header.height : 0
         interactive: !chatview.pinned
         modal: interactive
 
