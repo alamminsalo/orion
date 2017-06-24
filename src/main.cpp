@@ -153,6 +153,9 @@ int main(int argc, char *argv[])
         QObject::connect(&guard, &RunGuard::anotherProcessTriggered, rootWin, &QQuickWindow::show);
     }
 
+    // first check
+    ChannelManager::getInstance()->checkFavourites();
+
     // Start
     return app.exec();
 }
