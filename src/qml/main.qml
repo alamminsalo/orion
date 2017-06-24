@@ -57,8 +57,14 @@ ApplicationWindow {
         id: chatdrawer
         edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
 
-        height: g_rootWindow.height - 40
-        y: (g_rootWindow.height - height) / 2
+        height: chatview.pinned ? g_rootWindow.height : g_rootWindow.height - 40
+        y: chatview.pinned ?  0 : (g_rootWindow.height - height) / 2
+        interactive: !chatview.pinned
+        modal: interactive
+
+        onAboutToHide: {
+            chatview.pinned = false
+        }
 
         width: 330
         dim: false
@@ -69,23 +75,32 @@ ApplicationWindow {
         }
     }
 
+    Views {
+        id: view
+        anchors {
+            fill: parent
+            leftMargin: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+            rightMargin: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+        }
+
+        onRequestSelectionChange: {
+            topbar.setView(index)
+        }
+    }
+
     header: TopBar {
+        leftPadding: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+        rightPadding: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         id: topbar
         onSelectedViewChanged: {
             view.setSelection(selectedView)
         }
     }
 
-    Views {
-        id: view
-        anchors.fill: parent
-        onRequestSelectionChange: {
-            topbar.setView(index)
-        }
-    }
-
     footer: ToolBar {
         id: connectionErrorRectangle
+        leftPadding: chatview.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+        rightPadding: chatview.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         Material.background: Material.Amber
         visible: !Network.up
 

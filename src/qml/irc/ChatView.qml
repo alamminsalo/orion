@@ -23,10 +23,7 @@ import app.orion 1.0
 
 Page {
     id: root
-//    background: Rectangle {
-//        color: "black"
-//        opacity: 0.5
-//    }
+    property alias pinned : pinBtn.checked
 
     onVisibleChanged: {
         if (visible) {
@@ -149,20 +146,33 @@ Page {
 
 
     // Tab bar header for switching chat/viewers
-    header: TabBar {
+    header: ToolBar {
         Material.background: Material.background
-        font.family: "Material Icons"
-        font.pointSize: 12
-        currentIndex: chatContainer.currentIndex
-
-        TabButton {
-            text: "\ue0b7"
-            onClicked: chatContainer.currentIndex = 0
+        RowLayout {
+            anchors.fill: parent
+        ToolButton {
+            id: pinBtn
+            checkable: true
+            font.family: "Material Icons"
+            text: checked ? "\ue897" : "\ue898"
         }
 
-        TabButton {
-            text: "\ue7fb"
-            onClicked: chatContainer.currentIndex = 1
+        TabBar {
+            Layout.fillWidth: true
+            font.family: "Material Icons"
+            font.pointSize: 12
+            currentIndex: chatContainer.currentIndex
+
+            TabButton {
+                text: "\ue0b7"
+                onClicked: chatContainer.currentIndex = 0
+            }
+
+            TabButton {
+                text: "\ue7fb"
+                onClicked: chatContainer.currentIndex = 1
+            }
+        }
         }
     }
 
@@ -220,7 +230,7 @@ Page {
                 }
             }
 
-//            color: "#ffffff"
+            //            color: "#ffffff"
 
             anchors {
                 bottom: parent.bottom

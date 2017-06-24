@@ -393,7 +393,12 @@ Page {
 
             IconButtonFlat {
                 id: chatBtn
-                onClicked: chatdrawer.open()
+                onClicked: {
+                    if (chatdrawer.position === 0.0)
+                        chatdrawer.open()
+                    else
+                        chatdrawer.close()
+                }
                 text: "\ue0ca"
             }
         }
