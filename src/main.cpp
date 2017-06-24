@@ -19,6 +19,8 @@
 #include <QCommandLineParser>
 #include <QNetworkProxyFactory>
 #include <QFontDatabase>
+#include <QIcon>
+#include <QQuickWindow>
 
 #include "util/runguard.h"
 #include "model/channelmanager.h"
