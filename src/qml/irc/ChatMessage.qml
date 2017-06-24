@@ -49,7 +49,8 @@ Item {
     onFontSizeChanged: {
         // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
         Qt.callLater(function() {
-            _messageLineFlow.updatePositions()
+            if (_messageLineFlow)
+                _messageLineFlow.updatePositions()
         })
     }
 
