@@ -44,6 +44,8 @@ Item {
 
     function load(src, start) {
         console.log("Loading src", src, start)
+        status = "BUFFERING"
+
         stop();
 
         if (start >= 0) {
@@ -118,22 +120,24 @@ Item {
     MediaPlayer {
         id: renderer
 
+        onStatusChanged: {
+            if (status === MediaPlayer.Buffering)
+                root.status = "BUFFERING"
+        }
+
         onStopped: {
             root.status = "STOPPED"
             root.playingStopped()
-            g_powerman.setScreensaver(true);
         }
 
         onPaused: {
             root.status = "PAUSED"
             root.playingPaused()
-            g_powerman.setScreensaver(true);
         }
 
         onPlaying: {
             root.status = "PLAYING"
             root.playingResumed()
-            g_powerman.setScreensaver(false);
         }
 
         onPositionChanged: {

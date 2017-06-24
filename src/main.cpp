@@ -50,6 +50,7 @@ void registerQmlComponents(QObject *parent)
     qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
     qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
     qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
+    qmlRegisterSingletonType<Power>("app.orion", 1, 0, "PowerManager", &Power::provider);
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
 #ifdef MPV_PLAYER
@@ -120,12 +121,10 @@ int main(int argc, char *argv[])
 
     SettingsManager::getInstance()->setHiDpi(maxDevicePixelRatio > 1.0);
 
-    //Screensaver mngr
-    Power *power = new Power(static_cast<QApplication *>(&app));
+    //Init screensaver
+    Power::initialize(static_cast<QApplication *>(&app));
 
     QQmlContext *rootContext = engine.rootContext();
-    //rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
-    rootContext->setContextProperty("g_powerman", power);
     rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
     rootContext->setContextProperty("g_results", ChannelManager::getInstance()->getResultsModel());
     rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());

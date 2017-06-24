@@ -21,7 +21,6 @@ import "components"
 import app.orion 1.0
 
 Page {
-
     property int duration: -1
     property var currentChannel
     property var streamMap
@@ -125,8 +124,6 @@ Page {
         console.debug("Loading: ", url)
 
         renderer.load(url, start, description)
-
-        spinner.running = true
     }
 
     function getStreams(channel, vod, startPos){
@@ -201,8 +198,6 @@ Page {
 
         pollTimer.restart()
 
-        spinner.running = true
-
         requestSelectionChange(4)
     }
 
@@ -262,6 +257,7 @@ Page {
         target: renderer
 
         onPositionChanged: {
+            console.log("pos changed")
             var newPos = renderer.position;
             chatview.playerPositionUpdate(newPos);
             if (root.isVod) {
@@ -275,17 +271,18 @@ Page {
 
         onPlayingResumed: {
             setWatchingTitle()
-            spinner.running = false
         }
 
         onPlayingPaused: {
             setHeaderText("Paused")
-            spinner.running = false
         }
 
         onPlayingStopped: {
             setHeaderText("Playback stopped")
-            spinner.running = false
+        }
+
+        onStatusChanged: {
+            PowerManager.screensaver = (status !== "PLAYING")
         }
     }
 
@@ -342,9 +339,8 @@ Page {
         }
 
         BusyIndicator {
-            id: spinner
             anchors.centerIn: parent
-            running: false
+            running: renderer.status === "BUFFERING"
         }
     }
 

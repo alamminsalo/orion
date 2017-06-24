@@ -24,11 +24,22 @@
     #include <CoreServices/CoreServices.h>
 #endif
 
+Power *Power::instance = 0;
+
 Power::Power(QApplication *app) :
     app(app), cookie(0)
 {
-    timer = new QTimer();
-    connect(timer, &QTimer::timeout, this, &Power::onTimerProc);
+    startTimer(5000);
+}
+
+Power *Power::getInstance()
+{
+    return instance;
+}
+
+void Power::initialize(QApplication *app)
+{
+    instance = new Power(app);
 }
 
 Power::~Power()
@@ -64,29 +75,6 @@ void Power::setScreensaver(bool enabled)
         }
     }
 
-//    QWindow *win = app->allWindows().at(0);
-
-//    if (!win)
-//        return;
-
-//    quint32 wid = win->winId();
-
-//    qDebug() << "Screensaver change event, wid" << wid;
-
-//    QStringList args;
-//    args << (enabled ? "resume" : "suspend") << QString::number(wid);
-
-//    QProcess::startDetached("xdg-screensaver",args);
-
-//    // Also set timer to send nudges to xserver
-//    if (enabled){
-//        timer->stop();
-//    } else {
-//        if (!timer->isActive()){
-//            timer->start(25000);
-//        }
-//    }
-
 #elif defined(Q_OS_WIN)
     if (!enabled)
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED);
@@ -106,7 +94,7 @@ void Power::setScreensaver(bool enabled)
 #endif
 }
 
-void Power::onTimerProc()
+void Power::timerEvent(QTimerEvent *event)
 {
 #ifdef Q_OS_LINUX
     QProcess::startDetached("xdg-screensaver reset");
@@ -117,5 +105,4 @@ void Power::onTimerProc()
     UpdateSystemActivity(OverallAct);
     qDebug() << "Sent nudge to osx screensaver";
 #endif
-
 }
