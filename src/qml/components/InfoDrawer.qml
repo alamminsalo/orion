@@ -7,6 +7,7 @@ import app.orion 1.0
 Drawer {
     id: root
     property var item: undefined
+    property bool labelsVisible: width >= 400
     dim: false
     interactive: visible
 
@@ -86,63 +87,90 @@ Drawer {
             Layout.fillHeight: true
             spacing: 0
 
-            IconButtonFlat {
-                id: watchBtn
-                font.pointSize: 20
-                text: "\ue038"
-                padding: 0
-                onClicked: {
-                    if (item) {
-                        playerView.getStreams(item)
+            RowLayout {
+                IconButtonFlat {
+                    id: watchBtn
+                    font.pointSize: 20
+                    text: "\ue038"
+                    padding: 0
+                    onClicked: {
+                        if (item) {
+                            playerView.getStreams(item)
+                        }
+                        close()
                     }
-                    close()
+                }
+                Label {
+                    visible: labelsVisible
+                    text: "Watch"
                 }
             }
 
-            IconButtonFlat {
-                id: favoriteBtn
-                font.pointSize: 20
-                padding: 0
-                text: "\ue87d"
-                highlighted: item ? item.favourite : false
-                onClicked: {
-                    if (item) {
-                        if (item.favourite === false)
-                            ChannelManager.addToFavourites(item._id, item.name,
-                                                           item.title, item.info,
-                                                           item.logo, item.preview,
-                                                           item.game, item.viewers,
-                                                           item.online)
-                        else
-                            ChannelManager.removeFromFavourites(item._id)
+            RowLayout {
+                IconButtonFlat {
+                    id: favoriteBtn
+                    font.pointSize: 20
+                    padding: 0
+                    text: "\ue87d"
+                    highlighted: item ? item.favourite : false
+                    onClicked: {
+                        if (item) {
+                            if (item.favourite === false)
+                                ChannelManager.addToFavourites(item._id, item.name,
+                                                               item.title, item.info,
+                                                               item.logo, item.preview,
+                                                               item.game, item.viewers,
+                                                               item.online)
+                            else
+                                ChannelManager.removeFromFavourites(item._id)
+                        }
                     }
+                }
+                Label {
+                    visible: labelsVisible
+                    text: "Favourite"
                 }
             }
 
-            IconButtonFlat {
-                id: vodBtn
-                font.pointSize: 20
-                padding: 0
-                text: "\ue04a"
-                onClicked: {
-                    if (item) {
-                        vodsView.search(item)
+            RowLayout {
+
+                IconButtonFlat {
+                    id: vodBtn
+                    font.pointSize: 20
+                    padding: 0
+                    text: "\ue04a"
+                    onClicked: {
+                        if (item) {
+                            vodsView.search(item)
+                        }
+                        close()
                     }
-                    close()
+                }
+                Label {
+                    visible: labelsVisible
+                    text: "Videos"
                 }
             }
 
-            IconButtonFlat {
-                id: openChatBtn
-                font.pointSize: 20
-                padding: 0
-                text: "\ue0ca"
-                onClicked: {
-                    if (item) {
-                        chatview.joinChannel(item.name, item._id);
-                        chatdrawer.open()
+            RowLayout {
+
+                IconButtonFlat {
+                    id: openChatBtn
+                    font.pointSize: 20
+                    padding: 0
+                    text: "\ue0ca"
+                    onClicked: {
+                        if (item) {
+                            chatview.joinChannel(item.name, item._id);
+                            chatdrawer.open()
+                        }
+                        close()
                     }
-                    close()
+                }
+
+                Label {
+                    visible: labelsVisible
+                    text: "Open chat"
                 }
             }
         }
