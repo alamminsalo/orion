@@ -26,7 +26,6 @@ Page {
         anchors.fill: parent
         contentHeight: col.height
         contentWidth: width
-        clip: true
         ScrollIndicator.vertical: ScrollIndicator{}
         flickableDirection: Flickable.VerticalFlick
 

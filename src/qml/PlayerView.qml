@@ -441,9 +441,10 @@ Page {
 
             IconButtonFlat {
                 id: playBtn
-                text: renderer.status != "PLAYING" ? "\ue037" : "\ue034"
+                text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
                 onClicked: renderer.togglePause()
             }
+
             IconButtonFlat {
                 id: resetBtn
                 text: "\ue5d5"
@@ -513,6 +514,9 @@ Page {
                 font.pointSize: 9
                 font.bold: true
                 flat: true
+                Layout.fillWidth: true
+                Layout.maximumWidth: 140
+                Layout.minimumWidth: 100
 
                 onCurrentIndexChanged: {
                     Settings.quality = sourcesBox.model[currentIndex]
