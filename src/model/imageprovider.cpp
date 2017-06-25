@@ -15,11 +15,11 @@
 
 #include <QString>
 #include <QUrl>
+#include <QGuiApplication>
 #include <QtGlobal>
 #include <QDebug>
 #include <QNetworkRequest>
 #include <QStandardPaths>
-#include <QApplication>
 #include <QDateTime>
 #include "imageprovider.h"
 
@@ -106,9 +106,9 @@ void ImageProvider::bulkDownloadStep() {
             _bulkDownloadTimer.start();
             return;
         }
-        else {
-            qApp->processEvents();
-        }
+//        else {
+//            qApp->processEvents();
+//        }
     }
 
     emit bulkDownloadComplete();

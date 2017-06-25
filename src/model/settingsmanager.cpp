@@ -19,6 +19,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mOfflineNotifications = false;
     mAccessToken = "";
     mQuality = "source";
+    mSwapChat = false;
 
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
@@ -141,7 +142,11 @@ void SettingsManager::setVolumeLevel(int volumeLevel)
 
 bool SettingsManager::minimizeOnStartup() const
 {
+#ifdef Q_OS_ANDROID
+    return false;
+#else
     return mMinimizeOnStartup;
+#endif
 }
 
 void SettingsManager::setMinimizeOnStartup(bool minimizeOnStartup)

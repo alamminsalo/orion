@@ -15,9 +15,7 @@
 #ifndef POWER_H
 #define POWER_H
 
-#include <QTimer>
 #include <QObject>
-#include <QApplication>
 #include "../model/singletonprovider.h"
 
 #ifdef Q_OS_WIN
@@ -31,20 +29,17 @@ class Power: public QObject
 
     Q_PROPERTY(bool screensaver WRITE setScreensaver)
 
-    Power(QApplication *app);
+    Power();
 
     static Power *instance;
 
 public:
     static Power *getInstance();
-    static void initialize(QApplication *app);
     ~Power();
 
     Q_INVOKABLE void setScreensaver(bool);
 
 private:
-    QTimer* timer;
-    QApplication *app;
     quint32 cookie;
 
     // QObject interface

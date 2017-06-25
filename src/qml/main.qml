@@ -19,7 +19,6 @@ import QtQuick.Controls.Material 2.1
 import "irc"
 import "components"
 import app.orion 1.0
-import Qt.labs.platform 1.0
 
 ApplicationWindow {
     id: root
@@ -29,8 +28,8 @@ ApplicationWindow {
     font.family: appFont.name
 
     title: "Orion"
-    visibility: g_fullscreen ? "FullScreen" : windowstate
-    //flags: Qt.FramelessWindowHint | Qt.SplashScreen
+    visibility: g_fullscreen && Qt.platform.os !== "android"
+                ? Window.FullScreen : Window.AutomaticVisibility
 
     property variant g_rootWindow: root
     property variant g_tooltip
@@ -93,14 +92,16 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        height = Screen.height * 0.7
-        width = height * 1.2
+        if (Qt.platform.os !== "android") {
+            height = Screen.height * 0.7
+            width = height * 1.2
 
-        setX(Screen.width / 2 - width / 2);
-        setY(Screen.height / 2 - height / 2);
+            setX(Screen.width / 2 - width / 2);
+            setY(Screen.height / 2 - height / 2);
 
-        var component = Qt.createComponent("components/Tooltip.qml")
-        g_tooltip = component.createObject(root)
+            var component = Qt.createComponent("components/Tooltip.qml")
+            g_tooltip = component.createObject(root)
+        }
 
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
@@ -118,8 +119,8 @@ ApplicationWindow {
 
     FontLoader {
         id: appFont
-        source: "fonts/overpass-regular.otf"
-        //source: "fonts/NotoSans-Regular.ttf"
+        //source: "fonts/overpass-regular.otf"
+        source: "fonts/NotoSans-Regular.ttf"
         name: "Noto Sans"
     }
 

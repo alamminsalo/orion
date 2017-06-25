@@ -26,26 +26,22 @@
 
 Power *Power::instance = 0;
 
-Power::Power(QApplication *app) :
-    app(app), cookie(0)
+Power::Power() :
+    cookie(0)
 {
-    startTimer(5000);
+    setProperty("_timer", startTimer(5000));
 }
 
 Power *Power::getInstance()
 {
+    if (!instance)
+        instance = new Power();
     return instance;
-}
-
-void Power::initialize(QApplication *app)
-{
-    instance = new Power(app);
 }
 
 Power::~Power()
 {
     setScreensaver(true);
-    delete timer;
 }
 
 void Power::setScreensaver(bool enabled)
@@ -84,13 +80,13 @@ void Power::setScreensaver(bool enabled)
 #endif
 
 #ifdef Q_OS_MAC
-    if (enabled){
-        timer->stop();
-    } else {
-        if (!timer->isActive()){
-            timer->start(25000);
-        }
-    }
+//    if (enabled){
+//        timer->stop();
+//    } else {
+//        if (!timer->isActive()){
+//            timer->start(25000);
+//        }
+//    }
 #endif
 }
 

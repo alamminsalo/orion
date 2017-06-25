@@ -4,7 +4,12 @@
 #
 #-------------------------------------------------
 
-QT     += gui qml quick network widgets
+QT     += gui qml network widgets quickcontrols2
+
+QMAKE_CXXFLAGS += -Wall -O2
+
+CONFIG += c++11
+#CONFIG += console
 
 TARGET = orion
 
@@ -67,7 +72,9 @@ HEADERS  += src/model/channel.h \
 
 android: {
     QT += gamepad
+    QT -= widgets
     CONFIG += multimedia
+    LIBS += -lssl -lcrypto
 }
 
 #Backend for player, uses mpv as default
@@ -105,14 +112,16 @@ multimedia {
     }
 }
 
-QMAKE_CXXFLAGS += -Wall -O2
+DISTFILES += src/qml/icon/orion.svg \
+    android/AndroidManifest.xml \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat
 
-CONFIG += c++11
-#CONFIG += console
-
-DISTFILES += src/qml/icon/orion.svg
-
-linux: {
+linux:!android: {
     QT += dbus
 
     HEADERS += src/notification/notificationsender.h
@@ -185,5 +194,7 @@ macx: {
     OBJECTIVE_SOURCES += \
         src/notification/notificationsender.mm
 }
+
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 

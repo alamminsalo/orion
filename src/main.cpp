@@ -12,7 +12,6 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QScreen>
 #include <QQmlContext>
@@ -31,8 +30,11 @@
 #include "model/viewersmodel.h"
 
 #ifndef Q_OS_ANDROID
+#include <QApplication>
 #include "power/power.h"
 #include "notification/notificationmanager.h"
+#else
+#include <QGuiApplication>
 #endif
 
 #ifdef MPV_PLAYER
@@ -76,7 +78,13 @@ int main(int argc, char *argv[])
     //Override QT_QUICK_CONTROLS_STYLE environment variable
     qputenv("QT_QUICK_CONTROLS_STYLE", "material");
 
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+#ifndef Q_OS_ANDROID
     QApplication app(argc, argv);
+#else
+    QGuiApplication app(argc, argv);
+#endif
     app.setApplicationVersion(APP_VERSION);
 
     const QIcon appIcon = QIcon(":/icon/orion.ico");
@@ -84,6 +92,11 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
+    //Prime network manager
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+    NetworkManager::initialize(engine.networkAccessManager());
+
+#ifndef Q_OS_ANDROID
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
     if ( !guard.tryToRun() ){
@@ -108,10 +121,6 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    //Prime network manager
-    QNetworkProxyFactory::setUseSystemConfiguration(true);
-    NetworkManager::initialize(engine.networkAccessManager());
-
     // detect hi dpi screens
     qDebug() << "Screens:";
     int screens = 0;
@@ -125,10 +134,6 @@ int main(int argc, char *argv[])
     qDebug() << "maxDevicePixelRatio" << maxDevicePixelRatio;
 
     SettingsManager::getInstance()->setHiDpi(maxDevicePixelRatio > 1.0);
-
-#ifndef Q_OS_ANDROID
-    //Init screensaver
-    Power::initialize(static_cast<QApplication *>(&app));
 
     //Set up notifications
     NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
@@ -150,6 +155,7 @@ int main(int argc, char *argv[])
     // Load app settings
     SettingsManager::getInstance()->load();
 
+#ifndef Q_OS_ANDROID
     // Get QML root window, add connections
     QQuickWindow *rootWin = (QQuickWindow *) engine.rootObjects().first();
     if (rootWin) {
@@ -159,6 +165,7 @@ int main(int argc, char *argv[])
         //Connect to runguard events
         QObject::connect(&guard, &RunGuard::anotherProcessTriggered, rootWin, &QQuickWindow::show);
     }
+#endif
 
     // first check
     ChannelManager::getInstance()->checkFavourites();
