@@ -23,7 +23,7 @@ import app.orion 1.0
 
 Page {
     id: root
-    property alias pinned : pinBtn.checked
+    property bool pinned : pinBtn.checked || Settings.chatEdge === 2
 
     onVisibleChanged: {
         if (visible) {
@@ -148,6 +148,7 @@ Page {
     // Tab bar header for switching chat/viewers
     header: ToolBar {
         Material.background: Material.background
+        visible: Settings.chatEdge !== 2
         RowLayout {
             anchors.fill: parent
         ToolButton {

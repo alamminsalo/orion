@@ -5,16 +5,19 @@ import QtQuick.Controls.Material 2.1
 import "irc"
 import "components"
 import app.orion 1.0
-import Qt.labs.platform 1.0
 
 Drawer {
     id: chatdrawer
-    edge: Settings.swapChat ? Qt.LeftEdge : Qt.RightEdge
+    edge: Settings.chatEdge == 0 ?
+              Qt.LeftEdge : (Settings.chatEdge == 1 ?
+                                 Qt.RightEdge : Qt.BottomEdge)
 
     property alias chat: chatview
     property alias pinned: chatview.pinned
     
-    height: view.height
+    height: edge !== Qt.BottomEdge ? view.height : 340
+    width: edge !== Qt.BottomEdge ? 330 : view.width
+
     y: header.visible ? header.height : 0
     interactive: !chatview.pinned
     modal: interactive
@@ -24,7 +27,6 @@ Drawer {
     }
     
     Material.elevation: chatview.pinned ? 0 : 12
-    width: 330
     dim: false
     
     ChatView {
@@ -35,7 +37,7 @@ Drawer {
     MouseArea {
         width: 10
         cursorShape: Qt.SplitHCursor
-        visible: chatview.pinned
+        visible: chatview.pinned && chatdrawer.edge !== Qt.BottomEdge
         anchors {
             horizontalCenter: chatdrawer.edge === Qt.RightEdge ? parent.left : parent.right
             top: parent.top

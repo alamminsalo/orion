@@ -15,7 +15,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(int alertPosition READ alertPosition WRITE setAlertPosition NOTIFY alertPositionChanged)
     Q_PROPERTY(int volumeLevel READ volumeLevel WRITE setVolumeLevel NOTIFY volumeLevelChanged)
     Q_PROPERTY(bool minimizeOnStartup READ minimizeOnStartup WRITE setMinimizeOnStartup NOTIFY minimizeOnStartupChanged)
-    Q_PROPERTY(bool swapChat READ swapChat WRITE setSwapChat NOTIFY swapChatChanged)
+    Q_PROPERTY(int chatEdge READ chatEdge WRITE setChatEdge NOTIFY chatEdgeChanged)
     Q_PROPERTY(bool offlineNotifications READ offlineNotifications WRITE setOfflineNotifications NOTIFY offlineNotificationsChanged)
     Q_PROPERTY(double textScaleFactor READ textScaleFactor WRITE setTextScaleFactor NOTIFY textScaleFactorChanged)
     Q_PROPERTY(QString quality READ quality WRITE setQuality NOTIFY qualityChanged)
@@ -32,6 +32,7 @@ class SettingsManager : public QObject
     double mTextScaleFactor;
     QString mQuality;
     QString mAccessToken;
+    int mChatEdge;
 
     bool mHiDpi;
 
@@ -55,8 +56,8 @@ public:
     bool minimizeOnStartup() const;
     void setMinimizeOnStartup(bool minimizeOnStartup);
 
-    bool swapChat() const;
-    void setSwapChat(bool swapChat);
+    int chatEdge() const;
+    void setChatEdge(int chatEdge);
 
     bool offlineNotifications() const;
     void setOfflineNotifications(bool offlineNotifications);
@@ -77,7 +78,7 @@ signals:
     void alertPositionChanged();
     void volumeLevelChanged();
     void minimizeOnStartupChanged();
-    void swapChatChanged();
+    void chatEdgeChanged();
     void offlineNotificationsChanged();
     void textScaleFactorChanged();
     void qualityChanged();

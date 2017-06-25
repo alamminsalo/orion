@@ -126,13 +126,12 @@ Page {
                         }
                     }
 
-                    Switch {
-                        id: chatSwapOption
-                        checked: Settings.swapChat
-                        onClicked: {
-                            Settings.swapChat = !Settings.swapChat
-                        }
-                        text: "Swap chat side"
+                    OptionCombo {
+                        id: chatEdgeOption
+                        text: "Chat position"
+                        model: ["Left", "Right", "Bottom"]
+                        selection: Settings.chatEdge
+                        onActivated: Settings.chatEdge = index
                     }
                 }
             }

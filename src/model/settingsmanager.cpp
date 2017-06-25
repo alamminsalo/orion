@@ -19,7 +19,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mOfflineNotifications = false;
     mAccessToken = "";
     mQuality = "source";
-    mSwapChat = false;
+    mChatEdge = 1;
 
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
@@ -59,8 +59,8 @@ void SettingsManager::load()
         setVolumeLevel(settings->value("volumeLevel").toInt());
     }
 
-    if(settings->contains("swapChat")) {
-        setSwapChat(settings->value("swapChat").toBool());
+    if(settings->contains("chatEdge")) {
+        setChatEdge(settings->value("chatEdge").toInt());
     }
 
     if (settings->contains("textScaleFactor")) {
@@ -160,20 +160,20 @@ void SettingsManager::setMinimizeOnStartup(bool minimizeOnStartup)
     emit minimizeOnStartupChanged();
 }
 
-bool SettingsManager::swapChat() const
+int SettingsManager::chatEdge() const
 {
-    return mSwapChat;
+    return mChatEdge;
 }
 
-void SettingsManager::setSwapChat(bool swapChat)
+void SettingsManager::setChatEdge(int chatEdge)
 {
-    if (mSwapChat != swapChat) {
-        mSwapChat = swapChat;
-        settings->setValue("swapChat", swapChat);
+    if (mChatEdge != chatEdge) {
+        mChatEdge = chatEdge;
+        settings->setValue("chatEdge", chatEdge);
 
-        qDebug() << "swapChat changed to" << swapChat;
+        qDebug() << "chatEdge changed to" << chatEdge;
     }
-    emit swapChatChanged();
+    emit chatEdgeChanged();
 }
 
 bool SettingsManager::offlineNotifications() const

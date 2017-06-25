@@ -37,13 +37,6 @@ ApplicationWindow {
     property bool g_fullscreen: false
     property var chat: chatdrawer.chat
 
-    onG_fullscreenChanged: {
-        if (g_fullscreen)
-            windowstate = visibility
-    }
-
-    property var windowstate: "Windowed"
-
     function fitToAspectRatio() {
         height = view.width * 0.5625 + topbar.height
     }
@@ -64,6 +57,7 @@ ApplicationWindow {
             fill: parent
             leftMargin: chatdrawer.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
             rightMargin: chatdrawer.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+            bottomMargin: Settings.chatEdge === 2 && chatdrawer.visible ? chatdrawer.height : 0
         }
 
         onRequestSelectionChange: {
