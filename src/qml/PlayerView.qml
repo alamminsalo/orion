@@ -349,7 +349,7 @@ Page {
             id: headerBar
             background: Rectangle {
                 color: Material.background
-                opacity: 0.666
+                opacity: 0.7
             }
 
             anchors {
@@ -416,7 +416,7 @@ Page {
 
             background: Rectangle {
                 color: Material.background
-                opacity: 0.666
+                opacity: 0.7
             }
 
             anchors {
