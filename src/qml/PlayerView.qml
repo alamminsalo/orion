@@ -467,7 +467,25 @@ Page {
                 id: fsBtn
                 text: !g_fullscreen ? "\ue5d0" : "\ue5d1"
                 onClicked: g_fullscreen = !g_fullscreen
-                visible: parent.width > 380
+                visible: parent.width > 390
+            }
+
+            IconButtonFlat {
+                id: volumeBtn
+                visible: parent.width > 340
+                property real mutedValue: 100.0
+                text: volumeSlider.value > 0 ?
+                          (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
+                                                  : "\ue04f"
+                onClicked: {
+                    if (volumeSlider.value > 0) {
+                        mutedValue = volumeSlider.value
+                        volumeSlider.value = 0
+                    }
+                    else {
+                        volumeSlider.value = mutedValue
+                    }
+                }
             }
 
             Slider {

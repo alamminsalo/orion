@@ -22,7 +22,7 @@ SystemTrayIcon {
         }
         MenuItem {
             text: "Close"
-            onTriggered: g_rootWindow.close()
+            onTriggered: Qt.quit()
         }
     }
     //        Component.onCompleted: {
