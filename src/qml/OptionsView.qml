@@ -22,23 +22,24 @@ Page {
     id: root
     padding: 20
 
-    property int itemWidth: 300
-
-    RowLayout {
+    Flickable {
         anchors.fill: parent
+        contentHeight: col.height
+        contentWidth: width
+        clip: true
+        ScrollIndicator.vertical: ScrollIndicator{}
+        flickableDirection: Flickable.VerticalFlick
 
-        Flow {
-            Layout.fillHeight: true
-            Layout.alignment: Layout.Center
-            Layout.maximumWidth: parent.width
-
-            flow: Flow.TopToBottom
+        ColumnLayout {
+            id: col
+            width: parent.width
             spacing: 15
 
             GroupBox {
                 title: "Notification settings"
                 padding: 10
-                width: root.itemWidth
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
 
                 Column {
@@ -81,7 +82,8 @@ Page {
             GroupBox {
                 title: "Tray options"
                 padding: 10
-                width: root.itemWidth
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
 
                 Column {
@@ -108,7 +110,8 @@ Page {
             GroupBox {
                 title: "User interface"
                 padding: 10
-                width: root.itemWidth
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
 
                 Column {
@@ -138,7 +141,8 @@ Page {
             GroupBox {
                 title: "Twitch login"
                 padding: 10
-                width: root.itemWidth
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
 
                 RowLayout {
@@ -187,7 +191,8 @@ Page {
             GroupBox {
                 title: "Version info"
                 padding: 10
-                width: root.itemWidth
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
                 Label {
                     text: Settings.appName() + " " + Settings.appVersion()
