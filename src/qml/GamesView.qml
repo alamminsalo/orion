@@ -108,7 +108,7 @@ Page {
             }
 
             g_tooltip.img = selectedItem.preview
-            g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
+            g_tooltip.display(rootWindow.x + mX, rootWindow.y + mY)
         }
 
         onAtYEndChanged: checkScroll()

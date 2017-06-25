@@ -247,9 +247,9 @@ Page {
     }
 
     Connections {
-        target: g_rootWindow
+        target: rootWindow
         onClosing: {
-            renderer.pause()
+            renderer.stop()
         }
     }
 
@@ -313,226 +313,238 @@ Page {
             }
         }
 
-        MouseArea {
-            id: pArea
-            anchors.fill: parent
-            onDoubleClicked: g_fullscreen = !g_fullscreen
-            hoverEnabled: true
-            cursorShape: headersVisible ? Qt.ArrowCursor : Qt.BlankCursor
-            onPositionChanged: {
-                if (!timer.running)
-                    root.headersVisible = true
-                timer.restart()
-            }
-        }
-
-        Timer {
-            id: timer
-            interval: 3000
-            running: false
-            repeat: false
-            onTriggered: {
-                if (!footerArea.containsMouse && !headerArea.containsMouse) {
-                    headersVisible = false
-                }
-            }
-        }
-
         BusyIndicator {
             anchors.centerIn: parent
             running: renderer.status === "BUFFERING"
         }
     }
 
-    header: ToolBar {
-        visible: root.headersVisible
-        Material.background: Material.background
-        leftPadding: 5
-        rightPadding: 5
-
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            id: headerArea
+    MouseArea {
+        id: pArea
+        anchors.fill: playerArea
+        onDoubleClicked: g_fullscreen = !g_fullscreen
+        hoverEnabled: true
+        propagateComposedEvents: true
+        cursorShape: headersVisible ? Qt.ArrowCursor : Qt.BlankCursor
+        onPositionChanged: {
+            if (!timer.running)
+                root.headersVisible = true
+            timer.restart()
         }
 
-        RowLayout {
-            anchors.fill: parent
+        Timer {
+            id: timer
+            interval: 2000
+            running: false
+            repeat: false
+            onTriggered: {
+                var itemUnder = pArea.childAt(pArea.mouseX, pArea.mouseY)
+                root.headersVisible = (itemUnder === bottomBar || itemUnder === headerBar)
+            }
+        }
 
-            Label {
-                id: title
-                font.bold: true
-                font.pointSize: 10
-                Layout.fillWidth: true
-                horizontalAlignment: Qt.AlignHCenter
-                clip: true
+        ToolBar {
+            id: headerBar
+            background: Rectangle {
+                color: "black"
+                opacity: 0.666
             }
 
-            IconButtonFlat {
-                id: favBtn
-                text: "\ue87d"
+            anchors {
+                top: parent.top
+                left: parent.left
+                right: parent.right
+            }
+            visible: root.headersVisible
+            Material.background: Material.background
+            leftPadding: 5
+            rightPadding: 5
 
-                function update() {
-                    highlighted = currentChannel.favourite === true
+            RowLayout {
+                anchors.fill: parent
+
+                Label {
+                    id: title
+                    font.bold: true
+                    font.pointSize: 10
+                    Layout.fillWidth: true
+                    horizontalAlignment: Qt.AlignHCenter
+                    clip: true
                 }
 
-                onClicked: {
-                    if (currentChannel){
-                        if (currentChannel.favourite)
-                            ChannelManager.removeFromFavourites(currentChannel._id)
-                        else{
-                            //console.log(currentChannel)
-                            ChannelManager.addToFavourites(currentChannel._id, currentChannel.name,
-                                                   currentChannel.title, currentChannel.info,
-                                                   currentChannel.logo, currentChannel.preview,
-                                                   currentChannel.game, currentChannel.viewers,
-                                                   currentChannel.online)
+                IconButtonFlat {
+                    id: favBtn
+                    text: "\ue87d"
+
+                    function update() {
+                        highlighted = currentChannel.favourite === true
+                    }
+
+                    onClicked: {
+                        if (currentChannel){
+                            if (currentChannel.favourite)
+                                ChannelManager.removeFromFavourites(currentChannel._id)
+                            else{
+                                //console.log(currentChannel)
+                                ChannelManager.addToFavourites(currentChannel._id, currentChannel.name,
+                                                               currentChannel.title, currentChannel.info,
+                                                               currentChannel.logo, currentChannel.preview,
+                                                               currentChannel.game, currentChannel.viewers,
+                                                               currentChannel.online)
+                            }
                         }
                     }
                 }
-            }
 
-            IconButtonFlat {
-                id: chatBtn
-                onClicked: {
-                    if (chatdrawer.position === 0.0)
-                        chatdrawer.open()
-                    else
-                        chatdrawer.close()
+                IconButtonFlat {
+                    id: chatBtn
+                    onClicked: {
+                        if (chatdrawer.position === 0.0)
+                            chatdrawer.open()
+                        else
+                            chatdrawer.close()
+                    }
+                    text: "\ue0ca"
                 }
-                text: "\ue0ca"
             }
         }
-    }
 
-    footer: ToolBar {
-        visible: root.headersVisible
-        Material.background: Material.background
+        ToolBar {
+            id: bottomBar
 
-        MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            id: footerArea
+            background: Rectangle {
+                color: "black"
+                opacity: 0.666
+            }
+
+            anchors {
+                bottom: parent.bottom
+                left: parent.left
+                right: parent.right
+            }
+
+            visible: root.headersVisible
+            Material.background: Material.background
+
+            RowLayout {
+                anchors {
+                    fill: parent
+                    rightMargin: 5
+                    leftMargin: 5
+                }
+
+                IconButtonFlat {
+                    id: playBtn
+                    text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                    onClicked: renderer.togglePause()
+                }
+
+                IconButtonFlat {
+                    id: resetBtn
+                    text: "\ue5d5"
+                    onClicked: reloadStream()
+                }
+
+                //spacer
+                Item {
+                    Layout.minimumWidth: 0
+                    Layout.fillWidth: true
+                }
+
+                IconButtonFlat {
+                    id: cropBtn
+                    text: "\ue3be"
+                    onClicked: fitToAspectRatio()
+                    visible: parent.width > 440
+                }
+
+                IconButtonFlat {
+                    id: fsBtn
+                    text: !g_fullscreen ? "\ue5d0" : "\ue5d1"
+                    onClicked: g_fullscreen = !g_fullscreen
+                    visible: parent.width > 390
+                }
+
+                IconButtonFlat {
+                    id: volumeBtn
+                    visible: parent.width > 340
+                    property real mutedValue: 100.0
+                    text: volumeSlider.value > 0 ?
+                              (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
+                            : "\ue04f"
+                    onClicked: {
+                        if (volumeSlider.value > 0) {
+                            mutedValue = volumeSlider.value
+                            volumeSlider.value = 0
+                        }
+                        else {
+                            volumeSlider.value = mutedValue
+                        }
+                    }
+                }
+
+                Slider {
+                    id: volumeSlider
+                    from: 0
+                    to: 100
+                    Layout.maximumWidth: 100
+
+                    Component.onCompleted: {
+                        value = Settings.volumeLevel
+                    }
+
+                    onValueChanged: {
+                        var val = value
+                        if (Qt.platform === "linux" && player_backend === "mpv")
+                            val = Math.round(Math.log(val) / Math.log(100))
+
+                        renderer.setVolume(val)
+                        Settings.volumeLevel = val;
+                    }
+                }
+
+                ComboBox {
+                    id: sourcesBox
+                    font.pointSize: 9
+                    font.bold: true
+                    flat: true
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 140
+                    Layout.minimumWidth: 100
+
+                    onCurrentIndexChanged: {
+                        Settings.quality = sourcesBox.model[currentIndex]
+                        loadAndPlay()
+                    }
+
+                    function selectItem(name) {
+                        for (var i in sourcesBox.model) {
+                            if (sourcesBox.model[i] === name) {
+                                currentIndex = i;
+                                return;
+                            }
+                        }
+                        //None found, attempt to select first item
+                        currentIndex = 0
+                    }
+                }
+            }
         }
 
         Slider {
             id: seekBar
             from: 0
             to: duration
-            visible: isVod
+            visible: isVod && headersVisible
             padding: 0
             anchors {
-                verticalCenter: parent.top
+                verticalCenter: bottomBar.top
                 left: parent.left
                 right: parent.right
             }
             onPressedChanged: {
                 if (!pressed)
                     seekTo(value)
-            }
-        }
-
-        RowLayout {
-            anchors {
-                fill: parent
-                rightMargin: 5
-                leftMargin: 5
-            }
-
-            IconButtonFlat {
-                id: playBtn
-                text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
-                onClicked: renderer.togglePause()
-            }
-
-            IconButtonFlat {
-                id: resetBtn
-                text: "\ue5d5"
-                onClicked: reloadStream()
-            }
-
-            //spacer
-            Item {
-                Layout.minimumWidth: 0
-                Layout.fillWidth: true
-            }
-
-            IconButtonFlat {
-                id: cropBtn
-                text: "\ue3be"
-                onClicked: fitToAspectRatio()
-                visible: parent.width > 440
-            }
-
-            IconButtonFlat {
-                id: fsBtn
-                text: !g_fullscreen ? "\ue5d0" : "\ue5d1"
-                onClicked: g_fullscreen = !g_fullscreen
-                visible: parent.width > 390
-            }
-
-            IconButtonFlat {
-                id: volumeBtn
-                visible: parent.width > 340
-                property real mutedValue: 100.0
-                text: volumeSlider.value > 0 ?
-                          (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
-                                                  : "\ue04f"
-                onClicked: {
-                    if (volumeSlider.value > 0) {
-                        mutedValue = volumeSlider.value
-                        volumeSlider.value = 0
-                    }
-                    else {
-                        volumeSlider.value = mutedValue
-                    }
-                }
-            }
-
-            Slider {
-                id: volumeSlider
-                from: 0
-                to: 100
-                Layout.maximumWidth: 100
-
-                Component.onCompleted: {
-                    value = Settings.volumeLevel
-                }
-
-                onValueChanged: {
-                    var val = value
-                    if (Qt.platform === "linux" && player_backend === "mpv")
-                        val = Math.round(Math.log(val) / Math.log(100))
-
-                    renderer.setVolume(val)
-                    Settings.volumeLevel = val;
-                }
-            }
-
-            ComboBox {
-                id: sourcesBox
-                font.pointSize: 9
-                font.bold: true
-                flat: true
-                Layout.fillWidth: true
-                Layout.maximumWidth: 140
-                Layout.minimumWidth: 100
-
-                onCurrentIndexChanged: {
-                    Settings.quality = sourcesBox.model[currentIndex]
-                    loadAndPlay()
-                }
-
-                function selectItem(name) {
-                    for (var i in sourcesBox.model) {
-                        if (sourcesBox.model[i] === name) {
-                            currentIndex = i;
-                            return;
-                        }
-                    }
-                    //None found, attempt to select first item
-                    currentIndex = 0
-                }
             }
         }
     }

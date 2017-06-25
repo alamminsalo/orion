@@ -122,7 +122,7 @@ Page {
                         model: Qt.fontFamilies()
                         width: parent.width
                         onActivated: {
-                            g_rootWindow.font.family = model[index]
+                            rootWindow.font.family = model[index]
                         }
                     }
 

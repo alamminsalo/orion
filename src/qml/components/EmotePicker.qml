@@ -261,11 +261,6 @@ Page {
     }
 
     function display(mX, mY){
-
-        if (g_contextMenuVisible){
-            return
-        }
-
         root.x = mX + 20
 
         if (root.x + root.width > Screen.width)

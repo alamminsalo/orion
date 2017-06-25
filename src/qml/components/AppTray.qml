@@ -8,16 +8,16 @@ SystemTrayIcon {
     visible: true
     iconSource: "qrc:/icon/orion.ico"
 
-    property bool appVisible: g_rootWindow.visible
+    property bool appVisible: rootWindow.visible
     
     menu: Menu {
         MenuItem {
             text: appVisible ? "Hide" : "Show"
             onTriggered: {
                 if (appVisible)
-                    g_rootWindow.hide()
+                    rootWindow.hide()
                 else
-                    g_rootWindow.show()
+                    rootWindow.show()
             }
         }
         MenuItem {

@@ -137,7 +137,7 @@ Page {
     }
 
     Connections {
-        target: g_rootWindow
+        target: rootWindow
 
         onHeightChanged: {
             chatList.positionViewAtEnd()

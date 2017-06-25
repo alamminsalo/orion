@@ -15,8 +15,11 @@ Drawer {
     property alias chat: chatview
     property alias pinned: chatview.pinned
     
-    height: edge !== Qt.BottomEdge ? view.height : 340
-    width: edge !== Qt.BottomEdge ? 330 : view.width
+    height: edge !== Qt.BottomEdge ? view.height :
+                                     // Fit playerview to 16:9
+                                     rootWindow.height - topbar.height - (rootWindow.width * 0.5625)
+
+    width: edge !== Qt.BottomEdge ? 330 : rootWindow.width
 
     y: header.visible ? header.height : 0
     interactive: !chatview.pinned
@@ -56,7 +59,7 @@ Drawer {
             }
             
             //Min/max
-            w = Math.max(200, Math.min(g_rootWindow.width, w))
+            w = Math.max(200, Math.min(rootWindow.width, w))
             chatdrawer.width = w
         }
     }
