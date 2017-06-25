@@ -281,7 +281,8 @@ Page {
         }
 
         onStatusChanged: {
-            PowerManager.screensaver = (renderer.status !== "PLAYING")
+            if (Qt.platform.os !== "android")
+                PowerManager.screensaver = (renderer.status !== "PLAYING")
         }
     }
 

@@ -25,12 +25,15 @@
 #include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "network/networkmanager.h"
-#include "power/power.h"
-#include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
 #include "model/ircchat.h"
 #include "network/httpserver.h"
 #include "model/viewersmodel.h"
+
+#ifndef Q_OS_ANDROID
+#include "power/power.h"
+#include "notification/notificationmanager.h"
+#endif
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
@@ -50,7 +53,9 @@ void registerQmlComponents(QObject *parent)
     qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
     qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
     qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
+#ifndef Q_OS_ANDROID
     qmlRegisterSingletonType<Power>("app.orion", 1, 0, "PowerManager", &Power::provider);
+#endif
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
 #ifdef MPV_PLAYER
@@ -121,8 +126,14 @@ int main(int argc, char *argv[])
 
     SettingsManager::getInstance()->setHiDpi(maxDevicePixelRatio > 1.0);
 
+#ifndef Q_OS_ANDROID
     //Init screensaver
     Power::initialize(static_cast<QApplication *>(&app));
+
+    //Set up notifications
+    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
+    QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
+#endif
 
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
@@ -132,10 +143,6 @@ int main(int argc, char *argv[])
 
     // Register qml components
     registerQmlComponents(&app);
-
-    //Set up notifications
-    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
-    QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
 
     // Load QML content
     engine.load(QUrl("qrc:/main.qml"));

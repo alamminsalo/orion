@@ -21,12 +21,10 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/power/power.cpp \
     src/util/runguard.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
-    src/notification/notificationmanager.cpp \
     src/model/ircchat.cpp \
     src/model/imageprovider.cpp \
     src/model/badgeimageprovider.cpp \
@@ -45,13 +43,11 @@ HEADERS  += src/model/channel.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
     src/util/m3u8parser.h \
-    src/power/power.h \
     src/util/runguard.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
     src/network/urls.h \
-    src/notification/notificationmanager.h \
     src/model/ircchat.h \
     src/model/imageprovider.h \
     src/network/httpserver.h \
@@ -60,6 +56,19 @@ HEADERS  += src/model/channel.h \
     src/model/viewersmodel.h \
     src/model/settingsmanager.h \
     src/model/singletonprovider.h
+
+!android: {
+    HEADERS += src/power/power.h \
+        src/notification/notificationmanager.h
+
+    SOURCES += src/power/power.cpp \
+        src/notification/notificationmanager.cpp
+}
+
+android: {
+    QT += gamepad
+    CONFIG += multimedia
+}
 
 #Backend for player, uses mpv as default
 !qtav: !multimedia {
@@ -77,9 +86,7 @@ mpv {
     HEADERS +=  src/player/mpvobject.h \
                 src/player/mpvrenderer.h
 
-    unix:!macx: LIBS += -lmpv
-    win32: LIBS += -L$$PWD/libs -lmpv
-    macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.17.0/lib -lmpv
+    LIBS += -lmpv
 }
 
 qtav {
@@ -105,7 +112,7 @@ CONFIG += c++11
 
 DISTFILES += src/qml/icon/orion.svg
 
-unix:!macx: {
+linux: {
     QT += dbus
 
     HEADERS += src/notification/notificationsender.h
@@ -161,8 +168,6 @@ win32: {
 
 }
 
-#CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
-
 macx: {
     QMAKE_INFO_PLIST = distfiles/Info.plist
 
@@ -176,9 +181,9 @@ macx: {
 
     INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
-}
 
-OBJECTIVE_SOURCES += \
-    src/notification/notificationsender.mm
+    OBJECTIVE_SOURCES += \
+        src/notification/notificationsender.mm
+}
 
 
