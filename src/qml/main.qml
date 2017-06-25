@@ -33,6 +33,7 @@ ApplicationWindow {
 
     property variant rootWindow: root
     property variant g_tooltip
+    property bool g_contextMenuVisible: false
     property bool g_fullscreen: false
     property var chat: chatdrawer.chat
 

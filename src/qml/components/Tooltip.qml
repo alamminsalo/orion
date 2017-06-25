@@ -71,7 +71,6 @@ Window {
     }
 
     function display(mX, mY){
-
         if (g_contextMenuVisible){
             return
         }

@@ -82,9 +82,14 @@ CommonGrid {
     Menu {
         id: menu
         modal: true
-        dim: false
 
         property var channel: undefined
+        onAboutToShow: {
+            g_contextMenuVisible = true
+        }
+        onAboutToHide: {
+            g_contextMenuVisible = false
+        }
 
         MenuItem {
             text: "Watch"
