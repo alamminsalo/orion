@@ -116,6 +116,13 @@ Page {
                 Column {
                     width: parent.width
 
+                    Switch {
+                        id: themeOption
+                        text: "Enable dark theme"
+                        checked: !Settings.lightTheme
+                        onClicked: Settings.lightTheme = !checked
+                    }
+
                     OptionCombo {
                         id: fontOption
                         text: "Font"

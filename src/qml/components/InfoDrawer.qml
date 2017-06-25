@@ -10,6 +10,7 @@ Drawer {
     property bool labelsVisible: width >= 400
     dim: false
     interactive: visible
+    Material.theme: Material.Dark
 
     function show(channelItem) {
         item = channelItem

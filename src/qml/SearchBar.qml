@@ -8,6 +8,9 @@ ToolBar {
     id: root
     padding: 20
     height: searchBtn.checked ? implicitHeight : 0
+    Material.theme: rootWindow.Material.theme
+    Material.background: rootWindow.Material.background
+    //Material.foreground: Material.Grey
 
     property alias text: _input.text
     property alias input: _input
@@ -19,9 +22,6 @@ ToolBar {
             easing.type: Easing.OutCubic
         }
     }
-    
-    Material.background: Material.background
-    Material.foreground: Material.Grey
     
     RowLayout {
         anchors.fill: parent

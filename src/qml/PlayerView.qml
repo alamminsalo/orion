@@ -30,6 +30,8 @@ Page {
     property int lastSetPosition
     property bool headersVisible: true
 
+    Material.theme: Material.Dark
+
     //Minimode, bit ugly
     property bool smallMode: false
     //property alias enableSmallMode: miniModeCheckBox.checked
@@ -346,7 +348,7 @@ Page {
         ToolBar {
             id: headerBar
             background: Rectangle {
-                color: "black"
+                color: Material.background
                 opacity: 0.666
             }
 
@@ -413,7 +415,7 @@ Page {
             id: bottomBar
 
             background: Rectangle {
-                color: "black"
+                color: Material.background
                 opacity: 0.666
             }
 

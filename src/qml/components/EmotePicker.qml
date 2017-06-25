@@ -230,7 +230,8 @@ Page {
     }
 
     header: ToolBar {
-        Material.background: Material.background
+        Material.theme: Material.Light
+        Material.background: "white"
         padding: 5
 
         TextField {
@@ -245,6 +246,7 @@ Page {
             }
             onAccepted: {
                 root._visibleItemClicked(0);
+                root.visible = false
             }
             Keys.onEscapePressed: {
                 //console.log("filterTextInput escape pressed");

@@ -28,6 +28,8 @@ Window {
     property string text
     property string img
 
+    Material.theme: Material.Dark
+
     Rectangle {
         id: rootRect
         anchors.fill: parent
@@ -48,7 +50,7 @@ Window {
         //Container for text
         Rectangle {
             id: header
-            opacity: 0.7
+            opacity: 0.666
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black"}
                 GradientStop { position: 0.5; color: "transparent" }

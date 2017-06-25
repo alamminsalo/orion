@@ -23,7 +23,7 @@ import app.orion 1.0
 
 Page {
     id: root
-    property bool pinned : pinBtn.checked || Settings.chatEdge === 2
+    property bool pinned : pinBtn.checked || Settings.chatEdge == 2
 
     onVisibleChanged: {
         if (visible) {
@@ -147,7 +147,8 @@ Page {
 
     // Tab bar header for switching chat/viewers
     header: ToolBar {
-        Material.background: Material.background
+        Material.theme: rootWindow.Material.theme
+        Material.background: rootWindow.Material.background
         visible: Settings.chatEdge !== 2
         RowLayout {
             anchors.fill: parent
@@ -201,6 +202,10 @@ Page {
                 if (visible) {
                     focusFilterInput();
                     height = 320
+                }
+                else {
+                    if (_input.visible)
+                        _input.forceActiveFocus()
                 }
             }
 
@@ -469,7 +474,8 @@ Page {
     }
 
     footer: ToolBar {
-        Material.background: Material.background
+        Material.theme: rootWindow.Material.theme
+        Material.background: rootWindow.Material.background
         Material.elevation: 10
         visible: chatContainer.currentIndex === 0 && !chat.isAnonymous
         padding: 5

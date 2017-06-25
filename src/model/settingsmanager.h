@@ -21,6 +21,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(QString quality READ quality WRITE setQuality NOTIFY qualityChanged)
     Q_PROPERTY(QString accessToken READ accessToken WRITE setAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool hasAccessToken READ hasAccessToken NOTIFY accessTokenChanged)
+    Q_PROPERTY(bool lightTheme READ lightTheme WRITE setLightTheme NOTIFY lightThemeChanged)
 
     bool mAlert;
     bool mCloseToTray;
@@ -33,6 +34,7 @@ class SettingsManager : public QObject
     QString mQuality;
     QString mAccessToken;
     int mChatEdge;
+    bool mLightTheme;
 
     bool mHiDpi;
 
@@ -72,6 +74,9 @@ public:
 
     void setHiDpi(bool dpi);
 
+    bool lightTheme() const;
+    void setLightTheme(bool lightTheme);
+
 signals:
     void alertChanged();
     void closeToTrayChanged();
@@ -82,6 +87,7 @@ signals:
     void offlineNotificationsChanged();
     void textScaleFactorChanged();
     void qualityChanged();
+    void lightThemeChanged();
     void accessTokenChanged(QString accessToken);
 
 public slots:

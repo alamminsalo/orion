@@ -25,6 +25,12 @@ Drawer {
     interactive: !chatview.pinned
     modal: interactive
     
+    onAboutToShow: {
+        if (g_fullscreen && edge === Qt.BottomEdge) {
+            Settings.chatEdge = 1
+        }
+    }
+
     onAboutToHide: {
         chatview.pinned = false
     }

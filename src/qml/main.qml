@@ -26,6 +26,8 @@ ApplicationWindow {
 
     //Application main font
     font.family: appFont.name
+    Material.accent: Settings.hasAccessToken ? "#ee3862" : "#888"
+    Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
     title: "Orion"
     visibility: g_fullscreen && Qt.platform.os !== "android"
@@ -55,9 +57,9 @@ ApplicationWindow {
         id: view
         anchors {
             fill: parent
-            leftMargin: chatdrawer.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-            rightMargin: chatdrawer.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
-            bottomMargin: Settings.chatEdge === 2 && chatdrawer.visible ? chatdrawer.height : 0
+            leftMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+            rightMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+            bottomMargin: Settings.chatEdge === 2 && chatdrawer.position > 0 ? chatdrawer.height : 0
         }
 
         onRequestSelectionChange: {
@@ -74,8 +76,8 @@ ApplicationWindow {
 
     footer: ToolBar {
         id: connectionErrorRectangle
-        leftPadding: chatdrawer.pinned && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-        rightPadding: chatdrawer.pinned && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+        leftPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+        rightPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         Material.background: Material.Amber
         visible: !Network.up
 

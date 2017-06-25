@@ -20,6 +20,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mAccessToken = "";
     mQuality = "source";
     mChatEdge = 1;
+    mLightTheme = false;
 
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
@@ -69,6 +70,10 @@ void SettingsManager::load()
 
     if(settings->contains("offlineNotifications")) {
         setOfflineNotifications(settings->value("offlineNotifications").toBool());
+    }
+
+    if (settings->contains("lightTheme")) {
+        setLightTheme(settings->value("lightTheme").toBool());
     }
 
     if (settings->contains("accessToken")) {
@@ -258,6 +263,22 @@ void SettingsManager::setHiDpi(bool dpi)
     mHiDpi = dpi;
     qDebug() << "hiDpi" << mHiDpi;
 }
+
+bool SettingsManager::lightTheme() const
+{
+    return mLightTheme;
+}
+
+void SettingsManager::setLightTheme(bool lightTheme)
+{
+    if (mLightTheme != lightTheme) {
+        mLightTheme = lightTheme;
+        settings->setValue("lightTheme", lightTheme);
+        qDebug() << "theme changed!";
+    }
+    emit lightThemeChanged();
+}
+
 
 QString SettingsManager::appName() const
 {

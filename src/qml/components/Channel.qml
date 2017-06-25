@@ -57,6 +57,7 @@ Item {
         width: height
         anchors.centerIn: parent
         padding: 0
+        Material.theme: rootWindow.Material.theme
 
         Rectangle {
             id: container
@@ -112,7 +113,7 @@ Item {
                 text: "\ue87d"
                 font.family: "Material Icons"
                 opacity: favourite ? 1 : 0
-                color: Material.color(Material.accent)
+                Material.foreground: Material.accent
                 font.pointSize: 14
                 visible: showFavIcon
                 anchors {
@@ -131,8 +132,8 @@ Item {
 
             Rectangle {
                 id: titleBg
-                color: "black"
-                opacity: 0.7
+                color: Material.background
+                opacity: 0.8
                 anchors {
                     bottom: parent.bottom
                     left: image.left
