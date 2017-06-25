@@ -106,9 +106,9 @@ void ImageProvider::bulkDownloadStep() {
             _bulkDownloadTimer.start();
             return;
         }
-//        else {
-//            qApp->processEvents();
-//        }
+        else {
+            qApp->processEvents();
+        }
     }
 
     emit bulkDownloadComplete();
