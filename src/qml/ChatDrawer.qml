@@ -8,30 +8,62 @@ import app.orion 1.0
 
 Drawer {
     id: chatdrawer
-    edge: Settings.chatEdge == 0 ?
-              Qt.LeftEdge : (Settings.chatEdge == 1 ?
-                                 Qt.RightEdge : Qt.BottomEdge)
 
     property alias chat: chatview
-    property alias pinned: chatview.pinned
-    
-    height: edge !== Qt.BottomEdge ? view.height :
-                                     // Fit playerview to 16:9
-                                     rootWindow.height - topbar.height - (rootWindow.width * 0.5625)
+    property bool isBottom: edge === Qt.BottomEdge
 
-    width: edge !== Qt.BottomEdge ? 330 : rootWindow.width
+    height: !isBottom ? view.height :
+                         // Fit playerview to 16:9
+                         rootWindow.height - topbar.height - (rootWindow.width * 0.5625)
+
+    width: !isBottom ? 330 : rootWindow.width
 
     y: header.visible ? header.height : 0
-    interactive: !chatview.pinned
+    interactive: !isBottom && !chatview.pinned
     modal: interactive
-    
-    onAboutToShow: {
-        if (g_fullscreen && edge === Qt.BottomEdge) {
-            Settings.chatEdge = 1
+
+    edge: Qt.RightEdge //Initial value
+    Connections {
+        target: Settings
+        onChatEdgeChanged: {
+            switch (Settings.chatEdge) {
+            case 0:
+                edge = Qt.LeftEdge;
+                break;
+            case 1:
+                edge = Qt.RightEdge;
+                break;
+            case 2:
+                edge = Qt.BottomEdge
+                break;
+            }
         }
     }
 
+    Component.onCompleted: {
+        var maybeShowChat = function(){
+            if (isBottom) {
+                visible = view.playerVisible && isPortraitMode && !appFullScreen
+            }
+        };
+        if (isMobile()) {
+            //Setup mobile connections
+            edge = Qt.BottomEdge;
+            interactive = false;
+            rootWindow.widthChanged.connect(maybeShowChat);
+            view.currentIndexChanged.connect(maybeShowChat);
+        }
+        rootWindow.appFullScreenChanged.connect(maybeShowChat)
+    }
+
+//    onAboutToShow: {
+//        if (appFullScreen && edge === Qt.BottomEdge) {
+//            Settings.chatEdge = 1
+//        }
+//    }
+
     onAboutToHide: {
+        if (!isBottom)
         chatview.pinned = false
     }
     
@@ -46,7 +78,8 @@ Drawer {
     MouseArea {
         width: 10
         cursorShape: Qt.SplitHCursor
-        visible: chatview.pinned && chatdrawer.edge !== Qt.BottomEdge
+        visible: !interactive && chatdrawer.edge !== Qt.BottomEdge
+        enabled: visible
         anchors {
             horizontalCenter: chatdrawer.edge === Qt.RightEdge ? parent.left : parent.right
             top: parent.top

@@ -13,7 +13,7 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Window 2.0
+import QtQuick.Window 2.2
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import "irc"
@@ -30,17 +30,23 @@ ApplicationWindow {
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
     title: "Orion"
-    visibility: g_fullscreen && Qt.platform.os !== "android"
+    visibility: appFullScreen && !isMobile()
                 ? Window.FullScreen : Window.AutomaticVisibility
 
     property variant rootWindow: root
     property variant g_tooltip
     property bool g_contextMenuVisible: false
-    property bool g_fullscreen: false
+    property bool appFullScreen: false
     property var chat: chatdrawer.chat
+    property bool isPortraitMode: height > width
 
     function fitToAspectRatio() {
         height = view.width * 0.5625 + topbar.height
+    }
+
+    function isMobile() {
+        //return true
+        return Qt.platform.os === "android"
     }
 
     onClosing: {
@@ -59,7 +65,13 @@ ApplicationWindow {
             fill: parent
             leftMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
             rightMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
-            bottomMargin: Settings.chatEdge === 2 && chatdrawer.position > 0 ? chatdrawer.height : 0
+            bottomMargin: chatdrawer.edge === Qt.BottomEdge && chatdrawer.position > 0 ? chatdrawer.height : 0
+        }
+
+        onCurrentIndexChanged: {
+            if (currentIndex !== 4 && isMobile()) {
+                chatdrawer.close()
+            }
         }
 
         onRequestSelectionChange: {
@@ -78,7 +90,7 @@ ApplicationWindow {
         id: connectionErrorRectangle
         leftPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
         rightPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
-        Material.background: Material.Amber
+        Material.background: Material.Primary
         visible: !Network.up
 
         Label {
@@ -88,7 +100,7 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
-        if (Qt.platform.os !== "android") {
+        if (!isMobile()) {
             height = Screen.height * 0.7
             width = height * 1.2
 

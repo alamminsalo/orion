@@ -36,6 +36,7 @@ Page {
 
             GroupBox {
                 title: "Notification settings"
+                visible: !isMobile()
                 padding: 10
                 Layout.fillWidth: true
                 Layout.maximumWidth: 500
@@ -80,6 +81,7 @@ Page {
 
             GroupBox {
                 title: "Tray options"
+                visible: !isMobile()
                 padding: 10
                 Layout.fillWidth: true
                 Layout.maximumWidth: 500
@@ -136,6 +138,7 @@ Page {
                     OptionCombo {
                         id: chatEdgeOption
                         text: "Chat position"
+                        visible: !isMobile()
                         model: ["Left", "Right", "Bottom"]
                         selection: Settings.chatEdge
                         onActivated: Settings.chatEdge = index

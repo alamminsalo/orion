@@ -19,7 +19,7 @@ import QtQuick.Controls.Material 2.1
 ToolBar {
     id: root
     property int selectedView: 0
-    visible : !g_fullscreen
+    visible : !appFullScreen
 
     //Base font color
     Material.foreground: Material.Grey

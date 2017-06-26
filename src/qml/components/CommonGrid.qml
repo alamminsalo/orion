@@ -80,13 +80,13 @@ GridView {
     MouseArea{
         id: mArea
         anchors.fill: parent
-        hoverEnabled: true
+        hoverEnabled: !isMobile()
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
         onPositionChanged: setFocus()
 
         onHoveredChanged: {
-            if (!containsMouse){
+            if (!containsMouse && g_tooltip){
                 g_tooltip.hide()
                 tooltipTimer.stop()
             }
@@ -99,7 +99,7 @@ GridView {
             running: false
             repeat: false
             onTriggered: {
-                if (tooltipEnabled){
+                if (g_tooltip && tooltipEnabled){
                     g_tooltip.hide()
 
                     var mouseCoords = getMouseCoords()

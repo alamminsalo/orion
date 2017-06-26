@@ -167,7 +167,11 @@ void SettingsManager::setMinimizeOnStartup(bool minimizeOnStartup)
 
 int SettingsManager::chatEdge() const
 {
+#ifdef Q_OS_ANDROID
+    return 2; // bottom
+#else
     return mChatEdge;
+#endif
 }
 
 void SettingsManager::setChatEdge(int chatEdge)

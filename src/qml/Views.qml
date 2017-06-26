@@ -20,6 +20,7 @@ import QtQuick.Layouts 1.3
 StackLayout {
     id: root
 
+    property bool playerVisible: playerView.visible
     signal requestSelectionChange(int index)
 
     function setSelection(sel) {

@@ -23,7 +23,7 @@ import app.orion 1.0
 
 Page {
     id: root
-    property bool pinned : pinBtn.checked || Settings.chatEdge == 2
+    property bool pinned: pinBtn.checked
 
     onVisibleChanged: {
         if (visible) {

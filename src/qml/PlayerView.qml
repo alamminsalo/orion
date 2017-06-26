@@ -30,7 +30,15 @@ Page {
     property int lastSetPosition
     property bool headersVisible: true
 
+    //Android only
+    onHeadersVisibleChanged: {
+        if (isMobile() && view.playerVisible) {
+            topbar.visible = headersVisible
+        }
+    }
+
     Material.theme: Material.Dark
+    //Material.background: rootWindow.Material.background
 
     //Minimode, bit ugly
     property bool smallMode: false
@@ -283,7 +291,7 @@ Page {
         }
 
         onStatusChanged: {
-            if (Qt.platform.os !== "android")
+            if (!isMobile())
                 PowerManager.screensaver = (renderer.status !== "PLAYING")
         }
     }
@@ -324,18 +332,37 @@ Page {
     MouseArea {
         id: pArea
         anchors.fill: playerArea
-        onDoubleClicked: g_fullscreen = !g_fullscreen
+
+        function refreshHeaders(){
+            if (!hideTimer.running)
+                root.headersVisible = true
+            hideTimer.restart()
+        }
+
+        onVisibleChanged: refreshHeaders()
+        onPositionChanged: refreshHeaders()
+
+        onClicked: clickTimer.restart()
+        onDoubleClicked: {
+            clickTimer.stop()
+            appFullScreen = !appFullScreen
+        }
         hoverEnabled: true
         propagateComposedEvents: true
         cursorShape: headersVisible ? Qt.ArrowCursor : Qt.BlankCursor
-        onPositionChanged: {
-            if (!timer.running)
-                root.headersVisible = true
-            timer.restart()
+
+        Timer {
+            //Dbl click timer
+            id: clickTimer
+            interval: 400
+            repeat: false
+            onTriggered: {
+                renderer.togglePause();
+            }
         }
 
         Timer {
-            id: timer
+            id: hideTimer
             interval: 2000
             running: false
             repeat: false
@@ -348,7 +375,7 @@ Page {
         ToolBar {
             id: headerBar
             background: Rectangle {
-                color: Material.background
+                color: root.Material.background
                 opacity: 0.7
             }
 
@@ -358,7 +385,6 @@ Page {
                 right: parent.right
             }
             visible: root.headersVisible
-            Material.background: Material.background
             leftPadding: 5
             rightPadding: 5
 
@@ -400,8 +426,9 @@ Page {
 
                 IconButtonFlat {
                     id: chatBtn
+                    visible: !isMobile()
                     onClicked: {
-                        if (chatdrawer.position === 0.0)
+                        if (chatdrawer.position <= 0)
                             chatdrawer.open()
                         else
                             chatdrawer.close()
@@ -415,7 +442,7 @@ Page {
             id: bottomBar
 
             background: Rectangle {
-                color: Material.background
+                color: root.Material.background
                 opacity: 0.7
             }
 
@@ -426,7 +453,6 @@ Page {
             }
 
             visible: root.headersVisible
-            Material.background: Material.background
 
             RowLayout {
                 anchors {
@@ -437,6 +463,7 @@ Page {
 
                 IconButtonFlat {
                     id: playBtn
+                    visible: !isMobile()
                     text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
                     onClicked: renderer.togglePause()
                 }
@@ -455,15 +482,15 @@ Page {
 
                 IconButtonFlat {
                     id: cropBtn
+                    visible: !isMobile() && parent.width > 440
                     text: "\ue3be"
                     onClicked: fitToAspectRatio()
-                    visible: parent.width > 440
                 }
 
                 IconButtonFlat {
                     id: fsBtn
-                    text: !g_fullscreen ? "\ue5d0" : "\ue5d1"
-                    onClicked: g_fullscreen = !g_fullscreen
+                    text: !appFullScreen ? "\ue5d0" : "\ue5d1"
+                    onClicked: appFullScreen = !appFullScreen
                     visible: parent.width > 390
                 }
 
