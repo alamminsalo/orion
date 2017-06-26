@@ -71,7 +71,7 @@ ApplicationWindow {
             if (chatdrawer.isBottom) {
                 if (!playerVisible)
                     chatdrawer.close()
-                else
+                else if (isMobile())
                     chatdrawer.open()
             }
         }

@@ -482,7 +482,7 @@ Page {
 
                 IconButtonFlat {
                     id: cropBtn
-                    visible: !isMobile() && parent.width > 440
+                    visible: !isMobile() && !chat.visible && parent.width > 440
                     text: "\ue3be"
                     onClicked: fitToAspectRatio()
                 }
