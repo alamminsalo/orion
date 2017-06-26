@@ -10,12 +10,11 @@ Drawer {
     id: chatdrawer
 
     property alias chat: chatview
-    property bool isBottom: edge === Qt.BottomEdge
+    property bool isBottom: Settings.chatEdge == 2
 
     height: !isBottom ? view.height :
                          // Fit playerview to 16:9
                          rootWindow.height - topbar.height - (rootWindow.width * 0.5625)
-
     width: !isBottom ? 330 : rootWindow.width
 
     y: header.visible ? header.height : 0
@@ -62,10 +61,10 @@ Drawer {
 //        }
 //    }
 
-    onAboutToHide: {
-        if (!isBottom)
-        chatview.pinned = false
-    }
+//    onAboutToHide: {
+//        if (!isBottom)
+//        chatview.pinned = false
+//    }
     
     Material.elevation: chatview.pinned ? 0 : 12
     dim: false

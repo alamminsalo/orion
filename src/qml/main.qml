@@ -45,7 +45,6 @@ ApplicationWindow {
     }
 
     function isMobile() {
-        //return true
         return Qt.platform.os === "android"
     }
 
@@ -65,12 +64,15 @@ ApplicationWindow {
             fill: parent
             leftMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
             rightMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
-            bottomMargin: chatdrawer.edge === Qt.BottomEdge && chatdrawer.position > 0 ? chatdrawer.height : 0
+            bottomMargin: chatdrawer.isBottom && chatdrawer.position > 0 ? chatdrawer.height : 0
         }
 
         onCurrentIndexChanged: {
-            if (currentIndex !== 4 && isMobile()) {
-                chatdrawer.close()
+            if (chatdrawer.isBottom) {
+                if (!playerVisible)
+                    chatdrawer.close()
+                else
+                    chatdrawer.open()
             }
         }
 

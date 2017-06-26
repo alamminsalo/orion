@@ -38,11 +38,6 @@ Page {
     }
 
     Material.theme: Material.Dark
-    //Material.background: rootWindow.Material.background
-
-    //Minimode, bit ugly
-    property bool smallMode: false
-    //property alias enableSmallMode: miniModeCheckBox.checked
 
     //Renderer interface
     property alias renderer: loader.item
@@ -179,12 +174,12 @@ Page {
             "_id": channel._id,
             "name": channel.name,
             "game": isVod ? vod.game : channel.game,
-                            "title": isVod ? vod.title : channel.title,
-                                             "online": channel.online,
-                                             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
-                                             "viewers": channel.viewers,
-                                             "logo": channel.logo,
-                                             "preview": channel.preview,
+            "title": isVod ? vod.title : channel.title,
+             "online": channel.online,
+             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
+             "viewers": channel.viewers,
+             "logo": channel.logo,
+             "preview": channel.preview
         }
 
         favBtn.update()
@@ -342,7 +337,12 @@ Page {
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
 
-        onClicked: clickTimer.restart()
+        onClicked: {
+            if (root.headersVisible)
+                clickTimer.restart()
+            else
+                refreshHeaders()
+        }
         onDoubleClicked: {
             clickTimer.stop()
             appFullScreen = !appFullScreen
@@ -354,7 +354,7 @@ Page {
         Timer {
             //Dbl click timer
             id: clickTimer
-            interval: 400
+            interval: 440
             repeat: false
             onTriggered: {
                 renderer.togglePause();
@@ -368,7 +368,7 @@ Page {
             repeat: false
             onTriggered: {
                 var itemUnder = pArea.childAt(pArea.mouseX, pArea.mouseY)
-                root.headersVisible = (itemUnder === bottomBar || itemUnder === headerBar)
+                root.headersVisible = pArea.containsMouse && (itemUnder === bottomBar || itemUnder === headerBar)
             }
         }
 
@@ -516,7 +516,7 @@ Page {
                     id: volumeSlider
                     from: 0
                     to: 100
-                    Layout.maximumWidth: 100
+                    Layout.maximumWidth: 90
 
                     Component.onCompleted: {
                         value = Settings.volumeLevel
