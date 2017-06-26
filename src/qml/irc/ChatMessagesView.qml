@@ -70,6 +70,21 @@ ListView {
             if (wheel.modifiers & Qt.ControlModifier) {
                 Settings.textScaleFactor += (0.1 * wheel.angleDelta.y / 120)
             }
+            else {
+                //Apply flick
+                list.flick(0, wheel.angleDelta.y * 5)
+            }
         }
+    }
+
+    IconButtonFlat {
+        anchors {
+            bottom: parent.bottom
+            right: parent.right
+            rightMargin: 5
+        }
+        visible: !list.atYEnd
+        onClicked: list.positionViewAtEnd()
+        text: "\ue258"
     }
 }
