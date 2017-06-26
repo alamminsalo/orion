@@ -12,7 +12,7 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.5
+import QtQuick 2.8
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
@@ -30,15 +30,15 @@ ApplicationWindow {
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
     title: "Orion"
-    visibility: appFullScreen && !isMobile()
-                ? Window.FullScreen : Window.AutomaticVisibility
+    visibility: appFullScreen ? Window.FullScreen : Window.AutomaticVisibility
 
     property variant rootWindow: root
     property variant g_tooltip
     property bool g_contextMenuVisible: false
-    property bool appFullScreen: false
+    property bool appFullScreen: isMobile() ? view.playerVisible : false
     property var chat: chatdrawer.chat
-    property bool isPortraitMode: height > width
+    property bool isPortraitMode: Screen.primaryOrientation === Qt.PortraitOrientation
+                                  || Screen.primaryOrientation === Qt.InvertedPortraitOrientation
 
     function fitToAspectRatio() {
         height = view.width * 0.5625 + topbar.height
@@ -71,8 +71,10 @@ ApplicationWindow {
             if (chatdrawer.isBottom) {
                 if (!playerVisible)
                     chatdrawer.close()
-                else if (isMobile())
-                    chatdrawer.open()
+                else if (isMobile()) {
+                    if (isPortraitMode)
+                        chatdrawer.open()
+                }
             }
         }
 

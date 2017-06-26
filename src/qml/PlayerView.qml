@@ -463,7 +463,6 @@ Page {
 
                 IconButtonFlat {
                     id: playBtn
-                    visible: !isMobile()
                     text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
                     onClicked: renderer.togglePause()
                 }
@@ -482,7 +481,7 @@ Page {
 
                 IconButtonFlat {
                     id: cropBtn
-                    visible: !isMobile() && !chat.visible && parent.width > 440
+                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
                     text: "\ue3be"
                     onClicked: fitToAspectRatio()
                 }
@@ -491,12 +490,11 @@ Page {
                     id: fsBtn
                     text: !appFullScreen ? "\ue5d0" : "\ue5d1"
                     onClicked: appFullScreen = !appFullScreen
-                    visible: parent.width > 390
                 }
 
                 IconButtonFlat {
                     id: volumeBtn
-                    visible: parent.width > 340
+                    visible: parent.width > 390
                     property real mutedValue: 100.0
                     text: volumeSlider.value > 0 ?
                               (volumeSlider.value > 50 ? "\ue050" : "\ue04d")

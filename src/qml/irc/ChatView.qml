@@ -26,7 +26,7 @@ Page {
     property bool pinned: pinBtn.checked
 
     onVisibleChanged: {
-        if (visible) {
+        if (visible && !isMobile()) {
             _input.forceActiveFocus()
         } else {
             _emotePicker.visible = false;

@@ -42,29 +42,18 @@ Drawer {
     Component.onCompleted: {
         var maybeShowChat = function(){
             if (isBottom) {
-                visible = view.playerVisible && isPortraitMode && !appFullScreen
+                visible = view.playerVisible && isPortraitMode// && (isMobile() || !appFullScreen)
             }
         };
         if (isMobile()) {
             //Setup mobile connections
             edge = Qt.BottomEdge;
             interactive = false;
-            rootWindow.widthChanged.connect(maybeShowChat);
+            rootWindow.isPortraitModeChanged.connect(maybeShowChat);
             view.currentIndexChanged.connect(maybeShowChat);
         }
         rootWindow.appFullScreenChanged.connect(maybeShowChat)
     }
-
-//    onAboutToShow: {
-//        if (appFullScreen && edge === Qt.BottomEdge) {
-//            Settings.chatEdge = 1
-//        }
-//    }
-
-//    onAboutToHide: {
-//        if (!isBottom)
-//        chatview.pinned = false
-//    }
     
     Material.elevation: chatview.pinned ? 0 : 12
     dim: false
