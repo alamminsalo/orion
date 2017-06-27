@@ -35,7 +35,7 @@ ApplicationWindow {
     property variant rootWindow: root
     property variant g_tooltip
     property bool g_contextMenuVisible: false
-    property bool appFullScreen: isMobile() ? view.playerVisible : false
+    property bool appFullScreen: isMobile() ? (view.playerVisible && !isPortraitMode) : false
     property var chat: chatdrawer.chat
     property bool isPortraitMode: Screen.primaryOrientation === Qt.PortraitOrientation
                                   || Screen.primaryOrientation === Qt.InvertedPortraitOrientation

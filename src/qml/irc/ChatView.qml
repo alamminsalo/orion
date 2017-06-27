@@ -201,10 +201,10 @@ Page {
             onVisibleChanged: {
                 if (visible) {
                     focusFilterInput();
-                    height = 320
+                    height = Math.min(320, parent.height)
                 }
                 else {
-                    if (_input.visible)
+                    if (!isMobile() && _input.visible)
                         _input.forceActiveFocus()
                 }
             }
