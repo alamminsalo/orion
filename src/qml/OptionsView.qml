@@ -65,17 +65,16 @@ Page {
                         }
                         text: "Show offline notifications"
                     }
+//                    OptionCombo {
+//                        id: alertPosition
+//                        width: parent.width
+//                        visible: Qt.platform.os === "windows"
+//                        selection: Settings.alertPosition
+//                        onActivated: Settings.alertPosition = index
 
-                    OptionCombo {
-                        id: alertPosition
-                        width: parent.width
-                        visible: Qt.platform.os === "windows"
-                        selection: Settings.alertPosition
-                        onActivated: Settings.alertPosition = index
-
-                        text: "Notification position"
-                        model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
-                    }
+//                        text: "Notification position"
+//                        model: ["Top Left", "Top Right", "Bottom Left", "Bottom Right"]
+//                    }
                 }
             }
 
