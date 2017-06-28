@@ -41,6 +41,15 @@ Drawer {
         }
     }
 
+    onAboutToShow: {
+        if (!isMobile()) {
+            if (appFullScreen && isBottom) {
+                //Bottom chat can't be visible while fullscreen
+                Settings.chatEdge = 1
+            }
+        }
+    }
+
     Component.onCompleted: {
         var maybeShowChat = function(){
             if (isBottom) {
