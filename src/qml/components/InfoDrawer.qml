@@ -63,6 +63,7 @@ Drawer {
             visible: labelsVisible
             height: parent.height - 60
             width: height
+            Layout.leftMargin: 10
             border {
                 color: Material.foreground
                 width: 0
