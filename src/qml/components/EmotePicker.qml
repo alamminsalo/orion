@@ -32,7 +32,7 @@ Page {
     property var _filterIndexMap
 
     onVisibleChanged:  {
-        if (visible) {
+        if (visible && !isMobile()) {
             _filterTextInput.forceActiveFocus()
         }
     }

@@ -25,7 +25,7 @@ ApplicationWindow {
     visible: true
 
     // Application main font
-    font.family: appFont.name
+    font.family: Settings.font || appFont.name
 
     // Style settings
     //Material.accent: Material.Cyan //Settings.hasAccessToken ? "#ee3862" : "#888"
@@ -144,8 +144,9 @@ ApplicationWindow {
         name: "Overpass Light"
     }
 
-    AppTray {
-        id: appTray
+    Loader {
+        active: !isMobile()
+        sourceComponent: AppTray{}
     }
 }
 

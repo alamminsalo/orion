@@ -42,5 +42,6 @@
         <file>ChatDrawer.qml</file>
         <file>fonts/overpass-light.otf</file>
         <file>components/RoundImage.qml</file>
+        <file>components/OptionButton.qml</file>
     </qresource>
 </RCC>

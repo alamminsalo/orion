@@ -136,6 +136,7 @@ Item {
                 id: title
                 text: root.title
                 elide: Text.ElideRight
+                font.family: rootWindow.font.family // Somehow doesn't get updated on font change...
                 anchors {
                     top: titleBg.top
                     bottom: parent.bottom

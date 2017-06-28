@@ -66,6 +66,8 @@ ListView {
     MouseArea {
         id: mArea
         anchors.fill: parent
+        visible: !isMobile()
+        enabled: visible
         onWheel: {
             if (wheel.modifiers & Qt.ControlModifier) {
                 Settings.textScaleFactor += (0.1 * wheel.angleDelta.y / 120)

@@ -21,6 +21,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mQuality = "source";
     mChatEdge = 1;
     mLightTheme = false;
+    mFont = "";
 
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
@@ -78,6 +79,10 @@ void SettingsManager::load()
 
     if (settings->contains("accessToken")) {
         setAccessToken(settings->value("accessToken").toString());
+    }
+
+    if (settings->contains("font")) {
+        setFont(settings->value("font").toString());
     }
 }
 
@@ -297,4 +302,18 @@ QString SettingsManager::appVersion() const
 QString SettingsManager::appPlayerBackend() const
 {
     return PLAYER_BACKEND;
+}
+
+QString SettingsManager::font() const
+{
+    return mFont;
+}
+
+void SettingsManager::setFont(const QString &font)
+{
+    if (mFont != font) {
+        mFont = font;
+        settings->setValue("font", font);
+    }
+    emit fontChanged();
 }

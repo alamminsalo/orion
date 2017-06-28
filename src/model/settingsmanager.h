@@ -22,6 +22,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(QString accessToken READ accessToken WRITE setAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool hasAccessToken READ hasAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool lightTheme READ lightTheme WRITE setLightTheme NOTIFY lightThemeChanged)
+    Q_PROPERTY(QString font READ font WRITE setFont NOTIFY fontChanged)
 
     bool mAlert;
     bool mCloseToTray;
@@ -35,6 +36,7 @@ class SettingsManager : public QObject
     QString mAccessToken;
     int mChatEdge;
     bool mLightTheme;
+    QString mFont;
 
     bool mHiDpi;
 
@@ -77,6 +79,9 @@ public:
     bool lightTheme() const;
     void setLightTheme(bool lightTheme);
 
+    QString font() const;
+    void setFont(const QString &font);
+
 signals:
     void alertChanged();
     void closeToTrayChanged();
@@ -89,6 +94,7 @@ signals:
     void qualityChanged();
     void lightThemeChanged();
     void accessTokenChanged(QString accessToken);
+    void fontChanged();
 
 public slots:
     void setAccessToken(const QString accessToken);

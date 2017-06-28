@@ -10,7 +10,6 @@ ToolBar {
     height: searchBtn.checked ? implicitHeight : 0
     Material.theme: rootWindow.Material.theme
     Material.background: rootWindow.Material.background
-    //Material.foreground: Material.Grey
 
     property alias text: _input.text
     property alias input: _input
@@ -33,8 +32,7 @@ ToolBar {
             visible: root.height === root.implicitHeight
             font.pointSize: 16
             onVisibleChanged:  {
-                if (visible)
-                    forceActiveFocus()
+                focus = visible
             }
         }
         
