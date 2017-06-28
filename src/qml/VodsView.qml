@@ -105,56 +105,10 @@ Item{
             playerView.getStreams(selectedChannel, clickedItem, lastPlaybackPosition == null? 0 : lastPlaybackPosition);
         }
 
-//        onItemRightClicked: {
-//            _menu.item = clickedItem
-
-//            var lastPlayed = getLastPlaybackPosition(selectedChannel, clickedItem);
-//            var haveLastPlayTime = lastPlayed != null;
-//            _furthestPlayedMenuItem.enabled = haveLastPlayTime;
-//            if (haveLastPlayTime) {
-//               _furthestPlayedMenuItem.text = "Watch video from " + Util.getTime(lastPlayed);
-//            } else {
-//               _furthestPlayedMenuItem.text = "Watch video from furthest played";
-//            }
-
-//            _menu.open()
-//        }
-
         onItemTooltipHover: {
-            g_tooltip.text = ""
-
-            g_tooltip.text += "<b>" + selectedItem.title + "</b><br/>";
-
-            g_tooltip.text += "Playing " + selectedItem.game + "<br/>"
-            if (selectedItem.duration)
-                g_tooltip.text += "Duration " + Util.getTime(selectedItem.duration) + "<br/>"
-
-            if (selectedItem.createdAt)
-                g_tooltip.text += (new Date(selectedItem.createdAt)).toLocaleString() + "<br/>";
-
-            g_tooltip.text += selectedItem.views + " views<br/>"
-
-            g_tooltip.img = selectedItem.preview
-            g_tooltip.display(rootWindow.x + mX, rootWindow.y + mY)
+            if (g_tooltip)
+                g_tooltip.displayChannel(item, rootWindow.x + mX, rootWindow.y + mY)
         }
-
-//        ContextMenu {
-//            id: _menu
-//            MenuItem {
-//                text: "Watch video from start"
-//                //text: "Watch;play"
-//                onTriggered: {
-//                    playerView.getStreams(selectedChannel, _menu.item, 0)
-//                }
-//            }
-
-//            MenuItem {
-//                id: _furthestPlayedMenuItem
-//                onTriggered: {
-
-//                }
-//            }
-//        }
 
         onAtYEndChanged: checkScroll()
 

@@ -17,16 +17,16 @@ import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
+import "../util.js" as Util
 
 Window {
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
 
-    height: 320
     width: 512
+    height: width * 0.5625
 
-    property string text
-    property string img
+    property alias text: _text.text
 
     Material.theme: Material.Dark
 
@@ -43,8 +43,8 @@ Window {
 
         Image {
             id: img
-            source: root.img
             anchors.fill: parent
+
         }
 
         //Container for text
@@ -62,14 +62,45 @@ Window {
         }
 
         Label {
-            id: text
-            text: root.text
+            id: _text
             wrapMode: Text.WordWrap
             width: parent.width
             maximumLineCount: 6
             elide: Text.ElideRight
             clip: true
         }
+    }
+
+    function displayChannel(channel, mX, mY) {
+        text = ""
+        text += "<b>" + channel.title + "</b><br/>";
+        text += "Playing " + channel.game + "<br/>"
+        if (channel.duration)
+            text += "Duration " + Util.getTime(channel.duration) + "<br/>"
+
+        if (channel.createdAt)
+            text += (new Date(channel.createdAt)).toLocaleString() + "<br/>";
+
+        text += channel.views + " views<br/>"
+        img.source = channel.preview
+
+        display(mX, mY)
+    }
+
+    function displayGame(game, mX, mY) {
+        text = ""
+
+        if (game.title){
+            text += game.title
+        }
+
+        if (game.viewers){
+            text += text.length > 0 ? "<br/>" : ""
+            text += game.viewers + " viewers"
+        }
+        img.source = game.preview
+
+        display(mX, mY)
     }
 
     function display(mX, mY){

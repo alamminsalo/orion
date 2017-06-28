@@ -18,12 +18,11 @@ import QtQuick 2.5
 GridView {
     id: root
 
-    property variant selectedItem
     property bool tooltipEnabled: !isMobile()
 
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
-    signal itemTooltipHover(int index, real mX, real mY)
+    signal itemTooltipHover(Item item, real mX, real mY)
     highlightFollowsCurrentItem: false
     cellWidth: width / Math.floor(width / 190) - 1
     cellHeight: cellWidth
@@ -69,7 +68,7 @@ GridView {
     onContentYChanged: setFocus()
     onContentXChanged: setFocus()
 
-    onSelectedItemChanged: {
+    onCurrentItemChanged: {
         if (g_tooltip)
             g_tooltip.hide()
         tooltipTimer.stop()
@@ -104,10 +103,10 @@ GridView {
                     var mX = mouseCoords.x
                     var mY = mouseCoords.y
 
-                    var index = root.indexAt(mX + root.contentX, mY + root.contentY)
+                    var item = root.itemAt(mX + root.contentX, mY + root.contentY)
 
-                    if (mArea.containsMouse && selectedItem){
-                        root.itemTooltipHover(index, mX, mY);
+                    if (item){
+                        root.itemTooltipHover(item, mX, mY);
                     }
                 }
             }
@@ -139,17 +138,6 @@ GridView {
                 var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
                 itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y);
             }
-        }
-    }
-
-    onCurrentItemChanged: {
-        if (selectedItem && typeof selectedItem.setHighlight === 'function')
-            selectedItem.setHighlight(false)
-
-        selectedItem = currentItem
-
-        if (selectedItem && typeof selectedItem.setHighlight === 'function'){
-            selectedItem.setHighlight(true)
         }
     }
 }

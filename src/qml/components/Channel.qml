@@ -163,12 +163,13 @@ Item {
         }
     }
 
-    function setHighlight(isActive){
+    property bool isCurrent: GridView.isCurrentItem || false
+    onIsCurrentChanged: {
         if (image.isLandscape)
-            image.height = isActive ? containerSize : imageSize
+            image.height = isCurrent ? containerSize : imageSize
         else
-            image.width = isActive ? containerSize : imageSize
+            image.width = isCurrent ? containerSize : imageSize
 
-        innerPane.Material.elevation = isActive ? 12 : 0
+        innerPane.Material.elevation = isCurrent ? 12 : 0
     }
 }

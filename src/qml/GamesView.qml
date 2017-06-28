@@ -94,19 +94,8 @@ Page {
         }
 
         onItemTooltipHover: {
-            g_tooltip.text = ""
-
-            if (selectedItem.title){
-                g_tooltip.text += selectedItem.title
-            }
-
-            if (selectedItem.viewers){
-                g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                g_tooltip.text += selectedItem.viewers + " viewers"
-            }
-
-            g_tooltip.img = selectedItem.preview
-            g_tooltip.display(rootWindow.x + mX, rootWindow.y + mY)
+            if (g_tooltip)
+                g_tooltip.displayGame(item, rootWindow.x + mX, rootWindow.y + mY)
         }
 
         onAtYEndChanged: checkScroll()
