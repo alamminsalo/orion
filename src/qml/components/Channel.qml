@@ -44,14 +44,6 @@ Item {
         }
     }
 
-//    Component.onCompleted: {
-//        imageShade.refresh()
-//    }
-
-//    onOnlineChanged: {
-//        imageShade.refresh()
-//    }
-
     Pane {
         id: innerPane
         Material.elevation: 0
@@ -104,10 +96,6 @@ Item {
                 anchors.fill: image
                 color: "#000000"
                 opacity: root.online ? 0 : .8
-
-//                function refresh(){
-//                    //opacity = root.online ? 0 : .8
-//                }
             }
 
             Label {
