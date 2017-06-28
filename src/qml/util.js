@@ -14,6 +14,21 @@
 
 .pragma library
 
+function copyChannel(channel) {
+    return {
+        _id: channel._id,
+        name: channel.name,
+        title: channel.title,
+        info: channel.info,
+        logo: channel.logo,
+        preview: channel.preview,
+        game: channel.game,
+        viewers: channel.viewers,
+        online: channel.online,
+        favourite: channel.favourite
+    };
+}
+
 //Returns time in HH:MM:SS presentation, arg in secs
 function getTime(totalSec){
 

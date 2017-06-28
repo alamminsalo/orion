@@ -3,6 +3,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Layouts 1.1
 import QtQuick.Controls.Material 2.1
 import app.orion 1.0
+import "../util.js" as Util
 
 Drawer {
     id: root
@@ -11,9 +12,10 @@ Drawer {
     dim: false
     interactive: visible
     Material.theme: Material.Dark
+    Material.foreground: "white"
 
     function show(channelItem) {
-        item = channelItem
+        item = Util.copyChannel(channelItem);
 
         img.source = ""
         title.text = "N/A"
@@ -94,6 +96,7 @@ Drawer {
                     font.pointSize: 20
                     text: "\ue038"
                     padding: 0
+                    flat: false
                     onClicked: {
                         if (item) {
                             playerView.getStreams(item)
@@ -114,6 +117,7 @@ Drawer {
                     padding: 0
                     text: "\ue87d"
                     highlighted: item ? item.favourite : false
+                    flat: false
                     onClicked: {
                         if (item) {
                             if (item.favourite === false)
@@ -122,8 +126,11 @@ Drawer {
                                                                item.logo, item.preview,
                                                                item.game, item.viewers,
                                                                item.online)
-                            else
+                            else {
                                 ChannelManager.removeFromFavourites(item._id)
+                            }
+                            item.favourite = !item.favourite
+                            item = item
                         }
                     }
                 }
@@ -140,6 +147,7 @@ Drawer {
                     font.pointSize: 20
                     padding: 0
                     text: "\ue04a"
+                    flat: false
                     onClicked: {
                         if (item) {
                             vodsView.search(item)
@@ -160,6 +168,7 @@ Drawer {
                     font.pointSize: 20
                     padding: 0
                     text: "\ue0ca"
+                    flat: false
                     onClicked: {
                         if (item) {
                             chat.joinChannel(item.name, item._id);

@@ -37,7 +37,7 @@ Page {
         }
     }
 
-    Material.theme: Material.Dark
+    Material.theme: rootWindow.Material.theme
 
     //Renderer interface
     property alias renderer: loader.item
@@ -174,12 +174,12 @@ Page {
             "_id": channel._id,
             "name": channel.name,
             "game": isVod ? vod.game : channel.game,
-            "title": isVod ? vod.title : channel.title,
-             "online": channel.online,
-             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
-             "viewers": channel.viewers,
-             "logo": channel.logo,
-             "preview": channel.preview
+                            "title": isVod ? vod.title : channel.title,
+                                             "online": channel.online,
+                                             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
+                                             "viewers": channel.viewers,
+                                             "logo": channel.logo,
+                                             "preview": channel.preview
         }
 
         favBtn.update()
@@ -374,9 +374,10 @@ Page {
 
         ToolBar {
             id: headerBar
+            Material.foreground: rootWindow.Material.foreground
             background: Rectangle {
                 color: root.Material.background
-                opacity: 0.7
+                opacity: 0.8
             }
 
             anchors {
@@ -384,20 +385,30 @@ Page {
                 left: parent.left
                 right: parent.right
             }
-            visible: root.headersVisible
-            leftPadding: 5
-            rightPadding: 5
+
+            clip: true
+            height: root.headersVisible ? 55 : 0
+
+            Behavior on height {
+                NumberAnimation {
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             RowLayout {
-                anchors.fill: parent
+                anchors {
+                    fill: parent
+                    leftMargin: 5
+                    rightMargin: 5
+                }
 
                 Label {
                     id: title
-                    font.bold: true
-                    font.pointSize: 10
+                    font.pointSize: 9
                     Layout.fillWidth: true
                     horizontalAlignment: Qt.AlignHCenter
                     clip: true
+                    font.bold: true
                 }
 
                 IconButtonFlat {
@@ -440,10 +451,10 @@ Page {
 
         ToolBar {
             id: bottomBar
-
+            Material.foreground: rootWindow.Material.foreground
             background: Rectangle {
                 color: root.Material.background
-                opacity: 0.7
+                opacity: 0.8
             }
 
             anchors {
@@ -452,7 +463,14 @@ Page {
                 right: parent.right
             }
 
-            visible: root.headersVisible
+            clip: true
+            height: root.headersVisible ? 55 : 0
+
+            Behavior on height {
+                NumberAnimation {
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             RowLayout {
                 anchors {
@@ -482,7 +500,7 @@ Page {
                 IconButtonFlat {
                     id: cropBtn
                     visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
-                    text: "\ue3be"
+                    text: "\ue3bc"
                     onClicked: fitToAspectRatio()
                 }
 

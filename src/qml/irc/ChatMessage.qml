@@ -36,8 +36,6 @@ Item {
     property var badgeEntries: JSON.parse(jsonBadgeEntries)
     property real highlightOpacity: 1.0
 
-    property string channelNoticeBackgroundColor: "#444444"
-
     property bool showUsernameLine: !isChannelNotice || !systemMessage || (pmsg && pmsg.length > 0)
     property bool showSystemMessageLine: isChannelNotice && systemMessage != ""
 
@@ -54,19 +52,6 @@ Item {
         })
     }
 
-    Rectangle {
-        anchors {
-            left: parent.left
-            right: parent.right
-            top: _systemMessageLine.top
-            bottom: _messageLineFlow.bottom
-        }
-
-        visible: isChannelNotice
-        color: root.channelNoticeBackgroundColor
-        opacity: root.highlightOpacity
-    }
-
     Label {
         id: _systemMessageLine
         anchors {
@@ -77,6 +62,8 @@ Item {
                 rightMargin: 2
             }
         }
+        font.bold: true
+        horizontalAlignment: Qt.AlignHCenter
 
         visible: showSystemMessageLine
         text: root.systemMessage

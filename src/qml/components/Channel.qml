@@ -36,19 +36,21 @@ Item {
     implicitWidth: 180
     height: width
 
+    Material.foreground: rootWindow.Material.foreground
+
     Behavior on Material.elevation {
         NumberAnimation {
             duration: 200
         }
     }
 
-    Component.onCompleted: {
-        imageShade.refresh()
-    }
+//    Component.onCompleted: {
+//        imageShade.refresh()
+//    }
 
-    onOnlineChanged: {
-        imageShade.refresh()
-    }
+//    onOnlineChanged: {
+//        imageShade.refresh()
+//    }
 
     Pane {
         id: innerPane
@@ -101,11 +103,11 @@ Item {
                 id: imageShade
                 anchors.fill: image
                 color: "#000000"
-                opacity: 0
+                opacity: root.online ? 0 : .8
 
-                function refresh(){
-                    opacity = root.online ? 0 : .8
-                }
+//                function refresh(){
+//                    //opacity = root.online ? 0 : .8
+//                }
             }
 
             Label {
