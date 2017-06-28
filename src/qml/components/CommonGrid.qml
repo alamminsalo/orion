@@ -47,7 +47,8 @@ GridView {
                 tooltipTimer.restart()
 
         } else {
-            g_tooltip.hide()
+            if (g_tooltip)
+                g_tooltip.hide()
         }
     }
 

@@ -338,14 +338,16 @@ Page {
         onPositionChanged: refreshHeaders()
 
         onClicked: {
-            if (root.headersVisible)
+            if (root.headersVisible && bottomBar.height > 50)
                 clickTimer.restart()
             else
                 refreshHeaders()
         }
         onDoubleClicked: {
-            clickTimer.stop()
-            appFullScreen = !appFullScreen
+            if (!isMobile()) {
+                clickTimer.stop()
+                appFullScreen = !appFullScreen
+            }
         }
         hoverEnabled: true
         propagateComposedEvents: true
@@ -506,6 +508,7 @@ Page {
 
                 IconButtonFlat {
                     id: fsBtn
+                    visible: !isMobile()
                     text: !appFullScreen ? "\ue5d0" : "\ue5d1"
                     onClicked: appFullScreen = !appFullScreen
                 }
