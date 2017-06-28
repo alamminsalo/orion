@@ -20,8 +20,14 @@ Drawer {
     y: header.visible ? header.height : 0
     interactive: !isBottom && !chatview.pinned
     modal: interactive
-
+    Material.elevation: chatview.pinned ? 0 : 12
+    dim: false
     edge: Qt.RightEdge //Initial value
+
+    onAboutToHide: {
+        chatview.pinned = false
+    }
+
     Connections {
         target: Settings
         onChatEdgeChanged: {
@@ -54,9 +60,6 @@ Drawer {
         }
         rootWindow.appFullScreenChanged.connect(maybeShowChat)
     }
-    
-    Material.elevation: chatview.pinned ? 0 : 12
-    dim: false
     
     ChatView {
         id: chatview
