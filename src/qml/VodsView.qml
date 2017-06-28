@@ -79,7 +79,6 @@ Item{
 
     CommonGrid {
         id: vodgrid
-        tooltipEnabled: true
 
         anchors {
             fill: parent

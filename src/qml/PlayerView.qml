@@ -512,7 +512,7 @@ Page {
 
                 IconButtonFlat {
                     id: volumeBtn
-                    visible: parent.width > 390
+                    visible: !isMobile() && parent.width > 390
                     property real mutedValue: 100.0
                     text: volumeSlider.value > 0 ?
                               (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
@@ -532,8 +532,8 @@ Page {
                     id: volumeSlider
                     from: 0
                     to: 100
+                    visible: !isMobile()
                     Layout.maximumWidth: 90
-
                     Component.onCompleted: {
                         value = Settings.volumeLevel
                     }

@@ -19,18 +19,15 @@ GridView {
     id: root
 
     property variant selectedItem
-    property bool tooltipEnabled: false
-    property string title
+    property bool tooltipEnabled: !isMobile()
 
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
     signal itemTooltipHover(int index, real mX, real mY)
-
     highlightFollowsCurrentItem: false
-
     cellWidth: width / Math.floor(width / 190) - 1
     cellHeight: cellWidth
-    maximumFlickVelocity: 1000
+    maximumFlickVelocity: 1200
 
     add: FadeUpTransition {}
 

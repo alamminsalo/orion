@@ -9,6 +9,7 @@ Drawer {
     id: root
     property var item: undefined
     property bool labelsVisible: width >= 400
+    property int textStyle: Text.Sunken
     dim: false
     interactive: visible
     Material.theme: Material.Dark
@@ -17,13 +18,15 @@ Drawer {
     function show(channelItem) {
         item = Util.copyChannel(channelItem);
 
-        img.source = ""
+        bgImage.source = ""
+        logoImg.source = ""
         title.text = "N/A"
         description.text = "N/A"
         viewerCount.text = "N/A"
 
         if (item) {
-            img.source = item.preview || item.logo || ""
+            bgImage.source = item.preview || ""
+            logoImg.source = item.logo || ""
             title.text = "<b>" + item.title + "</b> playing " + item.game
             viewerCount.text = item.viewers + " viewers"
             description.text = item.info
@@ -34,7 +37,7 @@ Drawer {
     height: 200
 
     Image {
-        id: img
+        id: bgImage
         fillMode: Image.PreserveAspectCrop
         anchors {
             fill: parent
@@ -43,9 +46,8 @@ Drawer {
 
     Rectangle {
         color: "black"
-        opacity:  0.5
+        opacity:  0.6
         anchors.fill: parent
-        visible: img.status == Image.Ready
         gradient: Gradient {
             GradientStop { position: 0.0; color: "transparent"}
             GradientStop { position: 0.8; color: "black" }
@@ -55,6 +57,17 @@ Drawer {
     RowLayout {
         anchors.fill: parent
         anchors.margins: 5
+
+        RoundImage {
+            id: logoImg
+            visible: labelsVisible
+            height: parent.height - 60
+            width: height
+            border {
+                color: Material.foreground
+                width: 0
+            }
+        }
 
         ColumnLayout {
             Layout.fillHeight: true
@@ -66,6 +79,7 @@ Drawer {
                 font.pointSize: 12
                 fontSizeMode: Text.Fit
                 wrapMode: Text.WordWrap
+                style: textStyle
             }
 
             Label {
@@ -74,6 +88,7 @@ Drawer {
                 font.pointSize: 12
                 fontSizeMode: Text.Fit
                 wrapMode: Text.WordWrap
+                style: textStyle
             }
 
             Label {
@@ -82,6 +97,7 @@ Drawer {
                 font.pointSize: 10
                 fontSizeMode: Text.Fit
                 wrapMode: Text.WordWrap
+                style: textStyle
             }
         }
 
@@ -107,6 +123,7 @@ Drawer {
                 Label {
                     visible: labelsVisible
                     text: "Watch"
+                    style: textStyle
                 }
             }
 
@@ -137,6 +154,7 @@ Drawer {
                 Label {
                     visible: labelsVisible
                     text: item && !item.favourite ? "Follow" : "Unfollow"
+                    style: textStyle
                 }
             }
 
@@ -158,6 +176,7 @@ Drawer {
                 Label {
                     visible: labelsVisible
                     text: "Videos"
+                    style: textStyle
                 }
             }
 
@@ -181,6 +200,7 @@ Drawer {
                 Label {
                     visible: labelsVisible
                     text: "Open chat"
+                    style: textStyle
                 }
             }
         }

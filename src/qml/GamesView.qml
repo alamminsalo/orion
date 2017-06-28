@@ -71,8 +71,6 @@ Page {
 
     CommonGrid {
         id: games
-        tooltipEnabled: true
-
         anchors.fill: parent
 
         model: g_games

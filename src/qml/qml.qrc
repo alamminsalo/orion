@@ -41,5 +41,6 @@
         <file>components/FadeUpTransition.qml</file>
         <file>ChatDrawer.qml</file>
         <file>fonts/overpass-light.otf</file>
+        <file>components/RoundImage.qml</file>
     </qresource>
 </RCC>

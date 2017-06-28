@@ -20,8 +20,6 @@ CommonGrid {
     id: root
     property bool showFavIcons : true
 
-    tooltipEnabled: true
-
     onItemClicked: {
         infoDrawer.show(clickedItem)
     }
