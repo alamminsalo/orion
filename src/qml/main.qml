@@ -135,8 +135,13 @@ ApplicationWindow {
     FontLoader {
         id: appFont
         //source: "fonts/overpass-regular.otf"
-        source: "fonts/NotoSans-Regular.ttf"
-        name: "Noto Sans"
+        //name: "Overpass Regular"
+
+        //source: "fonts/NotoSans-Regular.ttf"
+        //name: "Noto Sans"
+
+        source: "fonts/overpass-light.otf"
+        name: "Overpass Light"
     }
 
     AppTray {
