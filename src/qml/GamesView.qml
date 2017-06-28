@@ -113,6 +113,13 @@ Page {
 
         onAtYEndChanged: checkScroll()
 
+        onItemRightClicked: {
+            menu.item = clickedItem
+            menu.x = mX
+            menu.y = mY
+            menu.open()
+        }
+
         Timer {
             id: timer
             interval: 30000
@@ -127,6 +134,20 @@ Page {
             id: busyIndicator
             running: false
             anchors.centerIn: parent
+        }
+    }
+
+    Menu {
+        id: menu
+
+        property var item
+
+        MenuItem {
+            text: "Live channels"
+            onTriggered: {
+                if (menu.item)
+                    root.searchChannels(menu.item)
+            }
         }
     }
 }
