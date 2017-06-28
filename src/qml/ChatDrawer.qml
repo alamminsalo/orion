@@ -24,10 +24,6 @@ Drawer {
     dim: false
     edge: Qt.RightEdge //Initial value
 
-    onAboutToHide: {
-        chatview.pinned = false
-    }
-
     Connections {
         target: Settings
         onChatEdgeChanged: {

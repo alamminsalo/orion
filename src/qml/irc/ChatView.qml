@@ -23,7 +23,7 @@ import app.orion 1.0
 
 Page {
     id: root
-    property bool pinned: pinBtn.checked
+    property bool pinned: pinBtn.checked && chatdrawer.position > 0
 
     onVisibleChanged: {
         if (visible && !isMobile()) {
