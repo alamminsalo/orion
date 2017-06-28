@@ -107,7 +107,7 @@ Item{
 
         onItemTooltipHover: {
             if (g_tooltip)
-                g_tooltip.displayChannel(item, rootWindow.x + mX, rootWindow.y + mY)
+                g_tooltip.displayVod(item, rootWindow.x + mX, rootWindow.y + mY)
         }
 
         onAtYEndChanged: checkScroll()

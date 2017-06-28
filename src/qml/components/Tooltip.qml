@@ -75,6 +75,16 @@ Window {
         text = ""
         text += "<b>" + channel.title + "</b><br/>";
         text += "Playing " + channel.game + "<br/>"
+        text += channel.viewers + " viewers<br/>"
+        img.source = channel.preview
+
+        display(mX, mY)
+    }
+
+    function displayVod(channel, mX, mY) {
+        text = ""
+        text += "<b>" + channel.title + "</b><br/>";
+        text += "Playing " + channel.game + "<br/>"
         if (channel.duration)
             text += "Duration " + Util.getTime(channel.duration) + "<br/>"
 
