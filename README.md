@@ -13,7 +13,7 @@ Features:
 
 ## Screencaptures
 
-<img src="https://user-images.githubusercontent.com/5585454/27839943-cc1834ae-60fd-11e7-9b87-d3aaf5f7483c.png" width="128"> <img src="https://user-images.githubusercontent.com/5585454/27839974-fb7a6d3e-60fd-11e7-8638-9214fe5a1355.png" width="128"> <img src="https://user-images.githubusercontent.com/5585454/27840060-adef907a-60fe-11e7-88c5-72c83ec60d1d.png" width="128"><img src="https://user-images.githubusercontent.com/5585454/27840062-b2f14eba-60fe-11e7-9e04-7d12477519d7.png" width="128"><img src="https://user-images.githubusercontent.com/5585454/27840063-b6429fce-60fe-11e7-9e96-54d6d0657953.png" width="128">
+<img src="https://user-images.githubusercontent.com/5585454/27839943-cc1834ae-60fd-11e7-9b87-d3aaf5f7483c.png" width="128">	<img src="https://user-images.githubusercontent.com/5585454/27839974-fb7a6d3e-60fd-11e7-8638-9214fe5a1355.png" width="128">	<img src="https://user-images.githubusercontent.com/5585454/27840060-adef907a-60fe-11e7-88c5-72c83ec60d1d.png" width="128">	<img src="https://user-images.githubusercontent.com/5585454/27840062-b2f14eba-60fe-11e7-9e04-7d12477519d7.png" width="128">	<img src="https://user-images.githubusercontent.com/5585454/27840063-b6429fce-60fe-11e7-9e96-54d6d0657953.png" width="128">
 
 ## Dependencies
 
