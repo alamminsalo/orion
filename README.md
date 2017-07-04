@@ -13,13 +13,9 @@ Features:
 
 ## Screencaptures
 
-![0](https://user-images.githubusercontent.com/5585454/27404298-2e015506-56d6-11e7-937a-79556703ea31.png)
+![0](https://user-images.githubusercontent.com/5585454/27839943-cc1834ae-60fd-11e7-9b87-d3aaf5f7483c.png)
 
-![1](https://user-images.githubusercontent.com/5585454/27404242-031e59a6-56d6-11e7-8956-a9d63dcc6034.png)
-
-![2](https://user-images.githubusercontent.com/5585454/27404330-47ba6708-56d6-11e7-96d5-1283224a17dc.png)
-
-![3](https://user-images.githubusercontent.com/5585454/27404337-541ead74-56d6-11e7-91f4-ce3803a458a2.png)
+![1](https://user-images.githubusercontent.com/5585454/27839974-fb7a6d3e-60fd-11e7-8638-9214fe5a1355.png)
 
 ## Dependencies
 
