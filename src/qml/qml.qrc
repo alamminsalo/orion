@@ -37,10 +37,8 @@
         <file>components/InfoDrawer.qml</file>
         <file>irc/ChatMessagesView.qml</file>
         <file>components/AppTray.qml</file>
-        <file>fonts/overpass-regular.otf</file>
         <file>components/FadeUpTransition.qml</file>
         <file>ChatDrawer.qml</file>
-        <file>fonts/overpass-light.otf</file>
         <file>components/RoundImage.qml</file>
         <file>components/OptionButton.qml</file>
     </qresource>

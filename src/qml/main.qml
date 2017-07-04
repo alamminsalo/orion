@@ -134,14 +134,9 @@ ApplicationWindow {
 
     FontLoader {
         id: appFont
-        //source: "fonts/overpass-regular.otf"
-        //name: "Overpass Regular"
 
-        //source: "fonts/NotoSans-Regular.ttf"
-        //name: "Noto Sans"
-
-        source: "fonts/overpass-light.otf"
-        name: "Overpass Light"
+        source: "fonts/NotoSans-Regular.ttf"
+        name: "Noto Sans"
     }
 
     Loader {
