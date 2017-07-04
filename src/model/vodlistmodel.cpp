@@ -14,7 +14,8 @@
 
 #include "vodlistmodel.h"
 
-VodListModel::VodListModel()
+VodListModel::VodListModel(QObject *parent) :
+    QAbstractListModel(parent)
 {
 
 }

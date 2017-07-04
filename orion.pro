@@ -4,13 +4,17 @@
 #
 #-------------------------------------------------
 
-QT     += gui qml quick network widgets
+QT     += gui qml network widgets quickcontrols2
+
+QMAKE_CXXFLAGS += -Wall -O2
+
+CONFIG += c++11
+#CONFIG += console
 
 TARGET = orion
 
-VERSION = 1.5.1
+VERSION = 1.6.0
 DEFINES += APP_VERSION=\\\"v$$VERSION\\\"
-
 DEFINES += APP_NAME=\\\"Orion\\\"
 
 SOURCES += src/main.cpp\
@@ -22,16 +26,17 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/power/power.cpp \
-    src/systray.cpp \
     src/util/runguard.cpp \
-    src/customapp.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
-    src/notification/notificationmanager.cpp \
     src/model/ircchat.cpp \
-    src/model/imageprovider.cpp
+    src/model/imageprovider.cpp \
+    src/model/badgeimageprovider.cpp \
+    src/model/badgecontainer.cpp \
+    src/model/viewersmodel.cpp \
+    src/model/settingsmanager.cpp \
+    src/network/httpserver.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -43,18 +48,34 @@ HEADERS  += src/model/channel.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
     src/util/m3u8parser.h \
-    src/power/power.h \
-    src/systray.h \
     src/util/runguard.h \
-    src/customapp.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
     src/network/urls.h \
-    src/notification/notificationmanager.h \
     src/model/ircchat.h \
     src/model/imageprovider.h \
-    src/network/httpserver.h
+    src/network/httpserver.h \
+    src/model/badgeimageprovider.h \
+    src/model/badgecontainer.h \
+    src/model/viewersmodel.h \
+    src/model/settingsmanager.h \
+    src/model/singletonprovider.h
+
+!android: {
+    HEADERS += src/power/power.h \
+        src/notification/notificationmanager.h
+
+    SOURCES += src/power/power.cpp \
+        src/notification/notificationmanager.cpp
+}
+
+android: {
+    QT += gamepad
+    QT -= widgets
+    CONFIG += multimedia
+    LIBS += -lssl -lcrypto
+}
 
 #Backend for player, uses mpv as default
 !qtav: !multimedia {
@@ -65,42 +86,42 @@ mpv {
     message(Selecting mpv as backend)
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
+    DEFINES += PLAYER_BACKEND=\\\"mpv\\\"
     SOURCES +=  src/player/mpvrenderer.cpp \
                 src/player/mpvobject.cpp
 
     HEADERS +=  src/player/mpvobject.h \
                 src/player/mpvrenderer.h
 
-    unix:!macx: LIBS += -lmpv
-    win32: LIBS += -L$$PWD/libs -lmpv
-    macx: LIBS += -L$$PWD/../../../../usr/local/Cellar/mpv/0.25.0/lib -lmpv
+    LIBS += -lmpv
 }
 
 qtav {
     message(Selecting qtav as backend)
     QT += av
-    DEFINES += QTAV_PLAYER
+    DEFINES += PLAYER_BACKEND=\\\"qtav\\\"
 }
 
 multimedia {
     message(Selecting qt multimedia as backend)
     QT += multimedia
-    DEFINES += MULTIMEDIA_PLAYER
+    DEFINES += PLAYER_BACKEND=\\\"multimedia\\\"
     macx: {
         LIBS += -framework AVFoundation
         INCLUDEPATH += /System/Library/Frameworks/AVFoundation.framework/Versions/Current/Headers
     }
 }
 
-QMAKE_CXXFLAGS += -Wall -O2
-
-CONFIG += c++11
-#CONFIG += console
-
 DISTFILES += src/qml/icon/orion.svg \
-    src/qml/player.html
+    android/AndroidManifest.xml \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat
 
-unix:!macx: {
+linux:!android: {
     QT += dbus
 
     HEADERS += src/notification/notificationsender.h
@@ -156,8 +177,6 @@ win32: {
 
 }
 
-#CONFIG(release): DEFINES += QT_NO_DEBUG_OUTPUT
-
 macx: {
     QMAKE_INFO_PLIST = distfiles/Info.plist
 
@@ -172,9 +191,11 @@ macx: {
     INCLUDEPATH += /System/Library/Frameworks/Foundation.framework/Versions/C/Headers
     INCLUDEPATH += /System/Library/Frameworks/AppKit.framework/Versions/C/Headers
     INCLUDEPATH += /usr/local/include
+
+    OBJECTIVE_SOURCES += \
+        src/notification/notificationsender.mm
 }
 
-OBJECTIVE_SOURCES += \
-    src/notification/notificationsender.mm
+ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 

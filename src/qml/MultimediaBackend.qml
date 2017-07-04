@@ -14,9 +14,6 @@
 
 import QtQuick 2.5
 import QtMultimedia 5.5
-import "components"
-import "irc"
-import "styles.js" as Styles
 
 /* Interface for backend Multimedia
 
@@ -47,6 +44,8 @@ Item {
 
     function load(src, start) {
         console.log("Loading src", src, start)
+        status = "BUFFERING"
+
         stop();
 
         if (start >= 0) {
@@ -121,22 +120,28 @@ Item {
     MediaPlayer {
         id: renderer
 
+        onError: {
+            console.error(errorString)
+        }
+
+        onStatusChanged: {
+            if (status === MediaPlayer.Buffering)
+                root.status = "BUFFERING"
+        }
+
         onStopped: {
             root.status = "STOPPED"
             root.playingStopped()
-            g_powerman.setScreensaver(true);
         }
 
         onPaused: {
             root.status = "PAUSED"
             root.playingPaused()
-            g_powerman.setScreensaver(true);
         }
 
         onPlaying: {
             root.status = "PLAYING"
             root.playingResumed()
-            g_powerman.setScreensaver(false);
         }
 
         onPositionChanged: {

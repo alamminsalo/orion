@@ -13,17 +13,14 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
+import QtQuick.Layouts 1.1
 import "components"
-import "irc"
-import "styles.js" as Styles
 
-Item {
-    anchors {
-        left: parent.left
-        bottom: parent.bottom
-    }
+import app.orion 1.0
 
+Page {
     property int duration: -1
     property var currentChannel
     property var streamMap
@@ -31,33 +28,16 @@ Item {
     property bool streamOnline: true
     property string curVodId
     property int lastSetPosition
+    property bool headersVisible: true
 
-    property bool cursorHidden: false
-    property string currentQualityName
-
-    //Minimode, bit ugly
-    property bool smallMode: false
-    property alias enableSmallMode: miniModeCheckBox.checked
-
-    Component.onCompleted: {
-        var savedQuality = g_cman.getQuality();
-        console.log("Loaded saved quality", savedQuality);
-        if (savedQuality) {
-            currentQualityName = savedQuality;
+    //Android only
+    onHeadersVisibleChanged: {
+        if (isMobile() && view.playerVisible) {
+            topbar.visible = headersVisible
         }
     }
 
-    //Animations, need to be declared BEFORE width, height binds
-    Behavior on width {
-        enabled: smallMode
-        NumberAnimation {
-            duration: 250
-            easing.type: Easing.OutCubic
-        }
-    }
-
-    width: smallMode ? parent.width / 3 : parent.width
-    height: smallMode ? width * 0.5625 : parent.height
+    Material.theme: rootWindow.Material.theme
 
     //Renderer interface
     property alias renderer: loader.item
@@ -67,18 +47,14 @@ Item {
     //Fix minimode header bar
     clip: true
 
-    function isPlaying() {
-        return (renderer.status === "PLAYING")
-    }
-
     Connections {
-        target: g_cman
+        target: ChannelManager
 
         onAddedChannel: {
             console.log("Added channel")
             if (currentChannel && currentChannel._id == chanid){
                 currentChannel.favourite = true
-                _favIcon.update()
+                favBtn.update()
             }
         }
 
@@ -86,7 +62,7 @@ Item {
             console.log("Deleted channel")
             if (currentChannel && currentChannel._id == chanid){
                 currentChannel.favourite = false
-                _favIcon.update()
+                favBtn.update()
             }
         }
 
@@ -96,12 +72,12 @@ Item {
     }
 
     Connections {
-        target: netman
+        target: Network
 
         onNetworkAccessChanged: {
             if (up && currentChannel && !renderer.status !== "PAUSED") {
                 //console.log("Network up. Resuming playback...")
-                loadAndPlay(currentQualityName)
+                loadAndPlay()
             }
         }
 
@@ -110,7 +86,7 @@ Item {
             if (channelId === currentChannel._id) {
                 if (online && !root.streamOnline) {
                     console.log("Stream back online, resuming playback")
-                    loadAndPlay(currentQualityName)
+                    loadAndPlay()
                 }
                 root.streamOnline = online
             }
@@ -138,24 +114,21 @@ Item {
         repeat: true
         onTriggered: {
             if (currentChannel && currentChannel._id)
-                netman.getStream(currentChannel._id)
+                Network.getStream(currentChannel._id)
         }
     }
 
 
-    function loadAndPlay(streamName){
+    function loadAndPlay(){
         var description = setWatchingTitle();
 
         var start = !isVod ? -1 : seekBar.position
 
-        var url = streamMap[streamName]
+        var url = streamMap[Settings.quality]
 
         console.debug("Loading: ", url)
 
         renderer.load(url, start, description)
-
-        currentQualityName = streamName
-        g_cman.setQuality(streamName);
     }
 
     function getStreams(channel, vod, startPos){
@@ -164,9 +137,6 @@ Item {
 
     function getChat(channel) {
         getChannel(channel, null, false, 0);
-        if (chatview.status == 0) {
-            chatview.status++;
-        }
     }
 
     function getChannel(channel, vod, wantVideo, startPos){
@@ -179,13 +149,13 @@ Item {
 
         if (wantVideo) {
             if (!vod || typeof vod === "undefined") {
-                g_cman.findPlaybackStream(channel.name)
+                ChannelManager.findPlaybackStream(channel.name)
                 isVod = false
 
                 duration = -1
             }
             else {
-                g_vodmgr.getBroadcasts(vod._id)
+                VodManager.getBroadcasts(vod._id)
                 isVod = true
                 root.curVodId = vod._id
                 root.lastSetPosition = startPos
@@ -194,7 +164,7 @@ Item {
 
                 console.log("Setting up VOD, duration " + vod.duration)
 
-                seekBar.setPosition(startPos, duration)
+                seekBar.value = startPos
             }
         } else {
             isVod = false;
@@ -206,14 +176,13 @@ Item {
             "game": isVod ? vod.game : channel.game,
                             "title": isVod ? vod.title : channel.title,
                                              "online": channel.online,
-                                             "favourite": channel.favourite || g_cman.containsFavourite(channel._id),
+                                             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
                                              "viewers": channel.viewers,
                                              "logo": channel.logo,
-                                             "preview": channel.preview,
+                                             "preview": channel.preview
         }
 
-        _favIcon.update()
-        _label.visible = false
+        favBtn.update()
         setWatchingTitle()
 
         if (isVod) {
@@ -226,19 +195,19 @@ Item {
             } else {
                 var vodIdNum = parseInt(vod._id.substring(1));
                 console.log("replaying chat for vod", vodIdNum, "starting at", startEpochTime);
-                chatview.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
+                chat.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
             }
         } else {
-            chatview.joinChannel(currentChannel.name, currentChannel._id);
+            chat.joinChannel(currentChannel.name, currentChannel._id);
         }
 
         pollTimer.restart()
 
-        requestSelectionChange(5)
+        requestSelectionChange(4)
     }
 
     function setHeaderText(text) {
-        headerText.text = text
+        title.text = text
     }
 
     function setWatchingTitle(){
@@ -250,108 +219,88 @@ Item {
     }
 
     function loadStreams(streams) {
-
-        console.log("DEBUG STREAMS")
         var sourceNames = []
         for (var k in streams) {
-            //console.log(k + " => " + streams[k])
-            sourceNames.push(k)
+            sourceNames.splice(0, 0, k) //revert order
         }
 
         streamMap = streams
+        sourcesBox.model = sourceNames
 
-        sourcesBox.entries = sourceNames
-
-        if (currentQualityName && streamMap[currentQualityName]) {
-            sourcesBox.selectItem(currentQualityName);
-            loadAndPlay(currentQualityName)
-        } else {
-            sourcesBox.selectFirst();
-        }
+        sourcesBox.selectItem(Settings.quality);
+        loadAndPlay()
     }
 
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
-            chatview.playerSeek(position)
+            chat.playerSeek(position)
             renderer.seekTo(position)
         }
     }
 
     function reloadStream() {
         renderer.stop()
-        loadAndPlay(currentQualityName)
+        loadAndPlay()
     }
 
     Connections {
-        target: g_vodmgr
+        target: VodManager
         onStreamsGetFinished: {
             loadStreams(items)
         }
     }
 
     Connections {
-        target: g_rootWindow
+        target: rootWindow
         onClosing: {
-            renderer.pause()
+            renderer.stop()
         }
     }
 
     Connections {
         target: renderer
 
-        onStatusChanged: {
-            //console.log("Renderer status changed to " + renderer.status)
-            togglePause.icon = renderer.status != "PLAYING" ? "play" : "pause"
-        }
-
-        onVolumeChanged: {
-            //console.log("Renderer volume changed to " + renderer.volume)
-        }
-
         onPositionChanged: {
             var newPos = renderer.position;
-            chatview.playerPositionUpdate(newPos);
+            chat.playerPositionUpdate(newPos);
             if (root.isVod) {
                 if (Math.abs(newPos - root.lastSetPosition) > 10) {
                     root.lastSetPosition = newPos;
-                    g_cman.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
+                    VodManager.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
                 }
             }
-            seekBar.setPosition(newPos, duration);
+            seekBar.value = newPos
         }
 
         onPlayingResumed: {
             setWatchingTitle()
-            spinner.visible = false
         }
 
         onPlayingPaused: {
             setHeaderText("Paused")
-            spinner.visible = false
         }
 
         onPlayingStopped: {
             setHeaderText("Playback stopped")
-            spinner.visible = false
+        }
+
+        onStatusChanged: {
+            if (!isMobile())
+                PowerManager.screensaver = (renderer.status !== "PLAYING")
         }
     }
 
     Item {
         id: playerArea
-        anchors {
-            top: parent.top
-            left: g_cman.swapChat ? (chatview.status == 1 ? chatview.right : parent.left) : parent.left
-            right: g_cman.swapChat ? (parent.right) : (chatview.status == 1 ? chatview.left : parent.right)
-            bottom: parent.bottom
-        }
+        anchors.fill: parent
 
         Loader {
             id: loader
             anchors.fill: parent
 
             source: {
-                switch (player_backend) {
+                switch (Settings.appPlayerBackend()) {
                 case "mpv":
                     return "MpvBackend.qml";
 
@@ -369,63 +318,68 @@ Item {
             }
         }
 
-        SpinnerIcon {
-            id: spinner
+        BusyIndicator {
             anchors.centerIn: parent
-            iconSize: parent.width * 0.1
-            visible: false
+            running: renderer.status === "BUFFERING"
         }
     }
 
-    Item {
-        //Player controls overlay
-        z: playerArea.z + 1
+    MouseArea {
+        id: pArea
+        anchors.fill: playerArea
 
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-            left: g_cman.swapChat ? chatview.right : parent.left
-            right: g_cman.swapChat ? parent.right : chatview.left
+        function refreshHeaders(){
+            if (!hideTimer.running)
+                root.headersVisible = true
+            hideTimer.restart()
         }
 
-        MouseArea{
-            anchors.fill: parent
-            hoverEnabled: true
-            propagateComposedEvents: false
+        onVisibleChanged: refreshHeaders()
+        onPositionChanged: refreshHeaders()
 
-            //Hide cursor when headers hide
-            cursorShape: cursorHidden ? Qt.BlankCursor : Qt.ArrowCursor
-
-            onClicked: {
-                if (sourcesBox.open){
-                    sourcesBox.close()
-                }
+        onClicked: {
+            if (root.headersVisible && bottomBar.height > 50)
+                clickTimer.restart()
+            else
+                refreshHeaders()
+        }
+        onDoubleClicked: {
+            if (!isMobile()) {
+                clickTimer.stop()
+                appFullScreen = !appFullScreen
             }
+        }
+        hoverEnabled: true
+        propagateComposedEvents: true
+        cursorShape: headersVisible ? Qt.ArrowCursor : Qt.BlankCursor
 
-            onDoubleClicked: {
-                if (smallMode) {
-                    requestSelectionChange(5)
-                } else {
-                    g_fullscreen = !g_fullscreen
-                }
-            }
-
-            onPositionChanged: {
-                header.show()
-                footer.show()
-                headerTimer.restart()
+        Timer {
+            //Dbl click timer
+            id: clickTimer
+            interval: 440
+            repeat: false
+            onTriggered: {
+                renderer.togglePause();
             }
         }
 
-        PlayerHeader {
-            id: header
-            visible: !smallMode
+        Timer {
+            id: hideTimer
+            interval: 2000
+            running: false
+            repeat: false
+            onTriggered: {
+                var itemUnder = pArea.childAt(pArea.mouseX, pArea.mouseY)
+                root.headersVisible = pArea.containsMouse && (itemUnder === bottomBar || itemUnder === headerBar)
+            }
+        }
 
-            MouseArea {
-                id: mAreaHeader
-                hoverEnabled: true
-                anchors.fill: parent
-                propagateComposedEvents: false
+        ToolBar {
+            id: headerBar
+            Material.foreground: rootWindow.Material.foreground
+            background: Rectangle {
+                color: root.Material.background
+                opacity: 0.8
             }
 
             anchors {
@@ -434,143 +388,76 @@ Item {
                 right: parent.right
             }
 
-            Text {
-                id: headerText
-                anchors {
-                    left: parent.left
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: miniModeContainer.left
-                    margins: dp(5)
-                }
-                fontSizeMode: Text.Fit
-                verticalAlignment: Text.AlignVCenter
-                color: Styles.textColor
-                font.pixelSize: Styles.titleFont.bigger
-                z: root.z + 1
-            }
+            clip: true
+            height: root.headersVisible ? 55 : 0
 
-            Item {
-                id: miniModeContainer
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: favourite.left
-                    rightMargin: dp(5)
-                }
-                width: dp(50)
-
-                IconButton {
-                    id: miniModeCheckBox
-                    icon: "minimode"
-                    checkable: true
-                    checked: true
-
-                    anchors.centerIn: parent
-                }
-
-                ToolTip {
-                    visible: miniModeCheckBox.mouseArea.containsMouse
-                    delay: 666
-                    text: "Toggle floating player"
+            Behavior on height {
+                NumberAnimation {
+                    easing.type: Easing.OutCubic
                 }
             }
 
-            Item {
-                id: favourite
+            RowLayout {
                 anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: chatButton.left
-                    rightMargin: dp(5)
-                }
-                width: dp(50)
-
-                Icon {
-                    id: _favIcon
-                    icon: "fav"
-
-                    anchors.centerIn: parent
-
-                    function update(){
-                        if (currentChannel)
-                            iconColor= currentChannel.favourite ? Styles.purple : Styles.iconColor
-                        else
-                            iconColor= Styles.iconColor
-                    }
+                    fill: parent
+                    leftMargin: 5
+                    rightMargin: 5
                 }
 
-                MouseArea {
-                    id: favArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    onHoveredChanged: {
-                        if (containsMouse){
-                            _favIcon.iconColor = Styles.white
-                        } else {
-                            _favIcon.update()
-                        }
+                Label {
+                    id: title
+                    font.pointSize: 9
+                    Layout.fillWidth: true
+                    horizontalAlignment: Qt.AlignHCenter
+                    clip: true
+                    font.bold: true
+                }
+
+                IconButtonFlat {
+                    id: favBtn
+                    text: "\ue87d"
+
+                    function update() {
+                        highlighted = currentChannel.favourite === true
                     }
 
                     onClicked: {
                         if (currentChannel){
                             if (currentChannel.favourite)
-                                g_cman.removeFromFavourites(currentChannel._id)
+                                ChannelManager.removeFromFavourites(currentChannel._id)
                             else{
                                 //console.log(currentChannel)
-                                g_cman.addToFavourites(currentChannel._id, currentChannel.name,
-                                                       currentChannel.title, currentChannel.info,
-                                                       currentChannel.logo, currentChannel.preview,
-                                                       currentChannel.game, currentChannel.viewers,
-                                                       currentChannel.online)
+                                ChannelManager.addToFavourites(currentChannel._id, currentChannel.name,
+                                                               currentChannel.title, currentChannel.info,
+                                                               currentChannel.logo, currentChannel.preview,
+                                                               currentChannel.game, currentChannel.viewers,
+                                                               currentChannel.online)
                             }
                         }
                     }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle followed"
-                    }
                 }
-            }
 
-            Icon {
-                id: chatButton
-                icon: "chat"
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    right: parent.right
-                }
-                width: dp(50)
-                height: width
-
-                MouseArea {
-                    id: chatButtonArea
-                    anchors.fill: parent
+                IconButtonFlat {
+                    id: chatBtn
+                    visible: !isMobile()
                     onClicked: {
-                        chatview.status++
+                        if (chatdrawer.position <= 0)
+                            chatdrawer.open()
+                        else
+                            chatdrawer.close()
                     }
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle chat"
-                    }
+                    text: "\ue0ca"
                 }
             }
         }
 
-        PlayerHeader {
-            id: footer
-            //z: playerArea.z + 1
-            visible: !smallMode
+        ToolBar {
+            id: bottomBar
+            Material.foreground: rootWindow.Material.foreground
+            background: Rectangle {
+                color: root.Material.background
+                opacity: 0.8
+            }
 
             anchors {
                 bottom: parent.bottom
@@ -578,338 +465,135 @@ Item {
                 right: parent.right
             }
 
-            MouseArea {
-                id: mAreaFooter
-                hoverEnabled: true
-                anchors.fill: parent
-                propagateComposedEvents: false
-            }
+            clip: true
+            height: root.headersVisible ? 55 : 0
 
-            Item {
-                id: pauseButton
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    left: parent.left
-                    leftMargin: dp(5)
-                }
-
-                width: dp(50)
-
-                Icon {
-                    id: togglePause
-                    anchors.centerIn: parent
-                    icon: "play"//renderer.status != "PLAYING" ? "play" : "pause"
-                }
-
-                MouseArea {
-                    id: pauseArea
-                    anchors.fill: parent
-                    onClicked: {
-                        renderer.togglePause()
-                    }
-
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        togglePause.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle playback"
-                    }
+            Behavior on height {
+                NumberAnimation {
+                    easing.type: Easing.OutCubic
                 }
             }
 
-            Icon {
-                id: reloadButton
-                icon: "reload"
+            RowLayout {
                 anchors {
-                    left: pauseButton.right
-                    leftMargin: dp(5)
-                    verticalCenter: parent.verticalCenter
+                    fill: parent
+                    rightMargin: 5
+                    leftMargin: 5
                 }
 
-                MouseArea {
-                    id: reloadArea
-                    anchors.fill: parent
+                IconButtonFlat {
+                    id: playBtn
+                    text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                    onClicked: renderer.togglePause()
+                }
+
+                IconButtonFlat {
+                    id: resetBtn
+                    text: "\ue5d5"
                     onClicked: reloadStream()
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        reloadButton.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                    }
-
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Reload stream"
-                    }
-                }
-            }
-
-            SeekBar {
-                id: seekBar
-                visible: isVod
-
-                onUserChangedPosition: {
-                    seekTo(position)
                 }
 
-                anchors {
-                    top: parent.top
-                    bottom: parent.bottom
-                    left: reloadButton.right
-                    right: fitButton.left
+                //spacer
+                Item {
+                    Layout.minimumWidth: 0
+                    Layout.fillWidth: true
                 }
-            }
 
-            Icon {
-                id: fitButton
-                icon: "crop"
-                anchors {
-                    right: vol.left
-                    verticalCenter: parent.verticalCenter
+                IconButtonFlat {
+                    id: cropBtn
+                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
+                    text: "\ue3bc"
+                    onClicked: fitToAspectRatio()
                 }
-                width: !g_fullscreen ? dp(50) : 0
-                height: width
-                visible: !g_fullscreen
 
-                MouseArea {
-                    id: fitButtonArea
-                    anchors.fill: parent
+                IconButtonFlat {
+                    id: fsBtn
+                    visible: !isMobile()
+                    text: !appFullScreen ? "\ue5d0" : "\ue5d1"
+                    onClicked: appFullScreen = !appFullScreen
+                }
+
+                IconButtonFlat {
+                    id: volumeBtn
+                    visible: !isMobile() && parent.width > 390
+                    property real mutedValue: 100.0
+                    text: volumeSlider.value > 0 ?
+                              (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
+                            : "\ue04f"
                     onClicked: {
-                        if (!g_fullscreen) {
-                            g_rootWindow.fitToAspectRatio()
+                        if (volumeSlider.value > 0) {
+                            mutedValue = volumeSlider.value
+                            volumeSlider.value = 0
+                        }
+                        else {
+                            volumeSlider.value = mutedValue
                         }
                     }
-                    hoverEnabled: true
+                }
 
-                    onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                Slider {
+                    id: volumeSlider
+                    from: 0
+                    to: 100
+                    visible: !isMobile()
+                    Layout.maximumWidth: 90
+                    Component.onCompleted: {
+                        value = Settings.volumeLevel
                     }
 
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Fit to 16:9 aspect ratio"
+                    onValueChanged: {
+                        var val = value
+                        if (Qt.platform === "linux" && player_backend === "mpv")
+                            val = Math.round(Math.log(val) / Math.log(100))
+
+                        renderer.setVolume(val)
+                        Settings.volumeLevel = val;
                     }
                 }
-            }
 
-            VolumeSlider {
-                id: vol
-                z: parent.z + 1
+                ComboBox {
+                    id: sourcesBox
+                    font.pointSize: 9
+                    font.bold: true
+                    flat: true
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 140
+                    Layout.minimumWidth: 100
 
-                anchors {
-                    right: fsButton.left
-                    verticalCenter: parent.verticalCenter
-                }
-                Component.onCompleted: {
-                    vol.value = g_cman.getVolumeLevel()
-                }
-
-                onValueChanged: {
-                    var val
-                    if (Qt.platform === "linux" && player_backend === "mpv")
-                        val = Math.max(0, Math.min(100, Math.round(Math.log(value) / Math.log(100) * 100)))
-                    else
-                        val = Math.max(0, Math.min(100, value))
-
-                    renderer.setVolume(val)
-                    g_cman.setVolumeLevel(val);
-                }
-            }
-
-            Icon {
-                id: fsButton
-                icon: !g_fullscreen ? "expand" : "compress"
-                anchors {
-                    right: sourcesBox.left
-                    verticalCenter: parent.verticalCenter
-                    rightMargin: dp(5)
-                }
-                width: dp(50)
-                height: width
-
-                MouseArea {
-                    id: fsButtonArea
-                    anchors.fill: parent
-                    onClicked: g_fullscreen = !g_fullscreen
-                    hoverEnabled: true
-
-                    onHoveredChanged: {
-                        parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
+                    onCurrentIndexChanged: {
+                        Settings.quality = sourcesBox.model[currentIndex]
+                        loadAndPlay()
                     }
 
-                    ToolTip {
-                        visible: parent.containsMouse
-                        delay: 666
-                        text: "Toggle fullscreen"
+                    function selectItem(name) {
+                        for (var i in sourcesBox.model) {
+                            if (sourcesBox.model[i] === name) {
+                                currentIndex = i;
+                                return;
+                            }
+                        }
+                        //None found, attempt to select first item
+                        currentIndex = 0
                     }
-                }   
-            }
-
-            StreamSelectorComboBox {
-                //Contains data for sources
-                id: sourcesBox
-                width: dp(90)
-                height: dp(40)
-
-                anchors {
-                    right: parent.right
-                    verticalCenter: parent.verticalCenter
-                    rightMargin: dp(5)
-                }
-
-                onItemChanged: {
-                    loadAndPlay(item)
                 }
             }
         }
 
-        onVisibleChanged: {
-            if (visible){
-                header.show()
-                footer.show()
-            }
-        }
-
-        Text {
-            id: _label
-            text: "No stream currently playing"
-            font.pixelSize: Styles.titleFont.bigger
-            color: Styles.iconColor
-            anchors.centerIn: parent
-        }
-
-        Timer {
-            id: headerTimer
-            interval: 3000
-            running: false
-            repeat: false
-            onTriggered: {
-                if (canHideHeaders()) {
-                    header.hide()
-                    footer.hide()
-
-                    cursorHidden = true
-                }
-
-                else
-                    restart()
-            }
-            onRunningChanged: {
-                if (running) {
-                    cursorHidden = false
-                }
-            }
-        }
-
-        Icon {
-            id: stopButton
-
-            icon: "remove"
-
+        Slider {
+            id: seekBar
+            from: 0
+            to: duration
+            visible: isVod && headersVisible
+            padding: 0
             anchors {
-                top: parent.top
+                verticalCenter: bottomBar.top
+                left: parent.left
                 right: parent.right
-                rightMargin: dp(5)
             }
-
-            visible: smallMode
-            width: dp(50)
-            height: width
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: {
-                    root.smallMode = false
-                    root.enableSmallMode = false
-                }
-                hoverEnabled: true
-                onHoveredChanged: {
-                    parent.iconColor = containsMouse ? Styles.textColor : Styles.iconColor
-                }
-                propagateComposedEvents: false
+            onPressedChanged: {
+                if (!pressed)
+                    seekTo(value)
             }
         }
-    }
-
-    ChatView {
-        id: chatview
-
-        anchors {
-            top: parent.top
-            bottom: parent.bottom
-        }
-
-        // Use JS for side anchors so we can control the order the anchors are set when we change them.
-        // https://doc.qt.io/qt-5/qtquick-positioning-anchors.html#changing-anchors
-
-        function updateAnchors() {
-            console.log("updateAnchors: g_cman.swapChat", g_cman.swapChat);
-            if (g_cman.swapChat) {
-                anchors.right = undefined;
-                anchors.left = parent.left;
-            } else {
-                anchors.left = undefined;
-                anchors.right = parent.right;
-            }
-        }
-
-        Component.onCompleted: {
-            chatview.updateAnchors();
-        }
-
-        Connections {
-            target: g_cman
-            onSwapChatChanged: {
-                chatview.updateAnchors();
-            }
-        }
-
-        width: visible && !smallMode ? chatWidth : 0
-        chatWidth: dp(250) * g_cman.textScaleFactor
-
-        Behavior on width {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
-            }
-        }
-    }
-
-    function canHideHeaders() {
-        if (mAreaHeader.containsMouse)
-            return false
-        if (mAreaFooter.containsMouse)
-            return false
-        if (vol.open)
-            return false
-        if (sourcesBox.open)
-            return false
-        if (pauseArea.containsMouse)
-            return false
-        if (seekBar.containsMouse)
-            return false
-        if (reloadArea.containsMouse)
-            return false
-        if (chatButtonArea.containsMouse)
-            return false
-        if (fsButtonArea.containsMouse)
-            return false
-        if (miniModeCheckBox.mouseArea.containsMouse)
-            return false
-        if (fitButtonArea.containsMouse)
-            return false
-        if (favArea.containsMouse)
-            return false
-        if (sourcesBox.mouseArea.containsMouse)
-            return false
-
-        return true
     }
 }

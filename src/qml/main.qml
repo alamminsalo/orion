@@ -12,135 +12,141 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.5
-import QtQuick.Window 2.0
-import QtQuick.Controls 1.4
-import "styles.js" as Styles
-import "style"
+import QtQuick 2.8
+import QtQuick.Window 2.2
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
+import "irc"
+import "components"
+import app.orion 1.0
 
 ApplicationWindow {
     id: root
     visible: true
 
+    // Application main font
+    font.family: Settings.font || appFont.name
+
+    // Style settings
+    //Material.accent: Material.Cyan //Settings.hasAccessToken ? "#ee3862" : "#888"
+    Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
+    Material.foreground: Settings.lightTheme ? "#444" : "#eee"
+
     title: "Orion"
-    //flags: Qt.FramelessWindowHint | Qt.Window
-    visibility: g_fullscreen ? "FullScreen" : windowstate
+    visibility: appFullScreen ? Window.FullScreen : Window.AutomaticVisibility
 
-    property variant g_rootWindow: root
+    property variant rootWindow: root
     property variant g_tooltip
-    property variant g_toolBox: sidebar
     property bool g_contextMenuVisible: false
-    property bool g_fullscreen: false
-    onG_fullscreenChanged: {
-        if (g_fullscreen)
-            windowstate = visibility
-    }
-
-    property var windowstate: "Windowed"
-
-    function dp(number){
-        return Dpi.scale(number)
-    }
+    property bool appFullScreen: isMobile() ? (view.playerVisible && !isPortraitMode) : false
+    property var chat: chatdrawer.chat
+    property bool isPortraitMode: Screen.primaryOrientation === Qt.PortraitOrientation
+                                  || Screen.primaryOrientation === Qt.InvertedPortraitOrientation
 
     function fitToAspectRatio() {
-        height = view.width * 0.5625
+        height = view.width * 0.5625 + topbar.height
+    }
+
+    function isMobile() {
+        return Qt.platform.os === "android"
     }
 
     onClosing: {
-        if (!g_cman.isCloseToTray()) {
+        if (!Settings.closeToTray) {
             Qt.quit()
         }
     }
 
-    Connections {
-        target: g_tray
-        onShowTriggered: {
-            if (root.visible)
-                root.hide()
-            else
-                root.show()
-        }
+    ChatDrawer {
+        id: chatdrawer
     }
 
-    Connections {
-        target: g_guard
-        onAnotherProcessTriggered: {
-            root.show()
-            root.raise()
-        }
-    }
-
-    Item {
-        anchors.fill: parent
-
-        SideBar {
-            id: sidebar
-            hidden: g_fullscreen
-            anchors {
-                left: parent.left
-                top: parent.top
-                bottom: parent.bottom
-            }
-
-            onSelectedViewChanged: {
-                view.setSelection(selectedView)
-            }
-
-            Component.onCompleted: toggle()
+    Views {
+        id: view
+        anchors {
+            fill: parent
+            leftMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+            rightMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+            bottomMargin: chatdrawer.isBottom && chatdrawer.position > 0 ? chatdrawer.height : 0
         }
 
-        Item {
-            anchors {
-                left: sidebar.right
-                top: parent.top
-                right: parent.right
-                bottom: parent.bottom
-            }
-
-            Views {
-                id: view
-                anchors.fill: parent
-                onRequestSelectionChange: {
-                    g_toolBox.setView(index)
+        onCurrentIndexChanged: {
+            if (chatdrawer.isBottom) {
+                if (!playerVisible)
+                    chatdrawer.close()
+                else if (isMobile()) {
+                    if (isPortraitMode)
+                        chatdrawer.open()
                 }
             }
+        }
+
+        onRequestSelectionChange: {
+            topbar.setView(index)
+        }
+    }
+
+    header: TopBar {
+        id: topbar
+        onSelectedViewChanged: {
+            view.setSelection(selectedView)
+        }
+    }
+
+    footer: ToolBar {
+        id: connectionErrorRectangle
+        leftPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
+        rightPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
+        Material.background: Material.Primary
+        visible: !Network.up
+
+        Label {
+            anchors.centerIn: parent
+            text: "Connection error"
         }
     }
 
     Component.onCompleted: {
-        height=Screen.height * 0.7
-        width=height * 1.2
+        if (!isMobile()) {
+            height = Screen.height * 0.7
+            width = height * 1.2
 
-        setX(Screen.width / 2 - width / 2);
-        setY(Screen.height / 2 - height / 2);
+            setX(Screen.width / 2 - width / 2);
+            setY(Screen.height / 2 - height / 2);
 
-        var component = Qt.createComponent("components/Tooltip.qml")
-        g_tooltip = component.createObject(root)
-
-        //Initial view
-        g_toolBox.setView(2)
-
-
-        if (g_cman.isMinimizeOnStartup())
-            root.hide();
+            var component = Qt.createComponent("components/Tooltip.qml")
+            g_tooltip = component.createObject(root)
+        }
 
         console.log("Pixel density", Screen.pixelDensity)
         console.log("Pixel ratio", Screen.devicePixelRatio)
         console.log("Logical pixel density", Screen.logicalPixelDensity)
         console.log("Orientation", Screen.orientation)
 
-        g_cman.checkFavourites()
-        pollTimer.start()
+        //Initial view
+        topbar.setView(1)
     }
 
-    Timer {
-        id: pollTimer
-        interval: 30000
-        running: false
-        repeat: true
-        onTriggered: {
-            g_cman.checkFavourites()
-        }
+    FontLoader {
+        source: "fonts/MaterialIcons-Regular.ttf"
+        name: "Material Icons"
+    }
+
+    FontLoader {
+        id: appFont
+        //source: "fonts/overpass-regular.otf"
+        //name: "Overpass Regular"
+
+        //source: "fonts/NotoSans-Regular.ttf"
+        //name: "Noto Sans"
+
+        source: "fonts/overpass-light.otf"
+        name: "Overpass Light"
+    }
+
+    Loader {
+        active: !isMobile()
+        sourceComponent: AppTray{}
     }
 }
 

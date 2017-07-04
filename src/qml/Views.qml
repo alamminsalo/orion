@@ -13,169 +13,41 @@
  */
 
 import QtQuick 2.5
-import "components"
-import "styles.js" as Styles
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
+import QtQuick.Layouts 1.3
 
-
-Rectangle {
-    property int selection
+StackLayout {
     id: root
 
+    property bool playerVisible: playerView.visible
     signal requestSelectionChange(int index)
 
-    color: Styles.bg
-
     function setSelection(sel) {
-        if (selection === 5 && playerView.isPlaying() && playerView.enableSmallMode)
-            playerView.smallMode = true
-
-        selection = sel
-    }
-
-    onSelectionChanged: {
-        searchView.visible = false
-        favouritesView.visible = false
-        gamesView.visible = false
-        featuredView.visible = false
-        playerView.visible = playerView.smallMode
-        settingsView.visible = false
-        vodsView.visible = false
-
-        switch (selection){
-
-            //Search
-        case 0:
-            searchView.visible = true
-            gradient.parent = searchView
-            searchView.focusInput()
-            break
-
-            //Featured
-        case 1:
-            featuredView.visible = true
-            gradient.parent = featuredView
-            break
-
-            //Fav
-        case 2:
-            favouritesView.visible = true
-            gradient.parent = favouritesView
-            break
-
-            //Games
-        case 3:
-            gamesView.visible = true
-            gradient.parent = gamesView
-            break
-
-            //Vods
-        case 4:
-            vodsView.visible = true
-            gradient.parent = vodsView
-            break
-
-            //Player
-        case 5:
-            playerView.visible = true
-            playerView.smallMode = false
-            break
-
-            //Settings
-        case 6:
-            settingsView.visible = true
-            break
-        }
+        currentIndex = sel
     }
 
     SearchView {
         id: searchView
-        visible: false
     }
 
-    FeaturedView{
-        id: featuredView
-        visible: false
-    }
-
-    FavouritesView{
+    FollowedView {
         id: favouritesView
-        visible: false
     }
 
     GamesView {
         id: gamesView
-        visible: false
     }
 
     VodsView {
         id: vodsView
-        visible: false
-    }
-
-    OptionsView{
-        id: settingsView
-        visible: false
     }
 
     PlayerView {
         id: playerView
-        visible: false
-
-        onSmallModeChanged: {
-            if (root.selection !== 5)
-                visible = false
-        }
     }
 
-    //The gradient that is applied to each view
-    GradientBottom {
-        id: gradient
-        parent: searchView
-    }
-
-    Rectangle {
-        id: connectionErrorRectangle
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-        height: 0
-        color: Styles.connectionErrorColor
-        clip: true
-
-        Text {
-            anchors.centerIn: parent
-            font.pixelSize: Styles.titleFont.bigger
-            color: Styles.errorTextColor
-            text: "Connection error"
-        }
-
-        Behavior on height {
-            NumberAnimation {
-                duration: 200
-                easing.type: Easing.OutCubic
-            }
-        }
-    }
-
-    function updateForNetworkAccess(up) {
-        if (up) {
-            connectionErrorRectangle.height = 0
-        }
-        else {
-            connectionErrorRectangle.height = dp(50)
-        }
-    }
-
-    Component.onCompleted: {
-        updateForNetworkAccess(netman.networkAccess());
-    }
-
-    Connections {
-        target: netman
-        onNetworkAccessChanged: {
-            updateForNetworkAccess(up);
-        }
+    OptionsView{
+        id: settingsView
     }
 }

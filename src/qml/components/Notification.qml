@@ -14,8 +14,8 @@
 
 import QtQuick 2.5
 import QtQuick.Window 2.0
-import "../styles.js" as Styles
-import "../style"
+import QtQuick.Controls 2.1
+import app.orion 1.0
 
 Window {
     property string title
@@ -26,12 +26,12 @@ Window {
     signal clicked()
 
     //Locations: 0 - topleft, 1 - topright, 2 - bottomleft, 3 - bottomright
-    property int location: g_cman.getAlertPosition()
+    property int location: Settings.alertPosition
 
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint | Qt.WindowStaysOnTopHint | Qt.Popup
-    width: Dpi.scale(400)
-    height: Dpi.scale(120)
+    width: 400
+    height: 120
 
     function close(){
         //console.log("Destroying notification")
@@ -41,27 +41,27 @@ Window {
     function setPosition(){
         switch (location){
         case 0:
-            x =  Dpi.scale(50)
+            x =  50
             y = -height
-            destY = Dpi.scale(50)
+            destY = 50
             break
 
         case 1:
-            x = Screen.width - width  - Dpi.scale(50)
+            x = Screen.width - width - 50
             y = -height
-            destY = Dpi.scale(50)
+            destY = 50
             break
 
         case 2:
-            x = Dpi.scale(50)
+            x = 50
             y = Screen.height
-            destY = Screen.height - height  - Dpi.scale(50)
+            destY = Screen.height - height  - 50
             break
 
         case 3:
-            x = Screen.width - width  - Dpi.scale(50)
+            x = Screen.width - width  - 50
             y = Screen.height
-            destY = Screen.height - height - Dpi.scale(50)
+            destY = Screen.height - height - 50
             break
         }
     }
@@ -87,17 +87,17 @@ Window {
 
     Rectangle {
         anchors.fill: parent
-        color: Styles.bg
+        color: "#333"
 
         Image {
             id: img
             source: imgSrc
             fillMode: Image.PreserveAspectFit
-            width: Dpi.scale(80)
+            width: 80
             height: width
             anchors {
                 left: parent.left
-                leftMargin: Dpi.scale(10)
+                leftMargin: 10
                 verticalCenter: parent.verticalCenter
             }
         }
@@ -106,14 +106,14 @@ Window {
             anchors {
                 left: img.right
                 right: parent.right
-                leftMargin: Dpi.scale(10)
-                rightMargin: Dpi.scale(10)
+                leftMargin: 10
+                rightMargin: 10
                 top: img.top
             }
-            height: Dpi.scale(100)
+            height: 100
             clip: true
 
-            Text {
+            Label {
                 id: titleText
                 anchors {
                     top: parent.top
@@ -121,14 +121,12 @@ Window {
                     right: parent.right
                 }
                 text: root.title
-                color: Styles.textColor
                 wrapMode: Text.WordWrap
                 font.bold: true
-                font.pixelSize: Styles.titleFont.bigger
-                //renderType: Text.NativeRendering
+                font.pointSize: 10
             }
 
-            Text {
+            Label {
                 id: descriptionText
                 anchors {
                     top: titleText.bottom
@@ -137,8 +135,6 @@ Window {
                 }
                 text: root.description
                 wrapMode: Text.WordWrap
-                color: Styles.textColor
-                font.pixelSize: Styles.titleFont.smaller
             }
         }
     }

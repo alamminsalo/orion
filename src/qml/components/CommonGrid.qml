@@ -16,29 +16,19 @@ import QtQuick 2.5
 
 //ChannelList.qml
 GridView {
-    property variant selectedItem
-    property bool tooltipEnabled: false
-    property string title
-
-    signal itemClicked(int index, Item clickedItem)
-    signal itemRightClicked(int index, Item clickedItem)
-    signal itemTooltipHover(int index, real mX, real mY)
-
     id: root
 
-    highlightFollowsCurrentItem: false
-    cellHeight: dp(200)
-    maximumFlickVelocity: 800
-    cellWidth: cellHeight
+    property bool tooltipEnabled: !isMobile()
 
-    add: Transition {
-        NumberAnimation {
-            properties: "y"
-            from: contentY-200
-            duration: 200
-            easing.type: Easing.OutCubic
-        }
-    }
+    signal itemClicked(int index, Item clickedItem)
+    signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
+    signal itemTooltipHover(Item item, real mX, real mY)
+    highlightFollowsCurrentItem: false
+    cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
+    cellHeight: cellWidth
+    maximumFlickVelocity: 1200
+
+    add: FadeUpTransition {}
 
     remove: Transition {
         NumberAnimation {
@@ -50,14 +40,14 @@ GridView {
     }
 
     function setFocus(){
-
         if (mArea.containsMouse) {
             root.currentIndex = indexAt(contentX + mArea.mouseX, contentY + mArea.mouseY)
             if (tooltipEnabled)
                 tooltipTimer.restart()
 
         } else {
-            g_tooltip.hide()
+            if (g_tooltip)
+                g_tooltip.hide()
         }
     }
 
@@ -78,7 +68,7 @@ GridView {
     onContentYChanged: setFocus()
     onContentXChanged: setFocus()
 
-    onSelectedItemChanged: {
+    onCurrentItemChanged: {
         if (g_tooltip)
             g_tooltip.hide()
         tooltipTimer.stop()
@@ -87,13 +77,13 @@ GridView {
     MouseArea{
         id: mArea
         anchors.fill: parent
-        hoverEnabled: true
+        hoverEnabled: !isMobile()
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
         onPositionChanged: setFocus()
 
         onHoveredChanged: {
-            if (!containsMouse){
+            if (!containsMouse && g_tooltip){
                 g_tooltip.hide()
                 tooltipTimer.stop()
             }
@@ -106,17 +96,17 @@ GridView {
             running: false
             repeat: false
             onTriggered: {
-                if (tooltipEnabled){
+                if (g_tooltip && tooltipEnabled){
                     g_tooltip.hide()
 
                     var mouseCoords = getMouseCoords()
                     var mX = mouseCoords.x
                     var mY = mouseCoords.y
 
-                    var index = root.indexAt(mX + root.contentX, mY + root.contentY)
+                    var item = root.itemAt(mX + root.contentX, mY + root.contentY)
 
-                    if (mArea.containsMouse && selectedItem){
-                        root.itemTooltipHover(index, mX, mY);
+                    if (item){
+                        root.itemTooltipHover(item, mX, mY);
                     }
                 }
             }
@@ -131,7 +121,7 @@ GridView {
                 if (mouse.button === Qt.LeftButton)
                     itemClicked(clickedIndex, clickedItem)
                 else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(clickedIndex, clickedItem)
+                    itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y)
                 }
             }
         }
@@ -146,19 +136,8 @@ GridView {
             var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
             if (clickedIndex !== -1){
                 var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
-                itemRightClicked(clickedIndex, clickedItem);
+                itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y);
             }
-        }
-    }
-
-    onCurrentItemChanged: {
-        if (selectedItem && typeof selectedItem.setHighlight === 'function')
-            selectedItem.setHighlight(false)
-
-        selectedItem = currentItem
-
-        if (selectedItem && typeof selectedItem.setHighlight === 'function'){
-            selectedItem.setHighlight(true)
         }
     }
 }

@@ -12,96 +12,28 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.1
 import QtQuick 2.5
+import app.orion 1.0
 
 CommonGrid {
-    property bool allFavourites : false
-
-    tooltipEnabled: true
+    id: root
+    property bool showFavIcons : true
 
     onItemClicked: {
-        if (currentItem.online){
-            playerView.getStreams(clickedItem)
-        } else {
-            playerView.getChat(clickedItem)
-        }
+        infoDrawer.show(clickedItem)
     }
 
     onItemRightClicked: {
-        _menu.item = clickedItem
-
-        _fav.text = (!allFavourites && !_menu.item.favourite) ? "Follow" : "Unfollow"
-        _menu.state = (!allFavourites && !_menu.item.favourite) ? 1 : 2
-
-        _menu.popup()
+        menu.x = mX
+        menu.y = mY
+        menu.channel = clickedItem
+        menu.open()
     }
 
     onItemTooltipHover: {
-        if (selectedItem.online) {
-            g_tooltip.text = ""
-
-            if (selectedItem.game){
-                g_tooltip.text += "Playing <b>" + selectedItem.game + "</b>"
-            } else if (selectedItem.title){
-                g_tooltip.text += selectedItem.title
-            }
-
-            if (selectedItem.viewers){
-                g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                g_tooltip.text += selectedItem.viewers + " viewers"
-            }
-
-            if (selectedItem.info){
-                g_tooltip.text += g_tooltip.text.length > 0 ? "<br/>" : ""
-                g_tooltip.text += selectedItem.info
-            }
-
-            g_tooltip.img = selectedItem.preview
-            g_tooltip.display(g_rootWindow.x + mX, g_rootWindow.y + mY)
-        }
-    }
-
-    ContextMenu {
-        id: _menu
-
-        function addRemoveFavourite(){
-            if (state === 1){
-                g_cman.addToFavourites(_menu.item._id)
-            } else if (state === 2){
-                g_cman.removeFromFavourites(_menu.item._id)
-            }
-        }
-
-        MenuItem {
-            id: _watchLive
-            text: "Watch live"
-            //text: "Watch;play"
-            onTriggered: {
-                playerView.getStreams(_menu.item)
-            }
-        }
-
-        MenuItem {
-            text: "Past broadcasts"
-            //text: "Videos;video"
-            onTriggered: {
-                vodsView.search(_menu.item)
-            }
-        }
-
-        MenuItem {
-            text: "Open chat"
-            onTriggered: {
-                playerView.getChat(_menu.item);
-            }
-        }
-
-        MenuItem {
-            id: _fav
-            onTriggered: {
-                _menu.addRemoveFavourite()
-            }
+        if (item.online) {
+            g_tooltip.displayChannel(item, rootWindow.x + mX, rootWindow.y + mY)
         }
     }
 
@@ -116,6 +48,70 @@ CommonGrid {
         online: model.online
         game: model.game
         favourite: model.favourite
+        showFavIcon: showFavIcons
+        width: root.cellWidth
     }
 
+    InfoDrawer {
+        id: infoDrawer
+        edge: Qt.BottomEdge
+        width: parent.width
+    }
+
+    Menu {
+        id: menu
+        modal: true
+        dim: false
+
+        property var channel: undefined
+        onAboutToShow: {
+            g_contextMenuVisible = true
+        }
+        onAboutToHide: {
+            g_contextMenuVisible = false
+        }
+
+        MenuItem {
+            text: "Watch"
+            onTriggered: {
+                if (menu.channel !== undefined)
+                    playerView.getStreams(menu.channel)
+                menu.channel = undefined
+            }
+        }
+        MenuItem {
+            text: menu.channel !== undefined && !menu.channel.favourite ? "Follow" : "Unfollow"
+            onTriggered: {
+                if (menu.channel !== undefined) {
+                    if (menu.channel.favourite === false)
+                        ChannelManager.addToFavourites(menu.channel._id, menu.channel.name,
+                                                       menu.channel.title, menu.channel.info,
+                                                       menu.channel.logo, menu.channel.preview,
+                                                       menu.channel.game, menu.channel.viewers,
+                                                       menu.channel.online)
+                    else
+                        ChannelManager.removeFromFavourites(menu.channel._id)
+                }
+                menu.channel = undefined
+            }
+        }
+        MenuItem {
+            text: "Videos"
+            onTriggered: {
+                if (menu.channel !== undefined)
+                    vodsView.search(menu.channel)
+                menu.channel = undefined
+            }
+        }
+        MenuItem {
+            text: "Open chat"
+            onTriggered: {
+                if (menu.channel !== undefined)
+                    chat.joinChannel(menu.channel.name, menu.channel._id);
+                chatdrawer.open()
+                menu.channel = undefined
+            }
+        }
+    }
 }
+

@@ -41,7 +41,6 @@ signals:
     void playingStopped();
     void playingResumed();
     void bufferingStarted();
-    //void bufferingEnded();
 
     void volumeChanged(double volume);
     void positionChanged(int position);

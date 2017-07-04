@@ -196,6 +196,7 @@ bool MpvObject::event(QEvent *event)
                 {
                     if(prop->format == MPV_FORMAT_INT64)
                     {
+                        if ((int) *(int*)prop->data < 100)
                             emit bufferingStarted();
                     }
                 }

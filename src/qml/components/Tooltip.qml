@@ -15,77 +15,113 @@
 
 import QtQuick 2.5
 import QtQuick.Window 2.0
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
+import "../util.js" as Util
 
 Window {
     id: root
     flags: Qt.SplashScreen | Qt.NoFocus | Qt.X11BypassWindowManagerHint | Qt.BypassWindowManagerHint
 
-    height: dp(320)
-    width: dp(512)
+    width: 512
+    height: width * 0.5625
 
-    property string text
-    property string img
+    property alias text: _text.text
+
+    Material.theme: Material.Dark
 
     Rectangle {
         id: rootRect
         anchors.fill: parent
         color: "#000000"
 
-        SpinnerIcon {
+        BusyIndicator {
             id:_spinner
             anchors.fill: parent
-            iconSize: 60
+            running: img.state === Image.Loading
         }
 
         Image {
             id: img
-            source: root.img
             anchors.fill: parent
-            onProgressChanged: {
-                if (progress >= 1.0)
-                    _spinner.visible = false
-            }
 
-            onSourceChanged: {
-                _spinner.visible = true
-            }
         }
 
         //Container for text
         Rectangle {
             id: header
-            anchors.fill: text
-            color: Styles.shadeColor
-            opacity: 0.7
-            height: text.height
+            opacity: 0.666
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "black"}
+                GradientStop { position: 0.5; color: "transparent" }
+            }
+
+            anchors {
+                fill: parent
+            }
         }
 
-        Text {
-            id: text
-            color: Styles.textColor
-            text: root.text
-            font.pixelSize: Styles.titleFont.smaller
-            anchors{
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-            }
+        Label {
+            id: _text
             wrapMode: Text.WordWrap
-            //renderType: Text.NativeRendering
+            width: parent.width
+            maximumLineCount: 6
+            elide: Text.ElideRight
+            clip: true
         }
     }
 
-    function display(mX, mY){
+    function displayChannel(channel, mX, mY) {
+        text = ""
+        text += "<b>" + channel.title + "</b><br/>";
+        text += "Playing " + channel.game + "<br/>"
+        text += channel.viewers + " viewers<br/>"
+        img.source = channel.preview
 
+        display(mX, mY)
+    }
+
+    function displayVod(channel, mX, mY) {
+        text = ""
+        text += "<b>" + channel.title + "</b><br/>";
+        text += "Playing " + channel.game + "<br/>"
+        if (channel.duration)
+            text += "Duration " + Util.getTime(channel.duration) + "<br/>"
+
+        if (channel.createdAt)
+            text += (new Date(channel.createdAt)).toLocaleString() + "<br/>";
+
+        text += channel.views + " views<br/>"
+        img.source = channel.preview
+
+        display(mX, mY)
+    }
+
+    function displayGame(game, mX, mY) {
+        text = ""
+
+        if (game.title){
+            text += game.title
+        }
+
+        if (game.viewers){
+            text += text.length > 0 ? "<br/>" : ""
+            text += game.viewers + " viewers"
+        }
+        img.source = game.preview
+
+        display(mX, mY)
+    }
+
+    function display(mX, mY){
         if (g_contextMenuVisible){
             return
         }
 
-        root.x = mX + dp(20)
+        root.x = mX + 20
 
         if (root.x + root.width > Screen.width)
-            root.x -= root.width + dp(40)
+            root.x -= root.width + 40
 
         root.y = mY
 

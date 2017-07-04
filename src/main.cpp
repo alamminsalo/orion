@@ -13,27 +13,31 @@
  */
 
 #include <QQmlApplicationEngine>
-#include <QtQml>
-#include <QQmlComponent>
-#include <QQuickView>
 #include <QScreen>
-#include <QMainWindow>
 #include <QQmlContext>
-#include <QString>
-#include <QtSvg/QGraphicsSvgItem>
+#include <QCommandLineParser>
+#include <QNetworkProxyFactory>
 #include <QFontDatabase>
-#include <QResource>
+#include <QIcon>
+#include <QQuickWindow>
+
 #include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "network/networkmanager.h"
-#include "power/power.h"
-#include "systray.h"
-#include "customapp.h"
-#include "notification/notificationmanager.h"
 #include "model/vodmanager.h"
 #include "model/ircchat.h"
 #include "network/httpserver.h"
-#include <QFont>
+#include "model/viewersmodel.h"
+
+#ifndef Q_OS_ANDROID
+#include <QApplication>
+#include "power/power.h"
+#ifndef Q_OS_WIN
+#include "notification/notificationmanager.h"
+#endif
+#else
+#include <QGuiApplication>
+#endif
 
 #ifdef MPV_PLAYER
 #include "player/mpvrenderer.h"
@@ -44,11 +48,57 @@ inline void noisyFailureMsgHandler(QtMsgType /*type*/, const QMessageLogContext 
 
 }
 
+void registerQmlComponents(QObject *parent)
+{
+    qmlRegisterSingletonType<ChannelManager>("app.orion", 1, 0, "ChannelManager", &ChannelManager::provider);
+    qmlRegisterSingletonType<BadgeContainer>("app.orion", 1, 0, "Emotes", &BadgeContainer::provider);
+    qmlRegisterSingletonType<ViewersModel>("app.orion", 1, 0, "Viewers", &ViewersModel::provider);
+    qmlRegisterSingletonType<VodManager>("app.orion", 1, 0, "VodManager", &VodManager::provider);
+    qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
+    qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
+    qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
+#ifndef Q_OS_ANDROID
+    qmlRegisterSingletonType<Power>("app.orion", 1, 0, "PowerManager", &Power::provider);
+#endif
+    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
+
+#ifdef MPV_PLAYER
+    qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
+#endif
+
+    //Setup obj parents for cleanup
+    ChannelManager::getInstance()->setParent(parent);
+    BadgeContainer::getInstance()->setParent(parent);
+    ViewersModel::getInstance()->setParent(parent);
+    VodManager::getInstance()->setParent(parent);
+    SettingsManager::getInstance()->setParent(parent);
+    HttpServer::getInstance()->setParent(parent);
+}
+
 int main(int argc, char *argv[])
 {
-    CustomApp app(argc, argv);
+    //Override QT_QUICK_CONTROLS_STYLE environment variable
+    qputenv("QT_QUICK_CONTROLS_STYLE", "material");
+
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
+#ifndef Q_OS_ANDROID
+    QApplication app(argc, argv);
+#else
+    QGuiApplication app(argc, argv);
+#endif
     app.setApplicationVersion(APP_VERSION);
 
+    const QIcon appIcon = QIcon(":/icon/orion.ico");
+    app.setWindowIcon(appIcon);
+
+    QQmlApplicationEngine engine;
+
+    //Prime network manager
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
+    NetworkManager::initialize(engine.networkAccessManager());
+
+#ifndef Q_OS_ANDROID
     //Single application solution
     RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
     if ( !guard.tryToRun() ){
@@ -57,44 +107,21 @@ int main(int argc, char *argv[])
     }
 
     QCommandLineParser parser;
-    parser.setApplicationDescription("Desktop client for Twitch.tv");
+    parser.setApplicationDescription("Twitch.tv client");
     parser.addHelpOption();
     parser.addVersionOption();
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug", "show debug output");
-
     parser.addOption(debugOption);
-
     parser.process(app);
 
     bool showDebugOutput = parser.isSet(debugOption);
-
-    //Init engine
-    QQmlApplicationEngine engine;
-
-    QIcon appIcon = QIcon(":/icon/orion.ico");
-
-    //Setup default font
-    if (QFontDatabase::addApplicationFont(":/fonts/NotoSans-Regular.ttf") == -1)
-        qDebug() << "Can't open application font!";
-    else
-        app.setFont(QFont(":/fonts/NotoSans-Regular.ttf", 10, QFont::Normal, false));
 
 #ifndef  QT_DEBUG
     if (!showDebugOutput) {
         qInstallMessageHandler(noisyFailureMsgHandler);
     }
 #endif
-    app.setWindowIcon(appIcon);
-
-    SysTray *tray = new SysTray();
-    tray->setIcon(appIcon);
-
-    QObject::connect(tray, &SysTray::closeEventTriggered, &app, &CustomApp::quit);
-
-    //Prime network manager
-    QNetworkProxyFactory::setUseSystemConfiguration(true);
-    NetworkManager *netman = new NetworkManager(engine.networkAccessManager());
 
     // detect hi dpi screens
     qDebug() << "Screens:";
@@ -107,92 +134,46 @@ int main(int argc, char *argv[])
         qDebug() << "  Screen #" << screens << screen->name() << ": devicePixelRatio" << curPixelRatio;
     }
     qDebug() << "maxDevicePixelRatio" << maxDevicePixelRatio;
-    bool hiDpi = maxDevicePixelRatio > 1.0;
-    qDebug() << "hiDpi" << hiDpi;
-    IrcChat::setHiDpi(hiDpi);
 
-    //Create channels manager
-    ChannelManager *cman = new ChannelManager(netman, hiDpi);
+    SettingsManager::getInstance()->setHiDpi(maxDevicePixelRatio > 1.0);
 
-    //Screensaver mngr
-    Power *power = new Power(static_cast<QApplication *>(&app));
-
-    //Create vods manager
-    VodManager *vod = new VodManager(netman);
-
-    //Http server used for auth
-    HttpServer *httpserver = new HttpServer(&app);
-    QObject::connect(httpserver, &HttpServer::codeReceived, cman, &ChannelManager::setAccessToken);
-    //-------------------------------------------------------------------------------------------------------------------//
-
-    qreal dpiMultiplier = QGuiApplication::primaryScreen()->logicalDotsPerInch();
-
-#ifdef Q_OS_WIN
-    dpiMultiplier /= 96;
-
-#elif defined(Q_OS_LINUX)
-    dpiMultiplier /= 96;
-
-#elif defined(Q_OS_MAC)
-    dpiMultiplier /= 72;
-
+#ifndef Q_OS_WIN
+    //Set up notifications
+    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
+    QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
 #endif
-
-    //Small adjustment to sizing overall
-    dpiMultiplier *= .8;
-
-    qDebug() << "Pixel ratio " << QGuiApplication::primaryScreen()->devicePixelRatio();
-    qDebug() <<"DPI mult: "<< dpiMultiplier;
+#endif
 
     QQmlContext *rootContext = engine.rootContext();
-    rootContext->setContextProperty("dpiMultiplier", dpiMultiplier);
-    rootContext->setContextProperty("netman", netman);
-    rootContext->setContextProperty("g_cman", cman);
-    rootContext->setContextProperty("g_guard", &guard);
-    rootContext->setContextProperty("g_powerman", power);
-    rootContext->setContextProperty("g_favourites", cman->getFavouritesProxy());
-    rootContext->setContextProperty("g_results", cman->getResultsModel());
-    rootContext->setContextProperty("g_featured", cman->getFeaturedProxy());
-    rootContext->setContextProperty("g_games", cman->getGamesModel());
-    rootContext->setContextProperty("g_tray", tray);
-    rootContext->setContextProperty("g_vodmgr", vod);
-    rootContext->setContextProperty("vodsModel", vod->getModel());
-    rootContext->setContextProperty("app_version", APP_VERSION);
-    rootContext->setContextProperty("httpServer", httpserver);
+    rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
+    rootContext->setContextProperty("g_results", ChannelManager::getInstance()->getResultsModel());
+    rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());
+    rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
 
-#ifdef MPV_PLAYER
-    rootContext->setContextProperty("player_backend", "mpv");
-    qmlRegisterType<MpvObject>("mpv", 1, 0, "MpvObject");
+    // Register qml components
+    registerQmlComponents(&app);
 
-#elif defined (QTAV_PLAYER)
-    rootContext->setContextProperty("player_backend", "qtav");
-
-#elif defined (MULTIMEDIA_PLAYER)
-    rootContext->setContextProperty("player_backend", "multimedia");
-#endif
-
-    qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
-
+    // Load QML content
     engine.load(QUrl("qrc:/main.qml"));
 
-    //Set up notifications
-    NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager());
-    QObject::connect(cman, &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
+    // Load app settings
+    SettingsManager::getInstance()->load();
 
-    qDebug() << "Starting window...";
-    tray->show();
+#ifndef Q_OS_ANDROID
+    // Get QML root window, add connections
+    QQuickWindow *rootWin = (QQuickWindow *) engine.rootObjects().first();
+    if (rootWin) {
+        if (SettingsManager::getInstance()->minimizeOnStartup())
+            rootWin->hide();
 
-    app.exec();
+        //Connect to runguard events
+        QObject::connect(&guard, &RunGuard::anotherProcessTriggered, rootWin, &QQuickWindow::show);
+    }
+#endif
 
-    //-------------------------------------------------------------------------------------------------------------------//
+    // first check
+    ChannelManager::getInstance()->checkFavourites();
 
-    //Cleanup
-    delete vod;
-    delete tray;
-    delete netman;
-    delete cman;
-    delete notificationManager;
-
-    qDebug() << "Closing application...";
-    return 0;
+    // Start
+    return app.exec();
 }

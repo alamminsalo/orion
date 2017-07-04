@@ -15,11 +15,11 @@
 
 #include <QString>
 #include <QUrl>
+#include <QGuiApplication>
 #include <QtGlobal>
 #include <QDebug>
 #include <QNetworkRequest>
 #include <QStandardPaths>
-#include <QApplication>
 #include <QDateTime>
 #include "imageprovider.h"
 

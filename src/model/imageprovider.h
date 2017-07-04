@@ -12,8 +12,7 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef IMAGEPROVIDER_H
-#define IMAGEPROVIDER_H
+#pragma once
 
 #include <QObject>
 #include <QSaveFile>
@@ -119,5 +118,3 @@ protected:
 private:
     QString _urlFormat;
 };
-
-#endif

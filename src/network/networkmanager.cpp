@@ -20,8 +20,11 @@
 #include <QEventLoop>
 #include <QSet>
 #include <QUrlQuery>
+#include "../model/settingsmanager.h"
 
-NetworkManager::NetworkManager(QNetworkAccessManager *man)
+NetworkManager *NetworkManager::singleton = 0;
+
+NetworkManager::NetworkManager(QNetworkAccessManager *man) : QObject(man)
 {
     operation = man;
 
@@ -41,7 +44,15 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man)
     offlinePoller.setInterval(2000);
     connect(&offlinePoller, &QTimer::timeout, this, &NetworkManager::testNetworkInterface);
 
+    //Set up listening to access token changes
+    connect(SettingsManager::getInstance(), &SettingsManager::accessTokenChanged, this, &NetworkManager::setAccessToken);
+
     lastVodChatRequest = nullptr;
+}
+
+void NetworkManager::setAccessToken(const QString &accessToken)
+{
+    access_token = accessToken;
 }
 
 NetworkManager::~NetworkManager()
@@ -50,6 +61,11 @@ NetworkManager::~NetworkManager()
     qDebug() << "Destroyer: NetworkManager";
     //operation->deleteLater();
     teardownReplayChat();
+}
+
+void NetworkManager::initialize(QNetworkAccessManager *mgr)
+{
+    singleton = new NetworkManager(mgr);
 }
 
 void NetworkManager::testNetworkInterface()
@@ -321,7 +337,7 @@ void NetworkManager::getBroadcastPlaybackStream(const QString &vod)
     connect(reply, &QNetworkReply::finished, this, &NetworkManager::streamExtractReply);
 }
 
-void NetworkManager::getUser(const QString &access_token)
+void NetworkManager::getUser()
 {
     QString url = QString(KRAKEN_API) + "/user";
     QString auth = "OAuth " + access_token;
@@ -356,7 +372,7 @@ void NetworkManager::getUserFavourites(const quint64 userId, quint32 offset, qui
     connect(reply, &QNetworkReply::finished, this, &NetworkManager::favouritesReply);
 }
 
-void NetworkManager::getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs) {
+void NetworkManager::getEmoteSets(const QList<int> &emoteSetIDs) {
     QList<QString> emoteSetsIDsStr;
     for (auto id : emoteSetIDs) {
         emoteSetsIDsStr.append(QString::number(id));
@@ -408,7 +424,7 @@ void NetworkManager::loadChatterList(const QString channel) {
     connect(reply, &QNetworkReply::finished, this, &NetworkManager::chatterListReply);
 }
 
-void NetworkManager::getBlockedUserList(const QString &access_token, const quint64 userId, const quint32 offset, const quint32 limit) {
+void NetworkManager::getBlockedUserList(const quint64 userId, const quint32 offset, const quint32 limit) {
     qDebug() << "Loading blocked user list for user" << userId;
     const QString url = QString(KRAKEN_API) + QString("/users/") + QString::number(userId) + QString("/blocks?offset=" + QString::number(offset) + "&limit=" + QString::number(limit) );
     qDebug() << "Request" << url;
@@ -429,7 +445,7 @@ void NetworkManager::getBlockedUserList(const QString &access_token, const quint
     connect(reply, &QNetworkReply::finished, this, &NetworkManager::blockedUserListReply);
 }
 
-void NetworkManager::editUserBlock(const QString &access_token, const quint64 myUserId, const QString & blockUsername, const bool isBlock) {
+void NetworkManager::editUserBlock(const quint64 myUserId, const QString & blockUsername, const bool isBlock) {
     const QString url = QString(KRAKEN_API) + QString("/users?login=") + QUrl::toPercentEncoding(blockUsername);
 
     QNetworkRequest request;
@@ -457,7 +473,7 @@ void NetworkManager::blockUserLookupReply() {
     quint64 myUserId = reply->request().attribute(QNetworkRequest::User).toULongLong();
     QString blockUsername = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 1)).toString();
     bool isBlock = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 2)).toBool();
-    QString access_token = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 3)).toString();
+    //QString access_token = reply->request().attribute(static_cast<QNetworkRequest::Attribute>(QNetworkRequest::User + 3)).toString();
 
     QByteArray data = reply->readAll();
     const auto & userIds = JsonParser::parseUsers(data);
@@ -468,10 +484,10 @@ void NetworkManager::blockUserLookupReply() {
 
     quint64 blockUserId = userIds[0];
 
-    editUserBlockWithId(access_token, myUserId, blockUsername, blockUserId, isBlock);
+    editUserBlockWithId(myUserId, blockUsername, blockUserId, isBlock);
 }
 
-void NetworkManager::editUserBlockWithId(const QString &access_token, const quint64 myUserId, const QString & blockUsername, const quint64 blockUserId, const bool isBlock) {
+void NetworkManager::editUserBlockWithId(const quint64 myUserId, const QString & blockUsername, const quint64 blockUserId, const bool isBlock) {
     qDebug() << "Setting block for user" << blockUserId << "to" << isBlock << "for user" << myUserId;
     const QString url = QString(KRAKEN_API) + QString("/users/") + QString::number(myUserId) + QString("/blocks/") + QString::number(blockUserId);
     qDebug() << "Request" << url;
@@ -699,7 +715,7 @@ void NetworkManager::vodChatPieceReply() {
 const QString NetworkManager::CHANNEL_BADGES_URL_PREFIX = QString(KRAKEN_API) + "/chat/";
 const QString NetworkManager::CHANNEL_BADGES_URL_SUFFIX = "/badges";
 
-void NetworkManager::getChannelBadgeUrls(const QString &access_token, const quint64 channelId) {
+void NetworkManager::getChannelBadgeUrls(const quint64 channelId) {
     QString url = CHANNEL_BADGES_URL_PREFIX + QString::number(channelId) + CHANNEL_BADGES_URL_SUFFIX;
     QString auth = "OAuth " + access_token;
 
@@ -891,7 +907,7 @@ void NetworkManager::globalBttvEmotesReply() {
     reply->deleteLater();
 }
 
-void NetworkManager::editUserFavourite(const QString &access_token, const quint64 userId, const quint64 channelId, bool add)
+void NetworkManager::editUserFavourite(const quint64 userId, const quint64 channelId, bool add)
 {
     QString url = QString(KRAKEN_API) + "/users/" + QString::number(userId)
             + "/follows/channels/" + QString::number(channelId);
@@ -1110,7 +1126,8 @@ void NetworkManager::featuredStreamsReply()
 
     //qDebug() << data;
 
-    emit featuredStreamsOperationFinished(JsonParser::parseFeatured(data));
+    QList<Channel *> channels = JsonParser::parseFeatured(data);
+    emit featuredStreamsOperationFinished(channels, channels.count());
 
     reply->deleteLater();
 }

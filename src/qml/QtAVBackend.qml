@@ -14,9 +14,6 @@
 
 import QtQuick 2.5
 import QtAV 1.7
-import "components"
-import "irc"
-import "styles.js" as Styles
 
 /* Interface for backend Mpv
 
@@ -47,6 +44,8 @@ Item {
 
     function load(src, start) {
         console.log("Loading src", src, start)
+        status = "BUFFERING"
+
         stop();
 
         if (start >= 0) {
@@ -123,19 +122,16 @@ Item {
         onStopped: {
             root.status = "STOPPED"
             root.playingStopped()
-            g_powerman.setScreensaver(true);
         }
 
         onPaused: {
             root.status = "PAUSED"
             root.playingPaused()
-            g_powerman.setScreensaver(true);
         }
 
         onPlaying: {
             root.status = "PLAYING"
             root.playingResumed()
-            g_powerman.setScreensaver(false);
         }
 
         onPositionChanged: {

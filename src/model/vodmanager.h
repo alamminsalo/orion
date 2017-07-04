@@ -18,13 +18,29 @@
 #include <QObject>
 #include "../network/networkmanager.h"
 #include "vodlistmodel.h"
+#include "singletonprovider.h"
+
+struct LastPosition {
+    quint64 lastPosition;
+    bool modified;
+    int settingsIndex;
+};
 
 class VodManager: public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
+    Q_PROPERTY(VodListModel model READ getModel NOTIFY modelChanged)
+
+    QMap<QString, QMap<QString, LastPosition>> channelVodLastPositions;
+
+    static VodManager *instance;
+    explicit VodManager(QObject *parent = 0);
+
 public:
-    VodManager(NetworkManager *netman);
+    static VodManager *getInstance();
+
     ~VodManager();
 
     Q_INVOKABLE void search(const quint64 channelId, const quint32 offset, const quint32 limit);
@@ -37,15 +53,28 @@ public:
 
 public slots:
     void onSearchFinished(QList<Vod *>);
+    void cancelLastVodChatRequest();
+    void resetVodChat();
+    void getVodStartTime(quint64 vodId);
+    void getVodChatPiece(quint64 vodId, quint64 offset);
+    void setVodLastPlaybackPosition(const QString & channel, const QString & vod, quint64 position);
+    QVariant getVodLastPlaybackPosition(const QString & channel, const QString & vod);
+    QVariantMap getChannelVodsLastPlaybackPositions(const QString & channel);
+    void vodLastPlaybackPositionLoaded(const QString & channel, const QString & vod, quint64 position, int settingsIndex);
 
 signals:
+    void modelChanged();
     void searchStarted();
     void searchFinished();
     void streamsGetFinished(QVariantMap items);
 
+    void vodStartGetOperationFinished(double);
+    void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
+    void vodLastPositionUpdated(const QString & channel, const QString & vod, const quint64 position);
+
 private:
     QString game;
-    VodListModel *model;
+    VodListModel *_model;
     NetworkManager *netman;
 };
 

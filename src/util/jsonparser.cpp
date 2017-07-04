@@ -13,12 +13,7 @@
  */
 
 #include "jsonparser.h"
-
-bool JsonParser::hiDpi = false;
-
-void JsonParser::setHiDpi(bool setting) {
-    hiDpi = setting;
-}
+#include "../model/settingsmanager.h"
 
 PagedResult<Channel*> JsonParser::parseStreams(const QByteArray &data)
 {
@@ -557,7 +552,7 @@ void JsonParser::parseBitsData(const QByteArray &data, QMap<QString, QMap<QStrin
     const QString BITS_SIZE_LODPI = "1";
     const QString BITS_SIZE_HIDPI = "2";
 
-    const QString BITS_SIZE = hiDpi ? BITS_SIZE_HIDPI : BITS_SIZE_LODPI;
+    const QString BITS_SIZE = SettingsManager::getInstance()->hiDpi() ? BITS_SIZE_HIDPI : BITS_SIZE_LODPI;
 
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);

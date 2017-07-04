@@ -13,10 +13,11 @@
  */
 
 import QtQuick 2.5
-import "../styles.js" as Styles
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 
 //Channel.qml
-Rectangle {
+Item {
     property int _id
     property string name
     property string title
@@ -24,136 +25,140 @@ Rectangle {
     property string info
     property string preview
     property bool online
-    property bool favourite: false
+    property bool favourite
     property int viewers
     property string game
-    property int imgSize: dp(148)
-    property int containerSize: dp(200)
+    property int containerSize: width - 10
+    property int imageSize: containerSize - 20
+    property bool showFavIcon: true
 
     id: root
-
-    width: containerSize
+    implicitWidth: 180
     height: width
-    border.color: "transparent"
-    border.width: dp(1)
-    antialiasing: false
-    clip:true
-    color: "transparent"
-    radius: dp(5)
 
-    Component.onCompleted: {
-        imageShade.refresh()
+    Material.foreground: rootWindow.Material.foreground
+
+    Behavior on Material.elevation {
+        NumberAnimation {
+            duration: 200
+        }
     }
 
-    onOnlineChanged: {
-        imageShade.refresh()
-    }
-
-    Rectangle {
-        id: container
-        height: imgSize
+    Pane {
+        id: innerPane
+        Material.elevation: 0
+        height: containerSize
         width: height
         anchors.centerIn: parent
-        clip: true
-        color: "#000000"
+        padding: 0
+        Material.theme: rootWindow.Material.theme
 
-        SpinnerIcon {
-            id:_spinner
-            iconSize: dp(30)
+        Rectangle {
+            id: container
+            clip: true
+            color: "black"
             anchors.fill: parent
-        }
+            anchors.margins: 10
 
-        Image {
-            id: channelImage
-            source: root.logo
-            fillMode: Image.PreserveAspectFit
-            width: imgSize
-            anchors.centerIn: container
+            BusyIndicator {
+                id:_spinner
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: -title.height / 2
+                running: image.progress < 1
+            }
 
+            Image {
+                id: image
+                source: root.logo
+                property bool isLandscape: sourceSize.width >= sourceSize.height
 
-            Component.onCompleted: {
-                if (root.scaleImage){
-                    width = height
+                fillMode: isLandscape ? Image.PreserveAspectFit : Image.PreserveAspectCrop
+                width: isLandscape ? undefined : imageSize
+                height: isLandscape ? imageSize : undefined
+                anchors.centerIn: parent
+
+                Behavior on height {
+                    enabled: image.isLandscape
+                    NumberAnimation {
+                        duration: 100
+                    }
                 }
-            }
-
-            onProgressChanged: {
-                if (progress > 0.99)
-                    _spinner.visible = false
-            }
-
-            Behavior on width {
-                NumberAnimation {
-                    duration: 100
-                    easing.type: Easing.InCubic
+                Behavior on width {
+                    enabled: !image.isLandscape
+                    NumberAnimation {
+                        duration: 100
+                    }
                 }
             }
 
             Rectangle {
                 id: imageShade
-                anchors.fill: parent
+                anchors.fill: image
                 color: "#000000"
-                opacity: 0
+                opacity: root.online ? 0 : .8
+            }
 
-                function refresh(){
-                    opacity = root.online ? 0 : .8
+            Label {
+                id: favIcon
+                text: "\ue87d"
+                font.family: "Material Icons"
+                opacity: favourite ? 1 : 0
+                Material.foreground: Material.accent
+                font.pointSize: 14
+                visible: showFavIcon
+                anchors {
+                    top: parent.top
+                    right: parent.right
+                    margins: 10
                 }
 
-            }
-        }
-
-        Icon {
-            id: favIcon
-            icon: "fav"
-            opacity: favourite ? 1 : 0
-            iconSize: dp(20)
-            iconColor: Styles.purple
-            anchors {
-                top: container.top
-                right: container.right
-                margins: dp(10)
-            }
-
-            Behavior on opacity{
-                NumberAnimation{
-                    duration: 200
-                    easing.type: Easing.OutCubic
+                Behavior on opacity{
+                    NumberAnimation{
+                        duration: 200
+                        easing.type: Easing.OutCubic
+                    }
                 }
             }
-        }
 
-        Rectangle {
-            id: infoRect
-            color: favourite ? Styles.purple : Styles.shadeColor
-            opacity: .85
-            height: Math.floor(parent.height * 0.25)
-
-            anchors {
-                left: container.left
-                right: container.right
-                bottom: container.bottom
+            Rectangle {
+                id: titleBg
+                color: Material.background
+                opacity: 0.8
+                anchors {
+                    bottom: parent.bottom
+                    left: image.left
+                    right: image.right
+                }
+                height: 33
             }
-        }
 
-        Text {
-            id: channelTitle
-            text: root.title
-            elide: Text.ElideRight
-            color: online ? Styles.textColor : Styles.iconColor
-            anchors.fill: infoRect
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            font.pixelSize: Styles.titleFont.smaller
-            wrapMode: Text.WordWrap
-            font.bold: true
+            Label {
+                id: title
+                text: root.title
+                elide: Text.ElideRight
+                font.family: rootWindow.font.family // Somehow doesn't get updated on font change...
+                anchors {
+                    top: titleBg.top
+                    bottom: parent.bottom
+                    left: parent.left
+                    right: parent.right
+                }
+                fontSizeMode: Text.Fit
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
+                maximumLineCount: 2
+            }
         }
     }
 
+    property bool isCurrent: GridView.isCurrentItem || false
+    onIsCurrentChanged: {
+        if (image.isLandscape)
+            image.height = isCurrent ? containerSize : imageSize
+        else
+            image.width = isCurrent ? containerSize : imageSize
 
-    function setHighlight(isActive){
-        //imageShade.visible = !isActive && !root.online
-        channelImage.width = isActive ? Math.floor(imgSize * 1.2) : imgSize
-        root.color = isActive ? Styles.highlight : "transparent"
-        root.border.color = isActive ? Styles.border : "transparent"
+        innerPane.Material.elevation = isCurrent ? 12 : 0
     }
 }

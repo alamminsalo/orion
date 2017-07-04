@@ -3,57 +3,45 @@
         <file>main.qml</file>
         <file>components/Channel.qml</file>
         <file>components/Tooltip.qml</file>
-        <file>styles.js</file>
-        <file>components/PurpleButton.qml</file>
-        <file>components/Ribbon.qml</file>
-        <file>components/RibbonList.qml</file>
-        <file>components/Icon.qml</file>
-        <file>fonts/fontawesome-webfont.ttf</file>
         <file>SearchView.qml</file>
-        <file>components/SpinnerIcon.qml</file>
         <file>components/ContextMenu.qml</file>
-        <file>fonts/fontAwesome.js</file>
-        <file>FavouritesView.qml</file>
+        <file>FollowedView.qml</file>
         <file>GamesView.qml</file>
         <file>Views.qml</file>
-        <file>FeaturedView.qml</file>
-        <file>fonts/font-awesome.css</file>
-        <file>fonts/DroidSans.ttf</file>
         <file>fonts/NotoSans-Regular.ttf</file>
         <file>MultimediaBackend.qml</file>
         <file>QtAVBackend.qml</file>
         <file>PlayerView.qml</file>
-        <file>components/ViewHeader.qml</file>
-        <file>components/PlayerHeader.qml</file>
         <file>OptionsView.qml</file>
-        <file>SideBar.qml</file>
-        <file>components/OptionTextInput.qml</file>
-        <file>components/OptionCheckbox.qml</file>
+        <file>TopBar.qml</file>
         <file>icon/orion.ico</file>
-        <file>components/ComboBox.qml</file>
-        <file>components/VolumeSlider.qml</file>
-        <file>DrawerRibbon.qml</file>
         <file>components/Notification.qml</file>
-        <file>style/Dpi.qml</file>
-        <file>style/qmldir</file>
         <file>VodsView.qml</file>
         <file>components/Video.qml</file>
-        <file>components/SeekBar.qml</file>
         <file>util.js</file>
-        <file>components/GradientBottom.qml</file>
-        <file>components/BasicButton.qml</file>
-        <file>components/OptionEntry.qml</file>
-        <file>player.html</file>
         <file>irc/Chat.qml</file>
         <file>irc/ChatView.qml</file>
         <file>irc/ChatMessage.qml</file>
         <file>MpvBackend.qml</file>
-        <file>IconButton.qml</file>
-        <file>components/GridPicker.qml</file>
+        <file>components/EmotePicker.qml</file>
         <file>components/CustomFlow.qml</file>
         <file>components/CommonGrid.qml</file>
         <file>components/ChannelGrid.qml</file>
-        <file>components/OptionCornerSelect.qml</file>
-        <file>components/StreamSelectorComboBox.qml</file>
+        <file>qtquickcontrols2.conf</file>
+        <file>components/OptionCombo.qml</file>
+        <file>fonts/MaterialIcons-Regular.ttf</file>
+        <file>SearchBar.qml</file>
+        <file>irc/EmoteSelector.qml</file>
+        <file>components/IconButtonFlat.qml</file>
+        <file>irc/ViewerList.qml</file>
+        <file>components/InfoDrawer.qml</file>
+        <file>irc/ChatMessagesView.qml</file>
+        <file>components/AppTray.qml</file>
+        <file>fonts/overpass-regular.otf</file>
+        <file>components/FadeUpTransition.qml</file>
+        <file>ChatDrawer.qml</file>
+        <file>fonts/overpass-light.otf</file>
+        <file>components/RoundImage.qml</file>
+        <file>components/OptionButton.qml</file>
     </qresource>
 </RCC>

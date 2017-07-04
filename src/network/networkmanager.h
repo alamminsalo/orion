@@ -34,6 +34,7 @@
 #include "../model/vod.h"
 
 #include "replaychat.h"
+#include "../model/singletonprovider.h"
 
 #define ONLY_BROADCASTS true
 #define USE_HLS true
@@ -44,9 +45,10 @@ typedef QMap<QString, QMap<QString, QString>> BitsQStringsMap;
 
 class NetworkManager: public QObject
 {
+    QML_SINGLETON
     Q_OBJECT
 
-protected:
+    Q_PROPERTY(bool up READ networkAccess NOTIFY networkAccessChanged)
 
     enum M3U8TYPE {
         LIVE = QNetworkRequest::CustomVerbAttribute + 1,
@@ -56,9 +58,20 @@ protected:
     void getM3U8Data(const QString&, M3U8TYPE type);
     bool handleNetworkError(QNetworkReply *error);
 
+    static NetworkManager *singleton;
+
+    NetworkManager(QNetworkAccessManager *mgr);
+
+    QString access_token;
+
 public:
-    NetworkManager(QNetworkAccessManager *);
     ~NetworkManager();
+
+    static void initialize(QNetworkAccessManager *);
+
+    static NetworkManager *getInstance() {
+        return singleton;
+    }
 
     Q_INVOKABLE void getStream(const quint64);
     void getStreams(const QString&);
@@ -72,11 +85,11 @@ public:
     void getBroadcastPlaybackStream(const QString &vod);
 
     //Methods using oauth
-    void getUser(const QString &access_token);
+    void getUser();
     void getUserFavourites(const quint64 userId, quint32 offset, quint32 limit);
-    void editUserFavourite(const QString &access_token, const quint64 userId, const quint64 channelId, bool add);
-    void getEmoteSets(const QString &access_token, const QList<int> &emoteSetIDs);
-    void getChannelBadgeUrls(const QString &access_token, const quint64 channelId);
+    void editUserFavourite(const quint64 userId, const quint64 channelId, bool add);
+    void getEmoteSets(const QList<int> &emoteSetIDs);
+    void getChannelBadgeUrls(const quint64 channelId);
     void getChannelBadgeUrlsBeta(const int channelID);
     void getGlobalBadgesUrlsBeta();
     void getChannelBitsUrls(const int channelID);
@@ -89,8 +102,8 @@ public:
     Q_INVOKABLE void cancelLastVodChatRequest();
     Q_INVOKABLE void resetVodChat();
     Q_INVOKABLE void loadChatterList(const QString channel);
-    void getBlockedUserList(const QString &access_token, const quint64 userId, const quint32 offset, const quint32 limit);
-    void editUserBlock(const QString &access_token, const quint64 myUserId, const QString & blockUserName, const bool isBlock);
+    void getBlockedUserList(const quint64 userId, const quint32 offset, const quint32 limit);
+    void editUserBlock(const quint64 myUserId, const QString & blockUserName, const bool isBlock);
 
     QNetworkAccessManager *getManager() const;
 
@@ -104,7 +117,7 @@ signals:
     void allStreamsOperationFinished(const QList<Channel *>&);
     void gamesOperationFinished(const QList<Game *>&);
     void gameStreamsOperationFinished(const QList<Channel *>&, const int total);
-    void featuredStreamsOperationFinished(const QList<Channel *>&);
+    void featuredStreamsOperationFinished(const QList<Channel *>&, const int total);
     void searchChannelsOperationFinished(const QList<Channel *>&, const int total);
     void searchGamesOperationFinished(const QList<Game *>&);
     void broadcastsOperationFinished(const QList<Vod *>&);
@@ -174,6 +187,8 @@ private slots:
     void globalBttvEmotesReply();
     void channelBttvEmotesReply();
 
+    void setAccessToken(const QString &accessToken);
+
 private:
     static const QString CHANNEL_BADGES_URL_PREFIX;
     static const QString CHANNEL_BADGES_URL_SUFFIX;
@@ -197,7 +212,7 @@ private:
 
     QNetworkReply *lastVodChatRequest;
 
-    void editUserBlockWithId(const QString &access_token, const quint64 myUserId, const QString & blockUsername, const quint64 blockUserId, const bool isBlock);
+    void editUserBlockWithId(const quint64 myUserId, const QString & blockUsername, const quint64 blockUserId, const bool isBlock);
 };
 
 #endif // NETWORKMANAGER_H
