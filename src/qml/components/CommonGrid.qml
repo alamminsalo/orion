@@ -13,6 +13,7 @@
  */
 
 import QtQuick 2.5
+import QtQuick.Controls 2.1
 
 //ChannelList.qml
 GridView {
@@ -27,6 +28,7 @@ GridView {
     cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
     cellHeight: cellWidth
     maximumFlickVelocity: 1200
+    ScrollIndicator.vertical: ScrollIndicator {}
 
     add: FadeUpTransition {}
 
