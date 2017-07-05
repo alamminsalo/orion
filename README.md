@@ -23,6 +23,8 @@ Features:
 
 (Using arch linux examples, but can be applied to other distros as well)
 
+Qt minimum version is currently 5.8
+
 #### Install needed libraries and software
 
 ```
