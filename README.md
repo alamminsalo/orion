@@ -23,7 +23,9 @@ Features:
 
 (Using arch linux examples, but can be applied to other distros as well)
 
-Qt minimum version is currently 5.8
+## Qt version
+
+Minimum supported Qt version is currently 5.8
 
 #### Install needed libraries and software
 
@@ -73,6 +75,12 @@ make
 ```
 
 There will now be an orion.app application in the build directory.
+
+
+#### Misc
+
+Supports environment variables such as `QT_QUICK_CONTROLS_MATERIAL_ACCENT`, to customize UI colors. 
+See more on [qt material docs](https://doc.qt.io/qt-5/qtquickcontrols2-material.html).
 
 
 ## Windows troubleshooting
