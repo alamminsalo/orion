@@ -54,7 +54,7 @@ Page {
 
     onVisibleChanged: {
         if (visible) {
-            channels.positionViewAtBeginning()
+            //channels.positionViewAtBeginning()
             channels.checkScrolled()
 
             if (query.length <= 0 && !checked) {

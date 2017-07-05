@@ -24,7 +24,7 @@ GridView {
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
     signal itemTooltipHover(Item item, real mX, real mY)
-    highlightFollowsCurrentItem: false
+    highlightFollowsCurrentItem: true
     cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
     cellHeight: cellWidth
     maximumFlickVelocity: 1200

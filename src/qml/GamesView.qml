@@ -64,9 +64,9 @@ Page {
             timer.start()
         }
 
-        if (visible) {
-            games.positionViewAtBeginning()
-        }
+//        if (visible) {
+//            games.positionViewAtBeginning()
+//        }
     }
 
     CommonGrid {
