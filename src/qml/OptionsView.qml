@@ -193,6 +193,7 @@ Page {
                         id: connectButton
                         property bool loggedIn: Settings.hasAccessToken
                         highlighted: loggedIn
+                        font.pointSize: 9
                         text: loggedIn ? "Log out" : "Log in"
                         onClicked: {
                             if (!loggedIn) {
