@@ -28,9 +28,7 @@ ApplicationWindow {
     font.family: Settings.font || appFont.name
 
     // Style settings
-    //Material.accent: Material.Cyan //Settings.hasAccessToken ? "#ee3862" : "#888"
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
-    Material.foreground: Settings.lightTheme ? "#444" : "#eee"
 
     title: "Orion"
     visibility: appFullScreen ? Window.FullScreen : Window.AutomaticVisibility
