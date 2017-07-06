@@ -63,19 +63,15 @@ ListView {
         previousY = contentY
     }
 
-    MouseArea {
-        id: mArea
-        anchors.fill: parent
-        visible: !isMobile()
-        enabled: visible
-        onWheel: {
-            if (wheel.modifiers & Qt.ControlModifier) {
-                Settings.textScaleFactor += (0.1 * wheel.angleDelta.y / 120)
-            }
-            else {
-                //Apply flick
-                list.flick(0, wheel.angleDelta.y * 5)
-            }
+    Column {
+        anchors.right: parent.right
+        IconButtonFlat {
+            text: "\ue8ff"
+            onClicked: Settings.textScaleFactor += 0.15
+        }
+        IconButtonFlat {
+            text: "\ue900"
+            onClicked: Settings.textScaleFactor -= 0.15
         }
     }
 
