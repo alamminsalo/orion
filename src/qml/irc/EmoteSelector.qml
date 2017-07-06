@@ -20,6 +20,7 @@ RoundButton {
     
     font.family: "Material Icons"
     flat: true
+    highlighted: _emotePicker.visible
     text: "\ue87c"
     
     Connections {
