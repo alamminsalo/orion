@@ -105,6 +105,7 @@ public slots:
     QString appName() const;
     QString appVersion() const;
     QString appPlayerBackend() const;
+    bool isNewerVersion(QString version) const;
 
 private:
     QSettings *settings;

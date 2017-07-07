@@ -65,6 +65,7 @@ public:
     static PagedResult<QString> parseBlockList(const QByteArray &data);
     static void parseBitsData(const QByteArray &data, QMap<QString, QMap<QString, QString>> & outUrls, QMap<QString, QMap<QString, QString>> & outColors);
     static QMap<QString, QString> parseBttvEmotesData(const QByteArray &data);
+    static QPair<QString,QString> parseVersion(const QByteArray &data);
 };
 
 #endif // JSONPARSER_H

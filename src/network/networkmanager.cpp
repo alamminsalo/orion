@@ -172,6 +172,21 @@ void NetworkManager::testConnectionReply()
     emit finishedConnectionTest();
 }
 
+void NetworkManager::checkVersion()
+{
+    QNetworkRequest req;
+    req.setRawHeader("User-Agent", "Orion");
+    req.setRawHeader("Accept", "application/vnd.github.v3+json");
+    req.setUrl(QUrl("https://api.github.com/repos/alamminsalo/orion/releases/latest"));
+
+    QNetworkReply *reply = operation->get(req);
+    connect(reply, &QNetworkReply::finished, this, [reply, this](){
+        QPair<QString, QString> info = JsonParser::parseVersion(reply->readAll());
+        emit versionCheckEnded(info.first, info.second);
+        reply->deleteLater();
+    });
+}
+
 /**
  * @brief NetworkManager::getStream
  * Gets single stream status. Usable for polling a channel's stream

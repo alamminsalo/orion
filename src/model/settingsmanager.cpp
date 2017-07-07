@@ -304,6 +304,12 @@ QString SettingsManager::appPlayerBackend() const
     return PLAYER_BACKEND;
 }
 
+#include <QVersionNumber>
+bool SettingsManager::isNewerVersion(QString version) const
+{
+    return QVersionNumber::fromString(version.replace('v',"")) > QVersionNumber::fromString(appVersion().replace('v', ""));
+}
+
 QString SettingsManager::font() const
 {
     return mFont;

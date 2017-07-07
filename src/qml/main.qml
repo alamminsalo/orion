@@ -123,6 +123,35 @@ ApplicationWindow {
 
         //Initial view
         topbar.setView(1)
+
+        //Check version
+        Network.checkVersion()
+    }
+
+    Connections {
+        target: Network
+        onVersionCheckEnded: {
+            if (version && Settings.isNewerVersion(version)) {
+                newVersionLabel.text = "Version " + version + ".\nGo to download page?"
+                versionPopup.url = url
+                versionPopup.open()
+            }
+        }
+    }
+
+    Dialog {
+        id: versionPopup
+        property string url
+        visible: false
+        title: "New version available!"
+        Label {
+            id: newVersionLabel
+        }
+        standardButtons: Dialog.Yes | Dialog.No
+        onAccepted: {
+            if (url)
+                Qt.openUrlExternally(url)
+        }
     }
 
     FontLoader {

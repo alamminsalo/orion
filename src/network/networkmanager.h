@@ -152,6 +152,11 @@ signals:
     void userBlocked(quint64 myUserId, const QString & blockedUsername);
     void userUnblocked(quint64 myUserId, const QString & unblockedUsername);
 
+    void versionCheckEnded(QString version, QString url);
+
+public slots:
+    void checkVersion();
+
 private slots:
     void testNetworkInterface();
     void testConnection();

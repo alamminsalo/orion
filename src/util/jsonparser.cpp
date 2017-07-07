@@ -757,3 +757,19 @@ QMap<QString, QString> JsonParser::parseBttvEmotesData(const QByteArray &data)
 
     return out;
 }
+
+QPair<QString,QString> JsonParser::parseVersion(const QByteArray &data)
+{
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    QString version;
+    QString url;
+
+    if (error.error == QJsonParseError::NoError) {
+        QJsonObject json = doc.object();
+        version = json["name"].toString();
+        url = json["html_url"].toString();
+    }
+
+    return qMakePair<QString,QString>(version, url);
+}
