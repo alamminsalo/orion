@@ -23,6 +23,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(bool hasAccessToken READ hasAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool lightTheme READ lightTheme WRITE setLightTheme NOTIFY lightThemeChanged)
     Q_PROPERTY(QString font READ font WRITE setFont NOTIFY fontChanged)
+    Q_PROPERTY(bool versionCheckEnabled READ versionCheckEnabled)
 
     bool mAlert;
     bool mCloseToTray;
@@ -81,6 +82,8 @@ public:
 
     QString font() const;
     void setFont(const QString &font);
+
+    bool versionCheckEnabled();
 
 signals:
     void alertChanged();

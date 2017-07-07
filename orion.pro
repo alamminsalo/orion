@@ -175,6 +175,7 @@ win32: {
                 QMAKE_POST_LINK +=$$quote(cmd /c copy /y \"$${FILE}\" \"$${DESTDIR_WIN}\"$$escape_expand(\n\t))
     }
 
+    CONFIG += enableVersionCheck
 }
 
 macx: {
@@ -194,8 +195,14 @@ macx: {
 
     OBJECTIVE_SOURCES += \
         src/notification/notificationsender.mm
+
+    CONFIG += enableVersionCheck
 }
 
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
-
+# Set CONFIG+=enableVersionCheck if you want Orion to check version on startup.
+# By default enabled on mac/win
+enableVersionCheck {
+    DEFINES += VERSION_CHECK_ENABLED
+}

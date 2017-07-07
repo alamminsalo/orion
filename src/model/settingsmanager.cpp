@@ -323,3 +323,12 @@ void SettingsManager::setFont(const QString &font)
     }
     emit fontChanged();
 }
+
+bool SettingsManager::versionCheckEnabled()
+{
+#ifdef VERSION_CHECK_ENABLED
+    return true;
+#else
+    return false;
+#endif
+}

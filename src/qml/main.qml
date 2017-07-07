@@ -125,29 +125,32 @@ ApplicationWindow {
         topbar.setView(1)
 
         //Check version
-        Network.checkVersion()
-    }
-
-    Connections {
-        target: Network
-        onVersionCheckEnded: {
-            if (version && Settings.isNewerVersion(version)) {
-                newVersionLabel.text = "Version " + version + ".\nGo to download page?"
-                versionPopup.url = url
-                versionPopup.open()
-            }
+        if (Settings.versionCheckEnabled) {
+            Network.checkVersion()
+            Network.versionCheckEnded.connect(function(version, url){
+                if (version && Settings.isNewerVersion(version)) {
+                    newVersionLabel.text = "Version " + version + ".\nGo to download page?"
+                    versionPopup.url = url
+                    versionPopup.open()
+                }
+            });
         }
     }
 
     Dialog {
         id: versionPopup
         property string url
+        modal: true
+        dim: true
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
         visible: false
         title: "New version available!"
         Label {
             id: newVersionLabel
+            font.bold: true
         }
-        standardButtons: Dialog.Yes | Dialog.No
+        standardButtons: Dialog.No | Dialog.Yes
         onAccepted: {
             if (url)
                 Qt.openUrlExternally(url)
