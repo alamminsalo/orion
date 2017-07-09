@@ -34,11 +34,19 @@ ToolBar {
             onVisibleChanged:  {
                 focus = visible
             }
+            maximumLength: 48
         }
         
         Item {
             Layout.fillWidth: true
             visible : !_input.visible
+        }
+
+        IconButtonFlat {
+            id: clearBtn
+            text: "\ue14c"
+            visible: _input.visible && _input.text.length > 0
+            onClicked: _input.clear()
         }
         
         RoundButton {
@@ -53,10 +61,18 @@ ToolBar {
             checkable: true
             checked: false
 
+            onClicked: {
+                if (!checked && isMobile()) {
+                    submit()
+                }
+            }
+
             onDoubleClicked: {
-                //Clear search bar and submit, this makes it easy to quickly search for featured streams, games
-                _input.clear()
-                submit()
+                if (!isMobile()){
+                    //Clear search bar and submit, this makes it easy to quickly search for featured streams, games
+                    _input.clear()
+                    submit()
+                }
             }
         }
     }
