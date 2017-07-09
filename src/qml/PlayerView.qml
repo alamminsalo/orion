@@ -446,7 +446,7 @@ Page {
                         else
                             chatdrawer.close()
                     }
-                    text: "\ue0ca"
+                    text: chat.hasUnreadMessages ? "\ue87f" : "\ue0ca"
                 }
             }
         }

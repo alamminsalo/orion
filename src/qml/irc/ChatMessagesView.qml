@@ -13,6 +13,13 @@ ListView {
     property int scrollbuf: 0
     property int previousY: 0
     property alias chatModel: chatModel
+    property bool hasUnreadMessages: false
+
+    onVisibleChanged: {
+        if (visible) {
+            hasUnreadMessages = false
+        }
+    }
 
     ScrollIndicator.vertical: ScrollIndicator {}
     
@@ -26,6 +33,10 @@ ListView {
             //Limit msg count in list
             if (chatModel.count > 300) {
                 chatModel.remove(0, 1)
+            }
+
+            if (!visible && !hasUnreadMessages) {
+                hasUnreadMessages = true
             }
         }
     }
