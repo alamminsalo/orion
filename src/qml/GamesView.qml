@@ -89,6 +89,10 @@ Page {
             }
         }
 
+        onUpdateTriggered: {
+            search(true)
+        }
+
         onItemClicked: {
             root.searchChannels(clickedItem)
         }

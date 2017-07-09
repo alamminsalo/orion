@@ -41,5 +41,6 @@
         <file>ChatDrawer.qml</file>
         <file>components/RoundImage.qml</file>
         <file>components/OptionButton.qml</file>
+        <file>components/RotatingButton.qml</file>
     </qresource>
 </RCC>

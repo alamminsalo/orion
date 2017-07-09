@@ -42,7 +42,7 @@ ApplicationWindow {
                                   || Screen.primaryOrientation === Qt.InvertedPortraitOrientation
 
     function fitToAspectRatio() {
-        height = view.width * 0.5625 + topbar.height
+        height = Math.floor(view.width * 0.5625 + topbar.height)
     }
 
     function isMobile() {

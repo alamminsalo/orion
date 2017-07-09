@@ -107,6 +107,8 @@ Page {
             if (visible)
                 checkScrolled()
         }
+
+        onUpdateTriggered: search()
     }
 
     BusyIndicator {

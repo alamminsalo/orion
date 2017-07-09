@@ -112,6 +112,8 @@ Item{
 
         onAtYEndChanged: checkScroll()
 
+        onUpdateTriggered: search(selectedChannel)
+
         function checkScroll(){
             if (atYEnd && model.count() === itemCount && itemCount > 0){
                 VodManager.search(selectedChannel._id, itemCount, 25)

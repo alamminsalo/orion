@@ -13,7 +13,8 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 2.1
+import QtQuick.Controls 2.2
+import QtQuick.Controls.Material 2.2
 
 //ChannelList.qml
 GridView {
@@ -21,10 +22,12 @@ GridView {
 
     property bool tooltipEnabled: !isMobile()
 
+    signal updateTriggered()
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
     signal itemTooltipHover(Item item, real mX, real mY)
-    highlightFollowsCurrentItem: true
+
+    highlightFollowsCurrentItem: false
     cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
     cellHeight: cellWidth
     maximumFlickVelocity: 1200
@@ -67,8 +70,23 @@ GridView {
         return {x: mX, y: mY}
     }
 
-    onContentYChanged: setFocus()
-    onContentXChanged: setFocus()
+    RotatingButton {
+        id: updateIndicator
+        property int maxY: 75
+        running: y === maxY
+        y: Math.min(-parent.contentY - 175, maxY)
+        anchors.horizontalCenter: parent.horizontalCenter
+        flat: false
+        font.pointSize: 25
+        text: "\ue5d5"
+    }
+
+    onDragEnded: {
+        if (updateIndicator.running) {
+            updateTriggered()
+            console.log("Update trigger")
+        }
+    }
 
     onCurrentItemChanged: {
         if (g_tooltip)

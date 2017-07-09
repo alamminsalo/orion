@@ -16,23 +16,18 @@ import QtQuick 2.5
 import app.orion 1.0
 import "components"
 
-Item {
+ChannelGrid {
+    id: favourites
+
     onVisibleChanged: {
         if (visible) {
             ChannelManager.getFollowedChannels()
         }
     }
 
-    ChannelGrid {
-        id: favourites
+    onUpdateTriggered: ChannelManager.getFollowedChannels()
 
-        showFavIcons: false
-
-        anchors {
-            fill: parent
-        }
-
-        model: g_favourites
-    }
+    showFavIcons: false
+    model: g_favourites
 }
 
