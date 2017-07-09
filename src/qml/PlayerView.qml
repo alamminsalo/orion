@@ -563,6 +563,7 @@ Page {
                     onCurrentIndexChanged: {
                         Settings.quality = sourcesBox.model[currentIndex]
                         loadAndPlay()
+                        pArea.refreshHeaders()
                     }
 
                     function selectItem(name) {
