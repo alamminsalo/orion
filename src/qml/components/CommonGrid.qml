@@ -72,9 +72,9 @@ GridView {
 
     RotatingButton {
         id: updateIndicator
-        property int maxY: 75
+        property int maxY: 80
         running: y === maxY
-        y: Math.min(-parent.contentY - 175, maxY)
+        y: Math.min(-parent.contentY - 150, maxY)
         anchors.horizontalCenter: parent.horizontalCenter
         flat: false
         font.pointSize: 25
