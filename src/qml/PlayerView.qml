@@ -286,8 +286,7 @@ Page {
         }
 
         onStatusChanged: {
-            if (!isMobile())
-                PowerManager.screensaver = (renderer.status !== "PLAYING")
+            PowerManager.screensaver = (renderer.status !== "PLAYING")
         }
     }
 

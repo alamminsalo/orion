@@ -13,15 +13,22 @@
  */
 
 #include "power.h"
-#include <QtGlobal>
-#include <QProcess>
+//#include <QtGlobal>
+//#include <QProcess>
 #include <QDebug>
-#include <QWindow>
+//#include <QWindow>
 
 #ifdef Q_OS_LINUX
+#ifndef Q_OS_ANDROID
     #include <QtDBus>
-#elif defined(Q_OS_MAC)
+#endif
+#endif
+#ifdef Q_OS_MAC
     #include <CoreServices/CoreServices.h>
+#endif
+
+#ifdef Q_OS_ANDROID
+#include <QtAndroidExtras>
 #endif
 
 Power *Power::instance = 0;
@@ -48,6 +55,7 @@ void Power::setScreensaver(bool enabled)
 {
 
 #ifdef Q_OS_LINUX
+#ifndef Q_OS_ANDROID
 
     if (!enabled) {
         if (cookie == 0) {
@@ -70,13 +78,14 @@ void Power::setScreensaver(bool enabled)
             }
         }
     }
+#endif
+#endif
 
-#elif defined(Q_OS_WIN)
+#ifdef Q_OS_WIN
     if (!enabled)
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED);
     else
         SetThreadExecutionState(ES_CONTINUOUS);
-
 #endif
 
 #ifdef Q_OS_MAC
@@ -88,13 +97,22 @@ void Power::setScreensaver(bool enabled)
 //        }
 //    }
 #endif
+
+#ifdef Q_OS_ANDROID
+    if (!enabled) {
+        QAndroidJniObject::callStaticMethod<void>("com/orion/MainActivity", "acquireWakeLock");
+    } else {
+        QAndroidJniObject::callStaticMethod<void>("com/orion/MainActivity", "releaseWakeLock");
+    }
+#endif
 }
 
 void Power::timerEvent(QTimerEvent *event)
 {
 #ifdef Q_OS_LINUX
+#ifndef Q_OS_ANDROID
     QProcess::startDetached("xdg-screensaver reset");
-
+#endif
 #endif
 
 #ifdef Q_OS_MAC

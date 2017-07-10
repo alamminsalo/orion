@@ -36,7 +36,8 @@ SOURCES += src/main.cpp\
     src/model/badgecontainer.cpp \
     src/model/viewersmodel.cpp \
     src/model/settingsmanager.cpp \
-    src/network/httpserver.cpp
+    src/network/httpserver.cpp \
+    src/power/power.cpp
 
 
 HEADERS  += src/model/channel.h \
@@ -60,21 +61,28 @@ HEADERS  += src/model/channel.h \
     src/model/badgecontainer.h \
     src/model/viewersmodel.h \
     src/model/settingsmanager.h \
-    src/model/singletonprovider.h
+    src/model/singletonprovider.h \
+    src/power/power.h
 
 !android: {
-    HEADERS += src/power/power.h \
-        src/notification/notificationmanager.h
-
-    SOURCES += src/power/power.cpp \
-        src/notification/notificationmanager.cpp
+    HEADERS += src/notification/notificationmanager.h
+    SOURCES += src/notification/notificationmanager.cpp
 }
 
 android: {
-    QT += gamepad
+    QT +=androidextras
     QT -= widgets
     CONFIG += multimedia
     LIBS += -lssl -lcrypto
+
+    DISTFILES += android/AndroidManifest.xml \
+    android/gradle/wrapper/gradle-wrapper.jar \
+    android/gradlew \
+    android/res/values/libs.xml \
+    android/build.gradle \
+    android/gradle/wrapper/gradle-wrapper.properties \
+    android/gradlew.bat \
+    android/src/com/orion/MainActivity.java
 }
 
 #Backend for player, uses mpv as default
@@ -112,14 +120,7 @@ multimedia {
     }
 }
 
-DISTFILES += src/qml/icon/orion.svg \
-    android/AndroidManifest.xml \
-    android/gradle/wrapper/gradle-wrapper.jar \
-    android/gradlew \
-    android/res/values/libs.xml \
-    android/build.gradle \
-    android/gradle/wrapper/gradle-wrapper.properties \
-    android/gradlew.bat
+DISTFILES += src/qml/icon/orion.svg
 
 linux:!android: {
     QT += dbus

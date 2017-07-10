@@ -28,10 +28,10 @@
 #include "model/ircchat.h"
 #include "network/httpserver.h"
 #include "model/viewersmodel.h"
+#include "power/power.h"
 
 #ifndef Q_OS_ANDROID
 #include <QApplication>
-#include "power/power.h"
 #ifndef Q_OS_WIN
 #include "notification/notificationmanager.h"
 #endif
@@ -57,9 +57,7 @@ void registerQmlComponents(QObject *parent)
     qmlRegisterSingletonType<SettingsManager>("app.orion", 1, 0, "Settings", &SettingsManager::provider);
     qmlRegisterSingletonType<HttpServer>("app.orion", 1, 0, "LoginService", &HttpServer::provider);
     qmlRegisterSingletonType<NetworkManager>("app.orion", 1, 0, "Network", &NetworkManager::provider);
-#ifndef Q_OS_ANDROID
     qmlRegisterSingletonType<Power>("app.orion", 1, 0, "PowerManager", &Power::provider);
-#endif
     qmlRegisterType<IrcChat>("aldrog.twitchtube.ircchat", 1, 0, "IrcChat");
 
 #ifdef MPV_PLAYER
