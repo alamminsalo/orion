@@ -14,6 +14,7 @@ ListView {
     property int previousY: 0
     property alias chatModel: chatModel
     property bool hasUnreadMessages: false
+    property int maxCount: isMobile() ? 100 : 300
 
     onVisibleChanged: {
         if (visible) {
@@ -31,7 +32,7 @@ ListView {
                 list.positionViewAtEnd()
             
             //Limit msg count in list
-            if (chatModel.count > 300) {
+            if (chatModel.count > maxCount) {
                 chatModel.remove(0, 1)
             }
 
