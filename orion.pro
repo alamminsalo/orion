@@ -70,10 +70,9 @@ HEADERS  += src/model/channel.h \
 }
 
 android: {
-    QT +=androidextras
+    QT += androidextras
     QT -= widgets
     CONFIG += multimedia
-    LIBS += -lssl -lcrypto
 
     DISTFILES += android/AndroidManifest.xml \
     android/gradle/wrapper/gradle-wrapper.jar \
@@ -83,6 +82,10 @@ android: {
     android/gradle/wrapper/gradle-wrapper.properties \
     android/gradlew.bat \
     android/src/com/orion/MainActivity.java
+
+    ANDROID_EXTRA_LIBS = \
+        $$PWD/../openssl-1.0.2l/libcrypto.so \
+        $$PWD/../openssl-1.0.2l/libssl.so
 }
 
 #Backend for player, uses mpv as default
@@ -207,3 +210,4 @@ ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 enableVersionCheck {
     DEFINES += VERSION_CHECK_ENABLED
 }
+

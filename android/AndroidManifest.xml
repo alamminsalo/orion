@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<manifest package="app.orion.android" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.6.1" android:versionCode="3" android:installLocation="auto">
+<manifest package="app.orion.android" xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.6.1" android:versionCode="6" android:installLocation="auto">
     <application android:hardwareAccelerated="true" android:name="org.qtproject.qt5.android.bindings.QtApplication" android:label="Orion" android:icon="@drawable/icon">
         <activity android:configChanges="orientation|uiMode|screenLayout|screenSize|smallestScreenSize|layoutDirection|locale|fontScale|keyboard|keyboardHidden|navigation" android:name="com.orion.MainActivity" android:label="Orion" android:screenOrientation="unspecified" android:launchMode="singleTop">
             <intent-filter>
@@ -74,6 +74,11 @@
 
 
 
-<!-- %%INSERT_PERMISSIONS -->
+
 <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+
+<uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
