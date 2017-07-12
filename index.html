@@ -1,119 +1,79 @@
 <!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=640">
-
-    <link rel="stylesheet" href="stylesheets/core.css" media="screen">
-    <link rel="stylesheet" href="stylesheets/mobile.css" media="handheld, only screen and (max-device-width:640px)">
-    <link rel="stylesheet" href="stylesheets/github-light.css">
-
-    <script type="text/javascript" src="javascripts/modernizr.js"></script>
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script type="text/javascript" src="javascripts/headsmart.min.js"></script>
-    <script type="text/javascript">
-      $(document).ready(function () {
-        $('#main_content').headsmart()
-      })
-    </script>
-    <title>Orion Twitch client</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   </head>
 
   <body>
-    <a id="forkme_banner" href="https://github.com/alamminsalo/orion">View on GitHub</a>
-    <div class="shell">
+	<!-- Header -->
+	<div class="jumbotron container-fluid">
+	    <h1><b>Orion</b>
+	    <img height="64" src="https://user-images.githubusercontent.com/5585454/28136091-26f72796-6751-11e7-9107-d0a27498c0f6.png"></h1>
+	    <p>Cross-platform Twitch client</p>
+	</div>
 
-      <header>
-        <span class="ribbon-outer">
-          <span class="ribbon-inner">
-            <h1>Orion</h1>
-            <h2>Cross-platform Twitch client</h2>
-          </span>
-          <span class="left-tail"></span>
-          <span class="right-tail"></span>
-        </span>
-      </header>
+    <div class="container-fluid">
+      <div class="col-md-offset-1 col-md-10">
 
-      <section id="downloads">
-        <span class="inner">
-          <a class="zip"></a>
-          <a class="tgz"></a>
-        </span>
-      </section>
+	<!-- Releases -->
+	<section class="col-md-4">
+	  <h3>Platforms</h3>
+	  <table class="table table-striped">
+	    <tr>
+	      <td>Windows</td>
+	      <td><a href="https://github.com/alamminsalo/orion/releases/download/v1.6.1/orion-1.6.1.exe">Download</a></td>
+	    </tr>
+	    <tr>
+	      <td>OSX</td>
+	      <td>
+		<a href="https://github.com/alamminsalo/orion/releases/download/v1.3.5/Orion-1.3.5.dmg">Download</a>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>Linux</td>
+	      <td>
+		<a href="https://github.com/alamminsalo/orion#building-on-linux">Build from source</a>
+	      </td>
+	    </tr>
+	    <tr>
+	      <td>Android</td>
+	      <td>
+		<a href="https://play.google.com/store/apps/details?id=app.orion.android">Play Store</a>
+	      </td>
+	    </tr>
+	  </table>
+	</section>
 
+	<!-- Features -->
+	<section class="col-md-2">
+	  <h3>Features</h3>
+	  <ul class="list-unstyled">
+	    <li>Channel browsing</li>
+	    <li>Integrated player</li>
+	    <li>Login via Twitch account</li>
+	    <li>Stream chat</li>
+	    <li>Offline videos</li>
+	    <li>Desktop notifications</li>
+	  </ul>
+	</section>
 
-      <span class="banner-fix"></span>
+	<!-- Contributing -->
+	<section class="col-md-4">
+	  <h3>Contributing</h3>
+	  <p>If you have a feature proposal, submit a pull request.</p>
+	  <p>Please file bugs via <a href="https://github.com/alamminsalo/orion/issues/new">Github issue</a></p>
+	</section>
 
+	<!-- Screenshots -->
+	<section class="col-md-4">
+	  <h3>Screenshots</h3>
+	  <a href="https://github.com/alamminsalo/orion#screencaptures">See project page</a>
+	</section>
 
-      <section id="main_content">
-        <h3>
-<a id="latest-releases" class="anchor" href="#latest-releases" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Latest release: 1.6.1 (12/7/2017)</h3>
-<ul>
-<li>Windows: <a href="https://github.com/alamminsalo/orion/releases/download/v1.6.1/orion-1.6.1.exe">Windows</a>
-</li>
-<li>Mac OSX: <a href="https://github.com/alamminsalo/orion/releases/download/v1.3.5/Orion-1.3.5.dmg">OSX</a></li>
-<li>Linux: Not yet available. Can be built from source.</li>
-<li>Android: <a href="https://play.google.com/store/apps/details?id=app.orion.android">Play Store</a></li>
-<li><a href="https://github.com/alamminsalo/orion/releases">Changelog</a></li>
-</ul>
-
-<h3>
-<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h3>
-
-<ul>
-<li>Channel searching / browsing</li>
-<li>Integrated player</li>
-<li>VOD support</li>
-<li>Desktop notifications</li>
-<li>Login by Twitch id</li>
-<li>Chat</li>
-</ul>
-
-<h3>
-<a id="future-plans" class="anchor" href="#future-plans" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Future plans</h3>
-
-<ul>
-<li>Currently none</li>
-</ul>
-
-<h3>
-<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Screenshots</h3>
-
-<p>Can be seen on <a href="https://github.com/alamminsalo/orion#screencaptures">project page</a></p>
-
-<h3>
-<a id="bug-reports" class="anchor" href="#bug-reports" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Bug reports</h3>
-
-        <p>Please use the <a href="https://github.com/alamminsalo/orion/issues/new">github issue tool</a> to report a bug</p>
- 
-<h3>
-<a id="authors-and-contributors" class="anchor" href="#authors-and-contributors" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p><a href="https://github.com/alamminsalo" class="user-mention">@alamminsalo</a> 2015 - 2016
-  <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="W82QWCPCRT4KN">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
-</p>
-      </section>
-
-      <footer>
-        <span class="ribbon-outer">
-          <span class="ribbon-inner">
-            <p>this project by <a href="https://github.com/alamminsalo">alamminsalo</a> can be found on <a href="https://github.com/alamminsalo/orion">GitHub</a></p>
-          </span>
-          <span class="left-tail"></span>
-          <span class="right-tail"></span>
-        </span>
-        <p>Generated with <a href="https://pages.github.com">GitHub Pages</a> using Merlot</p>
-        <span class="octocat"></span>
-      </footer>
-
+      </div>
     </div>
-
-    
   </body>
+
 </html>
