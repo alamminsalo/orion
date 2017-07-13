@@ -559,8 +559,8 @@ Page {
                     Layout.maximumWidth: 140
                     Layout.minimumWidth: 100
 
-                    onCurrentIndexChanged: {
-                        Settings.quality = sourcesBox.model[currentIndex]
+                    onActivated: {
+                        Settings.quality = sourcesBox.model[index]
                         loadAndPlay()
                         pArea.refreshHeaders()
                     }
