@@ -150,6 +150,10 @@ Page {
             return rowNum(_emotesGrid.count - 1);
         }
 
+        function pageRows() {
+            return Math.floor(height / cellHeight);
+        }
+
         Keys.onUpPressed: {
             //console.log("item", currentIndex, "current row", rowNum(currentIndex));
             if (_emotesGrid.count == 0 || (rowNum(currentIndex) == 0) && _filterTextInput.visible) {
@@ -180,6 +184,12 @@ Page {
             case Qt.Key_End:
                 _emotesGrid.currentIndex = _emotesGrid.count - 1;
                 event.accepted = true;
+                break;
+            case Qt.Key_PageDown:
+                _emotesGrid.currentIndex = Math.min(_emotesGrid.currentIndex + rowSize() * pageRows(), _emotesGrid.count - 1);
+                break;
+            case Qt.Key_PageUp:
+                _emotesGrid.currentIndex = Math.max(_emotesGrid.currentIndex - rowSize() * pageRows(), 0);
                 break;
             }
         }
