@@ -13,7 +13,7 @@
  */
 
 
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 
@@ -45,7 +45,7 @@ Page {
         if (_emotesGrid.rowNum(_emotesGrid.currentIndex) != _emotesGrid.lastRowNum()) {
             _emotesGrid.currentIndex = _emotesGrid.lastRowNum() * _emotesGrid.rowSize();
         }
-        _emotesGrid.focus = true;
+        _emotesGrid.forceActiveFocus();
     }
 
     function focusFilterInput() {
@@ -153,7 +153,7 @@ Page {
         Keys.onUpPressed: {
             //console.log("item", currentIndex, "current row", rowNum(currentIndex));
             if (_emotesGrid.count == 0 || (rowNum(currentIndex) == 0) && _filterTextInput.visible) {
-                _filterTextInput.focus = true;
+                _filterTextInput.forceActiveFocus();
             } else {
                 event.accepted = false;
             }
@@ -161,9 +161,18 @@ Page {
 
         Keys.onDownPressed: {
             if (_emotesGrid.count == 0 || (rowNum(currentIndex) == lastRowNum())) {
+                _emotesGrid.focus = false;
                 moveFocusDown();
             } else {
                 event.accepted = false;
+            }
+        }
+
+        Keys.onShortcutOverride: {
+            switch (event.key) {
+            case Qt.Key_Escape:
+                event.accepted = true;
+                break;
             }
         }
 
@@ -248,13 +257,22 @@ Page {
                 root._visibleItemClicked(0);
                 root.visible = false
             }
+
+            Keys.onShortcutOverride: {
+                switch (event.key) {
+                case Qt.Key_Escape:
+                    event.accepted = true;
+                    break;
+                }
+            }
+
             Keys.onEscapePressed: {
                 //console.log("filterTextInput escape pressed");
                 root.closeRequested();
             }
 
             Keys.onDownPressed: {
-                _emotesGrid.focus = true;
+                _emotesGrid.forceActiveFocus();
                 if (_emotesGrid.rowNum(_emotesGrid.currentIndex) != 0) {
                     _emotesGrid.currentIndex = 0;
                 }

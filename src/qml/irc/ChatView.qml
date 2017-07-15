@@ -255,7 +255,7 @@ Page {
             }
 
             onMoveFocusDown: {
-                _input.focus = true;
+                _input.forceActiveFocus();
             }
         }
 
