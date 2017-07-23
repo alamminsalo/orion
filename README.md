@@ -28,7 +28,7 @@ Available on [Play Store](https://play.google.com/store/apps/details?id=app.orio
 #### Install needed libraries and software
 
 ```
-sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-quickcontrols2 mpv
+sudo pacman -S git gcc qt5-base qt5-quickcontrols qt5-svg qt5-quickcontrols2 qt5-graphicaleffects mpv
 ```
 
 If using backend other than mpv, install those packages instead.
