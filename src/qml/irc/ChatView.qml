@@ -502,8 +502,6 @@ Page {
 
                     if (_input.text.trim().length > 0)
                         sendMessage()
-
-                    _input.focus = false
                 }
             }
 
