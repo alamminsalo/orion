@@ -26,6 +26,7 @@ GridView {
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
     signal itemTooltipHover(Item item, real mX, real mY)
+    signal itemDoubleClicked(int index, Item clickedItem)
 
     highlightFollowsCurrentItem: false
     cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
@@ -132,17 +133,44 @@ GridView {
             }
         }
 
+        Timer {
+            id: _ct
+            property var foo
+            interval: 100
+            repeat: false
+            onTriggered: {
+                if (foo && typeof foo === 'function')
+                    foo()
+                _ct.foo = undefined
+            }
+        }
+
         onClicked: {
             // Note that click/press doesn't necessarily set grid's current item so we shouldn't use currentIndex
             // TODO: rework this if something better than a single-point click solution is available for touchscreens
+            _ct.foo = function(){
+                var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
+                if (clickedIndex !== -1){
+                    var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
+                    if (mouse.button === Qt.LeftButton)
+                        itemClicked(clickedIndex, clickedItem)
+                    else if (mouse.button === Qt.RightButton){
+                        itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y)
+                    }
+                }
+            }
+            _ct.restart()
+        }
+
+        onDoubleClicked: {
+            _ct.stop()
+            _ct.foo = undefined
+
             var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
             if (clickedIndex !== -1){
                 var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
                 if (mouse.button === Qt.LeftButton)
-                    itemClicked(clickedIndex, clickedItem)
-                else if (mouse.button === Qt.RightButton){
-                    itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y)
-                }
+                    itemDoubleClicked(clickedIndex, clickedItem)
             }
         }
 

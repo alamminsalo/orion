@@ -24,6 +24,10 @@ CommonGrid {
         infoDrawer.show(clickedItem)
     }
 
+    onItemDoubleClicked: {
+        playerView.getStreams(clickedItem)
+    }
+
     onItemRightClicked: {
         menu.x = mX
         menu.y = mY
