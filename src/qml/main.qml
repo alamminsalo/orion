@@ -106,12 +106,6 @@ ApplicationWindow {
 
     Component.onCompleted: {
         if (!isMobile()) {
-            height = Screen.height * 0.7
-            width = height * 1.2
-
-            setX(Screen.width / 2 - width / 2);
-            setY(Screen.height / 2 - height / 2);
-
             var component = Qt.createComponent("components/Tooltip.qml")
             g_tooltip = component.createObject(root)
         }
