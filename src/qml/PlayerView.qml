@@ -336,7 +336,52 @@ Page {
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
 
+        Rectangle {
+            id: clickRect
+            anchors.centerIn: parent
+            width: 0
+            height: width
+            radius: height / 2
+            opacity: 0
+
+            Label {
+                id: clickRectIcon
+                text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                anchors.centerIn: parent
+                font.family: "Material Icons"
+                font.pointSize: parent.width * 0.5
+            }
+
+            ParallelAnimation {
+                id: _anim
+                running: false
+
+                NumberAnimation {
+                    target: clickRect
+                    property: "width"
+                    from: 0
+                    to: pArea.width * 0.6
+                    duration: 1500
+                    easing.type: Easing.OutCubic
+                }
+                NumberAnimation {
+                    target: clickRect
+                    property: "opacity"
+                    from: 0.5
+                    to: 0
+                    duration: 666
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            function run() {
+                _anim.restart()
+            }
+        }
+
         onClicked: {
+            clickRect.run()
+
             if (root.headersVisible && bottomBar.height > 50)
                 clickTimer.restart()
             else
