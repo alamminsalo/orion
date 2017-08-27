@@ -1,11 +1,11 @@
 
 # Orion
 
-QML/C++-written desktop client for Twitch.tv
-
 [Webpage](https://alamminsalo.github.io/orion)
 
-Features: 
+QML/C++-written desktop client for Twitch.tv
+
+## Features: 
 
 * Login by twitch credentials
 * Desktop notifications
