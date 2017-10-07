@@ -410,21 +410,6 @@ void NetworkManager::getEmoteSets(const QList<int> &emoteSetIDs) {
     connect(reply, &QNetworkReply::finished, this, &NetworkManager::emoteSetsReply);
 }
 
-void NetworkManager::getVodStartTime(quint64 vodId) {
-    QString url = QString(TWITCH_RECHAT_API) + QString("?start=0&video_id=v%1").arg(vodId);
-
-    qDebug() << "Failing request to get offset";
-    qDebug() << "Request" << url;
-
-    QNetworkRequest request;
-    request.setUrl(url);
-
-    QNetworkReply *reply = operation->get(request);
-
-    connect(reply, &QNetworkReply::finished, this, &NetworkManager::vodStartReply);
-
-}
-
 void NetworkManager::loadChatterList(const QString channel) {
     qDebug() << "Loading viewer list for" << channel;
     const QString url = QString(TWITCH_TMI_USER_API) + channel + QString("/chatters");
@@ -594,17 +579,36 @@ void NetworkManager::blockedUserListReply() {
 }
 
 void NetworkManager::getVodChatPiece(quint64 vodId, quint64 offset) {
-    QString url = QString(TWITCH_RECHAT_API) + QString("?start=%1&video_id=v%2").arg(offset).arg(vodId);
+    QString url = QString(TWITCH_API_V5) + QString("/videos/%2/comments?content_offset_seconds=%1").arg(offset).arg(vodId);
 
     qDebug() << "Requesting" << url;
 
     QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
     request.setUrl(url);
 
     QNetworkReply *reply = operation->get(request);
 
     lastVodChatRequest = reply;
     
+    connect(reply, &QNetworkReply::finished, this, &NetworkManager::vodChatPieceReply);
+}
+
+void NetworkManager::getNextVodChatPiece(quint64 vodId, QString cursor) {
+    QString url = QString(TWITCH_API_V5) + QString("/videos/%2/comments?cursor=%1").arg(cursor).arg(vodId);
+
+    qDebug() << "Requesting" << url;
+
+    QNetworkRequest request;
+    request.setRawHeader("Accept", "application/vnd.twitchtv.v5+json");
+    request.setRawHeader("Client-ID", getClientId().toUtf8());
+    request.setUrl(url);
+
+    QNetworkReply *reply = operation->get(request);
+
+    lastVodChatRequest = reply;
+
     connect(reply, &QNetworkReply::finished, this, &NetworkManager::vodChatPieceReply);
 }
 
@@ -654,55 +658,6 @@ void NetworkManager::filterReplayChat(QList<ReplayChatMessage> & replayChat) {
     replayChatPartNum++;
 }
 
-void NetworkManager::vodStartReply() {
-    QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
-
-    if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute) != 400) {
-        if (!handleNetworkError(reply)) {
-            return;
-        }
-    }
-
-    QByteArray data = reply->readAll();
-
-    //qDebug() << data;
-
-    QJsonParseError error;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
-
-    double startTime = 0.0;
-
-    if (error.error == QJsonParseError::NoError) {
-        QJsonObject json = doc.object();
-
-        //error_text = d['errors'][0]['detail']
-        QString chatReplayErrorMessage = json["errors"].toArray()[0].toObject()["detail"].toString();
-        // "not between (\d +) and (\d+)
-
-        const QString START_MARKER = "not between ";
-
-        int startMarkerPos = chatReplayErrorMessage.indexOf(START_MARKER);
-        if (startMarkerPos == -1) {
-            qDebug() << "chat replay error message in unexpected format:" << chatReplayErrorMessage;
-            return;
-        }
-
-        int timePos = startMarkerPos + START_MARKER.length();
-        QString timeStr = chatReplayErrorMessage.mid(timePos);
-        int timeEnd = timeStr.indexOf(' ');
-        if (timeEnd != -1) {
-            timeStr = timeStr.left(timeEnd);
-        }
-        qDebug() << "timeStr" << timeStr;
-        startTime = timeStr.toDouble();
-    }
-
-    emit vodStartGetOperationFinished(startTime);
-
-    reply->deleteLater();
-
-}
-
 void NetworkManager::vodChatPieceReply() {
     QNetworkReply* reply = qobject_cast<QNetworkReply *>(sender());
 
@@ -718,9 +673,9 @@ void NetworkManager::vodChatPieceReply() {
 
     //qDebug() << data;
 
-    QList<ReplayChatMessage> ret = JsonParser::parseVodChatPiece(data);
+    ReplayChatPiece ret = JsonParser::parseVodChatPiece(data);
 
-    filterReplayChat(ret);
+    filterReplayChat(ret.comments);
 
     emit vodChatPieceGetOperationFinished(ret);
 

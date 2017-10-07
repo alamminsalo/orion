@@ -29,4 +29,10 @@ struct ReplayChatMessage {
     QList<int> emoteList;
 };
 
+struct ReplayChatPiece {
+    QList<ReplayChatMessage> comments;
+    QString next;
+    QString prev;
+};
+
 #endif

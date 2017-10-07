@@ -609,72 +609,138 @@ int JsonParser::parseTotal(const QByteArray &data)
     return total;
 }
 
+int unicodeLen(const QString & text) {
+    int out = 0;
+    for (auto i = 0; i < text.length(); i++) {
+        auto ch = text.at(i);
+        if ((ch < 0xd800) || (ch > 0xdbff)) {
+            ++out;
+        }
+    }
+    return out;
+}
+
 ReplayChatMessage parseVodChatEntry(const QJsonValue &entry) {
     ReplayChatMessage out;
     
-    const QJsonObject & entryObj = entry.toObject();
+    const QJsonObject & attributes = entry.toObject();
 
-    const QJsonObject & attributes = entryObj["attributes"].toObject();
+    auto msgId = attributes["_id"].toString();
+    out.id = msgId;
 
-    out.from = attributes["from"].toString();
-    out.deleted = attributes["deleted"].toBool();
-    out.message = attributes["message"].toString();
-    out.room = attributes["room"].toString();
-    out.timestamp = attributes["timestamp"].toDouble();
-    out.videoOffset = attributes["video-offset"].toDouble();
-    out.command = attributes["command"].toString();
+    auto commenter = attributes["commenter"].toObject();
 
-    auto tags = attributes["tags"].toObject();
-    for (auto tagEntry = tags.constBegin(); tagEntry != tags.constEnd(); tagEntry++) {
-        auto tagName = tagEntry.key();
-        if (tagName == "emotes") {
-            auto emotes = tagEntry.value().toObject();
-            for (auto emoteEntry = emotes.constBegin(); emoteEntry != emotes.constEnd(); emoteEntry++) {
-                int emoteId = emoteEntry.key().toInt();
+    auto name = commenter["name"].toString();
+    out.from = name;
+    QString state = attributes["state"].toString();
+    bool deleted = state != QString("published");
+    out.deleted = deleted; // XXX other types to take as valid?
 
+    auto message = attributes["message"].toObject();
+    out.message = message["body"].toString();
+    auto channelId = attributes["channel_id"].toString();
+    out.room = channelId;
+    out.videoOffset = attributes["content_offset_seconds"].toDouble() * 1000.0;
+    out.timestamp = out.videoOffset;
+
+    auto source = attributes["source"].toString();
+    if (source == QString("chat")) {
+        out.command = "PRIVMSG";
+    }
+    else {
+        // XXX need some more guesses for these
+        qDebug() << "unknown message source" << source; // XXX remove
+        out.command = "PRIVMSG";
+    }
+
+    int unicodePos = 0;
+    auto fragments = message["fragments"].toArray();
+
+    QSet<int> emoteIdsSeen;
+
+    for (const auto & fragment : fragments) {
+        auto fragmentObj = fragment.toObject();
+        auto text = fragmentObj["text"].toString();
+
+        auto curTextUnicodeLen = unicodeLen(text);
+
+        if (!fragmentObj["emoticon"].isNull()) {
+            auto emoteObj = fragmentObj["emoticon"].toObject();
+
+            QString emotioconIDStr = emoteObj["emoticon_id"].toString();
+            int first = unicodePos;
+            int last = unicodePos + curTextUnicodeLen - 1; // XXX off by one?
+            int emoteId = emotioconIDStr.toInt();
+            if (emoteIdsSeen.constFind(emoteId) == emoteIdsSeen.constEnd()) {
+                emoteIdsSeen.insert(emoteId);
                 out.emoteList.append(emoteId);
-
-                auto emotePairs = emoteEntry.value().toArray();
-                for (auto emotePair : emotePairs) {
-                    auto emotePairArray = emotePair.toArray();
-                    if (emotePairArray.size() == 2) {
-                        auto first = emotePairArray[0].toInt();
-                        auto last = emotePairArray[1].toInt();
-                        out.emotePositionsMap.insert(first, qMakePair(last, emoteId));
-                    }
-                }
             }
+            out.emotePositionsMap.insert(first, qMakePair(last, emoteId));
+        }
 
+        unicodePos += curTextUnicodeLen;
+
+    }
+    
+    // XXX tags collection stuff not hooked up yet
+    // system-msg
+
+    // @badges=staff/1,broadcaster/1,turbo/1;color=#008000;display-name=TWITCH_UserName;emotes=;mod=0;msg-id=resub;msg-param-months=6;room-id=1337;subscriber=1;system-msg=TWITCH_UserName\shas\ssubscribed\sfor\s6\smonths!;login=twitch_username;turbo=1;user-id=1337;user-type=staff :tmi.twitch.tv USERNOTICE #channel :Great stream -- keep it up!
+    QList<QString> badges;
+    for (const auto & badge : message["user_badges"].toArray()) {
+        auto badgeObj = badge.toObject();
+        auto badgeId = badgeObj["_id"].toString();
+        badges.append(badgeId + QString("/") + badgeObj["version"].toString());
+
+        // not sure if anything in the front end needs these as tags if we added the badges directly
+        if (badgeId == QString("moderator")) {
+            out.tags.insert("mod", true);
         }
-        else if (tagName == "mod" || tagName == "subscriber" || tagName == "turbo") {
-            out.tags.insert(tagName, tagEntry.value().toBool());
+
+        if (badgeId == QString("subscriber")) {
+            out.tags.insert("subscriber", true);
         }
-        else {
-            out.tags.insert(tagName, tagEntry.value().toString());
+
+        if (badgeId == QString("turbo")) {
+            out.tags.insert("turbo", true);
         }
     }
 
-    out.id = entryObj["id"].toString();
+    if (!badges.isEmpty()) {
+        out.tags.insert("badges", badges.join(","));
+    }
+
+    // most of this stuff is being populated for backward compatibility with things that currently operate on the tags
+    // and can be taken out if nothing uses it
+    out.tags.insert("msg-id", msgId);
+    out.tags.insert("display-name", commenter["display_name"].toString());
+    out.tags.insert("login", name);
+    out.tags.insert("color", message["user_color"].toString());
+    out.tags.insert("room-id", channelId);
+    out.tags.insert("user-id", commenter["_id"].toString());
+    out.tags.insert("user-type", commenter["type"].toString());
         
     return out;
 }
 
-QList<ReplayChatMessage> JsonParser::parseVodChatPiece(const QByteArray &data)
+ReplayChatPiece JsonParser::parseVodChatPiece(const QByteArray &data)
 {
-    QList<ReplayChatMessage> out;
+    ReplayChatPiece out;
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(data, &error);
 
     if (error.error == QJsonParseError::NoError) {
         QJsonObject json = doc.object();
 
-        if (!json["data"].isNull() && json["data"].isArray()) {
-            const QJsonArray & chatEntries = json["data"].toArray();
+        if (!json["comments"].isNull() && json["comments"].isArray()) {
+            const QJsonArray & chatEntries = json["comments"].toArray();
             for (const auto & entry : chatEntries) {
-
-                out.append(parseVodChatEntry(entry));
+                out.comments.append(parseVodChatEntry(entry));
             }
         }
+
+        out.next = json["_next"].toString();
+        out.prev = json["_prev"].toString();
     }
 
     return out;
