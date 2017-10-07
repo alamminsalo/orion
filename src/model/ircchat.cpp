@@ -391,6 +391,10 @@ void IrcChat::handleDownloadedReplayChat(ReplayChatPiece piece) {
     // next request will start at the end of the current request
     if (!messages.empty()) {
         nextChatChunkTimestamp = messages.last().videoOffset / 1000.0;
+    } else {
+        // make sure we're not just going to re-request the same timestamp if we fall back
+        // to a time-based request
+        nextChatChunkTimestamp += 60.0;
     }
 
     replayChatRequestInProgress = false;
