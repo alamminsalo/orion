@@ -122,7 +122,6 @@ void IrcChat::hookupChannelProviders() {
     _bitsProvider = BadgeContainer::getInstance()->getBitsImageProvider();
     connect(_badgeProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
     connect(_bitsProvider, &ImageProvider::downloadComplete, this, &IrcChat::handleDownloadComplete);
-    connect(VodManager::getInstance(), &VodManager::vodStartGetOperationFinished, this, &IrcChat::handleVodStartTime);
     connect(NetworkManager::getInstance(), &NetworkManager::vodChatPieceGetOperationFinished, this, &IrcChat::handleDownloadedReplayChat);
     connect(BadgeContainer::getInstance(), &BadgeContainer::channelBitsUrlsLoaded, this, &IrcChat::handleChannelBitsUrlsLoaded);
     connect(BadgeContainer::getInstance(), &BadgeContainer::channelBttvEmotesLoaded, this, &IrcChat::handleChannelBttvEmotesLoaded);
@@ -187,18 +186,14 @@ void IrcChat::replay(const QString channel, const QString channelId, const quint
 
     replayVodId = vodId;
 
-    replayChatVodStartTime = vodStartEpochTime;
+    replayChatVodStartTime = 0;
 
     replayChatCurrentSeekOffset = playbackOffset;
 
     replayChatFirstLoadAfterSeek = true;
 
     // Get start timestamp of the chat replay segments as the requests need to be aligned to chunk boundaries from this start
-    NetworkManager::getInstance()->getVodStartTime(vodId);
-}
-
-void IrcChat::handleVodStartTime(double startTime) {
-    replayChatFirstChunkTime = startTime;
+    replayChatFirstChunkTime = 0;
     replaySeek(replayChatCurrentSeekOffset);
 }
 
@@ -206,8 +201,6 @@ double quantize(double value, double start, double multiple) {
     double rel = value - start;
     return start + qRound(qFloor(rel / multiple) * multiple);
 }
-
-const double CHAT_CHUNK_TIME = 30.0;
 
 // When seeking, request past chat starting this far back in seconds...
 const double SEEK_HISTORY_TIME = 90.0;
@@ -220,13 +213,13 @@ void IrcChat::replaySeek(double newOffset) {
         VodManager::getInstance()->cancelLastVodChatRequest();
     }
     VodManager::getInstance()->resetVodChat();
+    nextChatCursor.clear();
     replayChatFirstLoadAfterSeek = true;
     replayChatRequestInProgress = true;
     // we save the offset to the point we want to start loading chat at as the current time
     replayChatCurrentTime = replayChatVodStartTime + qMax(newOffset - SEEK_HISTORY_TIME, 0.0);
-    qDebug() << "original vod playback start time" << QDateTime::fromMSecsSinceEpoch(replayChatCurrentTime * 1000.0, Qt::UTC);
-    nextChatChunkTimestamp = quantize(replayChatCurrentTime, replayChatFirstChunkTime, CHAT_CHUNK_TIME);
-    qDebug() << "quantized vod playback start time for chat chunk" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC);
+    qDebug() << "original vod playback start time" << replayChatCurrentTime;
+    nextChatChunkTimestamp = replayChatCurrentTime;
     // we dump any pending messages from the previous playback position
     replayChatMessagesPending.clear();
     // we'll do an initial request for starting offset chat right now.
@@ -377,18 +370,28 @@ void IrcChat::replayUpdateCommon() {
 
     if (!replayChatRequestInProgress && needMoreChat) {
         replayChatRequestInProgress = true;
-        VodManager::getInstance()->getVodChatPiece(replayVodId, nextChatTime);
+        if (!nextChatCursor.isEmpty()) {
+            VodManager::getInstance()->getNextVodChatPiece(replayVodId, nextChatCursor);
+        } else {
+            qDebug() << "No cursor from last request; falling back to time-based request";
+            VodManager::getInstance()->getVodChatPiece(replayVodId, nextChatChunkTimestamp);
+        }
     }
 }
 
-void IrcChat::handleDownloadedReplayChat(QList<ReplayChatMessage> messages) {
+void IrcChat::handleDownloadedReplayChat(ReplayChatPiece piece) {
     // eventually the initial chat response will arrive. we'll put the chat into a queue, and do a first chat update check
 
+    auto messages = piece.comments;
     replayChatMessagesPending.append(messages);
+    nextChatCursor = piece.next;
 
-    qDebug() << "CHAT REPLAY PART; t=" << QDateTime::fromMSecsSinceEpoch(nextChatChunkTimestamp * 1000.0, Qt::UTC) << messages.length() << "records";
-    
-    nextChatChunkTimestamp += CHAT_CHUNK_TIME;
+    qDebug() << "CHAT REPLAY PART; t=" << nextChatChunkTimestamp << messages.length() << "records";
+
+    // next request will start at the end of the current request
+    if (!messages.empty()) {
+        nextChatChunkTimestamp = messages.last().videoOffset / 1000.0;
+    }
 
     replayChatRequestInProgress = false;
 

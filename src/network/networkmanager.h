@@ -97,8 +97,8 @@ public:
     void getChannelBttvEmotes(const QString channel);
     void getGlobalBttvEmotes();
 
-    Q_INVOKABLE void getVodStartTime(quint64 vodId);
     Q_INVOKABLE void getVodChatPiece(quint64 vodId, quint64 offset);
+    Q_INVOKABLE void getNextVodChatPiece(quint64 vodId, QString cursor);
     Q_INVOKABLE void cancelLastVodChatRequest();
     Q_INVOKABLE void resetVodChat();
     Q_INVOKABLE void loadChatterList(const QString channel);
@@ -136,8 +136,7 @@ signals:
     void getChannelBadgeBetaUrlsOperationFinished(const int, const QMap<QString, QMap<QString, QMap<QString, QString>>>);
     void getGlobalBadgeBetaUrlsOperationFinished(const QMap<QString, QMap<QString, QMap<QString, QString>>>);
 
-    void vodStartGetOperationFinished(double);
-    void vodChatPieceGetOperationFinished(QList<ReplayChatMessage>);
+    void vodChatPieceGetOperationFinished(ReplayChatPiece);
     void chatterListLoadOperationFinished(QMap<QString, QList<QString>>);
     void blockedUserListLoadOperationFinished(QList<QString>, const quint32 nextOffset, const quint32 total);
 
@@ -174,7 +173,6 @@ private slots:
     void favouritesReply();
     void editUserFavouritesReply();
     void streamReply();
-    void vodStartReply();
     void vodChatPieceReply();
     void chatterListReply();
     void blockedUserListReply();

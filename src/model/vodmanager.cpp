@@ -24,7 +24,6 @@ VodManager::VodManager(QObject *parent) :
 
     connect(netman, &NetworkManager::broadcastsOperationFinished, this, &VodManager::onSearchFinished);
     connect(netman, &NetworkManager::m3u8OperationBFinished, this, &VodManager::streamsGetFinished);
-    connect(netman, &NetworkManager::vodStartGetOperationFinished, this, &VodManager::vodStartGetOperationFinished);
     connect(netman, &NetworkManager::vodChatPieceGetOperationFinished, this, &VodManager::vodChatPieceGetOperationFinished);
 
     QSettings settings("orion.application", "Orion");
@@ -119,12 +118,12 @@ void VodManager::getBroadcasts(QString vod)
     netman->getBroadcastPlaybackStream(vod);
 }
 
-void VodManager::getVodStartTime(quint64 vodId) {
-    netman->getVodStartTime(vodId);
-}
-
 void VodManager::getVodChatPiece(quint64 vodId, quint64 offset) {
     netman->getVodChatPiece(vodId, offset);
+}
+
+void VodManager::getNextVodChatPiece(quint64 vodId, QString cursor) {
+    netman->getNextVodChatPiece(vodId, cursor);
 }
 
 void VodManager::cancelLastVodChatRequest() {
