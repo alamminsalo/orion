@@ -12,6 +12,8 @@ SystemTrayIcon {
 	property bool appVisible: rootWindow.visible
 
 	menu: Menu {
+		visible: false
+
 		MenuItem {
 			text: appVisible ? "Hide" : "Show"
 			onTriggered: {
