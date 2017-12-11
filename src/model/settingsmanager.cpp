@@ -22,6 +22,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mChatEdge = 1;
     mLightTheme = false;
     mFont = "";
+    mKeepOnTop = false;
 
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
@@ -83,6 +84,10 @@ void SettingsManager::load()
 
     if (settings->contains("font")) {
         setFont(settings->value("font").toString());
+    }
+
+    if (settings->contains("keepOnTop")) {
+        setKeepOnTop(settings->value("keepOnTop").toBool());
     }
 }
 
@@ -331,4 +336,18 @@ bool SettingsManager::versionCheckEnabled()
 #else
     return false;
 #endif
+}
+
+bool SettingsManager::keepOnTop() const
+{
+    return mKeepOnTop;
+}
+
+void SettingsManager::setKeepOnTop(bool keepOnTop)
+{
+    if (mKeepOnTop != keepOnTop) {
+        mKeepOnTop = keepOnTop;
+        settings->setValue("keepOnTop", keepOnTop);
+    }
+    emit keepOnTopChanged();
 }

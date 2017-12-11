@@ -129,6 +129,10 @@ ApplicationWindow {
                 }
             });
         }
+
+        if (Settings.keepOnTop){
+            root.flags |= Qt.WindowStaysOnTopHint;
+        }
     }
 
     Dialog {
@@ -166,6 +170,17 @@ ApplicationWindow {
     Loader {
         active: !isMobile()
         sourceComponent: AppTray{}
+    }
+
+    Connections{
+        target: Settings
+        onKeepOnTopChanged:{
+            if (Settings.keepOnTop){
+                root.flags |= Qt.WindowStaysOnTopHint;
+            }else{
+                root.flags &= ~Qt.WindowStaysOnTopHint;
+            }
+        }
     }
 }
 

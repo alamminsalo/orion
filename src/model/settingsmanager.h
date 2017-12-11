@@ -24,6 +24,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(bool lightTheme READ lightTheme WRITE setLightTheme NOTIFY lightThemeChanged)
     Q_PROPERTY(QString font READ font WRITE setFont NOTIFY fontChanged)
     Q_PROPERTY(bool versionCheckEnabled READ versionCheckEnabled)
+    Q_PROPERTY(bool keepOnTop READ keepOnTop WRITE setKeepOnTop NOTIFY keepOnTopChanged)
 
     bool mAlert;
     bool mCloseToTray;
@@ -40,6 +41,7 @@ class SettingsManager : public QObject
     QString mFont;
 
     bool mHiDpi;
+    bool mKeepOnTop;
 
     explicit SettingsManager(QObject *parent = nullptr);
     static SettingsManager *instance;
@@ -85,6 +87,9 @@ public:
 
     bool versionCheckEnabled();
 
+    bool keepOnTop() const;
+    void setKeepOnTop(bool keepOnTop);
+
 signals:
     void alertChanged();
     void closeToTrayChanged();
@@ -98,6 +103,7 @@ signals:
     void lightThemeChanged();
     void accessTokenChanged(QString accessToken);
     void fontChanged();
+    void keepOnTopChanged();
 
 public slots:
     void setAccessToken(const QString accessToken);
