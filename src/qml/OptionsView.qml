@@ -169,6 +169,14 @@ Page {
                         selection: Settings.chatEdge
                         onActivated: Settings.chatEdge = index
                     }
+
+                    Switch {
+                        visible: !isMobile()
+                        id: keepOnTopOption
+                        text: "Keep on top"
+                        checked: Settings.keepOnTop
+                        onClicked: Settings.keepOnTop = checked
+                    }
                 }
             }
 
