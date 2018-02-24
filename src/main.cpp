@@ -113,9 +113,9 @@ int main(int argc, char *argv[])
     parser.addOption(debugOption);
     parser.process(app);
 
+#ifndef  QT_DEBUG
     bool showDebugOutput = parser.isSet(debugOption);
 
-#ifndef  QT_DEBUG
     if (!showDebugOutput) {
         qInstallMessageHandler(noisyFailureMsgHandler);
     }

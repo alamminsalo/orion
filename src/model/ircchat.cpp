@@ -54,7 +54,6 @@ IrcChat::IrcChat(QObject *parent) :
     _bitsProvider(nullptr),
     _badgeProvider(nullptr),
     sock(nullptr),
-    replayMode(false),
     netman(NetworkManager::getInstance())
     {
 
@@ -179,7 +178,7 @@ void IrcChat::join(const QString channel, const QString channelId) {
     qDebug() << "Joined channel " << channel;
 }
 
-void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset) {
+void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double /*vodStartEpochTime*/, double playbackOffset) {
     replayMode = true;
 
     roomInitCommon(channel, channelId);
@@ -1312,16 +1311,15 @@ void IrcChat::parseCommand(QString cmd) {
 
     if(cmd.contains("CLEARCHAT")) {
         //@ban-duration=<ban-duration>;ban-reason=<ban-reason> :tmi.twitch.tv CLEARCHAT #<channel> :<user>
-        auto user = cmd.mid(cmd.lastIndexOf(":")+1);
-        auto ban_index = cmd.indexOf("=")+1;
-        auto ban_duration = cmd.mid(ban_index, cmd.indexOf(";") - ban_index);
-        auto ban_reason_index = cmd.indexOf(";")+1;
-        auto ban_reason = cmd.mid(
-            cmd.indexOf("=", ban_index)+1,
-            (cmd.indexOf(";",ban_reason_index)) - cmd.indexOf("=", ban_index) - 1);
+        QString user = cmd.mid(cmd.lastIndexOf(":")+1);
+        int ban_index = cmd.indexOf("=")+1;
+        QString ban_duration = cmd.mid(ban_index, cmd.indexOf(";") - ban_index);
+        int ban_reason_index = cmd.indexOf(";")+1;
+        QString ban_reason = cmd.mid( cmd.indexOf("=", ban_index) + 1,
+                                    ( cmd.indexOf(";",ban_reason_index)) - cmd.indexOf("=", ban_index) - 1);
         ban_reason.replace(QString("\\s"), QString(" "));
-        auto banText = QString("%1 has been timed out for %2 seconds. %3")
-                         .arg(user).arg(ban_duration).arg(ban_reason);
+        QString banText = QString("%1 has been timed out for %2 second(s). %3")
+                           .arg(user).arg(ban_duration).arg(ban_reason);
         emit noticeReceived(banText);
         return;
     }
