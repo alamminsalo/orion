@@ -1252,7 +1252,7 @@ void IrcChat::parseCommand(QString cmd) {
 					_emoteSetIDs.append(entry.toInt());
 				}
                 emit emoteSetIDsChanged();
-			}
+            }
             else if (tag.key == "color") {
                 qDebug() << "Setting user global color to" << tag.value;
                 userGlobalColor = tag.value;
@@ -1309,6 +1309,23 @@ void IrcChat::parseCommand(QString cmd) {
         }
         return;
     }
+
+    if(cmd.contains("CLEARCHAT")) {
+        //@ban-duration=<ban-duration>;ban-reason=<ban-reason> :tmi.twitch.tv CLEARCHAT #<channel> :<user>
+        auto user = cmd.mid(cmd.lastIndexOf(":")+1);
+        auto ban_index = cmd.indexOf("=")+1;
+        auto ban_duration = cmd.mid(ban_index, cmd.indexOf(";") - ban_index);
+        auto ban_reason_index = cmd.indexOf(";")+1;
+        auto ban_reason = cmd.mid(
+            cmd.indexOf("=", ban_index)+1,
+            (cmd.indexOf(";",ban_reason_index)) - cmd.indexOf("=", ban_index) - 1);
+        ban_reason.replace(QString("\\s"), QString(" "));
+        auto banText = QString("%1 has been timed out for %2 seconds. %3")
+                         .arg(user).arg(ban_duration).arg(ban_reason);
+        emit noticeReceived(banText);
+        return;
+    }
+
     qDebug() << "Unrecognized chat command:" << cmd;
 }
 
