@@ -61,9 +61,6 @@ class IrcChat : public QObject
 {
     Q_OBJECT
 
-    NetworkManager *netman;
-    SettingsManager *settings;
-
     //emote download
     QDir emoteDir;
     QString emoteDirPathImpl;
@@ -158,7 +155,7 @@ private slots:
     void getBlockedUserList();
 
 private:
-    qint16 user_id;
+    quint16 user_id;
 
     static const qint16 PORT;
     static const QString HOST;
@@ -171,6 +168,7 @@ private:
     static const QString BTTV_EMOTES_URL_FORMAT_LODPI;
     static const QString IMAGE_PROVIDER_BITS;
 
+    SettingsManager *settings;
     URLFormatImageProvider _emoteProvider;
     URLFormatImageProvider _bttvEmoteProvider;
     BitsImageProvider * _bitsProvider;
@@ -202,7 +200,7 @@ private:
     QSslSocket *sock;
     QString room;
     QString roomChannelId;
-    bool replayMode;
+    bool replayMode = false;
     // map of channel name -> list of pairs (badge name, badge version)
     QMap<QString, QList<QPair<QString, QString>>> badgesByChannel;
     bool logged_in;
@@ -237,6 +235,8 @@ private:
 
     QMap<QString, QString> lastGlobalBttvEmoteFixedStrings;
     QMap<QString, QString> lastCurChannelBttvEmoteFixedStrings;
+
+    NetworkManager *netman;
 
     enum ImageEntryKind { emote, bits, bttvEmote };
 

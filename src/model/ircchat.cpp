@@ -54,7 +54,6 @@ IrcChat::IrcChat(QObject *parent) :
     _bitsProvider(nullptr),
     _badgeProvider(nullptr),
     sock(nullptr),
-    replayMode(false),
     netman(NetworkManager::getInstance())
     {
 
@@ -179,7 +178,7 @@ void IrcChat::join(const QString channel, const QString channelId) {
     qDebug() << "Joined channel " << channel;
 }
 
-void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double vodStartEpochTime, double playbackOffset) {
+void IrcChat::replay(const QString channel, const QString channelId, const quint64 vodId, double /*vodStartEpochTime*/, double playbackOffset) {
     replayMode = true;
 
     roomInitCommon(channel, channelId);
@@ -1222,7 +1221,9 @@ void IrcChat::parseCommand(QString cmd) {
         return;
 
     }
-    if(cmd.contains("NOTICE")) {
+    if(cmd.contains("NOTICE") && !cmd.contains(QRegExp("\\bban_success"))
+        && !cmd.contains(QRegExp("\\btimeout_success")))
+    {
         QString text = cmd.remove(0, cmd.indexOf(':', cmd.indexOf("NOTICE")) + 1);
         emit noticeReceived(text);
         return;
@@ -1252,7 +1253,7 @@ void IrcChat::parseCommand(QString cmd) {
 					_emoteSetIDs.append(entry.toInt());
 				}
                 emit emoteSetIDsChanged();
-			}
+            }
             else if (tag.key == "color") {
                 qDebug() << "Setting user global color to" << tag.value;
                 userGlobalColor = tag.value;
@@ -1309,6 +1310,33 @@ void IrcChat::parseCommand(QString cmd) {
         }
         return;
     }
+
+    if(cmd.contains("CLEARCHAT")) {
+        //@ban-duration=<ban-duration>;ban-reason=<ban-reason> :tmi.twitch.tv CLEARCHAT #<channel> :<user>
+        QString user = cmd.mid(cmd.lastIndexOf(":")+1);
+        QString banText = "ban-reason";
+        int banIndex = cmd.indexOf(banText) + banText.count();
+        QString banReason = cmd.mid( banIndex + 1,
+            cmd.indexOf(";", banIndex) - banIndex - 1);
+        banReason.replace(QString("\\s"), QString(" "));
+
+        QString durationText = "ban-duration";
+        if(cmd.contains(durationText)) {
+          int durationIndex = cmd.indexOf(durationText)+durationText.count();
+          QString banDuration = cmd.mid(durationIndex + 1,
+              cmd.indexOf(";") - durationIndex - 1);
+          QString banText = QString("%1 has been timed out for %2 seconds. %3")
+                             .arg(user).arg(banDuration).arg(banReason);
+          emit noticeReceived(banText);
+        }
+        else {
+          QString banText = QString("%1 is now banned from this room. %2")
+                             .arg(user).arg(banReason);
+          emit noticeReceived(banText);
+        }
+        return;
+    }
+
     qDebug() << "Unrecognized chat command:" << cmd;
 }
 
@@ -1437,4 +1465,3 @@ void IrcChat::editUserBlock(const QString & blockUserName, const bool isBlock) {
         netman->editUserBlock(user_id, blockUserName, isBlock);
     }
 }
-
