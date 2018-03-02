@@ -1,6 +1,8 @@
 
 # Orion
 
+[![Build status](https://ci.appveyor.com/api/projects/status/u8vstv96djis8twq/branch/master?svg=true)](https://ci.appveyor.com/project/alamminsalo/orion/branch/master)
+
 [Webpage](https://alamminsalo.github.io/orion)
 
 QML/C++-written desktop client for Twitch.tv
