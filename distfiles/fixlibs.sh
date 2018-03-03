@@ -45,7 +45,7 @@ done
 echo "- multimedia"
 
 #Multimedia libs
-FRAMEWORKS="QtGui QtCore QtQuick QtQml QtNetwork QtMultimedia QtMultimediaQuick_p"
+FRAMEWORKS="QtGui QtCore QtQuick QtQml QtNetwork QtMultimedia"
 for FRAMEWORK in $FRAMEWORKS; do
 	echo "  $FRAMEWORK"
 	install_name_tool -id @executable_path/../Frameworks/$FRAMEWORK.framework/Versions/5/$FRAMEWORK \
