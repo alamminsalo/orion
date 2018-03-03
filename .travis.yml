@@ -24,8 +24,7 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash distfiles/deploy_mac.sh; fi
   - mkdir -p artifacts
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install dmgbuild; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then echo "files=['orion.app']\nsymlinks={'Applications': '/Applications'}" > settings.py; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then dmgbuild -s settings.py "Orion $TRAVIS_TAG" "orion-$TRAVIS_TAG.dmg"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then dmgbuild -s distfiles/settings.py "Orion $TRAVIS_TAG" "orion-$TRAVIS_TAG.dmg"; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv "orion-$TRAVIS_TAG.dmg" artifacts/; fi
   
 deploy:
