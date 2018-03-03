@@ -1,5 +1,7 @@
 os:
   - osx
+
+osx_image: xcode7.3
   
 env:
   - QTBREWVER=5.9
@@ -15,7 +17,7 @@ cache:
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt5 jq; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then python -m pip install dmgbuild; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install dmgbuild; fi
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export QTDIR=$(brew info --json=v1 qt | jq -r '.[0].bottle.stable.cellar + "/" + .[0].name + "/" + .[0].installed[0].version'); fi
@@ -35,5 +37,5 @@ deploy:
       skip_cleanup: true
       prerelease: true
       on:
-        tags: false
+        tags: true
         all_branches: true
