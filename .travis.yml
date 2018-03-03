@@ -23,13 +23,16 @@ script:
   - make
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash distfiles/deploy_mac.sh; fi
   - mkdir -p artifacts
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then zip -vr --symlinks artifacts/orion.app.zip orion.app/; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip install dmgbuild; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then echo "files=['orion.app']\nsymlinks={'Applications': '/Applications'}" > settings.py; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then dmgbuild -s settings.py "Orion $TRAVIS_TAG" "orion-$TRAVIS_TAG.dmg"; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv "orion-$TRAVIS_TAG.dmg" artifacts/; fi
   
 deploy:
     - provider: releases
       # To use this, create a Github token with the "public_repo" permission, and create an env var GITHUB_API_KEY in the Travis' project settings, making sure "Display value in build log" is set to OFF
       api_key: '$GITHUB_API_KEY'
-      file: 'artifacts/orion.app.zip'
+      file: 'artifacts/orion-$TRAVIS_TAG.dmg'
       skip_cleanup: true
       prerelease: true
       on:
