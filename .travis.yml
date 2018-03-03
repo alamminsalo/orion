@@ -36,5 +36,5 @@ deploy:
       skip_cleanup: true
       prerelease: true
       on:
-        tags: true
+        tags: false
         all_branches: true
