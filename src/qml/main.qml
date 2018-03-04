@@ -27,6 +27,11 @@ ApplicationWindow {
     // Application main font
     font.family: Settings.font || appFont.name
 
+    height: 600
+    width: 700
+    minimumHeight: 480
+    minimumWidth: 480
+
     // Style settings
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
@@ -106,11 +111,6 @@ ApplicationWindow {
 
     Component.onCompleted: {
         if (!isMobile()) {
-	    // set w,h
-	    root.minimumWidth = 300
-	    root.minimumHeight = 300
-	    root.height = Screen.height * 0.6
-	    root.width = Screen.width * 0.6
             var component = Qt.createComponent("components/Tooltip.qml")
             g_tooltip = component.createObject(root)
         }
