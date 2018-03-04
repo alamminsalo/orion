@@ -21,7 +21,7 @@ install:
   - set mpv_file=mpv-dev-20171225.7z
   - ps: |
       # TLS 1.2 is required by the site
-      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      [Net.ServicePointManager]::SecurityProtocol = 'Ssl3, Tls, Tls11, Tls12'
       $libmpv_download_url = "https://mpv.srsfckn.biz/${env:mpv_file}"
       echo "Downloading ${libmpv_download_url}"
       $libmpv_download_url | Out-File "${env:mpvdir}\version.txt"
