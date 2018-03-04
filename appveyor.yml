@@ -50,10 +50,10 @@ after_build:
   - del %configuration%\*.h
   - del %configuration%\*.res
   - if %configuration%==release copy "resources\orion-installer.iss" orion-installer.iss
-  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\1033\vcredist_%platform%.exe" /F"orion-%APPVEYOR_REPO_COMMIT%-%platform%" "orion-installer.iss"
+  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\1033\vcredist_%platform%.exe" /F"orion-%platform%" "orion-installer.iss"
 
 artifacts:
   - path: orion_$(configuration)_$(platform)_snapshot_$(APPVEYOR_REPO_COMMIT).zip
     name: orion windows $(configuration) $(platform) snapshot zip
-  - path: orion-$(APPVEYOR_REPO_COMMIT)-$(platform).exe
+  - path: orion-$(platform).exe
     name: Windows installer
