@@ -4,12 +4,27 @@ environment:
   matrix:
     - platform: x86
       configuration: release
+      mpv_platform: i686
+      MPVLIBDIR: c:\mpv\32
+      OPENSSL_DIR: C:\OpenSSL-Win32
+
     - platform: x64
       configuration: release
+      mpv_platform: x86_64
+      MPVLIBDIR: c:\mpv\64
+      OPENSSL_DIR: C:\OpenSSL-Win64
+
     - platform: x86
       configuration: debug
+      mpv_platform: i686
+      MPVLIBDIR: c:\mpv\32
+      OPENSSL_DIR: C:\OpenSSL-Win32
+
     - platform: x64
       configuration: debug
+      mpv_platform: x86_64
+      MPVLIBDIR: c:\mpv\64
+      OPENSSL_DIR: C:\OpenSSL-Win64
 
 install:
   - if %platform%==x86 set mpv_platform=i686
