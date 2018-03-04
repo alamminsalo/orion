@@ -47,6 +47,10 @@ install:
   - if %platform%==x86 set OPENSSL_DIR=C:\OpenSSL-Win32
   - if %platform%==x64 set OPENSSL_DIR=C:\OpenSSL-Win64
 
+cache:
+  - c:\mpv\mpv-dev.7z -> appveyor.yml
+  - c:\mpv\version.txt -> appveyor.yml
+
 build_script:
 - cmd: >-
     echo APPVEYOR_BUILD_FOLDER=%APPVEYOR_BUILD_FOLDER%
