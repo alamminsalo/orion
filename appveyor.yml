@@ -1,5 +1,7 @@
 # For info about dev tool paths on Appveyor see https://www.appveyor.com/docs/build-environment/#pre-installed-software
 
+version: 1.6.2.{build}
+
 environment:
   matrix:
     - platform: x86
@@ -57,3 +59,5 @@ artifacts:
     name: orion windows $(configuration) $(platform) snapshot zip
   - path: orion-$(APPVEYOR_REPO_COMMIT)-$(platform).exe
     name: Windows installer
+
+deploy:
