@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 #ifndef Q_OS_ANDROID
     //Single application solution
     QLockFile lockfile(QDir::temp().absoluteFilePath("wz0dPKqHv3vX0BBsUFZt.lock"));
-    if (!lockfile.tryLock()) {
+    if (!lockfile.tryLock(100)) {
         // Already running
         return -1;
     }
