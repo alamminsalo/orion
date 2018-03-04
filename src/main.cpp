@@ -20,8 +20,8 @@
 #include <QFontDatabase>
 #include <QIcon>
 #include <QQuickWindow>
+#include <QLockFile>
 
-#include "util/runguard.h"
 #include "model/channelmanager.h"
 #include "network/networkmanager.h"
 #include "model/vodmanager.h"
@@ -98,9 +98,9 @@ int main(int argc, char *argv[])
 
 #ifndef Q_OS_ANDROID
     //Single application solution
-    RunGuard guard("wz0dPKqHv3vX0BBsUFZt");
-    if ( !guard.tryToRun() ){
-        guard.sendWakeup();
+    QLockFile lockfile(QDir::temp().absoluteFilePath("wz0dPKqHv3vX0BBsUFZt.lock"));
+    if (!lockfile.tryLock()) {
+        // Already running
         return -1;
     }
 
@@ -163,9 +163,6 @@ int main(int argc, char *argv[])
     if (rootWin) {
         if (SettingsManager::getInstance()->minimizeOnStartup())
             rootWin->hide();
-
-        //Connect to runguard events
-        QObject::connect(&guard, &RunGuard::anotherProcessTriggered, rootWin, &QQuickWindow::show);
     }
 #endif
 
