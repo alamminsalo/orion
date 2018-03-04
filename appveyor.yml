@@ -20,14 +20,12 @@ install:
   - if not exist "%MPVDIR%" mkdir "%MPVDIR%"
   - set mpv_file=mpv-dev-20171225.7z
   - ps: |
-      if (!(Test-Path "${env:mpvdir}\${env:mpv_file}")) {
-         # TLS 1.2 is required by the site
-         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-         $libmpv_download_url = "https://mpv.srsfckn.biz/${env:mpv_file}"
-         echo "Downloading ${libmpv_download_url}"
-         $libmpv_download_url | Out-File "${env:mpvdir}\version.txt"
-         Start-FileDownload "${libmpv_download_url}" -FileName "${env:mpvdir}\${env:mpv_file}" 
-      }
+      # TLS 1.2 is required by the site
+      [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+      $libmpv_download_url = "https://mpv.srsfckn.biz/${env:mpv_file}"
+      echo "Downloading ${libmpv_download_url}"
+      $libmpv_download_url | Out-File "${env:mpvdir}\version.txt"
+      Start-FileDownload "${libmpv_download_url}" -FileName "${env:mpvdir}\${env:mpv_file}" 
       Start-FileDownload "https://raw.githubusercontent.com/mpv-player/mpv/master/libmpv/mpv.def" -FileName "${env:mpvdir}\mpv_dl.def"
       @("EXPORTS") + (Get-Content "${env:mpvdir}\mpv_dl.def") | Set-Content "${env:mpvdir}\mpv.def"
   - type %MPVDIR%\version.txt
