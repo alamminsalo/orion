@@ -62,7 +62,7 @@ deploy:
 - provider: GitHub
   auth_token:
     secure: kna2fyW9Q70WCBxJn/YYJ4pupSRog8FFp6BhKOjr6rtfMIGGtN52UuiMtc90RTla
-  artifact: orion-release-x86.exe, orion-release-x64.exe
+  artifact: orion-$(configuration)-$(platform).exe
   prerelease: true
   force_update: true
   on:
