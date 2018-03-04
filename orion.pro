@@ -13,7 +13,7 @@ CONFIG += c++11
 
 TARGET = orion
 
-VERSION = 1.6.1
+VERSION = 1.6.2
 DEFINES += APP_VERSION=\\\"v$$VERSION\\\"
 DEFINES += APP_NAME=\\\"Orion\\\"
 
