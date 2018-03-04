@@ -26,7 +26,6 @@ SOURCES += src/main.cpp\
     src/util/jsonparser.cpp \
     src/model/channellistmodel.cpp \
     src/model/gamelistmodel.cpp \
-    src/util/runguard.cpp \
     src/model/vod.cpp \
     src/model/vodlistmodel.cpp \
     src/model/vodmanager.cpp \
@@ -49,7 +48,6 @@ HEADERS  += src/model/channel.h \
     src/model/channellistmodel.h \
     src/model/gamelistmodel.h \
     src/util/m3u8parser.h \
-    src/util/runguard.h \
     src/model/vod.h \
     src/model/vodlistmodel.h \
     src/model/vodmanager.h \
