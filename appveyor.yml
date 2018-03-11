@@ -12,8 +12,8 @@ environment:
       configuration: debug
 
 install:
-  - if %platform%==x86 set QTDIR=C:\Qt\5.8\msvc2015
-  - if %platform%==x64 set QTDIR=C:\Qt\5.8\msvc2015_64
+  - if %platform%==x86 set QTDIR=C:\Qt\5.9.3\msvc2015
+  - if %platform%==x64 set QTDIR=C:\Qt\5.9.3\msvc2015_64
   - if %platform%==x86 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
   - if %platform%==x64 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
   - set INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt
