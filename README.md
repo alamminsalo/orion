@@ -87,6 +87,18 @@ Minimum supported Qt version is currently 5.8
 ## Misc
 
 Supports environment variables such as `QT_QUICK_CONTROLS_MATERIAL_ACCENT`, to customize UI colors. 
+
+### Example
+
+```
+# linux example, but similar in other OSes
+QT_QUICK_CONTROLS_MATERIAL_BACKGROUND="#00101f" QT_QUICK_CONTROLS_MATERIAL_ACCENT="#FF5722" orion
+```
+
+And this looks like:
+
+<img src="https://user-images.githubusercontent.com/5585454/42691905-8438a3fe-86b2-11e8-821e-c4a6bbb8ff08.png" width="256">
+
 See more on [qt material docs](https://doc.qt.io/qt-5/qtquickcontrols2-material.html).
 
 
