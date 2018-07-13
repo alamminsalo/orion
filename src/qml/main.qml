@@ -32,9 +32,6 @@ ApplicationWindow {
     minimumHeight: 480
     minimumWidth: 480
 
-    // Style settings
-    Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
-
     title: "Orion"
     visibility: appFullScreen ? Window.FullScreen : Window.AutomaticVisibility
 

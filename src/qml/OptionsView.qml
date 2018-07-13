@@ -117,13 +117,6 @@ Page {
                 Column {
                     width: parent.width
 
-                    Switch {
-                        id: themeOption
-                        text: "Enable dark theme"
-                        checked: !Settings.lightTheme
-                        onClicked: Settings.lightTheme = !checked
-                    }
-
                     RowLayout {
                         width: parent.width
 

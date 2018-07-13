@@ -74,9 +74,9 @@ void SettingsManager::load()
         setOfflineNotifications(settings->value("offlineNotifications").toBool());
     }
 
-    if (settings->contains("lightTheme")) {
+    /*if (settings->contains("lightTheme")) {
         setLightTheme(settings->value("lightTheme").toBool());
-    }
+    }*/
 
     if (settings->contains("accessToken")) {
         setAccessToken(settings->value("accessToken").toString());

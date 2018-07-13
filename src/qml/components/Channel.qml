@@ -122,7 +122,7 @@ Item {
 
             Rectangle {
                 id: titleBg
-                color: Material.background
+                color: rootWindow.Material.background
                 opacity: 0.8
                 anchors {
                     bottom: parent.bottom
