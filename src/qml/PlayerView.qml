@@ -30,9 +30,8 @@ Page {
     property int lastSetPosition
     property bool headersVisible: true
 
-    //Android only
     onHeadersVisibleChanged: {
-        if (isMobile() && view.playerVisible) {
+        if (view.playerVisible) {
             topbar.visible = headersVisible
         }
     }
