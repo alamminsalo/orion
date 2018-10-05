@@ -39,7 +39,6 @@ Source: "{#AdditionalRedist}"; DestDir: "{app}\AdditionalRedist"; Flags: ignorev
 Name: "{group}\Orion"; Filename: "{app}\bin\orion.exe"
 
 [Run]
-Filename: "{app}\bin\vcredist_{#Platform}.exe"; Parameters: "/install /passive /norestart"
 #ifdef AdditionalRedist
 #define AdditionalRedistProper ExtractFileName(AdditionalRedist)
 Filename: "{app}\AdditionalRedist\{#AdditionalRedistProper}"; Parameters: "/install /passive /norestart"

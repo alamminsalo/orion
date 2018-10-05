@@ -1,47 +1,72 @@
-# For info about dev tool paths on Appveyor see https://www.appveyor.com/docs/build-environment/#pre-installed-software
-
 environment:
   matrix:
-    - platform: x86
-      configuration: release
-    - platform: x64
-      configuration: release
-    - platform: x86
-      configuration: debug
-    - platform: x64
-      configuration: debug
+  - platform: x64
+    configuration: release
+    qt: 5.10
+    cc: VS2017
+    QTDIR: C:\Qt\5.10\msvc2017_64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    OPENSSL_DIR: C:\OpenSSL-Win64
+
+  - platform: x86
+    configuration: release
+    qt: 5.10
+    cc: VS2015
+    toolchain_version: 14
+    QTDIR: C:\Qt\5.10\msvc2015
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    OPENSSL_DIR: C:\OpenSSL-Win32
+
+matrix:
+  fast_finish: false
+
+cache:
+  - C:\projects\AV -> appveyor.yml
+
+init:
+  - set vcarch=%platform%
+  - set arch=%platform%
+  - set CL=/MP
+  - if "%platform%" == "x64" set vcarch=amd64
+  - set VCREDIST=vcredist_%platform%.exe
+  - if %cc%==VS2017 set VCREDIST=vc_redist.%platform%.exe
+  - if %cc%==VS2017 (
+      call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %vcarch%
+    ) else if not %cc%==MinGW (
+      call "C:\Program Files (x86)\Microsoft Visual Studio %toolchain_version%.0\VC\vcvarsall.bat" %vcarch%
+    )
+  - set PATH=%QTDIR%\bin;%PATH%
+  - if %cc%==MinGW set PATH=C:\Qt\Tools\mingw%toolchain_version%_32\bin;%PATH%
+  - echo NUMBER_OF_PROCESSORS=%NUMBER_OF_PROCESSORS%
+  - echo PROCESSOR_IDENTIFIER=%PROCESSOR_IDENTIFIER%
+  - echo QTDIR=%QTDIR%
+  - echo PATH=%PATH%
 
 install:
-  - if %platform%==x86 set QTDIR=C:\Qt\5.9.3\msvc2015
-  - if %platform%==x64 set QTDIR=C:\Qt\5.9.3\msvc2015_64
-  - if %platform%==x86 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
-  - if %platform%==x64 set PATH=%QTDIR%\bin;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin;%PATH%
-  - set INCLUDE=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Include;C:\Program Files (x86)\Windows Kits\10\Include\10.0.10150.0\ucrt
-  - if %platform%==x86 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x86
-  - if %platform%==x64 set LIB=%QTDIR%\lib;C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\lib\amd64;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\lib\x64;C:\Program Files (x86)\Windows Kits\10\Lib\10.0.10150.0\ucrt\x64
-  - set VCINSTALLDIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
-  - if %platform%==x86 set OPENSSL_DIR=C:\OpenSSL-Win32
-  - if %platform%==x64 set OPENSSL_DIR=C:\OpenSSL-Win64
+  - git clone https://github.com/wang-bin/QtAV.git "C:\projects\QtAV"
+  - cd "C:\projects\QtAV" && git submodule update --init
+  - cd "C:\projects" && C:\projects\QtAV\tools\ci\win\install_dep.bat
+  - cd "C:\projects\QtAV"
+  - qmake QtAV.pro "CONFIG+=%configuration%" "CONFIG+=no-examples" "CONFIG+=no-tests"
+  - nmake %configuration%
+  - sdk_install.bat
+
+before_build:
+  - echo APPVEYOR_BUILD_FOLDER=%APPVEYOR_BUILD_FOLDER%
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - git submodule update --init
 
 build_script:
-- cmd: >-
-    echo APPVEYOR_BUILD_FOLDER=%APPVEYOR_BUILD_FOLDER%
-
-    cd %APPVEYOR_BUILD_FOLDER%
-
-    qmake orion.pro "CONFIG+=multimedia"
-
-    mkdir libs
-
-    copy /y "%OPENSSL_DIR%\ssleay32.dll" libs
-
-    copy /y "%OPENSSL_DIR%\libeay32.dll" libs
-
-    nmake %configuration%
-
-    %QTDIR%\bin\windeployqt --qmldir src\qml %configuration%\orion.exe
-
-    dir /s
+  - qmake orion.pro "CONFIG+=%configuration%" "CONFIG+=qtav"
+  - mkdir libs
+  - copy /y "%OPENSSL_DIR%\ssleay32.dll" libs
+  - copy /y "%OPENSSL_DIR%\libeay32.dll" libs
+  - nmake %configuration%
+  - windeployqt --qmldir src\qml %configuration%\orion.exe
+  - copy /y %QTDIR%\bin\av*-*.dll %configuration%
+  - copy /y %QTDIR%\bin\sw*-*.dll %configuration%
+  - copy /y %QTDIR%\bin\QtAV*.dll %configuration%
+  - dir /s
 
 after_build:
   - 7z a orion_%configuration%_%platform%_snapshot_%APPVEYOR_REPO_COMMIT%.zip . -x!.git
@@ -50,7 +75,7 @@ after_build:
   - del %configuration%\*.h
   - del %configuration%\*.res
   - if %configuration%==release copy "resources\orion-installer.iss" orion-installer.iss
-  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\1033\vcredist_%platform%.exe" /F"orion-%configuration%-%platform%" "orion-installer.iss"
+  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="%APPVEYOR_BUILD_FOLDER%\%configuration%\%VCREDIST%" /F"orion-%configuration%-%platform%" "orion-installer.iss"
 
 artifacts:
   - path: orion_$(configuration)_$(platform)_snapshot_$(APPVEYOR_REPO_COMMIT).zip
