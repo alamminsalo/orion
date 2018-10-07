@@ -50,11 +50,12 @@ Item {
 
         stop();
 
+        renderer.source = src
+        renderer.startPosition = 0
+
         if (start >= 0) {
             seekTo(start)
         }
-
-        renderer.source = src
 
         resume()
     }
@@ -79,6 +80,8 @@ Item {
     }
 
     function seekTo(pos) {
+        status = "BUFFERING"
+        renderer.startPosition = pos * 1000
         renderer.seek(pos * 1000)
         root.position = pos
     }
@@ -155,6 +158,22 @@ Item {
     MediaPlayer {
         id: renderer
 
+        function updateStatus() {
+            if (status === MediaPlayer.Buffering) {
+                root.status = "BUFFERING"
+            } else if (playbackState === MediaPlayer.PlayingState) {
+                root.status = "PLAYING"
+            } else if (playbackState === MediaPlayer.PausedState) {
+                root.status = "PAUSED"
+            } else if (playbackState === MediaPlayer.StoppedState) {
+                root.status = "STOPPED"
+            }
+        }
+
+        onStatusChanged: {
+            updateStatus()
+        }
+
         onStopped: {
             root.status = "STOPPED"
             root.playingStopped()
@@ -170,9 +189,14 @@ Item {
             root.playingResumed()
         }
 
+        onSeekFinished: {
+            updateStatus()
+        }
+
         onPositionChanged: {
+            if (root.status !== "PLAYING") return
             var pos = position / 1000
-            if (root.position !== pos)
+            if (root.position !== pos && (startPosition === 0 || position > 0))
                 root.position = pos
         }
     }
