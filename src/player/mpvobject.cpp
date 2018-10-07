@@ -26,6 +26,7 @@ MpvObject::MpvObject(QQuickItem * parent)
 #endif
 
     // Make use of the MPV_SUB_API_OPENGL_CB API.
+    mpv::qt::set_option_variant(mpv, "gpu-context", "angle");
     mpv::qt::set_option_variant(mpv, "vo", "opengl-cb");
     //mpv::qt::set_option_variant(mpv, "input-cursor", "no");
 

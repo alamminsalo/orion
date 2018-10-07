@@ -25,6 +25,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     mOpengl = "opengl es";
 #endif
     mQuality = "source";
+    mDecoder = "auto";
     mChatEdge = 1;
     mLightTheme = false;
     mFont = "";
@@ -70,6 +71,10 @@ void SettingsManager::load()
 
     if (settings->contains("quality")) {
         setQuality(settings->value("quality").toString());
+    }
+
+    if (settings->contains("decoder")) {
+        setDecoder(settings->value("decoder").toString());
     }
 
     if (settings->contains("volumeLevel")) {
@@ -291,6 +296,22 @@ void SettingsManager::setQuality(const QString &quality)
         qDebug() << "quality changed to" << quality;
     }
     emit qualityChanged();
+}
+
+QString SettingsManager::decoder() const
+{
+    return mDecoder;
+}
+
+void SettingsManager::setDecoder(const QString &decoder)
+{
+    if (mDecoder != decoder) {
+        mDecoder = decoder;
+        settings->setValue("decoder", decoder);
+
+        qDebug() << "decoder changed to" << decoder;
+    }
+    emit decoderChanged();
 }
 
 QString SettingsManager::accessToken() const

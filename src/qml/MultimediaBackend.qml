@@ -25,6 +25,8 @@ togglePause()       -- Toggles between playing and pausing
 stop()              -- Stops playback
 seekTo(pos)         -- Seeks to milliseconds in the current source, works only on vods
 setVolume(vol)      -- Number between 0 - 100
+getDecoder()        -- Return list of video decoders
+setDecoder(idx)     -- Set video decoder
 
 Signals needed:
 playingResumed()    -- Signaled when playback toggles from paused / stopped to playing
@@ -84,6 +86,15 @@ Item {
 
     function setVolume(vol) {
         volume = Math.round(vol)
+    }
+
+    function getDecoder() {
+        var defaultDecoders = []
+        return defaultDecoders
+    }
+
+    function setDecoder(idx) {
+
     }
 
     signal playingResumed()

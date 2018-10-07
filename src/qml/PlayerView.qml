@@ -585,12 +585,44 @@ Page {
                     }
 
                     onValueChanged: {
-                        var val = value
-                        if (Qt.platform === "linux" && player_backend === "mpv")
-                            val = Math.round(Math.log(val) / Math.log(100))
+                        renderer.setVolume(value)
+                        Settings.volumeLevel = value;
+                    }
+                }
+                ComboBox {
+                    id: hwaccelBox
+                    font.pointSize: 9
+                    font.bold: true
+                    focusPolicy: Qt.NoFocus
+                    flat: true
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 140
+                    Layout.minimumWidth: 100
+                    visible: renderer.getDecoder().length > 1
 
-                        renderer.setVolume(val)
-                        Settings.volumeLevel = val;
+                    onCurrentIndexChanged: {
+                        renderer.setDecoder(currentIndex)
+                        loadAndPlay()
+                        Settings.decoder = hwaccelBox.model[currentIndex]
+                        pArea.refreshHeaders()
+                    }
+
+                    Component.onCompleted: {
+                        var decoder = renderer.getDecoder()
+                        hwaccelBox.model = decoder
+                        selectItem(Settings.decoder)
+                        renderer.setDecoder(currentIndex)
+                    }
+
+                    function selectItem(name) {
+                        for (var i in hwaccelBox.model) {
+                            if (hwaccelBox.model[i] === name) {
+                                currentIndex = i;
+                                return;
+                            }
+                        }
+                        //None found, attempt to select first item
+                        currentIndex = 0
                     }
                 }
 

@@ -21,6 +21,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(double textScaleFactor READ textScaleFactor WRITE setTextScaleFactor NOTIFY textScaleFactorChanged)
     Q_PROPERTY(QString opengl READ opengl WRITE setOpengl NOTIFY openglChanged)
     Q_PROPERTY(QString quality READ quality WRITE setQuality NOTIFY qualityChanged)
+    Q_PROPERTY(QString decoder READ decoder WRITE setDecoder NOTIFY decoderChanged)
     Q_PROPERTY(QString accessToken READ accessToken WRITE setAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool hasAccessToken READ hasAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool lightTheme READ lightTheme WRITE setLightTheme NOTIFY lightThemeChanged)
@@ -39,6 +40,7 @@ class SettingsManager : public QObject
     double mTextScaleFactor;
     QString mOpengl;
     QString mQuality;
+    QString mDecoder;
     QString mAccessToken;
     int mChatEdge;
     bool mLightTheme;
@@ -85,6 +87,9 @@ public:
     QString quality() const;
     void setQuality(const QString &quality);
 
+    QString decoder() const;
+    void setDecoder(const QString &decoder);
+
     QString accessToken() const;
 
     void setHiDpi(bool dpi);
@@ -112,6 +117,7 @@ signals:
     void textScaleFactorChanged();
     void openglChanged();
     void qualityChanged();
+    void decoderChanged();
     void lightThemeChanged();
     void accessTokenChanged(QString accessToken);
     void fontChanged();

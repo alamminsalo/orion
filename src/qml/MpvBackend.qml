@@ -25,6 +25,8 @@ togglePause()       -- Toggles between playing and pausing
 stop()              -- Stops playback
 seekTo(ms)          -- Seeks to milliseconds in the current source, works only on vods
 setVolume(vol)      -- Number between 0 - 100
+getDecoder()        -- Return list of video decoders
+setDecoder(idx)     -- Set video decoder
 
 Signals needed:
 playingResumed()    -- Signaled when playback toggles from paused / stopped to playing
@@ -94,7 +96,29 @@ Item {
     }
 
     function setVolume(vol) {
+        if (Qt.platform.os === "linux")
+            volume = Math.round(Math.log(vol) / Math.log(100))
+        else
         volume = Math.round(vol)
+    }
+
+    function getDecoder() {
+        var defaultDecoders = []
+        if (Qt.platform.os == "windows") {
+            defaultDecoders = [ "dxva2-copy", "d3d11va-copy", "cuda-copy", "no" ]
+        } else if (Qt.platform.os == "osx" || Qt.platform.os == "ios") {
+            defaultDecoders = [ "videotoolbox", "no" ]
+        } else if(Qt.platform.os == "android") {
+            defaultDecoders = [ "mediacodec_embed", "no" ]
+        } else if (Qt.platform.os == "linux") {
+            defaultDecoders = [ "vaapi-copy", "vdpau-copy", "no" ]
+        }
+        return [ "auto" ].concat(defaultDecoders)
+    }
+
+    function setDecoder(idx) {
+        var decoderName = getDecoder()[idx]
+        renderer.setProperty("hwdec", decoderName)
     }
 
     signal playingResumed()
