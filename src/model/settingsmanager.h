@@ -12,6 +12,7 @@ class SettingsManager : public QObject
 
     Q_PROPERTY(bool alert READ alert WRITE setAlert NOTIFY alertChanged)
     Q_PROPERTY(bool closeToTray READ closeToTray WRITE setCloseToTray NOTIFY closeToTrayChanged)
+    Q_PROPERTY(bool multipleInstances READ multipleInstances WRITE setMultipleInstances NOTIFY multipleInstancesChanged)
     Q_PROPERTY(int alertPosition READ alertPosition WRITE setAlertPosition NOTIFY alertPositionChanged)
     Q_PROPERTY(int volumeLevel READ volumeLevel WRITE setVolumeLevel NOTIFY volumeLevelChanged)
     Q_PROPERTY(bool minimizeOnStartup READ minimizeOnStartup WRITE setMinimizeOnStartup NOTIFY minimizeOnStartupChanged)
@@ -28,6 +29,7 @@ class SettingsManager : public QObject
 
     bool mAlert;
     bool mCloseToTray;
+    bool mMultipleInstances;
     int mAlertPosition;
     int mVolumeLevel;
     bool mMinimizeOnStartup;
@@ -53,6 +55,9 @@ public:
 
     bool closeToTray() const;
     void setCloseToTray(bool closeToTray);
+
+    bool multipleInstances() const;
+    void setMultipleInstances(bool multipleInstances);
 
     int alertPosition() const;
     void setAlertPosition(int alertPosition);
@@ -93,6 +98,7 @@ public:
 signals:
     void alertChanged();
     void closeToTrayChanged();
+    void multipleInstancesChanged();
     void alertPositionChanged();
     void volumeLevelChanged();
     void minimizeOnStartupChanged();

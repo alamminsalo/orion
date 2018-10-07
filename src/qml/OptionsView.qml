@@ -177,6 +177,14 @@ Page {
                         checked: Settings.keepOnTop
                         onClicked: Settings.keepOnTop = checked
                     }
+
+                    Switch {
+                        visible: !isMobile()
+                        id: mulipleInstancesOption
+                        text: "Allow multiple instances"
+                        checked: Settings.multipleInstances
+                        onClicked: Settings.multipleInstances = checked
+                    }
                 }
             }
 

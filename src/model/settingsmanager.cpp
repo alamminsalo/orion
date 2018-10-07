@@ -12,6 +12,7 @@ SettingsManager::SettingsManager(QObject *parent) :
     //Initial values
     mAlert = true;
     mCloseToTray = false;
+    mMultipleInstances = false;
     mAlertPosition = 1;
     mMinimizeOnStartup = false;
     mTextScaleFactor = 1.0;
@@ -48,6 +49,10 @@ void SettingsManager::load()
 
     if (settings->contains("closeToTray")) {
         setCloseToTray(settings->value("closeToTray").toBool());
+    }
+
+    if (settings->contains("multipleInstances")) {
+        setMultipleInstances(settings->value("multipleInstances").toBool());
     }
 
     if (settings->contains("minimizeOnStartup")) {
@@ -121,6 +126,22 @@ void SettingsManager::setCloseToTray(bool closeToTray)
         qDebug() << "closeToTray changed to" << closeToTray;
     }
     emit closeToTrayChanged();
+}
+
+bool SettingsManager::multipleInstances() const
+{
+    return mMultipleInstances;
+}
+
+void SettingsManager::setMultipleInstances(bool multipleInstances)
+{
+    if (mMultipleInstances != multipleInstances) {
+        mMultipleInstances = multipleInstances;
+        settings->setValue("multipleInstances", multipleInstances);
+
+        qDebug() << "multipleInstances changed to" << multipleInstances;
+    }
+    emit multipleInstancesChanged();
 }
 
 int SettingsManager::alertPosition() const

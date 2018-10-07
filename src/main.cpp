@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
+    // Load app settings
+    SettingsManager::getInstance()->load();
 #ifndef Q_OS_ANDROID
     QApplication app(argc, argv);
 #else
@@ -97,13 +99,6 @@ int main(int argc, char *argv[])
     NetworkManager::initialize(engine.networkAccessManager());
 
 #ifndef Q_OS_ANDROID
-    //Single application solution
-    QLockFile lockfile(QDir::temp().absoluteFilePath("wz0dPKqHv3vX0BBsUFZt.lock"));
-    if (!lockfile.tryLock(100)) {
-        // Already running
-        return -1;
-    }
-
     QCommandLineParser parser;
     parser.setApplicationDescription("Twitch.tv client");
     parser.addHelpOption();
@@ -148,13 +143,28 @@ int main(int argc, char *argv[])
     rootContext->setContextProperty("g_games", ChannelManager::getInstance()->getGamesModel());
     rootContext->setContextProperty("vodsModel", VodManager::getInstance()->getModel());
 
+
+    rootContext->setContextProperty("g_instance", "main");
+
+#ifndef Q_OS_ANDROID
+    //Single application solution
+    QLockFile lockfile(QDir::temp().absoluteFilePath("wz0dPKqHv3vX0BBsUFZt.lock"));
+    if (!lockfile.tryLock(100)) {
+        // Already running
+        if (!SettingsManager::getInstance()->multipleInstances()) {
+            return -1;
+        }
+        rootContext->setContextProperty("g_instance", "child");
+    }
+#endif
+
     // Register qml components
     registerQmlComponents(&app);
 
     // Load QML content
     engine.load(QUrl("qrc:/main.qml"));
 
-    // Load app settings
+    // Trigger setting property notifications
     SettingsManager::getInstance()->load();
 
 #ifndef Q_OS_ANDROID
