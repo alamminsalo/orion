@@ -82,6 +82,31 @@ int main(int argc, char *argv[])
 
     // Load app settings
     SettingsManager::getInstance()->load();
+
+    auto opengl = SettingsManager::getInstance()->opengl().toLower();
+
+    // OpenGL implementation used to render app.
+    // Need to be set before constructing QGuiApplication
+    // http://doc.qt.io/qt-5/qt.html#ApplicationAttribute-enum
+    if (opengl.contains("desktop")) {
+        QCoreApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
+    } else if(opengl.contains("software")) {
+        QCoreApplication::setAttribute(Qt::AA_UseSoftwareOpenGL);
+    } else {
+        QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
+#ifdef QT_OPENGL_DYNAMIC
+        qputenv("QT_OPENGL", "angle");
+#endif
+#ifdef Q_OS_WIN
+        if (opengl.contains("d3d11"))
+            qputenv("QT_ANGLE_PLATFORM", "d3d11");
+        else if (opengl.contains("d3d9"))
+            qputenv("QT_ANGLE_PLATFORM", "d3d9");
+        else if (opengl.contains("warp"))
+            qputenv("QT_ANGLE_PLATFORM", "warp");
+#endif
+    }
+
 #ifndef Q_OS_ANDROID
     QApplication app(argc, argv);
 #else

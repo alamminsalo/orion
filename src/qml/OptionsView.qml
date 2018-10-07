@@ -185,6 +185,56 @@ Page {
                         checked: Settings.multipleInstances
                         onClicked: Settings.multipleInstances = checked
                     }
+
+                    RowLayout {
+                        width: parent.width
+
+                        OptionCombo {
+                            id: openglOption
+                            text: "OpenGL (needs restart)"
+                            model: {
+                                var opengl = [ ]
+                                if (Qt.platform.os === "windows") {
+                                    opengl = ["angle", "angle (d3d11)", "angle (d3d9)", "angle (warp)"]
+                                } else {
+                                    opengl = ["opengl es"]
+                                }
+                                opengl = opengl.concat(["desktop", "software"])
+                                return opengl
+                            }
+                            Layout.fillWidth: true
+                            property var defaultValue
+
+                            onActivated: {
+                                Settings.opengl = model[currentIndex]
+                            }
+
+                            Component.onCompleted: {
+                                defaultValue = Settings.opengl
+                                selectItem(defaultValue)
+                            }
+
+                            function selectItem(name) {
+                                for (var i in model) {
+                                    if (model[i] === name) {
+                                        currentIndex = i;
+                                        return;
+                                    }
+                                }
+                                //None found, attempt to select first item
+                                currentIndex = 0
+                            }
+                        }
+
+                        Button {
+                            text: "Reset"
+                            font.pointSize: 9
+                            onClicked: {
+                                openglOption.selectItem(openglOption.defaultValue)
+                            }
+                        }
+                    }
+
                 }
             }
 

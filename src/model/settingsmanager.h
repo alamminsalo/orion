@@ -19,6 +19,7 @@ class SettingsManager : public QObject
     Q_PROPERTY(int chatEdge READ chatEdge WRITE setChatEdge NOTIFY chatEdgeChanged)
     Q_PROPERTY(bool offlineNotifications READ offlineNotifications WRITE setOfflineNotifications NOTIFY offlineNotificationsChanged)
     Q_PROPERTY(double textScaleFactor READ textScaleFactor WRITE setTextScaleFactor NOTIFY textScaleFactorChanged)
+    Q_PROPERTY(QString opengl READ opengl WRITE setOpengl NOTIFY openglChanged)
     Q_PROPERTY(QString quality READ quality WRITE setQuality NOTIFY qualityChanged)
     Q_PROPERTY(QString accessToken READ accessToken WRITE setAccessToken NOTIFY accessTokenChanged)
     Q_PROPERTY(bool hasAccessToken READ hasAccessToken NOTIFY accessTokenChanged)
@@ -36,6 +37,7 @@ class SettingsManager : public QObject
     bool mSwapChat;
     bool mOfflineNotifications;
     double mTextScaleFactor;
+    QString mOpengl;
     QString mQuality;
     QString mAccessToken;
     int mChatEdge;
@@ -77,6 +79,9 @@ public:
     double textScaleFactor() const;
     void setTextScaleFactor(double textScaleFactor);
 
+    QString opengl() const;
+    void setOpengl(const QString &opengl);
+
     QString quality() const;
     void setQuality(const QString &quality);
 
@@ -105,6 +110,7 @@ signals:
     void chatEdgeChanged();
     void offlineNotificationsChanged();
     void textScaleFactorChanged();
+    void openglChanged();
     void qualityChanged();
     void lightThemeChanged();
     void accessTokenChanged(QString accessToken);

@@ -19,6 +19,11 @@ SettingsManager::SettingsManager(QObject *parent) :
     mVolumeLevel = 100;
     mOfflineNotifications = false;
     mAccessToken = "";
+#ifdef Q_OS_WIN
+    mOpengl = "angle (d3d9)";
+#else
+    mOpengl = "opengl es";
+#endif
     mQuality = "source";
     mChatEdge = 1;
     mLightTheme = false;
@@ -57,6 +62,10 @@ void SettingsManager::load()
 
     if (settings->contains("minimizeOnStartup")) {
         setMinimizeOnStartup(settings->value("minimizeOnStartup").toBool());
+    }
+
+    if (settings->contains("opengl")) {
+        setOpengl(settings->value("opengl").toString());
     }
 
     if (settings->contains("quality")) {
@@ -250,6 +259,22 @@ void SettingsManager::setTextScaleFactor(double textScaleFactor)
         qDebug() << "textScaleFactor changed to" << textScaleFactor;
     }
     emit textScaleFactorChanged();
+}
+
+QString SettingsManager::opengl() const
+{
+    return mOpengl;
+}
+
+void SettingsManager::setOpengl(const QString &opengl)
+{
+    if (mOpengl != opengl) {
+        mOpengl = opengl;
+        settings->setValue("opengl", opengl);
+
+        qDebug() << "opengl changed to" << opengl;
+    }
+    emit openglChanged();
 }
 
 QString SettingsManager::quality() const

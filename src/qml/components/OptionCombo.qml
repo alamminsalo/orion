@@ -22,6 +22,7 @@ RowLayout {
     property alias text: label.text
     property alias selection: combo.currentIndex
     property alias model: combo.model
+    property alias currentIndex: combo.currentIndex
 
     signal activated(int index)
 
