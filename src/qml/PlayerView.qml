@@ -21,6 +21,8 @@ import "components"
 import app.orion 1.0
 
 Page {
+    id: root
+
     property int duration: -1
     property var currentChannel
     property var streamMap
@@ -31,8 +33,10 @@ Page {
     property bool headersVisible: true
 
     onHeadersVisibleChanged: {
-        if (view.playerVisible) {
+        if (root.visible) {
+	    pArea.hoverEnabled = false
             topbar.visible = headersVisible
+	    disableTimer.restart()
         }
     }
 
@@ -41,7 +45,6 @@ Page {
     //Renderer interface
     property alias renderer: loader.item
 
-    id: root
 
     //Fix minimode header bar
     clip: true
@@ -327,10 +330,19 @@ Page {
         anchors.fill: playerArea
 
         function refreshHeaders(){
-            if (!hideTimer.running)
-                root.headersVisible = true
-            hideTimer.restart()
+	    if (!hideTimer.running)
+		root.headersVisible = true
+	    hideTimer.restart()
         }
+	
+	Timer {
+	  id: disableTimer
+	  interval: 200
+	  running: false
+	  onTriggered:{
+	    pArea.hoverEnabled = true
+	  }
+	}
 
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
