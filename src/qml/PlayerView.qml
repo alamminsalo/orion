@@ -210,7 +210,7 @@ Page {
     }
 
     function setWatchingTitle(){
-        var description = currentChannel.title
+        var description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
                 + (currentChannel.game ? " playing " + currentChannel.game : "")
                 + (isVod ? " (VOD)" : "");
         setHeaderText(description);
