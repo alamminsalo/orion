@@ -25,6 +25,8 @@ togglePause()       -- Toggles between playing and pausing
 stop()              -- Stops playback
 seekTo(pos)         -- Seeks to milliseconds in the current source, works only on vods
 setVolume(vol)      -- Number between 0 - 100
+getDecoder()        -- Return list of video decoders
+setDecoder(idx)     -- Set video decoder
 
 Signals needed:
 playingResumed()    -- Signaled when playback toggles from paused / stopped to playing
@@ -48,11 +50,12 @@ Item {
 
         stop();
 
+        renderer.source = src
+        renderer.startPosition = 0
+
         if (start >= 0) {
             seekTo(start)
         }
-
-        renderer.source = src
 
         resume()
     }
@@ -77,12 +80,48 @@ Item {
     }
 
     function seekTo(pos) {
+        status = "BUFFERING"
+        renderer.startPosition = pos * 1000
         renderer.seek(pos * 1000)
         root.position = pos
     }
 
     function setVolume(vol) {
         volume = Math.round(vol)
+    }
+
+    function getDecoder() {
+        var defaultDecoders = renderer.videoCodecs
+        var decoder = [ "auto" ]
+        decoder = decoder.concat(defaultDecoders);
+        return decoder
+    }
+
+    function setDecoder(idx) {
+        var decoderName = getDecoder()[idx]
+
+        var opt = renderer.videoCodecOptions
+        opt["copyMode"] = Qt.platform.os == "android" ? "OptimizedCopy" : "ZeroCopy"
+        renderer.videoCodecOptions = opt
+
+        if (decoderName === "auto") {
+            if (g_instance === "child") {
+                // disable automatic hw acceleration for multiple instances (usually results in lag)
+                renderer.videoCodecPriority = [ "FFmpeg" ]
+            } else if (Qt.platform.os == "windows") {
+                renderer.videoCodecPriority = [ "DXVA", "FFmpeg" ]
+            } else if (Qt.platform.os == "winrt" || Qt.platform.os == "winphone") {
+                renderer.videoCodecPriority = [ "D3D11", "FFmpeg" ]
+            } else if (Qt.platform.os == "osx" || Qt.platform.os == "ios") {
+                renderer.videoCodecPriority = [ "VideoToolbox", "FFmpeg" ]
+            } else if(Qt.platform.os == "android") {
+                renderer.videoCodecPriority = [ "MediaCodec", "FFmpeg" ]
+            } else if (Qt.platform.os == "linux") {
+                renderer.videoCodecPriority = [ "VAAPI", "FFmpeg" ]
+            }
+        } else {
+            renderer.videoCodecPriority = [ decoderName ]
+        }
     }
 
     signal playingResumed()
@@ -119,6 +158,22 @@ Item {
     MediaPlayer {
         id: renderer
 
+        function updateStatus() {
+            if (status === MediaPlayer.Buffering) {
+                root.status = "BUFFERING"
+            } else if (playbackState === MediaPlayer.PlayingState) {
+                root.status = "PLAYING"
+            } else if (playbackState === MediaPlayer.PausedState) {
+                root.status = "PAUSED"
+            } else if (playbackState === MediaPlayer.StoppedState) {
+                root.status = "STOPPED"
+            }
+        }
+
+        onStatusChanged: {
+            updateStatus()
+        }
+
         onStopped: {
             root.status = "STOPPED"
             root.playingStopped()
@@ -134,9 +189,14 @@ Item {
             root.playingResumed()
         }
 
+        onSeekFinished: {
+            updateStatus()
+        }
+
         onPositionChanged: {
+            if (root.status !== "PLAYING") return
             var pos = position / 1000
-            if (root.position !== pos)
+            if (root.position !== pos && (startPosition === 0 || position > 0))
                 root.position = pos
         }
     }

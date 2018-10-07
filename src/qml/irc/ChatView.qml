@@ -157,6 +157,7 @@ Page {
             id: pinBtn
             checkable: true
             font.family: "Material Icons"
+            focusPolicy: Qt.NoFocus
             text: checked ? "\ue897" : "\ue898"
         }
 

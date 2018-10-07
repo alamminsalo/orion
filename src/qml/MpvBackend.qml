@@ -25,6 +25,8 @@ togglePause()       -- Toggles between playing and pausing
 stop()              -- Stops playback
 seekTo(ms)          -- Seeks to milliseconds in the current source, works only on vods
 setVolume(vol)      -- Number between 0 - 100
+getDecoder()        -- Return list of video decoders
+setDecoder(idx)     -- Set video decoder
 
 Signals needed:
 playingResumed()    -- Signaled when playback toggles from paused / stopped to playing
@@ -94,7 +96,29 @@ Item {
     }
 
     function setVolume(vol) {
-        volume = Math.round(vol)
+        if (Qt.platform.os === "linux")
+            volume = Math.round(Math.log(vol) / Math.log(100))
+        else
+            volume = Math.round(vol)
+    }
+
+    function getDecoder() {
+        var defaultDecoders = []
+        if (Qt.platform.os == "windows") {
+            defaultDecoders = [ "dxva2-copy", "d3d11va-copy", "cuda-copy", "no" ]
+        } else if (Qt.platform.os == "osx" || Qt.platform.os == "ios") {
+            defaultDecoders = [ "videotoolbox", "no" ]
+        } else if(Qt.platform.os == "android") {
+            defaultDecoders = [ "mediacodec_embed", "no" ]
+        } else if (Qt.platform.os == "linux") {
+            defaultDecoders = [ "vaapi-copy", "vdpau-copy", "no" ]
+        }
+        return [ "auto" ].concat(defaultDecoders)
+    }
+
+    function setDecoder(idx) {
+        var decoderName = getDecoder()[idx]
+        renderer.setProperty("hwdec", decoderName)
     }
 
     signal playingResumed()
@@ -133,6 +157,16 @@ Item {
         renderer.setProperty("volume", volume)
     }
 
+    Timer {
+        id: positionTimer
+        interval: 1000
+        running: false
+        repeat: true
+        onTriggered: {
+            if (root.status === "PLAYING")
+                root.position += 1
+        }
+    }
 
     MpvObject {
         id: renderer
@@ -145,14 +179,17 @@ Item {
 
         onPlayingStopped: {
             root.status = "STOPPED"
+            positionTimer.stop()
         }
 
         onPlayingPaused: {
             root.status = "PAUSED"
+            positionTimer.stop()
         }
 
         onPlayingResumed: {
             root.status = "PLAYING"
+            positionTimer.start()
         }
 
         onPositionChanged: {
@@ -170,6 +207,8 @@ Item {
 
             if (root.position !== adjustedPosition)
                 root.position = adjustedPosition
+
+            positionTimer.restart()
         }
 
         Component.onCompleted: {

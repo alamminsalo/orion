@@ -124,7 +124,7 @@ Page {
     function loadAndPlay(){
         var description = setWatchingTitle();
 
-        var start = !isVod ? -1 : seekBar.position
+        var start = !isVod ? -1 : seekBar.value
 
         var url = streamMap[Settings.quality]
 
@@ -213,11 +213,14 @@ Page {
     }
 
     function setWatchingTitle(){
-        var description = currentChannel.title
-                + (currentChannel.game ? " playing " + currentChannel.game : "")
-                + (isVod ? " (VOD)" : "");
-        setHeaderText(description);
-        return description;
+	var description = ""
+	if (currentChannel) {
+	  description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
+		  + (currentChannel.game ? " playing " + currentChannel.game : "")
+		  + (isVod ? " (VOD)" : "");
+	  setHeaderText(description);
+	}
+	return description;
     }
 
     function loadStreams(streams) {
@@ -272,7 +275,9 @@ Page {
                     VodManager.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
                 }
             }
-            seekBar.value = newPos
+            if (!seekBar.pressed) {
+                seekBar.value = newPos
+            }
         }
 
         onPlayingResumed: {
@@ -289,6 +294,88 @@ Page {
 
         onStatusChanged: {
             PowerManager.screensaver = (renderer.status !== "PLAYING")
+        }
+    }
+
+    Shortcut {
+        sequence: "Space"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            renderer.togglePause()
+            clickRect.run()
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "0"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            reloadStream()
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "f"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            appFullScreen = !appFullScreen
+        }
+    }
+
+    Shortcut {
+        sequence: "Esc"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            appFullScreen = false
+        }
+    }
+
+    Shortcut {
+        sequence: "m"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            volumeBtn.toggleMute()
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Up"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            volumeSlider.value += 5
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Down"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            volumeSlider.value -= 5
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Right"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            if (!isVod || seekBar.pressed) return
+            seekBar.seek(seekBar.value + 5)
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Left"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            if (!isVod || seekBar.pressed) return
+            seekBar.seek(seekBar.value - 5)
+            pArea.refreshHeaders()
         }
     }
 
@@ -330,9 +417,9 @@ Page {
         anchors.fill: playerArea
 
         function refreshHeaders(){
-	    if (!hideTimer.running)
-		root.headersVisible = true
-	    hideTimer.restart()
+            if (!hideTimer.running && !root.headersVisible)
+                root.headersVisible = true
+            hideTimer.restart()
         }
 	
 	Timer {
@@ -357,7 +444,7 @@ Page {
 
             Label {
                 id: clickRectIcon
-                text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                text: ""
                 anchors.centerIn: parent
                 font.family: "Material Icons"
                 font.pointSize: parent.width * 0.5
@@ -366,6 +453,15 @@ Page {
             ParallelAnimation {
                 id: _anim
                 running: false
+
+                onStarted: {
+                    clickRectIcon.text = renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                }
+
+                onStopped: {
+                    clickRect.opacity = 0
+                    clickRect.width = 0
+                }
 
                 NumberAnimation {
                     target: clickRect
@@ -388,19 +484,21 @@ Page {
             function run() {
                 _anim.restart()
             }
+
+            function abort() {
+                _anim.stop()
+            }
         }
 
         onClicked: {
             clickRect.run()
-
-            if (root.headersVisible && bottomBar.height > 50)
-                clickTimer.restart()
-            else
-                refreshHeaders()
+            clickTimer.restart()
+            refreshHeaders()
         }
         onDoubleClicked: {
             if (!isMobile()) {
                 clickTimer.stop()
+                clickRect.abort();
                 appFullScreen = !appFullScreen
             }
         }
@@ -411,7 +509,7 @@ Page {
         Timer {
             //Dbl click timer
             id: clickTimer
-            interval: 440
+            interval: 200
             repeat: false
             onTriggered: {
                 renderer.togglePause();
@@ -424,8 +522,18 @@ Page {
             running: false
             repeat: false
             onTriggered: {
-                var itemUnder = pArea.childAt(pArea.mouseX, pArea.mouseY)
-                root.headersVisible = pArea.containsMouse && (itemUnder === bottomBar || itemUnder === headerBar)
+                if (!root.headersVisible || headerBarArea.containsMouse || bottomBarArea.containsMouse) return
+
+                if (renderer.status === "PAUSED" || renderer.status === "STOPPED") return
+
+                // Bug?: MouseArea doesn't work over Controls
+                var controls = [ favBtn, chatBtn, playBtn, resetBtn, volumeBtn, volumeSlider, seekBar, hwaccelBox, sourcesBox, cropBtn, fsBtn];
+                for (var i = 0; i < controls.length; i++) {
+                    if (controls[i].hovered || controls[i].pressed || controls[i].down)
+                        return;
+                }
+
+                root.headersVisible = false
             }
         }
 
@@ -445,11 +553,18 @@ Page {
 
             clip: true
             height: root.headersVisible ? 55 : 0
+            visible: height > 0
 
             Behavior on height {
                 NumberAnimation {
                     easing.type: Easing.OutCubic
                 }
+            }
+
+            MouseArea {
+                id: headerBarArea
+                anchors.fill: parent
+                hoverEnabled: true
             }
 
             RowLayout {
@@ -519,13 +634,81 @@ Page {
                 left: parent.left
                 right: parent.right
             }
-
-            clip: true
+            clip: false
             height: root.headersVisible ? 55 : 0
+            visible: height > 0
 
             Behavior on height {
                 NumberAnimation {
                     easing.type: Easing.OutCubic
+                }
+            }
+
+            MouseArea {
+                id: bottomBarArea
+                anchors.fill: parent
+                hoverEnabled: true
+            }
+
+            Slider {
+                id: seekBar
+                from: 0
+                to: duration
+                visible: isVod && headersVisible
+                padding: 0
+                hoverEnabled: true
+                clip: true
+
+                anchors {
+                    verticalCenter: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+
+                Component.onCompleted: {
+                    handle.opacity = 0;
+                }
+
+                PropertyAnimation {
+                    id: handleAnimation
+                    target: seekBar.handle
+                    easing.type: Easing.OutQuad
+                    property: "opacity"
+                    duration: 400
+                    running: false
+                }
+
+                onHoveredChanged: {
+                    var wantedOpacity = hovered || pressed ? 1 : 0;
+                    if (handle.opacity === wantedOpacity) return;
+                    handleAnimation.to = wantedOpacity;
+                    handleAnimation.restart();
+                }
+                onPressedChanged: {
+                    if (!pressed)
+                        seekTo(value)
+                }
+
+                property real prev: 0
+                onValueChanged: {
+                    if (seekTimer.running)
+                        value = seekTimer.to
+                }
+
+                Timer {
+                    id: seekTimer
+                    interval: 500
+                    repeat: false
+                    property real to: 0
+                    onTriggered: {
+                        seekTo(seekBar.value);
+                    }
+                }
+
+                function seek(val) {
+                    seekTimer.to = val
+                    value = val
+                    seekTimer.restart()
                 }
             }
 
@@ -534,11 +717,12 @@ Page {
                     fill: parent
                     rightMargin: 5
                     leftMargin: 5
-                }
+                }                
+                spacing: 0
 
                 IconButtonFlat {
                     id: playBtn
-                    text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                    text: renderer.status !== "PLAYING" && renderer.status !== "BUFFERING" ? "\ue037" : "\ue034"
                     onClicked: renderer.togglePause()
                 }
 
@@ -548,39 +732,21 @@ Page {
                     onClicked: reloadStream()
                 }
 
-                //spacer
-                Item {
-                    Layout.minimumWidth: 0
-                    Layout.fillWidth: true
-                }
-
-                IconButtonFlat {
-                    id: cropBtn
-                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
-                    text: "\ue3bc"
-                    onClicked: fitToAspectRatio()
-                }
-
-                IconButtonFlat {
-                    id: fsBtn
-                    visible: !isMobile()
-                    text: !appFullScreen ? "\ue5d0" : "\ue5d1"
-                    onClicked: appFullScreen = !appFullScreen
-                }
-
                 IconButtonFlat {
                     id: volumeBtn
-                    visible: !isMobile() && parent.width > 390
+                    visible: !isMobile()
                     property real mutedValue: 100.0
                     text: volumeSlider.value > 0 ?
                               (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
                             : "\ue04f"
                     onClicked: {
+                        toggleMute()
+                    }
+                    function toggleMute() {
                         if (volumeSlider.value > 0) {
                             mutedValue = volumeSlider.value
                             volumeSlider.value = 0
-                        }
-                        else {
+                        } else {
                             volumeSlider.value = mutedValue
                         }
                     }
@@ -590,19 +756,116 @@ Page {
                     id: volumeSlider
                     from: 0
                     to: 100
+                    width: 0
+                    opacity: 0
                     visible: !isMobile()
-                    Layout.maximumWidth: 90
+                    Layout.maximumWidth: width
+                    hoverEnabled: true
+
+                    Behavior on width { PropertyAnimation { easing.type: Easing.InOutQuad } }
+                    Behavior on opacity { PropertyAnimation { easing.type: Easing.InOutQuad } }
+
                     Component.onCompleted: {
                         value = Settings.volumeLevel
+                        renderer.setVolume(value)
+
+                        playBtn.hoverEnabled = true
+                        resetBtn.hoverEnabled = true
+                        volumeBtn.hoverEnabled = true
                     }
 
-                    onValueChanged: {
-                        var val = value
-                        if (Qt.platform === "linux" && player_backend === "mpv")
-                            val = Math.round(Math.log(val) / Math.log(100))
+                    Connections { target: playBtn; onHoveredChanged: volumeSlider.update(); onPressedChanged: volumeSlider.update() }
+                    Connections { target: resetBtn; onHoveredChanged: volumeSlider.update(); onPressedChanged: volumeSlider.update() }
+                    Connections { target: volumeBtn; onHoveredChanged: volumeSlider.update(); onPressedChanged: volumeSlider.update() }
 
-                        renderer.setVolume(val)
-                        Settings.volumeLevel = val;
+                    // Volume slider behavior similar to youtube
+                    function update() {
+                        if (opacity > 0 && (playBtn.hovered || resetBtn.hovered)) {
+                            opacity = 1
+                            width = 90
+                        } else if (hovered || pressed || volumeBtn.hovered || volumeBtn.pressed) {
+                            opacity = 1
+                            width = 90
+                        } else {
+                            opacity = 0
+                            width = 0
+                        }
+                    }
+
+                    onHoveredChanged: update()
+                    onPressedChanged: update()
+
+                    onValueChanged: {
+                        renderer.setVolume(value)
+                        Settings.volumeLevel = value;
+                    }
+                }
+
+                //spacer
+                Label {
+                    id: videoPositionLabel
+                    Layout.minimumWidth: 0
+                    Layout.fillWidth: true
+                    font.bold: true
+                    font.pointSize: 8
+                    Material.foreground: Material.Grey
+                    horizontalAlignment: Qt.AlignLeft
+                    clip: true
+                    function updateText() {
+                        if (!isVod) return ""
+                        var formatTime = function(seconds) {
+                            var d = new Date()
+                            d.setTime(seconds * 1000)
+                            d.setMinutes(d.getMinutes() + d.getTimezoneOffset())
+                            return d.toTimeString()
+                        }
+                        text = formatTime(seekBar.value) + "/" + formatTime(duration)
+                    }
+                    Connections {
+                        target: seekBar
+                        onValueChanged: videoPositionLabel.updateText()
+                    }
+                    Connections {
+                        target: renderer
+                        onPlayingStopped: videoPositionLabel.text = ""
+                    }
+                }
+
+
+                ComboBox {
+                    id: hwaccelBox
+                    font.pointSize: 9
+                    font.bold: true
+                    focusPolicy: Qt.NoFocus
+                    flat: true
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 140
+                    Layout.minimumWidth: 100
+                    visible: renderer.getDecoder().length > 1
+
+                    onCurrentIndexChanged: {
+                        renderer.setDecoder(currentIndex)
+                        loadAndPlay()
+                        Settings.decoder = hwaccelBox.model[currentIndex]
+                        pArea.refreshHeaders()
+                    }
+
+                    Component.onCompleted: {
+                        var decoder = renderer.getDecoder()
+                        hwaccelBox.model = decoder
+                        selectItem(Settings.decoder)
+                        renderer.setDecoder(currentIndex)
+                    }
+
+                    function selectItem(name) {
+                        for (var i in hwaccelBox.model) {
+                            if (hwaccelBox.model[i] === name) {
+                                currentIndex = i;
+                                return;
+                            }
+                        }
+                        //None found, attempt to select first item
+                        currentIndex = 0
                     }
                 }
 
@@ -610,13 +873,14 @@ Page {
                     id: sourcesBox
                     font.pointSize: 9
                     font.bold: true
+                    focusPolicy: Qt.NoFocus
                     flat: true
                     Layout.fillWidth: true
                     Layout.maximumWidth: 140
                     Layout.minimumWidth: 100
 
-                    onActivated: {
-                        Settings.quality = sourcesBox.model[index]
+                    onCurrentIndexChanged: {
+                        Settings.quality = sourcesBox.model[currentIndex]
                         loadAndPlay()
                         pArea.refreshHeaders()
                     }
@@ -632,23 +896,20 @@ Page {
                         currentIndex = 0
                     }
                 }
-            }
-        }
 
-        Slider {
-            id: seekBar
-            from: 0
-            to: duration
-            visible: isVod && headersVisible
-            padding: 0
-            anchors {
-                verticalCenter: bottomBar.top
-                left: parent.left
-                right: parent.right
-            }
-            onPressedChanged: {
-                if (!pressed)
-                    seekTo(value)
+                IconButtonFlat {
+                    id: cropBtn
+                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
+                    text: "\ue3bc"
+                    onClicked: fitToAspectRatio()
+                }
+
+                IconButtonFlat {
+                    id: fsBtn
+                    visible: !isMobile()
+                    text: !appFullScreen ? "\ue5d0" : "\ue5d1"
+                    onClicked: appFullScreen = !appFullScreen
+                }
             }
         }
     }

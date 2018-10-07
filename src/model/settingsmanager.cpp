@@ -12,13 +12,20 @@ SettingsManager::SettingsManager(QObject *parent) :
     //Initial values
     mAlert = true;
     mCloseToTray = false;
+    mMultipleInstances = false;
     mAlertPosition = 1;
     mMinimizeOnStartup = false;
     mTextScaleFactor = 1.0;
     mVolumeLevel = 100;
     mOfflineNotifications = false;
     mAccessToken = "";
+#ifdef Q_OS_WIN
+    mOpengl = "angle (d3d9)";
+#else
+    mOpengl = "opengl es";
+#endif
     mQuality = "source";
+    mDecoder = "auto";
     mChatEdge = 1;
     mLightTheme = false;
     mFont = "";
@@ -50,12 +57,24 @@ void SettingsManager::load()
         setCloseToTray(settings->value("closeToTray").toBool());
     }
 
+    if (settings->contains("multipleInstances")) {
+        setMultipleInstances(settings->value("multipleInstances").toBool());
+    }
+
     if (settings->contains("minimizeOnStartup")) {
         setMinimizeOnStartup(settings->value("minimizeOnStartup").toBool());
     }
 
+    if (settings->contains("opengl")) {
+        setOpengl(settings->value("opengl").toString());
+    }
+
     if (settings->contains("quality")) {
         setQuality(settings->value("quality").toString());
+    }
+
+    if (settings->contains("decoder")) {
+        setDecoder(settings->value("decoder").toString());
     }
 
     if (settings->contains("volumeLevel")) {
@@ -121,6 +140,22 @@ void SettingsManager::setCloseToTray(bool closeToTray)
         qDebug() << "closeToTray changed to" << closeToTray;
     }
     emit closeToTrayChanged();
+}
+
+bool SettingsManager::multipleInstances() const
+{
+    return mMultipleInstances;
+}
+
+void SettingsManager::setMultipleInstances(bool multipleInstances)
+{
+    if (mMultipleInstances != multipleInstances) {
+        mMultipleInstances = multipleInstances;
+        settings->setValue("multipleInstances", multipleInstances);
+
+        qDebug() << "multipleInstances changed to" << multipleInstances;
+    }
+    emit multipleInstancesChanged();
 }
 
 int SettingsManager::alertPosition() const
@@ -231,6 +266,22 @@ void SettingsManager::setTextScaleFactor(double textScaleFactor)
     emit textScaleFactorChanged();
 }
 
+QString SettingsManager::opengl() const
+{
+    return mOpengl;
+}
+
+void SettingsManager::setOpengl(const QString &opengl)
+{
+    if (mOpengl != opengl) {
+        mOpengl = opengl;
+        settings->setValue("opengl", opengl);
+
+        qDebug() << "opengl changed to" << opengl;
+    }
+    emit openglChanged();
+}
+
 QString SettingsManager::quality() const
 {
     return mQuality;
@@ -245,6 +296,22 @@ void SettingsManager::setQuality(const QString &quality)
         qDebug() << "quality changed to" << quality;
     }
     emit qualityChanged();
+}
+
+QString SettingsManager::decoder() const
+{
+    return mDecoder;
+}
+
+void SettingsManager::setDecoder(const QString &decoder)
+{
+    if (mDecoder != decoder) {
+        mDecoder = decoder;
+        settings->setValue("decoder", decoder);
+
+        qDebug() << "decoder changed to" << decoder;
+    }
+    emit decoderChanged();
 }
 
 QString SettingsManager::accessToken() const

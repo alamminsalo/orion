@@ -114,7 +114,7 @@ Vod *VodListModel::find(const QString id)
 void VodListModel::clear()
 {
     if (!vods.isEmpty()){
-        beginRemoveRows(QModelIndex(), 0, vods.size());
+        beginRemoveRows(QModelIndex(), 0, vods.size() - 1);
         qDeleteAll(vods);
         vods.clear();
         endRemoveRows();

@@ -118,7 +118,7 @@ Game *GameListModel::find(const uint id)
 void GameListModel::clear()
 {
     if (!games.isEmpty()){
-        beginRemoveRows(QModelIndex(), 0, games.size());
+        beginRemoveRows(QModelIndex(), 0, games.size() - 1);
         qDeleteAll(games);
         games.clear();
         endRemoveRows();
