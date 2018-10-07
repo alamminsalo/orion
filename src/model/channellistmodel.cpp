@@ -214,14 +214,16 @@ Channel *ChannelListModel::find(const quint32 &id)
 void ChannelListModel::clearView()
 {
     //Gives a sign to drop all channels from view, without removing them
-    beginRemoveRows(QModelIndex(), 0, channels.size());
-    endRemoveRows();
+    if (!channels.isEmpty()) {
+        beginRemoveRows(QModelIndex(), 0, channels.size() - 1);
+        endRemoveRows();
+    }
 }
 
 void ChannelListModel::clear()
 {
     if (!channels.isEmpty()){
-        beginRemoveRows(QModelIndex(), 0, channels.size());
+        beginRemoveRows(QModelIndex(), 0, channels.size() - 1);
         qDeleteAll(channels);
         channels.clear();
         channelIdIndex.clear();
