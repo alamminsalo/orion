@@ -121,7 +121,7 @@ Page {
     function loadAndPlay(){
         var description = setWatchingTitle();
 
-        var start = !isVod ? -1 : seekBar.position
+        var start = !isVod ? -1 : seekBar.value
 
         var url = streamMap[Settings.quality]
 
