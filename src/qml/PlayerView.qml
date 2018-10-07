@@ -536,12 +536,6 @@ Page {
                     onClicked: reloadStream()
                 }
 
-                //spacer
-                Item {
-                    Layout.minimumWidth: 0
-                    Layout.fillWidth: true
-                }
-
                 IconButtonFlat {
                     id: cropBtn
                     visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
@@ -589,6 +583,38 @@ Page {
                         Settings.volumeLevel = value;
                     }
                 }
+
+                //spacer
+                Label {
+                    id: videoPositionLabel
+                    Layout.minimumWidth: 0
+                    Layout.fillWidth: true
+                    font.bold: true
+                    font.pointSize: 8
+                    Material.foreground: Material.Grey
+                    horizontalAlignment: Qt.AlignLeft
+                    clip: true
+                    function updateText() {
+                        if (!isVod) return ""
+                        var formatTime = function(seconds) {
+                            var d = new Date()
+                            d.setTime(seconds * 1000)
+                            d.setMinutes(d.getMinutes() + d.getTimezoneOffset())
+                            return d.toTimeString()
+                        }
+                        text = formatTime(seekBar.value) + "/" + formatTime(duration)
+                    }
+                    Connections {
+                        target: seekBar
+                        onValueChanged: videoPositionLabel.updateText()
+                    }
+                    Connections {
+                        target: renderer
+                        onPlayingStopped: videoPositionLabel.text = ""
+                    }
+                }
+
+
                 ComboBox {
                     id: hwaccelBox
                     font.pointSize: 9
