@@ -99,7 +99,7 @@ Item {
         if (Qt.platform.os === "linux")
             volume = Math.round(Math.log(vol) / Math.log(100))
         else
-        volume = Math.round(vol)
+            volume = Math.round(vol)
     }
 
     function getDecoder() {
@@ -157,6 +157,16 @@ Item {
         renderer.setProperty("volume", volume)
     }
 
+    Timer {
+        id: positionTimer
+        interval: 1000
+        running: false
+        repeat: true
+        onTriggered: {
+            if (root.status === "PLAYING")
+                root.position += 1
+        }
+    }
 
     MpvObject {
         id: renderer
@@ -169,14 +179,17 @@ Item {
 
         onPlayingStopped: {
             root.status = "STOPPED"
+            positionTimer.stop()
         }
 
         onPlayingPaused: {
             root.status = "PAUSED"
+            positionTimer.stop()
         }
 
         onPlayingResumed: {
             root.status = "PLAYING"
+            positionTimer.start()
         }
 
         onPositionChanged: {
@@ -194,6 +207,8 @@ Item {
 
             if (root.position !== adjustedPosition)
                 root.position = adjustedPosition
+
+            positionTimer.restart()
         }
 
         Component.onCompleted: {
