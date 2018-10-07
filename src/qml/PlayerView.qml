@@ -537,8 +537,7 @@ Page {
                 left: parent.left
                 right: parent.right
             }
-
-            clip: true
+            clip: false
             height: root.headersVisible ? 55 : 0
             visible: height > 0
 
@@ -554,12 +553,75 @@ Page {
                 hoverEnabled: true
             }
 
+            Slider {
+                id: seekBar
+                from: 0
+                to: duration
+                visible: isVod && headersVisible
+                padding: 0
+                hoverEnabled: true
+                clip: true
+
+                anchors {
+                    verticalCenter: parent.top
+                    left: parent.left
+                    right: parent.right
+                }
+
+                Component.onCompleted: {
+                    handle.opacity = 0;
+                }
+
+                PropertyAnimation {
+                    id: handleAnimation
+                    target: seekBar.handle
+                    easing.type: Easing.OutQuad
+                    property: "opacity"
+                    duration: 400
+                    running: false
+                }
+
+                onHoveredChanged: {
+                    var wantedOpacity = hovered || pressed ? 1 : 0;
+                    if (handle.opacity === wantedOpacity) return;
+                    handleAnimation.to = wantedOpacity;
+                    handleAnimation.restart();
+                }
+                onPressedChanged: {
+                    if (!pressed)
+                        seekTo(value)
+                }
+
+                property real prev: 0
+                onValueChanged: {
+                    if (seekTimer.running)
+                        value = seekTimer.to
+                }
+
+                Timer {
+                    id: seekTimer
+                    interval: 500
+                    repeat: false
+                    property real to: 0
+                    onTriggered: {
+                        seekTo(seekBar.value);
+                    }
+                }
+
+                function seek(val) {
+                    seekTimer.to = val
+                    value = val
+                    seekTimer.restart()
+                }
+            }
+
             RowLayout {
                 anchors {
                     fill: parent
                     rightMargin: 5
                     leftMargin: 5
                 }
+                spacing: 0
 
                 IconButtonFlat {
                     id: playBtn
@@ -574,32 +636,20 @@ Page {
                 }
 
                 IconButtonFlat {
-                    id: cropBtn
-                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
-                    text: "\ue3bc"
-                    onClicked: fitToAspectRatio()
-                }
-
-                IconButtonFlat {
-                    id: fsBtn
-                    visible: !isMobile()
-                    text: !appFullScreen ? "\ue5d0" : "\ue5d1"
-                    onClicked: appFullScreen = !appFullScreen
-                }
-
-                IconButtonFlat {
                     id: volumeBtn
-                    visible: !isMobile() && parent.width > 390
+                    visible: !isMobile()
                     property real mutedValue: 100.0
                     text: volumeSlider.value > 0 ?
                               (volumeSlider.value > 50 ? "\ue050" : "\ue04d")
                             : "\ue04f"
                     onClicked: {
+                        toggleMute()
+                    }
+                    function toggleMute() {
                         if (volumeSlider.value > 0) {
                             mutedValue = volumeSlider.value
                             volumeSlider.value = 0
-                        }
-                        else {
+                        } else {
                             volumeSlider.value = mutedValue
                         }
                     }
@@ -609,11 +659,44 @@ Page {
                     id: volumeSlider
                     from: 0
                     to: 100
+                    width: 0
+                    opacity: 0
                     visible: !isMobile()
-                    Layout.maximumWidth: 90
+                    Layout.maximumWidth: width
+                    hoverEnabled: true
+
+                    Behavior on width { PropertyAnimation { easing.type: Easing.InOutQuad } }
+                    Behavior on opacity { PropertyAnimation { easing.type: Easing.InOutQuad } }
+
                     Component.onCompleted: {
                         value = Settings.volumeLevel
+                        renderer.setVolume(value)
+
+                        playBtn.hoverEnabled = true
+                        resetBtn.hoverEnabled = true
+                        volumeBtn.hoverEnabled = true
                     }
+
+                    Connections { target: playBtn; onHoveredChanged: volumeSlider.update(); onPressedChanged: volumeSlider.update() }
+                    Connections { target: resetBtn; onHoveredChanged: volumeSlider.update(); onPressedChanged: volumeSlider.update() }
+                    Connections { target: volumeBtn; onHoveredChanged: volumeSlider.update(); onPressedChanged: volumeSlider.update() }
+
+                    // Volume slider behavior similar to youtube
+                    function update() {
+                        if (opacity > 0 && (playBtn.hovered || resetBtn.hovered)) {
+                            opacity = 1
+                            width = 90
+                        } else if (hovered || pressed || volumeBtn.hovered || volumeBtn.pressed) {
+                            opacity = 1
+                            width = 90
+                        } else {
+                            opacity = 0
+                            width = 0
+                        }
+                    }
+
+                    onHoveredChanged: update()
+                    onPressedChanged: update()
 
                     onValueChanged: {
                         renderer.setVolume(value)
@@ -715,23 +798,20 @@ Page {
                         currentIndex = 0
                     }
                 }
-            }
+
+                IconButtonFlat {
+                    id: cropBtn
+                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
+                    text: "\ue3bc"
+                    onClicked: fitToAspectRatio()
         }
 
-        Slider {
-            id: seekBar
-            from: 0
-            to: duration
-            visible: isVod && headersVisible
-            padding: 0
-            anchors {
-                verticalCenter: bottomBar.top
-                left: parent.left
-                right: parent.right
+                IconButtonFlat {
+                    id: fsBtn
+                    visible: !isMobile()
+                    text: !appFullScreen ? "\ue5d0" : "\ue5d1"
+                    onClicked: appFullScreen = !appFullScreen
             }
-            onPressedChanged: {
-                if (!pressed)
-                    seekTo(value)
             }
         }
     }
