@@ -269,7 +269,9 @@ Page {
                     VodManager.setVodLastPlaybackPosition(root.currentChannel.name, root.curVodId, newPos);
                 }
             }
+            if (!seekBar.pressed) {
             seekBar.value = newPos
+        }
         }
 
         onPlayingResumed: {
@@ -327,7 +329,7 @@ Page {
         anchors.fill: playerArea
 
         function refreshHeaders(){
-            if (!hideTimer.running)
+            if (!hideTimer.running && !root.headersVisible)
                 root.headersVisible = true
             hideTimer.restart()
         }
@@ -345,7 +347,7 @@ Page {
 
             Label {
                 id: clickRectIcon
-                text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                text: ""
                 anchors.centerIn: parent
                 font.family: "Material Icons"
                 font.pointSize: parent.width * 0.5
@@ -354,6 +356,15 @@ Page {
             ParallelAnimation {
                 id: _anim
                 running: false
+
+                onStarted: {
+                    clickRectIcon.text = renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                }
+
+                onStopped: {
+                    clickRect.opacity = 0
+                    clickRect.width = 0
+                }
 
                 NumberAnimation {
                     target: clickRect
@@ -376,19 +387,21 @@ Page {
             function run() {
                 _anim.restart()
             }
+
+            function abort() {
+                _anim.stop()
+            }
         }
 
         onClicked: {
             clickRect.run()
-
-            if (root.headersVisible && bottomBar.height > 50)
                 clickTimer.restart()
-            else
                 refreshHeaders()
         }
         onDoubleClicked: {
             if (!isMobile()) {
                 clickTimer.stop()
+                clickRect.abort();
                 appFullScreen = !appFullScreen
             }
         }
@@ -399,7 +412,7 @@ Page {
         Timer {
             //Dbl click timer
             id: clickTimer
-            interval: 440
+            interval: 200
             repeat: false
             onTriggered: {
                 renderer.togglePause();
@@ -412,8 +425,18 @@ Page {
             running: false
             repeat: false
             onTriggered: {
-                var itemUnder = pArea.childAt(pArea.mouseX, pArea.mouseY)
-                root.headersVisible = pArea.containsMouse && (itemUnder === bottomBar || itemUnder === headerBar)
+                if (!root.headersVisible || headerBarArea.containsMouse || bottomBarArea.containsMouse) return
+
+                if (renderer.status === "PAUSED" || renderer.status === "STOPPED") return
+
+                // Bug?: MouseArea doesn't work over Controls
+                var controls = [ favBtn, chatBtn, playBtn, resetBtn, volumeBtn, volumeSlider, seekBar, hwaccelBox, sourcesBox, cropBtn, fsBtn];
+                for (var i = 0; i < controls.length; i++) {
+                    if (controls[i].hovered || controls[i].pressed || controls[i].down)
+                        return;
+                }
+
+                root.headersVisible = false
             }
         }
 
@@ -433,11 +456,18 @@ Page {
 
             clip: true
             height: root.headersVisible ? 55 : 0
+            visible: height > 0
 
             Behavior on height {
                 NumberAnimation {
                     easing.type: Easing.OutCubic
                 }
+            }
+
+            MouseArea {
+                id: headerBarArea
+                anchors.fill: parent
+                hoverEnabled: true
             }
 
             RowLayout {
@@ -510,11 +540,18 @@ Page {
 
             clip: true
             height: root.headersVisible ? 55 : 0
+            visible: height > 0
 
             Behavior on height {
                 NumberAnimation {
                     easing.type: Easing.OutCubic
                 }
+            }
+
+            MouseArea {
+                id: bottomBarArea
+                anchors.fill: parent
+                hoverEnabled: true
             }
 
             RowLayout {
@@ -526,7 +563,7 @@ Page {
 
                 IconButtonFlat {
                     id: playBtn
-                    text: renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
+                    text: renderer.status !== "PLAYING" && renderer.status !== "BUFFERING" ? "\ue037" : "\ue034"
                     onClicked: renderer.togglePause()
                 }
 
@@ -661,8 +698,8 @@ Page {
                     Layout.maximumWidth: 140
                     Layout.minimumWidth: 100
 
-                    onActivated: {
-                        Settings.quality = sourcesBox.model[index]
+                    onCurrentIndexChanged: {
+                        Settings.quality = sourcesBox.model[currentIndex]
                         loadAndPlay()
                         pArea.refreshHeaders()
                     }
