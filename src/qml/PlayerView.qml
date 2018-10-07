@@ -270,8 +270,8 @@ Page {
                 }
             }
             if (!seekBar.pressed) {
-            seekBar.value = newPos
-        }
+                seekBar.value = newPos
+            }
         }
 
         onPlayingResumed: {
@@ -288,6 +288,88 @@ Page {
 
         onStatusChanged: {
             PowerManager.screensaver = (renderer.status !== "PLAYING")
+        }
+    }
+
+    Shortcut {
+        sequence: "Space"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            renderer.togglePause()
+            clickRect.run()
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "0"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            reloadStream()
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "f"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            appFullScreen = !appFullScreen
+        }
+    }
+
+    Shortcut {
+        sequence: "Esc"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            appFullScreen = false
+        }
+    }
+
+    Shortcut {
+        sequence: "m"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            volumeBtn.toggleMute()
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Up"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            volumeSlider.value += 5
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Down"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            volumeSlider.value -= 5
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Right"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            if (!isVod || seekBar.pressed) return
+            seekBar.seek(seekBar.value + 5)
+            pArea.refreshHeaders()
+        }
+    }
+
+    Shortcut {
+        sequence: "Left"
+        context: Qt.ApplicationShortcut
+        onActivated: {
+            if (!isVod || seekBar.pressed) return
+            seekBar.seek(seekBar.value - 5)
+            pArea.refreshHeaders()
         }
     }
 
@@ -395,8 +477,8 @@ Page {
 
         onClicked: {
             clickRect.run()
-                clickTimer.restart()
-                refreshHeaders()
+            clickTimer.restart()
+            refreshHeaders()
         }
         onDoubleClicked: {
             if (!isMobile()) {
@@ -620,7 +702,7 @@ Page {
                     fill: parent
                     rightMargin: 5
                     leftMargin: 5
-                }
+                }                
                 spacing: 0
 
                 IconButtonFlat {
@@ -776,6 +858,7 @@ Page {
                     id: sourcesBox
                     font.pointSize: 9
                     font.bold: true
+                    focusPolicy: Qt.NoFocus
                     flat: true
                     Layout.fillWidth: true
                     Layout.maximumWidth: 140
@@ -804,14 +887,14 @@ Page {
                     visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
                     text: "\ue3bc"
                     onClicked: fitToAspectRatio()
-        }
+                }
 
                 IconButtonFlat {
                     id: fsBtn
                     visible: !isMobile()
                     text: !appFullScreen ? "\ue5d0" : "\ue5d1"
                     onClicked: appFullScreen = !appFullScreen
-            }
+                }
             }
         }
     }

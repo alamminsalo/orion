@@ -5,4 +5,5 @@ RoundButton {
     font.pointSize: 16
     flat: true
     font.family: "Material Icons"
+    focusPolicy: Qt.NoFocus
 }
