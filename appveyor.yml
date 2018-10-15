@@ -1,32 +1,52 @@
 environment:
+  APPVEYOR_SAVE_CACHE_ON_ERROR: true
+
   matrix:
   - platform: x64
+    player: qtav
     configuration: release
-    qt: 5.10
+    qt: 5.10 #version freeze until fix of https://bugreports.qt.io/browse/QTBUG-61822
     cc: VS2017
     QTDIR: C:\Qt\5.10\msvc2017_64
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-    OPENSSL_DIR: C:\OpenSSL-Win64
-
+    
   - platform: x86
+    player: qtav
     configuration: release
     qt: 5.10
     cc: VS2015
     toolchain_version: 14
     QTDIR: C:\Qt\5.10\msvc2015
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    OPENSSL_DIR: C:\OpenSSL-Win32
 
+  - platform: x64
+    player: multimedia
+    configuration: release
+    qt: 5.10
+    cc: VS2017
+    QTDIR: C:\Qt\5.10\msvc2017_64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+
+  - platform: x64
+    player: mpv
+    configuration: release
+    qt: 5.10
+    cc: VS2017
+    QTDIR: C:\Qt\5.10\msvc2017_64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+
+    
 matrix:
   fast_finish: false
 
 cache:
-  - C:\projects\AV -> appveyor.yml
+  - C:\projects\OpenSSL -> ci\build_openssl.bat
+  - C:\projects\QtAV -> ci\build_qtav.bat
+  - C:\projects\mpv -> ci\build_mpv.bat
 
 init:
-  - set vcarch=%platform%
-  - set arch=%platform%
   - set CL=/MP
+  - set vcarch=%platform%
   - if "%platform%" == "x64" set vcarch=amd64
   - set VCREDIST=vcredist_%platform%.exe
   - if %cc%==VS2017 set VCREDIST=vc_redist.%platform%.exe
@@ -43,51 +63,45 @@ init:
   - echo PATH=%PATH%
 
 install:
-  - git clone https://github.com/wang-bin/QtAV.git "C:\projects\QtAV"
-  - cd "C:\projects\QtAV" && git submodule update --init
-  - cd "C:\projects" && C:\projects\QtAV\tools\ci\win\install_dep.bat
-  - cd "C:\projects\QtAV"
-  - qmake QtAV.pro "CONFIG+=%configuration%" "CONFIG+=no-examples" "CONFIG+=no-tests"
-  - nmake %configuration%
-  - sdk_install.bat
-
+  - call "%APPVEYOR_BUILD_FOLDER%\ci\build_openssl.bat"
+  - if %player%==qtav call "%APPVEYOR_BUILD_FOLDER%\ci\build_qtav.bat"
+  - if %player%==mpv call "%APPVEYOR_BUILD_FOLDER%\ci\build_mpv.bat"
+  
 before_build:
   - echo APPVEYOR_BUILD_FOLDER=%APPVEYOR_BUILD_FOLDER%
   - cd %APPVEYOR_BUILD_FOLDER%
   - git submodule update --init
 
 build_script:
-  - qmake orion.pro "CONFIG+=%configuration%" "CONFIG+=qtav"
+  - qmake orion.pro "CONFIG+=%configuration%" "CONFIG+=%player%"
   - mkdir libs
-  - copy /y "%OPENSSL_DIR%\ssleay32.dll" libs
-  - copy /y "%OPENSSL_DIR%\libeay32.dll" libs
+  - copy /y "%OPENSSL_DIR%\*eay32.dll" libs
+  - if %player%==mpv copy /y %QTDIR%\bin\mpv-1.dll libs
   - nmake %configuration%
   - windeployqt --qmldir src\qml %configuration%\orion.exe
-  - copy /y %QTDIR%\bin\av*-*.dll %configuration%
-  - copy /y %QTDIR%\bin\sw*-*.dll %configuration%
-  - copy /y %QTDIR%\bin\QtAV*.dll %configuration%
+  - if %player%==qtav copy /y %QTDIR%\bin\av*-*.dll %configuration% && copy /y %QTDIR%\bin\sw*-*.dll %configuration% && copy /y %QTDIR%\bin\QtAV*.dll %configuration%
   - dir /s
 
 after_build:
-  - 7z a orion_%configuration%_%platform%_snapshot_%APPVEYOR_REPO_COMMIT%.zip . -x!.git
+  - 7z a orion_%configuration%_%player%_%platform%_snapshot_%APPVEYOR_REPO_COMMIT%.zip . -x!.git
   - del %configuration%\*.obj
   - del %configuration%\*.cpp
   - del %configuration%\*.h
   - del %configuration%\*.res
   - if %configuration%==release copy "resources\orion-installer.iss" orion-installer.iss
-  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="%APPVEYOR_BUILD_FOLDER%\%configuration%\%VCREDIST%" /F"orion-%configuration%-%platform%" "orion-installer.iss"
+  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="%APPVEYOR_BUILD_FOLDER%\%configuration%\%VCREDIST%" /F"orion-%configuration%-%player%-%platform%" "orion-installer.iss"
 
 artifacts:
-  - path: orion_$(configuration)_$(platform)_snapshot_$(APPVEYOR_REPO_COMMIT).zip
-    name: orion windows $(configuration) $(platform) snapshot zip
-  - path: orion-$(configuration)-$(platform).exe
+  - path: orion_$(configuration)_$(player)_$(platform)_snapshot_$(APPVEYOR_REPO_COMMIT).zip
+    name: orion windows $(configuration) $(player) $(platform) snapshot zip
+  - path: orion-$(configuration)-$(player)-$(platform).exe
     name: Windows installer
 
 deploy:
 - provider: GitHub
   auth_token:
     secure: kna2fyW9Q70WCBxJn/YYJ4pupSRog8FFp6BhKOjr6rtfMIGGtN52UuiMtc90RTla
-  artifact: orion-$(configuration)-$(platform).exe
+  artifact: orion-$(configuration)-$(player)-$(platform).exe
   prerelease: true
   force_update: true
   on:
