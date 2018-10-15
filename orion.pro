@@ -96,11 +96,8 @@ mpv {
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
     DEFINES += PLAYER_BACKEND=\\\"mpv\\\"
-    SOURCES +=  src/player/mpvrenderer.cpp \
-                src/player/mpvobject.cpp
-
-    HEADERS +=  src/player/mpvobject.h \
-                src/player/mpvrenderer.h
+    SOURCES +=  src/player/mpvobject.cpp
+    HEADERS +=  src/player/mpvobject.h
 
     LIBS += -lmpv
 }

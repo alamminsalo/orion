@@ -17,6 +17,7 @@ import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
 import "components"
+import "util.js" as Util
 
 import app.orion 1.0
 
@@ -34,9 +35,9 @@ Page {
 
     onHeadersVisibleChanged: {
         if (root.visible) {
-	    pArea.hoverEnabled = false
+            pArea.hoverEnabled = false
             topbar.visible = headersVisible
-	    disableTimer.restart()
+            disableTimer.restart()
         }
     }
 
@@ -176,12 +177,13 @@ Page {
             "_id": channel._id,
             "name": channel.name,
             "game": isVod ? vod.game : channel.game,
-                            "title": isVod ? vod.title : channel.title,
-                                             "online": channel.online,
-                                             "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
-                                             "viewers": channel.viewers,
-                                             "logo": channel.logo,
-                                             "preview": channel.preview
+            "title": isVod ? vod.title : channel.title,
+            "online": channel.online,
+            "favourite": channel.favourite || ChannelManager.containsFavourite(channel._id),
+            "viewers": channel.viewers,
+            "logo": channel.logo,
+            "preview": channel.preview,
+            "seekPreviews": isVod ? vod.seekPreviews : "",
         }
 
         favBtn.update()
@@ -307,13 +309,16 @@ Page {
         }
     }
 
-    Shortcut {
-        sequence: "0"
-        context: Qt.ApplicationShortcut
-        onActivated: {
-            reloadStream()
-            pArea.refreshHeaders()
-        }
+    Repeater {
+        model: ["0", "F5"]
+        delegate: Item { Shortcut {
+            sequence: modelData
+            context: Qt.ApplicationShortcut
+            onActivated: {
+                reloadStream()
+                clickRect.show("\ue5d5")
+            }
+        } }
     }
 
     Shortcut {
@@ -337,7 +342,7 @@ Page {
         context: Qt.ApplicationShortcut
         onActivated: {
             volumeBtn.toggleMute()
-            pArea.refreshHeaders()
+            clickRect.show(volumeSlider.value > 0 ? "\ue050" : "\ue04f")
         }
     }
 
@@ -345,8 +350,10 @@ Page {
         sequence: "Up"
         context: Qt.ApplicationShortcut
         onActivated: {
-            volumeSlider.value += 5
-            pArea.refreshHeaders()
+            if (volumeSlider.value < volumeSlider.to) {
+                volumeSlider.value += 5
+                clickRect.show("\ue050")
+            }
         }
     }
 
@@ -354,8 +361,10 @@ Page {
         sequence: "Down"
         context: Qt.ApplicationShortcut
         onActivated: {
-            volumeSlider.value -= 5
-            pArea.refreshHeaders()
+            if (volumeSlider.value > volumeSlider.from) {
+                volumeSlider.value -= 5
+                clickRect.show("\ue04d")
+            }
         }
     }
 
@@ -365,7 +374,8 @@ Page {
         onActivated: {
             if (!isVod || seekBar.pressed) return
             seekBar.seek(seekBar.value + 5)
-            pArea.refreshHeaders()
+            var totalSeek = seekBar.value - renderer.position
+            clickRect.show((totalSeek > 0 ? "+" : "") + totalSeek + "s")
         }
     }
 
@@ -375,7 +385,8 @@ Page {
         onActivated: {
             if (!isVod || seekBar.pressed) return
             seekBar.seek(seekBar.value - 5)
-            pArea.refreshHeaders()
+            var totalSeek = seekBar.value - renderer.position
+            clickRect.show((totalSeek > 0 ? "+" : "") + totalSeek + "s")
         }
     }
 
@@ -406,6 +417,41 @@ Page {
             }
         }
 
+        SeekPreview {
+            id: preview
+            anchors.fill: parent
+            blur: 2
+            visible: opacity > 0
+            opacity: 0
+            Behavior on opacity { PropertyAnimation { easing: Easing.InOutCubic } }
+
+            Connections {
+                target: seekBar
+                onValueChanged: preview.value = seekBar.value
+                onPressedChanged: {
+                    if (seekBar.pressed) {
+                        preview.opacity = 1
+                        //todo: stop player while seeking
+                    }
+                }
+            }
+            Connections {
+                target: renderer
+                onStatusChanged: {
+                    if (preview.visible && !seekBar.pressed && renderer.status !== "BUFFERING") {
+                        Util.setTimeout(function() {
+                            if (!seekBar.pressed) preview.opacity = 0
+                        }, 100)
+                    }
+                }
+            }
+            Connections {
+                target: root
+                onCurrentChannelChanged: preview.source = currentChannel.seekPreviews
+                onDurationChanged: preview.to = duration
+            }
+        }
+
         BusyIndicator {
             anchors.centerIn: parent
             running: renderer.status === "BUFFERING"
@@ -422,14 +468,14 @@ Page {
             hideTimer.restart()
         }
 	
-	Timer {
-	  id: disableTimer
-	  interval: 200
-	  running: false
-	  onTriggered:{
-	    pArea.hoverEnabled = true
-	  }
-	}
+        Timer {
+            id: disableTimer
+            interval: 200
+            running: false
+            onTriggered:{
+                pArea.hoverEnabled = true
+            }
+        }
 
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
@@ -446,27 +492,22 @@ Page {
                 id: clickRectIcon
                 text: ""
                 anchors.centerIn: parent
-                font.family: "Material Icons"
-                font.pointSize: parent.width * 0.5
+                font.family: /^[\x00-\x7F]*$/.test(text) ? "Helvetica" : "Material Icons"
+                font.pointSize: parent.width * 0.5 / text.length
             }
 
             ParallelAnimation {
                 id: _anim
                 running: false
 
-                onStarted: {
-                    clickRectIcon.text = renderer.status !== "PLAYING" ? "\ue037" : "\ue034"
-                }
-
                 onStopped: {
                     clickRect.opacity = 0
-                    clickRect.width = 0
                 }
 
                 NumberAnimation {
                     target: clickRect
                     property: "width"
-                    from: 0
+                    from: pArea.width * 0.1
                     to: pArea.width * 0.6
                     duration: 1500
                     easing.type: Easing.OutCubic
@@ -481,8 +522,13 @@ Page {
                 }
             }
 
+            function show(text) {
+                clickRectIcon.text = text
+               _anim.restart()
+            }
+
             function run() {
-                _anim.restart()
+                 show(renderer.status !== "PLAYING" ? "\ue037" : "\ue034")
             }
 
             function abort() {
@@ -710,6 +756,81 @@ Page {
                     value = val
                     seekTimer.restart()
                 }
+
+                MouseArea {
+                    id: seekBarMouseArea
+                    anchors.fill: seekBar
+                    hoverEnabled: true
+                    propagateComposedEvents: true
+                    onClicked: mouse.accepted = false
+                    onPressed: mouse.accepted = false
+                }
+
+            }
+
+            Rectangle {
+                color: root.Material.background
+                radius: 5
+                implicitHeight: seekTooltip.implicitHeight
+                implicitWidth: seekTooltip.implicitWidth
+
+                anchors.bottom: seekBar.top
+                x: Math.min(seekBar.width-width-5, Math.max(5, (seekBar.pressed ? (seekBar.handle.x + seekBar.handle.width / 2) : seekBarMouseArea.mouseX) - width / 2))
+
+                visible: opacity > 0
+                opacity: (seekBar.hovered || seekBar.pressed) ? 1 : 0
+                Behavior on opacity { PropertyAnimation { easing: Easing.InCubic } }
+
+                ColumnLayout {
+                    id: seekTooltip
+                    anchors.fill: parent
+                    spacing: 0
+
+                    function timeAtMouse() {
+                        if (seekBar.pressed && seekBar.live) return seekBar.value
+                        var seekWidth = seekBar.width - seekBar.handle.width
+                        var seekX = seekBarMouseArea.mouseX - seekBar.handle.width / 2
+                        seekX = Math.min(seekWidth, Math.max(0, seekX))
+                        return seekBar.valueAt(seekX / seekWidth)
+                    }
+
+                    SeekPreview {
+                        id: seekPreview
+
+                        Layout.topMargin: 5
+                        Layout.leftMargin: 5
+                        Layout.rightMargin: 5
+
+                        Layout.preferredWidth: implicitWidth
+                        Layout.preferredHeight: implicitHeight
+
+                        visible: !seekBar.pressed && implicitWidth > 0
+                        blur: 1
+
+                        Connections {
+                            target: seekBar
+                            onValueChanged: seekPreview.value = seekTooltip.timeAtMouse()
+                        }
+                        Connections {
+                            target: seekBarMouseArea
+                            onPositionChanged: seekPreview.value = seekTooltip.timeAtMouse()
+                        }
+                        Connections {
+                            target: root
+                            onCurrentChannelChanged: seekPreview.source = currentChannel.seekPreviews
+                            onDurationChanged: seekPreview.to = duration
+                        }
+
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        horizontalAlignment: Text.AlignHCenter
+                        padding: 5
+                        text: Util.formatTime(seekTooltip.timeAtMouse())
+                    }
+                }
+
             }
 
             RowLayout {
@@ -813,13 +934,7 @@ Page {
                     clip: true
                     function updateText() {
                         if (!isVod) return ""
-                        var formatTime = function(seconds) {
-                            var d = new Date()
-                            d.setTime(seconds * 1000)
-                            d.setMinutes(d.getMinutes() + d.getTimezoneOffset())
-                            return d.toTimeString()
-                        }
-                        text = formatTime(seekBar.value) + "/" + formatTime(duration)
+                        text = Util.formatTime(seekBar.value) + "/" + Util.formatTime(duration)
                     }
                     Connections {
                         target: seekBar

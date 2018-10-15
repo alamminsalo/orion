@@ -96,6 +96,7 @@ Item{
             position: channelVodPositions[model.id] || 0
             game: model.game
             createdAt: model.createdAt
+            seekPreviews: model.seekPreviews
 
             width: vodgrid.cellWidth
         }

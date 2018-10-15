@@ -40,7 +40,7 @@
 #endif
 
 #ifdef MPV_PLAYER
-#include "player/mpvrenderer.h"
+#include "player/mpvobject.h"
 #endif
 
 inline void noisyFailureMsgHandler(QtMsgType /*type*/, const QMessageLogContext &/*context*/, const QString &/*msg*/)

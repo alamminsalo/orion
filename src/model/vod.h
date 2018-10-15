@@ -20,17 +20,18 @@
 
 class Vod
 {
-    QString title;
-    QString id;
-    QString game;
-    quint32 duration;
-    quint64 views;
-    QString preview;
-    QString createdAt;
+    QString title = "";
+    QString id = "";
+    QString game = "";
+    quint32 duration = 0;
+    quint64 views = 0;
+    QString preview = "";
+    QString createdAt = "";
+    QString seekPreviews = "";
 
 public:
     Vod();
-    Vod(Vod &other);
+    Vod(Vod &other) = default;
     ~Vod(){};
 
     QString getPreview() const;
@@ -47,6 +48,8 @@ public:
     void setTitle(const QString &value);
     QString getCreatedAt() const;
     void setCreatedAt(const QString &value);
+    QString getSeekPreviews() const;
+    void setSeekPreviews(const QString &value);
 };
 
 #endif // VOD_H

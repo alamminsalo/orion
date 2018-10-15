@@ -14,27 +14,7 @@
 
 #include "vod.h"
 
-Vod::Vod()
-{
-    title = "";
-    id = "";
-    game = "";
-    duration = 0;
-    views = 0;
-    preview = "";
-    createdAt = "";
-}
-
-Vod::Vod(Vod &other)
-{
-    title = other.title;
-    id = other.id;
-    game = other.game;
-    views = other.views;
-    preview = other.preview;
-    duration = other.duration;
-    createdAt = other.createdAt;
-}
+Vod::Vod() { }
 
 QString Vod::getPreview() const
 {
@@ -104,4 +84,14 @@ QString Vod::getCreatedAt() const
 void Vod::setCreatedAt(const QString &value)
 {
     createdAt = value;
+}
+
+QString Vod::getSeekPreviews() const
+{
+    return seekPreviews;
+}
+
+void Vod::setSeekPreviews(const QString &value)
+{
+    seekPreviews = value;
 }

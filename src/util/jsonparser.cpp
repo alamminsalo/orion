@@ -224,12 +224,15 @@ Vod *JsonParser::parseVod(const QJsonObject &json)
             vod->setPreview(preview.toString());
         }
         else if (preview.isObject()) {
-            const QJsonValue & previewUrl = preview.toObject()["medium"];
+            const QJsonValue & previewUrl = preview.toObject()["large"];
             if (previewUrl.isString()) {
                 vod->setPreview(previewUrl.toString());
             }
         }
     }
+
+    if (!json["seek_previews_url"].isNull())
+        vod->setSeekPreviews(json["seek_previews_url"].toString());
 
     if (!json["title"].isNull())
         vod->setTitle(json["title"].toString());

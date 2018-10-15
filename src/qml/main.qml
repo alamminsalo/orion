@@ -36,7 +36,15 @@ ApplicationWindow {
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
     title: "Orion"
-    visibility: appFullScreen ? Window.FullScreen : Window.AutomaticVisibility
+    visibility: Window.AutomaticVisibility
+
+    property int restoredVisibility: Window.AutomaticVisibility
+    onAppFullScreenChanged: {
+        if (visibility != Window.FullScreen) {
+            restoredVisibility = visibility
+        }
+        visibility = appFullScreen ? Window.FullScreen : restoredVisibility
+    }
 
     property variant rootWindow: root
     property variant g_tooltip

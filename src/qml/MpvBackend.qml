@@ -14,6 +14,7 @@
 
 import QtQuick 2.5
 import mpv 1.0
+import "util.js" as Util
 
 /* Interface for backend Mpv
 
@@ -53,25 +54,21 @@ Item {
         if (start >= 0) {
             position = start
             renderer.setOption("start", "+" + position)
-            lastStartPosition = position;
-            streamOffsetCalibrated = false;
-            streamOffset = 0;
         }
 
         renderer.setOption("audio-client-name", "Orion");
         renderer.setOption("title", description);
 
-        renderer.command(["loadfile", src])
-
+        renderer.command(["loadfile", src, "replace"])
         resume()
     }
 
     function resume() {
-        renderer.play(false)
+        renderer.command(["set", "pause", "no"])
     }
 
     function pause() {
-        renderer.pause()
+        renderer.command(["set", "pause", "yes"])
     }
 
     function stop() {
@@ -87,31 +84,25 @@ Item {
     }
 
     function seekTo(sec) {
-        var adjustedSec = sec;
-        if (streamOffsetCalibrated) {
-            adjustedSec += streamOffset;
-        }
-        renderer.setProperty("playback-time", adjustedSec)
+        status = "BUFFERING"
+        renderer.setProperty("playback-time", sec)
         root.position = sec;
     }
 
     function setVolume(vol) {
-        if (Qt.platform.os === "linux")
-            volume = Math.round(Math.log(vol) / Math.log(100))
-        else
-            volume = Math.round(vol)
+        volume = Math.round(vol)
     }
 
     function getDecoder() {
         var defaultDecoders = []
         if (Qt.platform.os == "windows") {
-            defaultDecoders = [ "dxva2-copy", "d3d11va-copy", "cuda-copy", "no" ]
+            defaultDecoders = [ "dxva2-copy", "d3d11va-copy", "cuda-copy", "nvdec-copy", "no" ]
         } else if (Qt.platform.os == "osx" || Qt.platform.os == "ios") {
             defaultDecoders = [ "videotoolbox", "no" ]
         } else if(Qt.platform.os == "android") {
             defaultDecoders = [ "mediacodec_embed", "no" ]
         } else if (Qt.platform.os == "linux") {
-            defaultDecoders = [ "vaapi-copy", "vdpau-copy", "no" ]
+            defaultDecoders = [ "vaapi-copy", "vdpau-copy", "cuda-copy", "nvdec-copy", "no" ]
         }
         return [ "auto" ].concat(defaultDecoders)
     }
@@ -142,30 +133,10 @@ Item {
     }
 
     property int position: 0
-    onPositionChanged: {
-        //console.log("Position", position)
-
-    }
-
-    property int lastStartPosition;
-    property bool streamOffsetCalibrated: false;
-    property int streamOffset: 0;
 
     property double volume: 100
     onVolumeChanged: {
-        //console.log("Volume", volume)
         renderer.setProperty("volume", volume)
-    }
-
-    Timer {
-        id: positionTimer
-        interval: 1000
-        running: false
-        repeat: true
-        onTriggered: {
-            if (root.status === "PLAYING")
-                root.position += 1
-        }
     }
 
     MpvObject {
@@ -173,46 +144,52 @@ Item {
 
         anchors.fill: parent
 
-        onBufferingStarted: {
-            root.status = "BUFFERING"
-        }
-
-        onPlayingStopped: {
-            root.status = "STOPPED"
-            positionTimer.stop()
-        }
-
-        onPlayingPaused: {
-            root.status = "PAUSED"
-            positionTimer.stop()
-        }
-
-        onPlayingResumed: {
-            root.status = "PLAYING"
-            positionTimer.start()
-        }
-
-        onPositionChanged: {
-            var adjustedPosition = position;
-
-            if (!root.streamOffsetCalibrated && status == "PLAYING") {
-                root.streamOffset = position - lastStartPosition;
-                root.streamOffsetCalibrated = true;
-                console.log("MpvBackend stream offset", root.streamOffset);
+        function updateStatus() {
+            if (idleActive) {
+                if (root.status !== "STOPPED") root.playingStopped()
+                root.status = "STOPPED"
+            } else if (bufferingState >= 100 && !seeking) {
+                if (!getProperty("pause")) {
+                    if (root.status != "PLAYING") root.playingResumed()
+                    root.status = "PLAYING"
+                } else if (coreIdle) {
+                    if (root.status === "BUFFERING") command(["frame-step"])
+                    if (root.status !== "PAUSED") root.playingPaused()
+                    root.status = "PAUSED"
+                } else {
+                    root.status = "BUFFERING"
+                }
+            } else {
+                root.status = "BUFFERING"
             }
-
-            if (root.streamOffsetCalibrated) {
-                adjustedPosition -= root.streamOffset;
-            }
-
-            if (root.position !== adjustedPosition)
-                root.position = adjustedPosition
-
-            positionTimer.restart()
         }
+
+        onPlaybackTimeChanged: root.position = playbackTime
+        onCoreIdleChanged: Qt.callLater(updateStatus)
+        onBufferingStateChanged: Qt.callLater(updateStatus)
+        onIdleActiveChanged: Qt.callLater(updateStatus)
+        onSeekingChanged: Qt.callLater(updateStatus)
+        onVolumeChanged: root.volumeChangedInternally()
+
+        property real bufferingState: 0
+        property bool coreIdle: true
+        property bool idleActive: true
+        property bool seeking: false
+        property real volume: getProperty("volume")
+        property real playbackTime: 0
 
         Component.onCompleted: {
-            root.setVolume(Math.round(renderer.getProperty("volume")))
+            renderer.observeProperty("cache-buffering-state", function(value) { bufferingState = value });
+            renderer.observeProperty("core-idle", function(value) { coreIdle = value });
+            renderer.observeProperty("idle-active", function(value) { idleActive = value });
+            renderer.observeProperty("seeking", function(value) { seeking = value });
+            renderer.observeProperty("volume", function(value) { volume = value });
+            renderer.observeProperty("playback-time", function(value) { playbackTime = value });
+
+            // https://github.com/mpv-player/mpv/issues/4195
+            Util.setInterval(function() { renderer.playbackTime = renderer.getProperty("playback-time") }, 1000)
+
+            root.setVolume(Math.round(volume))
             root.volumeChangedInternally()
         }
     }

@@ -22,6 +22,7 @@ Channel {
     property int duration
     property int position
     property string createdAt
+    property string seekPreviews
     online: true
 
     Label {

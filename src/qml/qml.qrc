@@ -42,5 +42,6 @@
         <file>components/RoundImage.qml</file>
         <file>components/OptionButton.qml</file>
         <file>components/RotatingButton.qml</file>
+        <file>components/SeekPreview.qml</file>
     </qresource>
 </RCC>

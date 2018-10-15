@@ -80,6 +80,8 @@ Item {
     }
 
     function seekTo(pos) {
+        if (status !== "STOPPING")
+            status = "BUFFERING"
         renderer.seek(pos * 1000)
         root.position = pos
     }
@@ -135,10 +137,20 @@ Item {
             console.error(errorString)
         }
 
-        onStatusChanged: {
-            if (status === MediaPlayer.Buffering)
+        function updateStatus() {
+            if (status === MediaPlayer.Buffering) {
                 root.status = "BUFFERING"
+            } else if (playbackState === MediaPlayer.PlayingState) {
+                root.status = "PLAYING"
+            } else if (playbackState === MediaPlayer.PausedState) {
+                root.status = "PAUSED"
+            } else if (playbackState === MediaPlayer.StoppedState) {
+                root.status = "STOPPED"
+            }
         }
+
+        onStatusChanged: updateStatus()
+        onPlaybackStateChanged: updateStatus()
 
         onStopped: {
             root.status = "STOPPED"
@@ -161,8 +173,10 @@ Item {
                 return;
             }
             var pos = position / 1000
-            if (root.position !== pos)
+            if (root.position !== pos) {
                 root.position = pos
+                updateStatus()
+            }
         }
     }
 

@@ -36,7 +36,8 @@ public:
         Game,
         Duration,
         Views,
-        CreatedAt
+        CreatedAt,
+        SeekPreviews,
     };
 
     Qt::ItemFlags flags(const QModelIndex &index) const;
