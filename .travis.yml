@@ -1,37 +1,59 @@
-os:
-  - osx
-
-env:
-  - QTBREWVER=5.9
-  
+dist: trusty
 language: cpp
-  
-compiler:
-  - clang
-  
+
+matrix:
+  fast_finish: false
+  include:
+    - os: osx
+      env:
+        - PLATFORM=osx
+        - BACKEND=multimedia
+      compiler: clang
+
+    - os: linux
+      env:
+        - PLATFORM=linux
+        - BACKEND=mpv
+      compiler: gcc
+    
+    - os: linux
+      env:
+        - PLATFORM=android
+        - BACKEND=multimedia
+      compiler: gcc
+
 cache:
+  apt: true
   directories:
     - $HOME/Library/Caches/Homebrew
+    - $HOME/mpv
 
 before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo add-apt-repository -y ppa:apt-fast/stable && sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test && sudo apt-get update && sudo apt-get -y -qq install apt-fast; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-fast -y install g++-7 > /dev/null; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt5 jq; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install dmgbuild; fi
 
+install:
+  - ci/prepare_$PLATFORM.sh
+  - source ci/$PLATFORM.env
+  - cd $TRAVIS_BUILD_DIR
+
 script:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export QTDIR=$(brew info --json=v1 qt | jq -r '.[0].bottle.stable.cellar + "/" + .[0].name + "/" + .[0].installed[0].version'); fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export ORIONCONFIG=multimedia; fi
-  - $QTDIR/bin/qmake orion.pro CONFIG+=$ORIONCONFIG
-  - make
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then bash distfiles/deploy_mac.sh; fi
-  - mkdir -p artifacts
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then dmgbuild -s distfiles/settings.py "Orion $TRAVIS_TAG" "orion-$TRAVIS_TAG.dmg"; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then mv "orion-$TRAVIS_TAG.dmg" artifacts/; fi
-  
+  - $QTDIR/bin/qmake orion.pro CONFIG+=$BACKEND
+  - make -j2
+  - mkdir -p artifacts && ci/deploy_$PLATFORM.sh $TRAVIS_BUILD_DIR/artifacts
+
 deploy:
     - provider: releases
       # To use this, create a Github token with the "public_repo" permission, and create an env var GITHUB_API_KEY in the Travis' project settings, making sure "Display value in build log" is set to OFF
       api_key: '$GITHUB_API_KEY'
-      file: 'artifacts/orion-$TRAVIS_TAG.dmg'
+      file: 
+        - 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.dmg'
+        - 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.AppImage'
+        - 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.apk'
       skip_cleanup: true
       prerelease: true
       on:

@@ -1,6 +1,7 @@
 .DS_Store
 orion.pro.user*
 build
+libs
 android/gradle*
 android/local*
 android/build*

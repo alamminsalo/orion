@@ -48,16 +48,25 @@ public:
     MpvRenderer(MpvObject *new_obj)
         : obj{new_obj}
     {
-
+#ifdef USE_OPENGL_CB
+    int r = mpv_opengl_cb_init_gl(obj->mpv_gl, nullptr, &get_proc_address_mpv, nullptr);
+    if (r < 0)
+        throw std::runtime_error("could not initialize OpenGL");
+#endif
     }
 
     virtual ~MpvRenderer()
-    {}
+    {
+#ifdef USE_OPENGL_CB
+        mpv_opengl_cb_uninit_gl(obj->mpv_gl);
+#endif
+    }
 
     // This function is called when a new FBO is needed.
     // This happens on the initial frame.
     QOpenGLFramebufferObject * createFramebufferObject(const QSize &size)
     {
+#ifndef USE_OPENGL_CB
         // init mpv_gl:
         if (!obj->mpv_gl)
         {
@@ -72,15 +81,17 @@ public:
                 throw std::runtime_error("failed to initialize mpv GL context");
             mpv_render_context_set_update_callback(obj->mpv_gl, on_mpv_redraw, obj);
         }
-
+#endif
         return QQuickFramebufferObject::Renderer::createFramebufferObject(size);
     }
 
     void render()
     {
         obj->window()->resetOpenGLState();
-
         QOpenGLFramebufferObject *fbo = framebufferObject();
+#ifdef USE_OPENGL_CB
+        mpv_opengl_cb_draw(obj->mpv_gl, fbo->handle(), fbo->width(), fbo->height());
+#else
         mpv_opengl_fbo mpfbo{static_cast<int>(fbo->handle()), fbo->width(), fbo->height(), 0};
         int flip_y{0};
 
@@ -97,14 +108,16 @@ public:
         // See render_gl.h on what OpenGL environment mpv expects, and
         // other API details.
         mpv_render_context_render(obj->mpv_gl, params);
-
+#endif
         obj->window()->resetOpenGLState();
     }
 };
 
 MpvObject::MpvObject(QQuickItem * parent)
-    : QQuickFramebufferObject(parent), mpv{mpv_create()}, mpv_gl(nullptr)
+    : QQuickFramebufferObject(parent), mpv_gl(nullptr)
 {
+    std::setlocale(LC_NUMERIC, "C");
+    mpv = mpv_create();
     if (!mpv)
         throw std::runtime_error("could not create mpv context");
 
@@ -113,11 +126,27 @@ MpvObject::MpvObject(QQuickItem * parent)
     mpv_set_option_string(mpv, "msg-level", "all=v");
 #endif
 
+#ifdef USE_OPENGL_CB
+    mpv_set_option_string(mpv, "vo", "opengl-cb");
+#endif
+
     if (mpv_initialize(mpv) < 0)
         throw std::runtime_error("could not initialize mpv context");
 
     // Request hw decoding, just for testing.
-    mpv::qt::set_option_variant(mpv, "hwdec", "auto");
+    mpv_set_option_string(mpv, "hwdec", "auto");
+
+#ifdef USE_OPENGL_CB
+    // Setup the callback that will make QtQuick update and redraw if there
+    // is a new video frame. Use a queued connection: this makes sure the
+    // doUpdate() function is run on the GUI thread.
+    mpv_gl = (mpv_opengl_cb_context *)mpv_get_sub_api(mpv, MPV_SUB_API_OPENGL_CB);
+
+    if (!mpv_gl)
+        throw std::runtime_error("OpenGL not compiled in");
+
+    mpv_opengl_cb_set_update_callback(mpv_gl, MpvObject::on_update, (void *)this);
+#endif
 
     mpv_set_wakeup_callback(mpv, wakeup, this);
 
@@ -128,7 +157,11 @@ MpvObject::~MpvObject()
 {
     if (mpv_gl) // only initialized if something got drawn
     {
+#ifdef USE_OPENGL_CB
+        mpv_opengl_cb_set_update_callback(mpv_gl, nullptr, nullptr);
+#else
         mpv_render_context_free(mpv_gl);
+#endif
     }
 
     mpv_terminate_destroy(mpv);

@@ -8,7 +8,7 @@ QT     += gui qml network widgets quickcontrols2
 
 QMAKE_CXXFLAGS += -Wall -O2
 
-CONFIG += c++11
+CONFIG += c++14
 #CONFIG += console
 
 TARGET = orion
@@ -86,8 +86,8 @@ android: {
     android/src/com/orion/MainActivity.java
 
     ANDROID_EXTRA_LIBS = \
-        $$PWD/../openssl-1.0.2l/libcrypto.so \
-        $$PWD/../openssl-1.0.2l/libssl.so
+        $$PWD/libs/libcrypto.so \
+        $$PWD/libs/libssl.so
 }
 
 #Backend for player, uses mpv as default
