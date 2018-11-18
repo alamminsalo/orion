@@ -19,7 +19,6 @@ import app.orion 1.0
 
 Page {
     id: root
-    //anchors.fill: parent
     property int gamesCount: 0
     property bool checked: false
 
@@ -56,8 +55,11 @@ Page {
         }
     }
 
-    onVisibleChanged: {
-        if (visible && !checked){
+    Component.onCompleted: search()
+
+    property bool itemInView: isItemInView(this)
+    onItemInViewChanged: {
+        if (itemInView && !checked) {
             if (searchBar.text.length <= 0)
                 search()
             checked = true
@@ -136,7 +138,6 @@ Page {
 
     Menu {
         id: menu
-
         property var item
 
         MenuItem {

@@ -44,6 +44,8 @@
         <file>components/SeekPreview.qml</file>
         <file>components/TextMenu.qml</file>
         <file>components/ResponsiveScrollBar.qml</file>
+        <file>components/StackView.qml</file>
+        <file>components/SidePanel.qml</file>
         <file>components/EmoteTooltip.qml</file>
     </qresource>
 </RCC>

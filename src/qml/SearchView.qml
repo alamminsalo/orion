@@ -52,8 +52,11 @@ Page {
         }
     }
 
-    onVisibleChanged: {
-        if (visible) {
+    Component.onCompleted: search()
+
+    property bool itemInView: isItemInView(this)
+    onItemInViewChanged: {
+        if (itemInView) {
             //channels.positionViewAtBeginning()
             channels.checkScrolled()
 

@@ -20,7 +20,7 @@ import app.orion 1.0
 
 ToolBar {
     id: root
-    property int selectedView: 0
+    property alias currentIndex : tab.currentIndex
     visible : !appFullScreen || hovered || windowTop.containsMouse
 
     // 1px topmost popup allows to detect when mouse is at top of the screen while fullscreen
@@ -50,8 +50,8 @@ ToolBar {
     //Base font color
     Material.foreground: Material.Grey
 
-    function setView(index) {
-        selectedView = index
+    function setCurrentIndex(index) {
+        tab.setCurrentIndex(index)
     }
 
     TabBar {
@@ -65,27 +65,21 @@ ToolBar {
 
         TabButton {
             text: !tab.showIcons ? "Channels" : "\ue8b6"
-            onClicked: selectedView = 0
         }
         TabButton {
             text: !tab.showIcons ? "Followed" : "\ue87d"
-            onClicked: selectedView = 1
         }
         TabButton {
             text: !tab.showIcons ? "Games" : "\ue021"
-            onClicked: selectedView = 2
         }
         TabButton {
             text: !tab.showIcons ? "VODs" : "\ue63a"
-            onClicked: selectedView = 3
         }
         TabButton {
             text: !tab.showIcons ? "Player" : "\ue038"
-            onClicked: selectedView = 4
         }
         TabButton {
             text: !tab.showIcons ? "Settings" : "\ue8b8"
-            onClicked: selectedView = 5
             Rectangle {
                 visible: !Settings.hasAccessToken
                 anchors.horizontalCenter: parent.contentItem.right

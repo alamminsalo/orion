@@ -26,6 +26,11 @@ import app.orion 1.0
 Page {
     id: root
 
+    leftPadding: chatdrawer.edge === Qt.LeftEdge && !chatdrawer.interactive ? chatdrawer.position * chatdrawer.width : 0
+    rightPadding: chatdrawer.edge === Qt.RightEdge && !chatdrawer.interactive ? chatdrawer.position * chatdrawer.width : 0
+    bottomPadding: chatdrawer.edge === Qt.BottomEdge ? chatdrawer.position * chatdrawer.height : 0
+    topPadding: chatdrawer.edge === Qt.TopEdge ? chatdrawer.position * chatdrawer.height : 0
+
     property int duration: -1
     property var currentChannel
     property var streamMap
@@ -100,7 +105,7 @@ Page {
                 } else if (currentChannel) {
                     setHeaderText("Offline: " + getWatchingTitle())
                 } else {
-                setHeaderText("Error getting stream")
+                    setHeaderText("Error getting stream")
                 }
                 break;
 
@@ -201,10 +206,10 @@ Page {
             } else {
                 var vodIdNum = parseInt(vod._id.substring(1));
                 console.log("replaying chat for vod", vodIdNum, "starting at", startEpochTime);
-                chat.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
+                chatdrawer.chat.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
             }
         } else {
-            chat.joinChannel(currentChannel.name, currentChannel._id);
+            chatdrawer.chat.joinChannel(currentChannel.name, currentChannel._id);
         }
 
         pollTimer.restart()
@@ -217,13 +222,13 @@ Page {
     }
 
     function getWatchingTitle() {
-	var description = ""
-	if (currentChannel) {
-	  description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
-		  + (currentChannel.game ? " playing " + currentChannel.game : "")
-		  + (isVod ? " (VOD)" : "");
-	}
-	return description;
+        var description = ""
+        if (currentChannel) {
+            description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
+                    + (currentChannel.game ? " playing " + currentChannel.game : "")
+                    + (isVod ? " (VOD)" : "");
+        }
+        return description;
     }
 
     function setWatchingTitle() {
@@ -246,7 +251,7 @@ Page {
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
-            chat.playerSeek(position)
+            chatdrawer.chat.playerSeek(position)
             renderer.seekTo(position)
         }
     }
@@ -275,7 +280,7 @@ Page {
 
         onPositionChanged: {
             var newPos = renderer.position;
-            chat.playerPositionUpdate(newPos);
+            chatdrawer.chat.playerPositionUpdate(newPos);
             if (root.isVod) {
                 if (Math.abs(newPos - root.lastSetPosition) > 10) {
                     root.lastSetPosition = newPos;
@@ -484,11 +489,11 @@ Page {
                 root.headersVisible = true
             hideTimer.restart()
         }
-	
+
         onReleased: playerArea.forceActiveFocus()
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
-
+        
         Rectangle {
             id: clickRect
             anchors.centerIn: parent
@@ -547,8 +552,8 @@ Page {
 
         onClicked: {
             if (Settings.clickTogglePause) {
-            clickRect.run()
-            clickTimer.restart()
+                clickRect.run()
+                clickTimer.restart()
             }
             refreshHeaders()
         }
@@ -556,7 +561,9 @@ Page {
             if (!isMobile()) {
                 clickTimer.stop()
                 clickRect.abort();
+                interactive = false /* avoid accidental view flicking */
                 appFullScreen = !appFullScreen
+                interactive = true
             }
         }
         hoverEnabled: true
@@ -669,7 +676,7 @@ Page {
                         else
                             chatdrawer.close()
                     }
-                    text: chat.hasUnreadMessages ? "\ue87f" : "\ue0ca"
+                    text: chatdrawer.hasUnreadMessages ? "\ue87f" : "\ue0ca"
                 }
             }
         }
@@ -893,7 +900,7 @@ Page {
                     focusPolicy: Qt.NoFocus
                     Layout.maximumWidth: width
                     hoverEnabled: true
-
+                    
                     Behavior on width { PropertyAnimation { easing.type: Easing.InOutQuad } }
                     Behavior on opacity { PropertyAnimation { easing.type: Easing.InOutQuad } }
 
@@ -971,10 +978,10 @@ Page {
 
                     onActivated: {
                         if (Settings.quality !== sourcesBox.model[currentIndex]) {
-                        Settings.quality = sourcesBox.model[currentIndex]
-                        loadAndPlay()
-                        pArea.refreshHeaders()
-                    }
+                            Settings.quality = sourcesBox.model[currentIndex]
+                            loadAndPlay()
+                            pArea.refreshHeaders()
+                        }
                     }
 
                     function selectItem(name) {
@@ -991,7 +998,7 @@ Page {
 
                 IconButtonFlat {
                     id: cropBtn
-                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
+                    visible: !appFullScreen && !isMobile() && !chatdrawer.visible && parent.width > 440
                     text: "\ue3bc"
                     onClicked: fitToAspectRatio()
                 }
@@ -1003,6 +1010,15 @@ Page {
                     onClicked: appFullScreen = !appFullScreen
                 }
             }
+        }
+    }
+
+    ChatDrawer {
+        parent: root
+        id: chatdrawer
+        Labs.Settings {
+            property alias chatVisible: chatdrawer.opened
+            property alias chatWidth: chatdrawer.width
         }
     }
 }

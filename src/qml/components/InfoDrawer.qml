@@ -5,7 +5,7 @@ import QtQuick.Controls.Material 2.1
 import app.orion 1.0
 import "../util.js" as Util
 
-Drawer {
+SidePanel {
     id: root
     property var item: undefined
     property bool labelsVisible: width >= 400
@@ -47,13 +47,13 @@ Drawer {
         id: bgImage
         fillMode: Image.PreserveAspectCrop
         anchors.fill: parent
-    Rectangle {
+        Rectangle {
             id: bg
             color: Material.background.hslLightness < 0.5 ? "black" : "white"
-        opacity:  0.6
-        anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "transparent"}
+            opacity:  0.6
+            anchors.fill: parent
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "transparent"}
                 GradientStop { position: 0.8; color: bg.color }
             }
         }

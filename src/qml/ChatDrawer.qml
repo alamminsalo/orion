@@ -7,7 +7,7 @@ import "components"
 import app.orion 1.0
 import "util.js" as Util
 
-Drawer {
+SidePanel {
     id: chatdrawer
 
     property alias chat: chatview
@@ -27,12 +27,12 @@ Drawer {
     Material.elevation: chat.pinned ? 0 : 12
     dim: false
     edge: {
-            switch (Settings.chatEdge) {
-            case 0:
+        switch (Settings.chatEdge) {
+        case 0:
             return Qt.LeftEdge;
-            case 1:
+        case 1:
             return Qt.RightEdge;
-            case 2:
+        case 2:
             return Qt.BottomEdge;
         case 3:
             return Qt.TopEdge;
@@ -54,7 +54,7 @@ Drawer {
         }
         rootWindow.appFullScreenChanged.connect(maybeShowChat)
     }
-    
+
     onActiveFocusChanged: if (activeFocus) chatview.forceActiveFocus()
 
     ChatView {

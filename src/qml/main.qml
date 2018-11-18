@@ -95,7 +95,6 @@ ApplicationWindow {
     property variant g_tooltip
     property bool g_contextMenuVisible: false
     property bool appFullScreen: isMobile() ? (view.playerVisible && !isPortraitMode) : false
-    property var chat: chatdrawer.chat
     property bool isPortraitMode: Screen.primaryOrientation === Qt.PortraitOrientation
                                   || Screen.primaryOrientation === Qt.InvertedPortraitOrientation
 
@@ -108,51 +107,28 @@ ApplicationWindow {
     }
 
     onClosing: {
-            Qt.quit()
-        }
-
-    ChatDrawer {
-        id: chatdrawer
+        Qt.quit()
     }
 
+    property alias view: view
     Views {
         id: view
-        anchors {
-            fill: parent
-            leftMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-            rightMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
-            bottomMargin: chatdrawer.isBottom && chatdrawer.position > 0 ? chatdrawer.height : 0
-        }
 
-        onCurrentIndexChanged: {
-            if (chatdrawer.isBottom) {
-                if (!playerVisible)
-                    chatdrawer.close()
-                else if (isMobile()) {
-                    if (isPortraitMode)
-                        chatdrawer.open()
-                }
-            }
-        }
+        currentIndex: topbar.currentIndex
 
-        onRequestSelectionChange: {
-            topbar.setView(index)
-        }
+        anchors.fill: parent
+
     }
 
     header: TopBar {
         id: topbar
-        onSelectedViewChanged: {
-            view.setSelection(selectedView)
-        }
+        currentIndex: view.currentIndex
     }
 
     footer: ToolBar {
         id: connectionErrorRectangle
-        leftPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-        rightPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         Material.background: Material.Primary
-        visible: !Network.up
+        visible: !Network.up && !view.isItemInView(view.playerView)
 
         Label {
             anchors.centerIn: parent
@@ -167,7 +143,7 @@ ApplicationWindow {
         if (!isMobile()) {
             var component = Qt.createComponent("components/GridTooltip.qml")
             if(component.status === Component.Ready) {
-            g_tooltip = component.createObject(root)
+                g_tooltip = component.createObject(root)
             } else {
                 console.error(component.errorString())
             }
@@ -180,9 +156,9 @@ ApplicationWindow {
 
         //Initial view
         if (!Settings.hasAccessToken) {
-            topbar.setView(5)
+            topbar.setCurrentIndex(5)
         } else {
-            topbar.setView(1)
+            topbar.setCurrentIndex(1)
         }
 
         //Check version

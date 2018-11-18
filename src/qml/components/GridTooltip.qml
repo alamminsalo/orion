@@ -71,8 +71,8 @@ Item {
         Component.onCompleted: if (Object.hasOwnProperty("enabled")) enabled = false
 
         property point base: Util.globalPosition(root, 0, 0)
-        x: mouseX - base.x
-        y: mouseY - base.y
+        x: mouseX - base.x + 5
+        y: mouseY - base.y + 5
 
         enter: Transition { }
         exit: Transition { }

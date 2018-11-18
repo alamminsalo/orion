@@ -58,8 +58,9 @@ Item{
         return VodManager.getVodLastPlaybackPosition(channel.name, vod._id);
     }
 
-    onVisibleChanged: {
-        if (visible) {
+    property bool itemInView: isItemInView(this)
+    onItemInViewChanged: {
+        if (itemInView) {
             vodgrid.positionViewAtBeginning()
             vodgrid.checkScroll()
         }
