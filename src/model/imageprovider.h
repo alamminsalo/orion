@@ -47,13 +47,14 @@ public slots:
     const QString getKey() { return key; }
 };
 
+class ImageProvider;
 // provides QImages to QML frontend
 class CachedImageProvider : public QQuickImageProvider {
 public:
-    CachedImageProvider(QHash<QString, QImage*> & imageTable);
+    CachedImageProvider(ImageProvider const* provider);
     QImage requestImage(const QString &id, QSize * size, const QSize & requestedSize);
 private:
-    QHash<QString, QImage*> & imageTable;
+    ImageProvider const* _provider;
 };
 
 // interface to QML
@@ -71,7 +72,7 @@ public:
     bool download(QString key);
     bool downloadsInProgress() const;
 
-    QHash<QString, QImage*> imageTable();
+    QHash<QString, QImage> imageTable();
     void loadImageFile(QString key, QString filename);
 
     QQmlImageProviderBase * getQMLImageProvider();
@@ -98,7 +99,10 @@ private:
 
     QNetworkAccessManager _manager;
 
-    QHash<QString, QImage*> _imageTable;
+    friend class CachedImageProvider;
+    CachedImageProvider _cacheProvider;
+
+    QHash<QString, QImage> _imageTable;
     QString _imageProviderName;
     QDir _cacheDir;
     int activeDownloadCount;
