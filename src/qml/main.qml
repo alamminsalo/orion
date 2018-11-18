@@ -17,6 +17,7 @@ import QtQuick.Window 2.2
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
+import Qt.labs.settings 1.0 as Labs
 import "irc"
 import "components"
 import app.orion 1.0
@@ -35,11 +36,47 @@ ApplicationWindow {
     minimumHeight: 480
     minimumWidth: 480
 
+    Labs.Settings {
+        id: windowSettings
+        property var windowX
+        property var windowY
+        property var windowWidth
+        property var windowHeight
+        property var windowVisibility
+        function update() {
+            Qt.callLater(function() {
+                if (visibility === Window.Windowed) {
+                    windowX = x
+                    windowY = y
+                    windowWidth = width
+                    windowHeight = height
+                }
+                windowVisibility = visibility
+            })
+        }
+        Component.onCompleted: {
+            if (isMobile()) return
+            if (visibility === Window.Windowed) {
+                x = windowX !== undefined ? windowX : x
+                y = windowY !== undefined ? windowY : y
+                width = windowWidth !== undefined ? windowWidth : width
+                height = windowHeight !== undefined ? windowHeight : height
+                visibility = windowVisibility === Window.Maximized ? windowVisibility : visibility
+            }
+            root.onXChanged.connect(update)
+            root.onYChanged.connect(update)
+            root.onWidthChanged.connect(update)
+            root.onHeightChanged.connect(update)
+            root.onVisibilityChanged.connect(update)
+        }
+    }
+
     // Style settings
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
     title: "Orion"
-    visibility: Window.AutomaticVisibility
+
+    visibility: (!isMobile() && Settings.minimizeOnStartup) ? Window.Minimized : Window.AutomaticVisibility
 
     property int restoredVisibility: Window.AutomaticVisibility
     onAppFullScreenChanged: {
@@ -47,6 +84,11 @@ ApplicationWindow {
             restoredVisibility = visibility
         }
         visibility = appFullScreen ? Window.FullScreen : restoredVisibility
+    }
+    onVisibilityChanged: {
+        if (!isMobile()) {
+            appFullScreen = visibility === Window.FullScreen
+        }
     }
 
     property variant rootWindow: root
@@ -121,6 +163,9 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        // remove binding. this is required to allow proper behaviour with Settings.minimizeOnStartup
+        visibility = visibility
+
         if (!isMobile()) {
             var component = Qt.createComponent("components/Tooltip.qml")
             g_tooltip = component.createObject(root)
