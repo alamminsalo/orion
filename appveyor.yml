@@ -3,7 +3,6 @@ environment:
 
   matrix:
   - platform: x64
-    player: qtav
     configuration: release
     qt: 5.10 #version freeze until fix of https://bugreports.qt.io/browse/QTBUG-61822
     cc: VS2017
@@ -11,7 +10,6 @@ environment:
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     
   - platform: x86
-    player: qtav
     configuration: release
     qt: 5.10
     cc: VS2015
@@ -19,23 +17,6 @@ environment:
     QTDIR: C:\Qt\5.10\msvc2015
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
 
-  - platform: x64
-    player: multimedia
-    configuration: release
-    qt: 5.10
-    cc: VS2017
-    QTDIR: C:\Qt\5.10\msvc2017_64
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-
-  - platform: x64
-    player: mpv
-    configuration: release
-    qt: 5.10
-    cc: VS2017
-    QTDIR: C:\Qt\5.10\msvc2017_64
-    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-
-    
 matrix:
   fast_finish: false
 
@@ -64,8 +45,8 @@ init:
 
 install:
   - call "%APPVEYOR_BUILD_FOLDER%\ci\build_openssl.bat"
-  - if %player%==qtav call "%APPVEYOR_BUILD_FOLDER%\ci\build_qtav.bat"
-  - if %player%==mpv call "%APPVEYOR_BUILD_FOLDER%\ci\build_mpv.bat"
+  - call "%APPVEYOR_BUILD_FOLDER%\ci\build_qtav.bat"
+  - call "%APPVEYOR_BUILD_FOLDER%\ci\build_mpv.bat"
   
 before_build:
   - echo APPVEYOR_BUILD_FOLDER=%APPVEYOR_BUILD_FOLDER%
@@ -73,35 +54,35 @@ before_build:
   - git submodule update --init
 
 build_script:
-  - qmake orion.pro "CONFIG+=%configuration%" "CONFIG+=%player%"
+  - qmake orion.pro "CONFIG+=%configuration%" "CONFIG+=mpv qtav multimedia"
   - mkdir libs
   - copy /y "%OPENSSL_DIR%\*eay32.dll" libs
-  - if %player%==mpv copy /y %QTDIR%\bin\mpv-1.dll libs
+  - copy /y %QTDIR%\bin\mpv-1.dll libs
   - nmake %configuration%
   - windeployqt --qmldir src\qml %configuration%\orion.exe
-  - if %player%==qtav copy /y %QTDIR%\bin\av*-*.dll %configuration% && copy /y %QTDIR%\bin\sw*-*.dll %configuration% && copy /y %QTDIR%\bin\QtAV*.dll %configuration%
+  - copy /y %QTDIR%\bin\av*-*.dll %configuration% && copy /y %QTDIR%\bin\sw*-*.dll %configuration% && copy /y %QTDIR%\bin\QtAV*.dll %configuration%
   - dir /s
 
 after_build:
-  - 7z a orion_%configuration%_%player%_%platform%_snapshot_%APPVEYOR_REPO_COMMIT%.zip . -x!.git
+  - 7z a orion_%configuration%_%platform%_snapshot_%APPVEYOR_REPO_COMMIT%.zip . -x!.git
   - del %configuration%\*.obj
   - del %configuration%\*.cpp
   - del %configuration%\*.h
   - del %configuration%\*.res
   - if %configuration%==release copy "resources\orion-installer.iss" orion-installer.iss
-  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="%APPVEYOR_BUILD_FOLDER%\%configuration%\%VCREDIST%" /F"orion-%configuration%-%player%-%platform%" "orion-installer.iss"
+  - if %configuration%==release "C:\Program Files (x86)\Inno Setup 5\iscc.exe" /DPlatform=%platform% /DAdditionalRedist="%APPVEYOR_BUILD_FOLDER%\%configuration%\%VCREDIST%" /F"orion-%configuration%-%platform%" "orion-installer.iss"
 
 artifacts:
-  - path: orion_$(configuration)_$(player)_$(platform)_snapshot_$(APPVEYOR_REPO_COMMIT).zip
-    name: orion windows $(configuration) $(player) $(platform) snapshot zip
-  - path: orion-$(configuration)-$(player)-$(platform).exe
+  - path: orion_$(configuration)_$(platform)_snapshot_$(APPVEYOR_REPO_COMMIT).zip
+    name: orion windows $(configuration) $(platform) snapshot zip
+  - path: orion-$(configuration)-$(platform).exe
     name: Windows installer
 
 deploy:
 - provider: GitHub
   auth_token:
     secure: kna2fyW9Q70WCBxJn/YYJ4pupSRog8FFp6BhKOjr6rtfMIGGtN52UuiMtc90RTla
-  artifact: orion-$(configuration)-$(player)-$(platform).exe
+  artifact: orion-$(configuration)-$(platform).exe
   prerelease: true
   force_update: true
   on:

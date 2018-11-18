@@ -1,113 +1,42 @@
 #include "settingsmanager.h"
 #include "../network/httpserver.h"
-
-SettingsManager *SettingsManager::instance = 0;
+#include <QApplication>
 
 SettingsManager::SettingsManager(QObject *parent) :
-    QObject(parent),
-    mHiDpi(false)
+    QObject(parent), settings(qApp->organizationName(), qApp->applicationName(), this)
 {
-    settings = new QSettings("orion.application", "Orion", this);
-
-    //Initial values
-    mAlert = true;
-    mCloseToTray = false;
-    mMultipleInstances = false;
-    mAlertPosition = 1;
-    mMinimizeOnStartup = false;
-    mTextScaleFactor = 1.0;
-    mVolumeLevel = 100;
-    mOfflineNotifications = false;
-    mAccessToken = "";
-#ifdef Q_OS_WIN
-    mOpengl = "angle (d3d9)";
-#else
-    mOpengl = "opengl es";
-#endif
-    mQuality = "source";
-    mDecoder = "auto";
-    mChatEdge = 1;
-    mLightTheme = false;
-    mFont = "";
-    mKeepOnTop = false;
-
+    load();
     //Connections
     connect(HttpServer::getInstance(), &HttpServer::codeReceived, this, &SettingsManager::setAccessToken);
 }
 
 SettingsManager *SettingsManager::getInstance()
 {
-    if (!instance)
-        instance = new SettingsManager();
-    return instance;
+    static SettingsManager instance;
+    return &instance;
 }
 
 void SettingsManager::load()
 {
     //Load values from settings, notifying changes as needed
-    if (settings->contains("alert")) {
-        setAlert(settings->value("alert").toBool());
-    }
-
-    if (settings->contains("alertPosition")) {
-        setAlertPosition(settings->value("alertPosition").toInt());
-    }
-
-    if (settings->contains("closeToTray")) {
-        setCloseToTray(settings->value("closeToTray").toBool());
-    }
-
-    if (settings->contains("multipleInstances")) {
-        setMultipleInstances(settings->value("multipleInstances").toBool());
-    }
-
-    if (settings->contains("minimizeOnStartup")) {
-        setMinimizeOnStartup(settings->value("minimizeOnStartup").toBool());
-    }
-
-    if (settings->contains("opengl")) {
-        setOpengl(settings->value("opengl").toString());
-    }
-
-    if (settings->contains("quality")) {
-        setQuality(settings->value("quality").toString());
-    }
-
-    if (settings->contains("decoder")) {
-        setDecoder(settings->value("decoder").toString());
-    }
-
-    if (settings->contains("volumeLevel")) {
-        setVolumeLevel(settings->value("volumeLevel").toInt());
-    }
-
-    if(settings->contains("chatEdge")) {
-        setChatEdge(settings->value("chatEdge").toInt());
-    }
-
-    if (settings->contains("textScaleFactor")) {
-        setTextScaleFactor(settings->value("textScaleFactor").toDouble());
-    }
-
-    if(settings->contains("offlineNotifications")) {
-        setOfflineNotifications(settings->value("offlineNotifications").toBool());
-    }
-
-    if (settings->contains("lightTheme")) {
-        setLightTheme(settings->value("lightTheme").toBool());
-    }
-
-    if (settings->contains("accessToken")) {
-        setAccessToken(settings->value("accessToken").toString());
-    }
-
-    if (settings->contains("font")) {
-        setFont(settings->value("font").toString());
-    }
-
-    if (settings->contains("keepOnTop")) {
-        setKeepOnTop(settings->value("keepOnTop").toBool());
-    }
+    setAlert(settings.value("alert", mAlert).toBool());
+    setAlertPosition(settings.value("alertPosition", mAlertPosition).toInt());
+    setMultipleInstances(settings.value("multipleInstances", mMultipleInstances).toBool());
+    setMinimizeOnStartup(settings.value("minimizeOnStartup", mMinimizeOnStartup).toBool());
+    setOpengl(settings.value("opengl", mOpengl).toString());
+    setQuality(settings.value("quality", mQuality).toString());
+    setDecoder(settings.value("decoder", mDecoder).toString());
+    setBackend(settings.value("backend", mBackend).toString());
+    setVolumeLevel(settings.value("volumeLevel", mVolumeLevel).toInt());
+    setChatEdge(settings.value("chatEdge", mChatEdge).toInt());
+    setTextScaleFactor(settings.value("textScaleFactor", mTextScaleFactor).toDouble());
+    setOfflineNotifications(settings.value("offlineNotifications", mOfflineNotifications).toBool());
+    setLightTheme(settings.value("lightTheme", mLightTheme).toBool());
+    setAccessToken(settings.value("accessToken", mAccessToken).toString());
+    setFont(settings.value("font", mFont).toString());
+    setKeepOnTop(settings.value("keepOnTop", mKeepOnTop).toBool());
+    setPastelColors(settings.value("pastelColors", mPastelColors).toBool());
+    setClickTogglePause(settings.value("clickTogglePause", mClickTogglePause).toBool());
 }
 
 bool SettingsManager::alert() const
@@ -119,27 +48,10 @@ void SettingsManager::setAlert(bool alert)
 {
     if (mAlert != alert) {
         mAlert = alert;
-        settings->setValue("alert", alert);
-
+        settings.setValue("alert", alert);
+        emit alertChanged();
         qDebug() << "alert changed to" << alert;
     }
-    emit alertChanged();
-}
-
-bool SettingsManager::closeToTray() const
-{
-    return mCloseToTray;
-}
-
-void SettingsManager::setCloseToTray(bool closeToTray)
-{
-    if (mCloseToTray != closeToTray) {
-        mCloseToTray = closeToTray;
-        settings->setValue("closeToTray", closeToTray);
-
-        qDebug() << "closeToTray changed to" << closeToTray;
-    }
-    emit closeToTrayChanged();
 }
 
 bool SettingsManager::multipleInstances() const
@@ -151,11 +63,10 @@ void SettingsManager::setMultipleInstances(bool multipleInstances)
 {
     if (mMultipleInstances != multipleInstances) {
         mMultipleInstances = multipleInstances;
-        settings->setValue("multipleInstances", multipleInstances);
-
+        settings.setValue("multipleInstances", multipleInstances);
+        emit multipleInstancesChanged();
         qDebug() << "multipleInstances changed to" << multipleInstances;
     }
-    emit multipleInstancesChanged();
 }
 
 int SettingsManager::alertPosition() const
@@ -167,11 +78,10 @@ void SettingsManager::setAlertPosition(int alertPosition)
 {
     if (alertPosition != mAlertPosition) {
         mAlertPosition = alertPosition;
-        settings->setValue("alertPosition", alertPosition);
-
+        settings.setValue("alertPosition", alertPosition);
+        emit alertPositionChanged();
         qDebug() << "alertPosition changed to" << alertPosition;
     }
-    emit alertPositionChanged();
 }
 
 int SettingsManager::volumeLevel() const
@@ -183,11 +93,10 @@ void SettingsManager::setVolumeLevel(int volumeLevel)
 {
     if (mVolumeLevel != volumeLevel) {
         mVolumeLevel = volumeLevel;
-        settings->setValue("volumeLevel", volumeLevel);
-
+        settings.setValue("volumeLevel", volumeLevel);
+        emit volumeLevelChanged();
         qDebug() << "volumeLevel changed to" << volumeLevel;
     }
-    emit volumeLevelChanged();
 }
 
 bool SettingsManager::minimizeOnStartup() const
@@ -203,11 +112,10 @@ void SettingsManager::setMinimizeOnStartup(bool minimizeOnStartup)
 {
     if (mMinimizeOnStartup != minimizeOnStartup) {
         mMinimizeOnStartup = minimizeOnStartup;
-        settings->setValue("minimizeOnStartup", minimizeOnStartup);
-
+        settings.setValue("minimizeOnStartup", minimizeOnStartup);
+        emit minimizeOnStartupChanged();
         qDebug() << "minimizeOnStartup changed to" << minimizeOnStartup;
     }
-    emit minimizeOnStartupChanged();
 }
 
 int SettingsManager::chatEdge() const
@@ -223,11 +131,10 @@ void SettingsManager::setChatEdge(int chatEdge)
 {
     if (mChatEdge != chatEdge) {
         mChatEdge = chatEdge;
-        settings->setValue("chatEdge", chatEdge);
-
+        settings.setValue("chatEdge", chatEdge);
+        emit chatEdgeChanged();
         qDebug() << "chatEdge changed to" << chatEdge;
     }
-    emit chatEdgeChanged();
 }
 
 bool SettingsManager::offlineNotifications() const
@@ -239,11 +146,10 @@ void SettingsManager::setOfflineNotifications(bool offlineNotifications)
 {
     if (mOfflineNotifications != offlineNotifications) {
         mOfflineNotifications = offlineNotifications;
-        settings->setValue("offlineNotifications", offlineNotifications);
-
+        settings.setValue("offlineNotifications", offlineNotifications);
+        emit offlineNotificationsChanged();
         qDebug() << "offlineNotifications changed to" << offlineNotifications;
     }
-    emit offlineNotificationsChanged();
 }
 
 double SettingsManager::textScaleFactor() const
@@ -259,11 +165,10 @@ void SettingsManager::setTextScaleFactor(double textScaleFactor)
 
     if (mTextScaleFactor != textScaleFactor) {
         mTextScaleFactor = textScaleFactor;
-        settings->setValue("textScaleFactor", textScaleFactor);
-
+        settings.setValue("textScaleFactor", textScaleFactor);
+        emit textScaleFactorChanged();
         qDebug() << "textScaleFactor changed to" << textScaleFactor;
     }
-    emit textScaleFactorChanged();
 }
 
 QString SettingsManager::opengl() const
@@ -275,11 +180,10 @@ void SettingsManager::setOpengl(const QString &opengl)
 {
     if (mOpengl != opengl) {
         mOpengl = opengl;
-        settings->setValue("opengl", opengl);
-
+        settings.setValue("opengl", opengl);
+        emit openglChanged();
         qDebug() << "opengl changed to" << opengl;
     }
-    emit openglChanged();
 }
 
 QString SettingsManager::quality() const
@@ -291,11 +195,9 @@ void SettingsManager::setQuality(const QString &quality)
 {
     if (mQuality != quality) {
         mQuality = quality;
-        settings->setValue("quality", quality);
-
-        qDebug() << "quality changed to" << quality;
+        settings.setValue("quality", quality);
+        emit qualityChanged();
     }
-    emit qualityChanged();
 }
 
 QString SettingsManager::decoder() const
@@ -307,11 +209,28 @@ void SettingsManager::setDecoder(const QString &decoder)
 {
     if (mDecoder != decoder) {
         mDecoder = decoder;
-        settings->setValue("decoder", decoder);
-
-        qDebug() << "decoder changed to" << decoder;
+        settings.setValue("decoder", decoder);
+        emit decoderChanged();
     }
-    emit decoderChanged();
+}
+
+QString SettingsManager::backend() const
+{
+    return mBackend;
+}
+
+void SettingsManager::setBackend(const QString &backend)
+{
+    if (mBackend != backend) {
+        mBackend = backend;
+        settings.setValue("backend", backend);
+        emit backendChanged();
+    }
+}
+
+QStringList SettingsManager::backends() const
+{
+    return mBackends;
 }
 
 QString SettingsManager::accessToken() const
@@ -323,11 +242,10 @@ void SettingsManager::setAccessToken(const QString accessToken)
 {
     if (mAccessToken != accessToken) {
         mAccessToken = accessToken;
-        settings->setValue("accessToken", accessToken);
-
+        settings.setValue("accessToken", accessToken);
+        emit accessTokenChanged(accessToken);
         qDebug() << "accessToken changed!";
     }
-    emit accessTokenChanged(accessToken);
 }
 
 bool SettingsManager::hasAccessToken() const
@@ -354,32 +272,58 @@ void SettingsManager::setLightTheme(bool lightTheme)
 {
     if (mLightTheme != lightTheme) {
         mLightTheme = lightTheme;
-        settings->setValue("lightTheme", lightTheme);
+        settings.setValue("lightTheme", lightTheme);
+        emit lightThemeChanged();
         qDebug() << "theme changed!";
     }
-    emit lightThemeChanged();
 }
 
-
-QString SettingsManager::appName() const
+bool SettingsManager::pastelColors() const
 {
-    return APP_NAME;
+    return mPastelColors;
 }
 
-QString SettingsManager::appVersion() const
+void SettingsManager::setPastelColors(bool pastelColors)
 {
-    return APP_VERSION;
+    if (mPastelColors != pastelColors) {
+        mPastelColors = pastelColors;
+        settings.setValue("pastelColors", pastelColors);
+        emit pastelColorsChanged();
+    }
 }
 
-QString SettingsManager::appPlayerBackend() const
+bool SettingsManager::clickTogglePause() const
 {
-    return PLAYER_BACKEND;
+    return mClickTogglePause;
+}
+
+void SettingsManager::setClickTogglePause(bool clickTogglePause)
+{
+    if (mClickTogglePause != clickTogglePause) {
+        mClickTogglePause = clickTogglePause;
+        settings.setValue("clickTogglePause", clickTogglePause);
+        emit clickTogglePauseChanged();
+    }
+}
+
+bool SettingsManager::autoScrollSmoothing() const
+{
+    return mAutoScrollSmoothing;
+}
+
+void SettingsManager::setAutoScrollSmoothing(bool autoScrollSmoothing)
+{
+    if (mAutoScrollSmoothing != autoScrollSmoothing) {
+        mAutoScrollSmoothing = autoScrollSmoothing;
+        settings.setValue("autoScrollSmoothing", autoScrollSmoothing);
+        emit autoScrollSmoothingChanged();
+    }
 }
 
 #include <QVersionNumber>
 bool SettingsManager::isNewerVersion(QString version) const
 {
-    return QVersionNumber::fromString(version.replace('v',"")) > QVersionNumber::fromString(appVersion().replace('v', ""));
+    return QVersionNumber::fromString(version.replace('v',"")) > QVersionNumber::fromString(QString(APP_VERSION).replace('v', ""));
 }
 
 QString SettingsManager::font() const
@@ -391,9 +335,9 @@ void SettingsManager::setFont(const QString &font)
 {
     if (mFont != font) {
         mFont = font;
-        settings->setValue("font", font);
+        settings.setValue("font", font);
+        emit fontChanged();
     }
-    emit fontChanged();
 }
 
 bool SettingsManager::versionCheckEnabled()
@@ -414,7 +358,7 @@ void SettingsManager::setKeepOnTop(bool keepOnTop)
 {
     if (mKeepOnTop != keepOnTop) {
         mKeepOnTop = keepOnTop;
-        settings->setValue("keepOnTop", keepOnTop);
+        settings.setValue("keepOnTop", keepOnTop);
+        emit keepOnTopChanged();
     }
-    emit keepOnTopChanged();
 }

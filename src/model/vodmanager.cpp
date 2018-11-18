@@ -14,6 +14,7 @@
 
 #include "vodmanager.h"
 #include <QSettings>
+#include <QApplication>
 
 VodManager::VodManager(QObject *parent) :
     QObject(parent),
@@ -26,7 +27,7 @@ VodManager::VodManager(QObject *parent) :
     connect(netman, &NetworkManager::m3u8OperationBFinished, this, &VodManager::streamsGetFinished);
     connect(netman, &NetworkManager::vodChatPieceGetOperationFinished, this, &VodManager::vodChatPieceGetOperationFinished);
 
-    QSettings settings("orion.application", "Orion");
+    QSettings settings(qApp->organizationName(), qApp->applicationName());
     int numLastPositions = settings.beginReadArray("lastPositions");
     for (int i = 0; i < numLastPositions; i++) {
         settings.setArrayIndex(i);

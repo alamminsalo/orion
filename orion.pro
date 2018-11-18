@@ -99,7 +99,6 @@ mpv {
     message(Selecting mpv as backend)
     #DEFINES += DEBUG_LIBMPV
     DEFINES += MPV_PLAYER
-    DEFINES += PLAYER_BACKEND=\\\"mpv\\\"
     SOURCES +=  src/player/mpvobject.cpp
     HEADERS +=  src/player/mpvobject.h
 
@@ -108,14 +107,14 @@ mpv {
 
 qtav {
     message(Selecting qtav as backend)
+    DEFINES += QTAV_PLAYER
     QT += av
-    DEFINES += PLAYER_BACKEND=\\\"qtav\\\"
 }
 
 multimedia {
     message(Selecting qt multimedia as backend)
+    DEFINES += MULTIMEDIA_PLAYER
     QT += multimedia
-    DEFINES += PLAYER_BACKEND=\\\"multimedia\\\"
     macx: {
         LIBS += -framework AVFoundation
         INCLUDEPATH += /System/Library/Frameworks/AVFoundation.framework/Versions/Current/Headers

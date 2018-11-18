@@ -23,6 +23,7 @@ Page {
     padding: 20
 
     Flickable {
+        id: flick
         anchors.fill: parent
         contentHeight: col.height
         contentWidth: width
@@ -33,6 +34,55 @@ Page {
             id: col
             width: parent.width
             spacing: 15
+
+            GroupBox {
+                title: "Twitch login"
+                padding: 10
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
+                Layout.alignment: Qt.AlignCenter
+
+                RowLayout {
+                    width: parent.width
+
+                    Label {
+                        id: twitchName
+                        text: ChannelManager.username() || "Not logged in"
+                        Layout.fillWidth: true
+                        clip: true
+                    }
+
+                    Button {
+                        id: connectButton
+                        property bool loggedIn: Settings.hasAccessToken
+                        highlighted: loggedIn
+                        font.pointSize: 9
+                        text: loggedIn ? "Log out" : "Log in"
+                        onClicked: {
+                            if (!loggedIn) {
+                                LoginService.start();
+                                var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + Network.getClientId()
+                                        + "&redirect_uri=http://localhost:8979"
+                                        + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
+                                        + "&force_verify=true";
+                                Qt.openUrlExternally(url);
+                            }
+                            else {
+                                Settings.accessToken = ""
+                                ChannelManager.checkFavourites()
+                                twitchName.text = "Not logged in"
+                            }
+                        }
+
+                        Connections {
+                            target: ChannelManager
+                            onUserNameUpdated: {
+                                twitchName.text = name
+                            }
+                        }
+                    }
+                }
+            }
 
             GroupBox {
                 title: "Notification settings"
@@ -79,111 +129,98 @@ Page {
             }
 
             GroupBox {
-                title: "Tray options"
-                visible: !isMobile()
+                title: "Video Player" + (Settings.backends.length === 1 ? " (" + playerOption.currentName + ")" : "")
                 padding: 10
                 Layout.fillWidth: true
                 Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
 
-                Column {
-                    Switch {
-                        id: minStartupOption
-                        checked: Settings.minimizeOnStartup
-                        onClicked: {
-                            Settings.minimizeOnStartup = !Settings.minimizeOnStartup
-                        }
-                        text: "Start minimized"
-                    }
-
-                    Switch {
-                        id: closeToTrayOption
-                        checked: Settings.closeToTray
-                        onClicked: {
-                            Settings.closeToTray = checked
-                        }
-                        text: "Close to tray"
-                    }
-                }
-            }
-
-            GroupBox {
-                title: "User interface"
-                padding: 10
-                Layout.fillWidth: true
-                Layout.maximumWidth: 500
-                Layout.alignment: Qt.AlignCenter
 
                 Column {
                     width: parent.width
 
                     Switch {
-                        id: themeOption
-                        text: "Enable dark theme"
-                        checked: !Settings.lightTheme
-                        onClicked: Settings.lightTheme = !checked
+                        text: "Toggle pause by clicking"
+                        checked: Settings.clickTogglePause
+                        onClicked: Settings.clickTogglePause = checked
                     }
 
-                    RowLayout {
+                    OptionCombo {
                         width: parent.width
-
-                        OptionCombo {
-                            id: fontOption
-                            text: "Font"
-                            model: Qt.fontFamilies()
-                            Layout.fillWidth: true
-
-                            property string fontName: Settings.font || appFont.name
-                            onFontNameChanged: {
-                                setCurrentIndex(fontName)
-                            }
-
-                            function setCurrentIndex(name) {
-                                for (var i=0; i < model.length; i++) {
-                                    if (model[i] === name) {
-                                        fontOption.selection = i
-                                        break;
-                                    }
-                                }
-                            }
-
-                            onActivated: {
-                                Settings.font = model[index]
+                        id: playerOption
+                        text: "Player"
+                        property var currentName: model[currentIndex]
+                        property var backendNames: {
+                            "qtav": "QtAV",
+                            "mpv": "mpv",
+                            "multimedia": "Qt Multimedia"
+                        }
+                        Component.onCompleted: {
+                            model = Settings.backends.map(function(v) { return backendNames[v] || v; })
+                            selectItem(Settings.backend)
+                            visible = Settings.backends.length > 1
+                        }
+                        onActivated: {
+                            if (Settings.backend !== Settings.backends[currentIndex]) {
+                                Settings.backend = Settings.backends[currentIndex]
                             }
                         }
-
-                        Button {
-                            text: "Reset"
-                            font.pointSize: 9
-                            onClicked: {
-                                Settings.font = appFont.name
+                        function selectItem(name) {
+                            for (var i in Settings.backends) {
+                                if (Settings.backends[i] === name) {
+                                    currentIndex = i;
+                                    return;
+                                }
                             }
+                            //None found, attempt to select first item
+                            currentIndex = 0
                         }
                     }
 
                     OptionCombo {
-                        id: chatEdgeOption
-                        text: "Chat position"
-                        visible: !isMobile()
-                        model: ["Left", "Right", "Bottom"]
-                        selection: Settings.chatEdge
-                        onActivated: Settings.chatEdge = index
-                    }
+                        id: hwaccelOption
+                        text: "Hardware Acceleration"
+                        width: parent.width
 
-                    Switch {
-                        visible: !isMobile()
-                        id: keepOnTopOption
-                        text: "Keep on top"
-                        checked: Settings.keepOnTop
-                        onClicked: Settings.keepOnTop = checked
-                    }
+                        property var renderer: app.view.playerView.renderer
 
-                    Switch {
-                        visible: !isMobile()
-                        id: mulipleInstancesOption
-                        text: "Allow multiple instances"
-                        checked: Settings.multipleInstances
-                        onClicked: Settings.multipleInstances = checked
+                        visible: model.length > 1
+                        Component.onCompleted: {
+                            initialize()
+                        }
+
+                        onActivated: {
+                            if (Settings.decoder !== model[currentIndex]) {
+                                renderer.setDecoder(currentIndex)
+                                view.playerView.loadAndPlay()
+                                Settings.decoder = model[currentIndex]
+                            }
+                        }
+
+                        function initialize() {
+                            var decoder = renderer.getDecoder()
+                            model = decoder
+                            selectItem(Settings.decoder)
+                            renderer.setDecoder(currentIndex)
+                        }
+
+                        function selectItem(name) {
+                            for (var i in model) {
+                                if (model[i] === name) {
+                                    currentIndex = i;
+                                    return;
+                                }
+                            }
+                            //None found, attempt to select first item
+                            currentIndex = 0
+                        }
+
+                        Connections {
+                            target: app.view.playerView
+                            onRendererChanged: {
+                                hwaccelOption.initialize()
+                            }
+                        }
                     }
 
                     RowLayout {
@@ -239,52 +276,104 @@ Page {
             }
 
             GroupBox {
-                title: "Twitch login"
+                title: "User interface"
                 padding: 10
                 Layout.fillWidth: true
                 Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
 
-                RowLayout {
+                Column {
                     width: parent.width
 
-                    Label {
-                        id: twitchName
-                        text: "Not logged in"
-                        Layout.fillWidth: true
-                        clip: true
+                    Switch {
+                        id: themeOption
+                        text: "Enable dark theme"
+                        checked: !Settings.lightTheme
+                        onClicked: Settings.lightTheme = !checked
                     }
 
-                    Button {
-                        id: connectButton
-                        property bool loggedIn: Settings.hasAccessToken
-                        highlighted: loggedIn
-                        font.pointSize: 9
-                        text: loggedIn ? "Log out" : "Log in"
-                        onClicked: {
-                            if (!loggedIn) {
-                                LoginService.start();
-                                var url = "https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=" + Network.getClientId()
-                                        + "&redirect_uri=http://localhost:8979"
-                                        + "&scope=user_read%20user_subscriptions%20user_follows_edit%20chat_login%20user_blocks_read%20user_blocks_edit"
-                                        + "&force_verify=true";
-                                Qt.openUrlExternally(url);
+                    Switch {
+                        visible: !isMobile()
+                        id: keepOnTopOption
+                        text: "Keep on top"
+                        checked: Settings.keepOnTop
+                        onClicked: Settings.keepOnTop = checked
+                    }
 
+                    Switch {
+                        text: "Start minimized"
+                        checked: Settings.minimizeOnStartup
+                        onClicked: Settings.minimizeOnStartup = checked
+                    }
 
+                    RowLayout {
+                        width: parent.width
+
+                        OptionCombo {
+                            id: fontOption
+                            text: "Font"
+                            model: Qt.fontFamilies()
+                            Layout.fillWidth: true
+
+                            property string fontName: Settings.font || appFont.name
+                            onFontNameChanged: {
+                                setCurrentIndex(fontName)
                             }
-                            else {
-                                Settings.accessToken = ""
-                                ChannelManager.checkFavourites()
-                                twitchName.text = "Not logged in"
+
+                            function setCurrentIndex(name) {
+                                for (var i=0; i < model.length; i++) {
+                                    if (model[i] === name) {
+                                        fontOption.selection = i
+                                        break;
+                                    }
+                                }
+                            }
+
+                            onActivated: {
+                                Settings.font = model[index]
                             }
                         }
 
-                        Connections {
-                            target: ChannelManager
-                            onUserNameUpdated: {
-                                twitchName.text = name
+                        Button {
+                            text: "Reset"
+                            font.pointSize: 9
+                            onClicked: {
+                                Settings.font = appFont.name
                             }
                         }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Chat"
+                padding: 10
+                Layout.fillWidth: true
+                Layout.maximumWidth: 500
+                Layout.alignment: Qt.AlignCenter
+                Column {
+                    width: parent.width
+
+                    Switch {
+                        text: "Enable auto-scroll smoothing"
+                        checked: Settings.autoScrollSmoothing
+                        onClicked: Settings.autoScrollSmoothing = checked
+                    }
+                    Switch {
+                        text: "Use pastel colors"
+                        checked: Settings.pastelColors
+                        onClicked: Settings.pastelColors = checked
+                    }
+                    OptionCombo {
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        //Layout.fillWidth: true
+                        id: chatEdgeOption
+                        text: "Chat position"
+                        visible: !isMobile()
+                        model: ["Left", "Right", "Bottom", "Top"]
+                        selection: Settings.chatEdge
+                        onActivated: Settings.chatEdge = index
                     }
                 }
             }
@@ -296,7 +385,7 @@ Page {
                 Layout.maximumWidth: 500
                 Layout.alignment: Qt.AlignCenter
                 Label {
-                    text: Settings.appName() + " " + Settings.appVersion()
+                    text: Qt.application.name + " " + Qt.application.version
                 }
             }
         }

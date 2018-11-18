@@ -178,18 +178,25 @@ Item {
         property real volume: getProperty("volume")
         property real playbackTime: 0
 
+        Timer {
+            interval: 1000
+            repeat: true
+            running: !renderer.idleActive
+            onTriggered: {
+                // https://github.com/mpv-player/mpv/issues/4195
+                renderer.playbackTime = renderer.getProperty("playback-time") || 0
+            }
+        }
+
         Component.onCompleted: {
             renderer.observeProperty("cache-buffering-state", function(value) { bufferingState = value });
             renderer.observeProperty("core-idle", function(value) { coreIdle = value });
             renderer.observeProperty("idle-active", function(value) { idleActive = value });
             renderer.observeProperty("seeking", function(value) { seeking = value });
             renderer.observeProperty("volume", function(value) { volume = value });
-            renderer.observeProperty("playback-time", function(value) { playbackTime = value });
+            renderer.observeProperty("playback-time", function(value) { playbackTime = value || 0 });
 
-            // https://github.com/mpv-player/mpv/issues/4195
-            Util.setInterval(function() { renderer.playbackTime = renderer.getProperty("playback-time") }, 1000)
-
-            root.setVolume(Math.round(volume))
+            root.setVolume(Math.round(volume));
             root.volumeChangedInternally()
         }
     }

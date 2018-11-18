@@ -43,10 +43,33 @@
 #include "player/mpvobject.h"
 #endif
 
-inline void noisyFailureMsgHandler(QtMsgType /*type*/, const QMessageLogContext &/*context*/, const QString &/*msg*/)
-{
 
+template <unsigned int MIN_LEVEL=QtDebugMsg>
+void msgHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (static_cast<unsigned int>(type) < MIN_LEVEL) {
+        return;
+    }
+    QByteArray localMsg = msg.toLocal8Bit();
+    switch (type) {
+    case QtDebugMsg:
+        fprintf(stdout, "Debug: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtInfoMsg:
+        fprintf(stdout, "Info: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtWarningMsg:
+        fprintf(stderr, "Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtCriticalMsg:
+        fprintf(stderr, "Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    case QtFatalMsg:
+        fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        break;
+    }
 }
+
 
 void registerQmlComponents(QObject *parent)
 {
@@ -75,13 +98,15 @@ void registerQmlComponents(QObject *parent)
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(&msgHandler<QtWarningMsg>);
+    QCoreApplication::setApplicationName("Orion");
+    QCoreApplication::setOrganizationName("orion.application");
+    QCoreApplication::setApplicationVersion(APP_VERSION);
+
     //Override QT_QUICK_CONTROLS_STYLE environment variable
     qputenv("QT_QUICK_CONTROLS_STYLE", "material");
 
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
-    // Load app settings
-    SettingsManager::getInstance()->load();
 
     auto opengl = SettingsManager::getInstance()->opengl().toLower();
 
@@ -112,7 +137,6 @@ int main(int argc, char *argv[])
 #else
     QGuiApplication app(argc, argv);
 #endif
-    app.setApplicationVersion(APP_VERSION);
 
     const QIcon appIcon = QIcon(":/icon/orion.ico");
     app.setWindowIcon(appIcon);
@@ -131,13 +155,16 @@ int main(int argc, char *argv[])
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug", "show debug output");
     parser.addOption(debugOption);
-    parser.process(app);
 
-#ifndef  QT_DEBUG
-    bool showDebugOutput = parser.isSet(debugOption);
+    QCommandLineOption quietOption(QStringList() << "q" << "quiet", "disable console output");
+    parser.addOption(quietOption);
 
-    if (!showDebugOutput) {
-        qInstallMessageHandler(noisyFailureMsgHandler);
+    parser.process(QCoreApplication::arguments());
+
+    if (parser.isSet(quietOption)) {
+        qInstallMessageHandler(&msgHandler<QtSystemMsg+1>);
+    } else if (parser.isSet(debugOption)) {
+        qInstallMessageHandler(&msgHandler<QtDebugMsg>);
     }
 #endif
 
@@ -160,7 +187,6 @@ int main(int argc, char *argv[])
     NotificationManager *notificationManager = new NotificationManager(&engine, engine.networkAccessManager(), &app);
     QObject::connect(ChannelManager::getInstance(), &ChannelManager::pushNotification, notificationManager, &NotificationManager::pushNotification);
 #endif
-#endif
 
     QQmlContext *rootContext = engine.rootContext();
     rootContext->setContextProperty("g_favourites", ChannelManager::getInstance()->getFavouritesProxy());
@@ -175,10 +201,6 @@ int main(int argc, char *argv[])
     //Single application solution
     QLockFile lockfile(QDir::temp().absoluteFilePath("wz0dPKqHv3vX0BBsUFZt.lock"));
     if (!lockfile.tryLock(100)) {
-        // Already running
-        if (!SettingsManager::getInstance()->multipleInstances()) {
-            return -1;
-        }
         rootContext->setContextProperty("g_instance", "child");
     }
 #endif
@@ -188,16 +210,12 @@ int main(int argc, char *argv[])
 
     // Load QML content
     engine.load(QUrl("qrc:/main.qml"));
-
-    // Trigger setting property notifications
-    SettingsManager::getInstance()->load();
-
 #ifndef Q_OS_ANDROID
     // Get QML root window, add connections
-    QQuickWindow *rootWin = (QQuickWindow *) engine.rootObjects().first();
-    if (rootWin) {
-        if (SettingsManager::getInstance()->minimizeOnStartup())
-            rootWin->hide();
+    QQuickWindow *rootWin = qobject_cast<QQuickWindow *>(engine.rootObjects().first());
+    if (!rootWin) {
+        qFatal("Main window was not opened.");
+        return -1;
     }
 #endif
 

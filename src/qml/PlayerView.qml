@@ -399,7 +399,7 @@ Page {
             anchors.fill: parent
 
             source: {
-                switch (Settings.appPlayerBackend()) {
+                switch (Settings.backend) {
                 case "mpv":
                     return "MpvBackend.qml";
 
@@ -410,6 +410,10 @@ Page {
                 default:
                     return "MultimediaBackend.qml";
                 }
+            }
+
+            onSourceChanged: {
+                loadAndPlay()
             }
 
             onLoaded: {
@@ -537,8 +541,10 @@ Page {
         }
 
         onClicked: {
+            if (Settings.clickTogglePause) {
             clickRect.run()
             clickTimer.restart()
+            }
             refreshHeaders()
         }
         onDoubleClicked: {
@@ -948,44 +954,8 @@ Page {
 
 
                 ComboBox {
-                    id: hwaccelBox
-                    font.pointSize: 9
-                    font.bold: true
-                    focusPolicy: Qt.NoFocus
-                    flat: true
-                    Layout.fillWidth: true
-                    Layout.maximumWidth: 140
-                    Layout.minimumWidth: 100
-                    visible: renderer.getDecoder().length > 1
-
-                    onCurrentIndexChanged: {
-                        renderer.setDecoder(currentIndex)
-                        loadAndPlay()
-                        Settings.decoder = hwaccelBox.model[currentIndex]
-                        pArea.refreshHeaders()
-                    }
-
-                    Component.onCompleted: {
-                        var decoder = renderer.getDecoder()
-                        hwaccelBox.model = decoder
-                        selectItem(Settings.decoder)
-                        renderer.setDecoder(currentIndex)
-                    }
-
-                    function selectItem(name) {
-                        for (var i in hwaccelBox.model) {
-                            if (hwaccelBox.model[i] === name) {
-                                currentIndex = i;
-                                return;
-                            }
-                        }
-                        //None found, attempt to select first item
-                        currentIndex = 0
-                    }
-                }
-
-                ComboBox {
                     id: sourcesBox
+                    visible: !!model && model.length > 1
                     font.pointSize: 9
                     font.bold: true
                     focusPolicy: Qt.NoFocus
@@ -994,10 +964,12 @@ Page {
                     Layout.maximumWidth: 140
                     Layout.minimumWidth: 100
 
-                    onCurrentIndexChanged: {
+                    onActivated: {
+                        if (Settings.quality !== sourcesBox.model[currentIndex]) {
                         Settings.quality = sourcesBox.model[currentIndex]
                         loadAndPlay()
                         pArea.refreshHeaders()
+                    }
                     }
 
                     function selectItem(name) {
