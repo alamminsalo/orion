@@ -35,7 +35,6 @@ class VodManager: public QObject
 
     QMap<QString, QMap<QString, LastPosition>> channelVodLastPositions;
 
-    static VodManager *instance;
     explicit VodManager(QObject *parent = 0);
 
 public:
@@ -50,6 +49,9 @@ public:
     Q_INVOKABLE void getBroadcasts(QString vod);
 
     VodListModel *getModel() const;
+
+private:
+    void saveSettings();
 
 public slots:
     void onSearchFinished(QList<Vod *>);
