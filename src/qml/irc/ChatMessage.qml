@@ -26,23 +26,35 @@ Item {
     property string user
     property var msg
     property bool isAction
-    property string jsonBadgeEntries
     property string emoteDirPath
     property bool isChannelNotice
     property bool isWhisper
     property string systemMessage
     property real fontSize: Settings.textScaleFactor * 12
-    property var pmsg: JSON.parse(msg)
-    property var badgeEntries: JSON.parse(jsonBadgeEntries)
-    property real highlightOpacity: 1.0
+    property var badgeEntries: badgeEntries
 
-    property bool showUsernameLine: !isChannelNotice || !systemMessage || (pmsg && pmsg.length > 0)
+    property bool showUsernameLine: !isChannelNotice || !systemMessage || (msg && msg.length > 0)
     property bool showSystemMessageLine: isChannelNotice && systemMessage != ""
 
     property var visibleBadgeEntries: showUsernameLine? badgeEntries : []
 
     height: childrenRect.height
 
+    function colorUserRef(str) {
+        var hasRef = false;
+        var res = str.replace(/@\w{4,25}\b/g, function(ref) {
+            var u = ref.substring(1).toLowerCase();
+            if (chat.colors[u]) {
+                hasRef = true;
+                return "<a href=\"ref:" + u + "\" style=\"text-decoration:none\"><font color=\"" + chat.colors[u] + "\">" + ref + "</font></a>";
+            }
+            return ref;
+        });
+        if (hasRef && res.length && (res.charAt(0) === " ")) {
+            res = "&nbsp;" + res.substring(1);
+        }
+        return hasRef ? res : str;
+    }
 
     onFontSizeChanged: {
         // defer updatePositions so that bindings to the font size have a chance to recalculate before the re-layout
@@ -68,14 +80,15 @@ Item {
         visible: showSystemMessageLine
         text: root.systemMessage
         font.pointSize: fontSize
-        wrapMode: Text.WordWrap
+        wrapMode: Text.Wrap
 
         height: showSystemMessageLine? contentHeight : 0
     }
 
     CustomFlow {
       id: _messageLineFlow
-      ySpacing: 1
+      verticalAlignment: Qt.AlignVCenter
+
       anchors {
           top: _systemMessageLine.bottom
           left: parent.left
@@ -85,8 +98,6 @@ Item {
               rightMargin: 2
           }
       }
-
-      vAlign: vAlignCenter
 
       Repeater {
         model: visibleBadgeEntries
@@ -105,33 +116,38 @@ Item {
         visible: showUsernameLine
         verticalAlignment: Text.AlignVCenter
         font.pointSize: fontSize
-        text: "<font color=\""+chat.colors[user]+"\"><a href=\"user:%1\"><b>%1</b></a></font>".arg(user) + (isAction? "&nbsp;": ":&nbsp;")
-        onLinkActivated: userLinkActivation(link)
+        color: chat.colors[user.toLowerCase()]
+        text: user + (isAction ? " " : ": ")
+        font.bold: true
+        textFormat: Text.PlainText
 
-        height: showUsernameLine? contentHeight : 0
-
-        // Disabled as performance regression
-//        MouseArea {
-//            anchors.fill: parent
-//            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
-//            acceptedButtons: Qt.NoButton
-//        }
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton
+            onClicked: linkActivation("user:" + user)
+        }
       }
 
       Repeater {
-        model: pmsg
-
+        model: msg
         Loader {
-          property var msgItem: pmsg[index]
+          property var msgItem: msg[index]
           sourceComponent: {
-            if(typeof pmsg[index] == "string") {
-              if (Util.isUrl(pmsg[index])) {
+            if(typeof msg[index] == "string") {
+              if (colorUserRef(msg[index]) !== msg[index]) {
+                return msgUserRefLink;
+              } else if (Util.isUrl(msg[index])) {
                 return msgLink;
               } else {
+                // put adjacent emotes together
+                if (msg[index] === " " && typeof(msg[index-1]) !== "string" && typeof(msg[index+1]) !== "string") {
+                  return null
+                }
                 return msgText;
               }
             } else {
-              if (pmsg[index].imageProvider == "bits") {
+              if (msg[index].imageProvider == "bits") {
                   return bitsImgThing;
               } else {
                   return imgThing;
@@ -145,26 +161,44 @@ Item {
     property Component msgText: Component {
       Label {
         verticalAlignment: Text.AlignVCenter
-        color: isAction? chat.colors[user] : Material.foreground
+        color: Material.foreground
         font.pointSize: fontSize
         text: msgItem
-        wrapMode: Text.WordWrap
         textFormat: Text.PlainText
       }
     }
     property Component msgLink: Component {
       Label {
         verticalAlignment: Text.AlignVCenter
-        color: isAction? chat.colors[user] : Material.foreground
         font.pointSize: fontSize
+        color: Material.foreground
+        linkColor: "#4286f4"
         text: Util.makeUrl(msgItem)
-        textFormat: Text.RichText
-        wrapMode: Text.WordWrap
-        onLinkActivated: externalLinkActivation(link)
-
+        onLinkActivated: linkActivation(link)
+        textFormat: Text.StyledText
         MouseArea {
+            visible: parent.hoveredLink
             anchors.fill: parent
-            cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.NoButton
+        }
+      }
+    }
+    property Component msgUserRefLink: Component {
+      Label {
+        verticalAlignment: Text.AlignVCenter
+        color: Material.foreground
+        linkColor: "#4286f4"
+        font.pointSize: fontSize
+        text: colorUserRef(Util.makeUrl(msgItem))
+        onLinkActivated: linkActivation(link)
+        textFormat: Text.RichText
+        property int lastUserMessage: hoveredLink ? findLastUserMessage(hoveredLink) : -1
+        onLastUserMessageChanged: list.markIndex(lastUserMessage)
+        MouseArea {
+            visible: parent.lastUserMessage !== -1
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
             acceptedButtons: Qt.NoButton
         }
       }
@@ -175,6 +209,8 @@ Item {
           hoverEnabled: true
           width: childrenRect.width
           height: childrenRect.height
+          cursorShape: Qt.PointingHandCursor
+          onClicked: addEmoteToChat(msgItem.originalText)
 
           Row {
               width: _emoteImg.width + _emoteImgSuffixText.width
@@ -186,15 +222,15 @@ Item {
                 width: sourceSize.width/(Settings.hiDpi() ? 2.0 : 1.0) * Settings.textScaleFactor
                 height: sourceSize.height/(Settings.hiDpi() ? 2.0 : 1.0) * Settings.textScaleFactor
 
-                Component.onCompleted: {
-                  source = "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
-                }
+                source: "image://" + msgItem.imageProvider + "/" + msgItem.imageId;
+                asynchronous: true
               }
 
               Label {
                   id: _emoteImgSuffixText
-                  text: msgItem.textSuffix
-                  color: msgItem.textSuffixColor
+                  visible: !!msgItem.textSuffix
+                  text: msgItem.textSuffix || ""
+                  color: msgItem.textSuffixColor || Material.foreground
                   font.bold: true
                   font.pointSize: fontSize
                   verticalAlignment: Text.AlignVCenter
@@ -202,7 +238,7 @@ Item {
               }
           }
 
-          ToolTip {
+          EmoteTooltip {
               visible: _emoteImgMouseArea.containsMouse && msgItem.originalText != null
               text: msgItem.originalText
           }
@@ -214,6 +250,8 @@ Item {
           hoverEnabled: true
           width: _animatedImg.width + _animatedImgSuffixText.width
           height: _animatedImg.height
+          cursorShape: Qt.PointingHandCursor
+          onClicked: addEmoteToChat(msgItem.originalText);
 
           Row {
               AnimatedImage {
@@ -222,10 +260,9 @@ Item {
                 // AnimatedImage doesn't provide a sourceSize properly even when status == AnimatedImage.Ready
                 width: 28 * Settings.textScaleFactor
                 height: 28 * Settings.textScaleFactor
+                asynchronous: true
 
-                Component.onCompleted: {
-                  source = msgItem.sourceUrl;
-                }
+                source: msgItem.sourceUrl
               }
 
               Label {
@@ -239,7 +276,7 @@ Item {
               }
           }
 
-          ToolTip {
+          EmoteTooltip {
               visible: _animatedImgMouseArea.containsMouse && msgItem.originalText != null
               text: msgItem.originalText
           }
@@ -254,12 +291,10 @@ Item {
           height: _badgeImg.height
           Image {
             id: _badgeImg
-            Component.onCompleted: {
-              source = badgeEntry.url;
-            }
-
+            source: badgeEntry.url;
             width: sourceSize.width / badgeEntry.devicePixelRatio * Settings.textScaleFactor
             height: sourceSize.height / badgeEntry.devicePixelRatio * Settings.textScaleFactor
+            asynchronous: true
 
 //            onStatusChanged: {
 //                if (status == Image.Ready) {
@@ -267,7 +302,7 @@ Item {
 //                }
 //            }
 
-            ToolTip {
+            EmoteTooltip {
                 visible: _badgeImgMouseArea.containsMouse && badgeEntry.name != null
                 text: badgeEntry.name
             }
@@ -288,33 +323,38 @@ Item {
       }
     }
 
-    function userLinkActivation(link)
+    function findLastUserMessage(link) {
+        var u = link.replace('ref:',"").toLowerCase();
+        for (var i = delegateIndex; i >= 0; i--) {
+            if (list.model.content[i].user.toLowerCase() === u) {
+                return i
+            }
+        }
+        return -1
+    }
+
+    function linkActivation(link)
     {
         if (link.substr(0,5) === "user:")
         {
+            _input.remove(_input.selectionStart, _input.selectionEnd);
             var clickedUser = link.replace('user:',"");
+            var text = ""
             if (isWhisper) {
-                _input.text = "/w " + clickedUser + " " + _input.text;
+                text = "/w " + clickedUser + " ";
             } else {
-                var value = "@" + clickedUser + ', ';
-                if (_input.text === "")
-                {
-                    _input.text = value
-                }
-                else {
-                    _input.text = _input.text + ' '+ value
-                }
+                text = "@" + clickedUser;
+                text = _input.text === "" ? text + ', ' : ' ' + text;
             }
-
-        }
-    }
-
-    function externalLinkActivation(link)
-    {
-        //console.log("externalLinkActivation", link, "passed");
-        if (link.substr(0,5) !== "user:")
-        {
-            //console.log("opening link")
+            _input.insert(_input.selectionStart, text);
+            _input.forceActiveFocus()
+        } else if (link.substr(0, 4) === "ref:") {
+            var i = findLastUserMessage(link)
+            if (i != -1) {
+                list.moveToIndex(i)
+                list.fadoutIndex(i)
+            }
+        } else {
             Qt.openUrlExternally(link)
         }
     }

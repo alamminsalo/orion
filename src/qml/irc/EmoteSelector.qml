@@ -17,36 +17,22 @@ RoundButton {
     
     property bool pickerLoaded: false
     property var pickerChannelLoaded: null
-    
+    onPressed: {
+        if (!_emotePicker.visible) {
+            _emotePicker.show();
+        } else {
+            _emotePicker.startClosing();
+        }
+    }
+
+    highlighted: _emotePicker.visible
     font.family: "Material Icons"
     flat: true
-    highlighted: _emotePicker.visible
     text: "\ue87c"
-    
+
     Connections {
-        target: _emotePicker
-        onVisibleChanged: {
-            if (_emotePicker.visible) {
-                loadEmotes();
-            }
-        }
-    }
-    
-    onClicked: {
-        if (_emotePicker.visible) {
-            _emotePicker.startClosing();
-        } else {
-            _emotePicker.visible = true;
-        }
-    }
-    
-    function addEmoteToChat(emoteName) {
-        var textToAdd = emoteName + " ";
-        var existingText = _input.text;
-        if (existingText != "" && existingText.charAt(existingText.length - 1) != " ") {
-            textToAdd = " " + textToAdd;
-        }
-        _input.text += textToAdd;
+        target: chat
+        onChannelChanged: Qt.callLater(loadEmotes);
     }
     
     function showLastSet() {

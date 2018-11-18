@@ -42,6 +42,8 @@
         <file>components/OptionButton.qml</file>
         <file>components/RotatingButton.qml</file>
         <file>components/SeekPreview.qml</file>
+        <file>components/TextMenu.qml</file>
         <file>components/ResponsiveScrollBar.qml</file>
+        <file>components/EmoteTooltip.qml</file>
     </qresource>
 </RCC>

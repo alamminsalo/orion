@@ -353,3 +353,24 @@ function clearInterval(val) {
     freeTimers.push(timer);
     delete intervalTimer[val];
 }
+
+function globalPosition(item, localX, localY) {
+    if (!item) return Qt.point(0, 0);
+    var pt = Qt.point(item.x, item.y);
+    while (item.parent) {
+        item = item.parent
+        pt.x += item.x;
+        pt.y += item.y;
+    }
+    pt.x += localX || 0
+    pt.y += localY || 0
+    return pt
+}
+
+function localPosition(item, globalX, globalY) {
+    var pt = Qt.point(globalX || 0, globalY || 0);
+    var global = globalPosition(item)
+    pt.x -= global.x
+    pt.y -= global.y
+    return pt
+}

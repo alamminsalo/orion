@@ -7,17 +7,13 @@ import "../components"
 
 Item {
     id: root
-    property bool loading: true
-    
-    anchors {
-        bottom: parent.bottom
-        left: parent.left
-        right: parent.right
-        margins: 10
-    }
+    property bool loading: false
+
+    Layout.fillHeight: true
+    Layout.fillWidth: true
     
     onVisibleChanged: {
-        if (visible) {
+        if (visible && chat.channel) {
             root.loading = true;
             viewerListModel.clear()
             Viewers.loadChatterList(chat.channel);
@@ -26,17 +22,22 @@ Item {
     
     BusyIndicator {
         id: spinner
+        visible: running
+        hoverEnabled: false
         anchors.centerIn: parent
         running: root.loading
     }
     
     ListView {
+        id: list
+
         anchors.fill: parent
+        anchors.margins: 10
 
         model: ListModel {
             id: viewerListModel
         }
-        
+
         ScrollIndicator.vertical: ScrollIndicator { visible: isMobile() }
         ScrollBar.vertical: ResponsiveScrollBar { visible: !isMobile() }
         
@@ -65,6 +66,8 @@ Item {
         clip: true
         delegate: Label {
             text: user
+            font.pointSize: 8
+            color: chat.colors[user.toLowerCase()] || Material.foreground
         }
         
         section {
