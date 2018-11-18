@@ -19,7 +19,31 @@ import QtQuick.Controls.Material 2.1
 ToolBar {
     id: root
     property int selectedView: 0
-    visible : !appFullScreen
+    visible : !appFullScreen || hovered || windowTop.containsMouse
+
+    // 1px topmost popup allows to detect when mouse is at top of the screen while fullscreen
+    // even while other Popups (e.g. chat) are present
+    Popup {
+        z: -1 // behind normal popups
+        parent: app.view
+        modal: false
+        dim: false
+        visible: appFullScreen && !isMobile()
+        closePolicy: Popup.NoAutoClose
+        height: 1
+        width: parent.width
+        background: Item {}
+        enter: Transition {}
+        exit: Transition {}
+        padding: 0
+        MouseArea {
+            id: windowTop
+            width: parent.width
+            height: parent.height
+            hoverEnabled: true
+            preventStealing: true
+        }
+    }
 
     //Base font color
     Material.foreground: Material.Grey

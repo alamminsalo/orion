@@ -33,14 +33,6 @@ Page {
     property int lastSetPosition
     property bool headersVisible: true
 
-    onHeadersVisibleChanged: {
-        if (root.visible) {
-            pArea.hoverEnabled = false
-            topbar.visible = headersVisible
-            disableTimer.restart()
-        }
-    }
-
     Material.theme: rootWindow.Material.theme
 
     //Renderer interface
@@ -470,15 +462,7 @@ Page {
             hideTimer.restart()
         }
 	
-        Timer {
-            id: disableTimer
-            interval: 200
-            running: false
-            onTriggered:{
-                pArea.hoverEnabled = true
-            }
-        }
-
+        onReleased: playerArea.forceActiveFocus()
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
 
