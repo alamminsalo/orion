@@ -22,7 +22,13 @@ ListView {
         }
     }
 
-    ScrollIndicator.vertical: ScrollIndicator {}
+    ScrollIndicator.vertical: ScrollIndicator { visible: isMobile() }
+
+    ScrollBar.vertical: ResponsiveScrollBar {
+        visible: !isMobile()
+        onScrollBegin: list.startMove()
+        onScrollEnd: list.endMove()
+    }
     
     model: ListModel {
         id: chatModel

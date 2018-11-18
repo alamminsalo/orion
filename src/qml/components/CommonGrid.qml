@@ -32,7 +32,13 @@ GridView {
     cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
     cellHeight: cellWidth
     maximumFlickVelocity: 1200
-    ScrollIndicator.vertical: ScrollIndicator {}
+
+    ScrollIndicator.vertical: ScrollIndicator { visible: isMobile() }
+    ScrollBar.vertical: ResponsiveScrollBar {
+        id: scrollbar
+        visible: !isMobile()
+        scrollspeed: root.cellHeight / 2
+    }
 
     add: FadeUpTransition {}
 

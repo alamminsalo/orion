@@ -27,7 +27,8 @@ Page {
         anchors.fill: parent
         contentHeight: col.height
         contentWidth: width
-        ScrollIndicator.vertical: ScrollIndicator{}
+        ScrollIndicator.vertical: ScrollIndicator { visible: isMobile() }
+        ScrollBar.vertical: ResponsiveScrollBar { visible: !isMobile() }
         flickableDirection: Flickable.VerticalFlick
 
         ColumnLayout {

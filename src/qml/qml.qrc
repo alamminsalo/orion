@@ -42,5 +42,6 @@
         <file>components/OptionButton.qml</file>
         <file>components/RotatingButton.qml</file>
         <file>components/SeekPreview.qml</file>
+        <file>components/ResponsiveScrollBar.qml</file>
     </qresource>
 </RCC>

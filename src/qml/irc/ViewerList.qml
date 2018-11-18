@@ -37,6 +37,9 @@ Item {
             id: viewerListModel
         }
         
+        ScrollIndicator.vertical: ScrollIndicator { visible: isMobile() }
+        ScrollBar.vertical: ResponsiveScrollBar { visible: !isMobile() }
+        
         Connections {
             target: Viewers
             onChatterListLoaded: {
