@@ -55,17 +55,15 @@ Page {
 
         onAddedChannel: {
             console.log("Added channel")
-            if (currentChannel && currentChannel._id == chanid){
+            if (currentChannel && currentChannel._id === chanid){
                 currentChannel.favourite = true
-                favBtn.update()
             }
         }
 
         onDeletedChannel: {
             console.log("Deleted channel")
-            if (currentChannel && currentChannel._id == chanid){
+            if (currentChannel && currentChannel._id === chanid){
                 currentChannel.favourite = false
-                favBtn.update()
             }
         }
 
@@ -579,7 +577,7 @@ Page {
                 if (renderer.status === "PAUSED" || renderer.status === "STOPPED") return
 
                 // Bug?: MouseArea doesn't work over Controls
-                var controls = [ favBtn, chatBtn, playBtn, resetBtn, volumeBtn, volumeSlider, seekBar, hwaccelBox, sourcesBox, cropBtn, fsBtn];
+                var controls = [ favBtn, chatBtn, playBtn, resetBtn, volumeBtn, volumeSlider, seekBar, sourcesBox, cropBtn, fsBtn];
                 for (var i = 0; i < controls.length; i++) {
                     if (controls[i].hovered || controls[i].pressed || controls[i].down)
                         return;
@@ -638,22 +636,18 @@ Page {
                 IconButtonFlat {
                     id: favBtn
                     text: "\ue87d"
-
-                    function update() {
-                        highlighted = currentChannel.favourite === true
-                    }
+                    highlighted: currentChannel !== undefined && currentChannel.favourite === true
 
                     onClicked: {
                         if (currentChannel){
                             if (currentChannel.favourite)
-                                ChannelManager.removeFromFavourites(currentChannel._id)
+                                app.removeFromFavourites(currentChannel, function() {
+                                    currentChannel = currentChannel
+                                })
                             else{
-                                //console.log(currentChannel)
-                                ChannelManager.addToFavourites(currentChannel._id, currentChannel.name,
-                                                               currentChannel.title, currentChannel.info,
-                                                               currentChannel.logo, currentChannel.preview,
-                                                               currentChannel.game, currentChannel.viewers,
-                                                               currentChannel.online)
+                                app.addToFavourites(currentChannel, function() {
+                                    currentChannel = currentChannel
+                                })
                             }
                         }
                     }

@@ -139,16 +139,14 @@ Drawer {
                     onClicked: {
                         if (item) {
                             if (item.favourite === false)
-                                ChannelManager.addToFavourites(item._id, item.name,
-                                                               item.title, item.info,
-                                                               item.logo, item.preview,
-                                                               item.game, item.viewers,
-                                                               item.online)
+                                app.addToFavourites(item, function() {
+                                    item = item
+                                })
                             else {
-                                ChannelManager.removeFromFavourites(item._id)
+                                app.removeFromFavourites(item, function() {
+                                    item = item
+                                })
                             }
-                            item.favourite = !item.favourite
-                            item = item
                         }
                     }
                 }

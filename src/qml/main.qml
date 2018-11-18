@@ -14,6 +14,7 @@
 
 import QtQuick 2.8
 import QtQuick.Window 2.2
+import QtQuick.Layouts 1.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import "irc"
@@ -23,6 +24,8 @@ import app.orion 1.0
 ApplicationWindow {
     id: root
     visible: true
+
+    property alias app: root
 
     // Application main font
     font.family: Settings.font || appFont.name
@@ -180,9 +183,65 @@ ApplicationWindow {
         name: "Noto Sans"
     }
 
-    Loader {
-        active: !isMobile()
-        sourceComponent: AppTray{}
+    Popup {
+        id: dialog
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        modal: true
+        dim: true
+        property string text
+        property var callback
+        function showMessage(message, accepted) {
+            text = message
+            callback = accepted
+            dialog.open()
+        }
+        background: Pane { Material.elevation: 13 }
+        function accept() {
+            if (callback) callback()
+            dialog.close()
+        }
+        ColumnLayout {
+            Label {
+                font.bold: true
+                font.pointSize: 13
+                Layout.fillWidth: true
+                text: dialog.text
+            }
+            RowLayout {
+                spacing: 5
+                Item { Layout.fillWidth: true }
+                Button { text: "No"; onPressed: dialog.close() }
+                Button {
+                    text: "Yes";
+                    onPressed: dialog.accept()
+                    focus: true
+                    Keys.onReturnPressed: accept()
+                    Keys.onEnterPressed: accept()
+                }
+            }
+        }
+
+    }
+
+    function addToFavourites(channel, callback) {
+        dialog.showMessage("Do you want to follow " + (channel.name || "this channel") + "?", function() {
+            ChannelManager.addToFavourites(channel._id, channel.name,
+                                                       channel.title, channel.info,
+                                                       channel.logo, channel.preview,
+                                                       channel.game, channel.viewers,
+                                                       channel.online)
+            channel.favourite = true
+            if (callback) callback()
+        })
+    }
+
+    function removeFromFavourites(channel, callback) {
+        dialog.showMessage("Do you want to stop following " + (channel.name || "this channel") + "?", function() {
+            ChannelManager.removeFromFavourites(channel._id)
+            channel.favourite = false
+            if (callback) callback()
+        })
     }
 
     Connections{

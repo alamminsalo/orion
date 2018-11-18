@@ -88,13 +88,13 @@ CommonGrid {
             onTriggered: {
                 if (menu.channel !== undefined) {
                     if (menu.channel.favourite === false)
-                        ChannelManager.addToFavourites(menu.channel._id, menu.channel.name,
-                                                       menu.channel.title, menu.channel.info,
-                                                       menu.channel.logo, menu.channel.preview,
-                                                       menu.channel.game, menu.channel.viewers,
-                                                       menu.channel.online)
+                        app.addToFavourites(menu.channel, function() {
+                            menu.channel = menu.channel
+                        })
                     else
-                        ChannelManager.removeFromFavourites(menu.channel._id)
+                        app.removeFromFavourites(menu.channel, function() {
+                            menu.channel = menu.channel
+                        })
                 }
                 menu.channel = undefined
             }

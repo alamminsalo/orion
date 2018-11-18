@@ -36,7 +36,6 @@
         <file>irc/ViewerList.qml</file>
         <file>components/InfoDrawer.qml</file>
         <file>irc/ChatMessagesView.qml</file>
-        <file>components/AppTray.qml</file>
         <file>components/FadeUpTransition.qml</file>
         <file>ChatDrawer.qml</file>
         <file>components/RoundImage.qml</file>
