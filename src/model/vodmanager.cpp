@@ -14,7 +14,8 @@
 
 #include "vodmanager.h"
 #include <QSettings>
-#include <QApplication>
+#include <QCoreApplication>
+#include <cmath>
 
 VodManager::VodManager(QObject *parent) :
     QObject(parent),
@@ -27,7 +28,7 @@ VodManager::VodManager(QObject *parent) :
     connect(netman, &NetworkManager::m3u8OperationBFinished, this, &VodManager::streamsGetFinished);
     connect(netman, &NetworkManager::vodChatPieceGetOperationFinished, this, &VodManager::vodChatPieceGetOperationFinished);
 
-    QSettings settings(qApp->organizationName(), qApp->applicationName());
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
     int numLastPositions = settings.beginReadArray("lastPositions");
     for (int i = 0; i < numLastPositions; i++) {
         settings.setArrayIndex(i);
@@ -84,7 +85,7 @@ VodListModel *VodManager::getModel() const
 
 void VodManager::saveSettings() {
     //Save
-    QSettings settings(qApp->organizationName(), qApp->applicationName());
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
     //Write last positions
     int nextLastPositionEntry = settings.beginReadArray("lastPositions");

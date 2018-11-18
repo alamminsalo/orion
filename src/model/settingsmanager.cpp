@@ -1,9 +1,9 @@
 #include "settingsmanager.h"
 #include "../network/httpserver.h"
-#include <QApplication>
+#include <QCoreApplication>
 
 SettingsManager::SettingsManager(QObject *parent) :
-    QObject(parent), settings(qApp->organizationName(), qApp->applicationName(), this)
+    QObject(parent), settings(QCoreApplication::organizationName(), QCoreApplication::applicationName(), this)
 {
     load();
     //Connections

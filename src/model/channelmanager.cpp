@@ -13,7 +13,7 @@
  */
 
 #include "channelmanager.h"
-#include <QApplication>
+#include <QCoreApplication>
 
 ChannelManager *ChannelManager::instance = 0;
 
@@ -196,7 +196,7 @@ ChannelListModel *ChannelManager::getResultsModel() const
 }
 
 void ChannelManager::load(){
-    QSettings settings(qApp->organizationName(), qApp->applicationName());
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
     int size = settings.beginReadArray("channels");
     if (size > 0) {
@@ -218,7 +218,7 @@ void ChannelManager::load(){
 
 void ChannelManager::save()
 {
-    QSettings settings(qApp->organizationName(), qApp->applicationName());
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
     if (!settings.isWritable())
         qDebug() << "Error: settings file not writable";
