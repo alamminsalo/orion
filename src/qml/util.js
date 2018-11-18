@@ -52,6 +52,18 @@ function getTime(totalSec){
     return result
 }
 
+/*
+   Some urls to consider
+
+   twitch.tv
+   twitch.tv/giantwaffle/subscribe
+   twitch.tv/giantwaffle/subscribe/
+   [twitch.tv/giantwaffle/subscribe]
+   (twitch.tv/giantwaffle/subscribe)
+   https://www.youtube.com:443/watch?v=5eQi3We_whE
+   https://i.imgur.com/jfhaAPP.jpg
+*/
+var urlPattern = /\b(http(s)?:\/\/)?(www\.)?([\w\-\+@:%~#=]{1,256}\.){1,3}[a-z]{2,63}(:\d{1,5}\b)?(\/([\w\-\+@:%~#=?&]+|\.+\b|\.+\/)*)*/g
 function makeUrl(str) {
     var pref = "";
     if (str.length && (str.charAt(0) === " ")) {
@@ -59,17 +71,24 @@ function makeUrl(str) {
         str = str.substring(1);
     }
 
-    var urlPattern = / ?\b(?:https?):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-    var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-    var out = pref + str.replace(urlPattern, '<a href="$&">$&</a>').replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>');
+    var out = pref + str.replace(urlPattern, function(match) {
+        var hasHttp = match.startsWith("https://") || match.startsWith("http://")
+        // filter out some likely false positives that might occur in natural writing
+        // avoid matching something like: "this.is.not.a.url" or "hey.you"
+        // while still allowing some short urls like "google.com", "twitch.tv" etc.
+        if (!hasHttp && !match.startsWith("www.") && match.indexOf("/") === -1 && !match.endsWith(".com") && !match.endsWith(".tv") && !match.endsWith(".org"))
+            return match
+        return '<a href="' + (hasHttp ? match : ("http://" + match)) + '">' + match + '</a>';
+    });
 
-    //console.log("makeUrl", str, out);
+    // console.log("makeUrl", str, out);
     return out;
 }
 
 function isUrl(str) {
-    var result = str.match(/^ ?(https?:\/\/)?([\da-z\.-]+)\.([a-z]{2,6})([\/\w \.-]*)*\/?$/);
-    //console.log("isUrl", str, result);
+    var result = str.length > 5 && str.indexOf(".") !== -1 && !!str.match(urlPattern);
+
+    // console.log("isUrl", str, result);
     return result
 }
 
