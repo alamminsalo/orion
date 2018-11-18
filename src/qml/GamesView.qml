@@ -97,9 +97,13 @@ Page {
             root.searchChannels(clickedItem)
         }
 
+        onItemDoubleClicked: {
+            root.searchChannels(clickedItem)
+        }
+
         onItemTooltipHover: {
             if (g_tooltip)
-                g_tooltip.displayGame(item, rootWindow.x + mX, rootWindow.y + mY)
+                g_tooltip.displayGame(item, getPosition)
         }
 
         onAtYEndChanged: checkScroll()

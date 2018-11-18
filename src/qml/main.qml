@@ -167,8 +167,12 @@ ApplicationWindow {
         visibility = visibility
 
         if (!isMobile()) {
-            var component = Qt.createComponent("components/Tooltip.qml")
+            var component = Qt.createComponent("components/GridTooltip.qml")
+            if(component.status === Component.Ready) {
             g_tooltip = component.createObject(root)
+            } else {
+                console.error(component.errorString())
+            }
         }
 
         console.log("Pixel density", Screen.pixelDensity)

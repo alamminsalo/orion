@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>components/Channel.qml</file>
-        <file>components/Tooltip.qml</file>
+        <file>components/GridTooltip.qml</file>
         <file>SearchView.qml</file>
         <file>components/ContextMenu.qml</file>
         <file>FollowedView.qml</file>

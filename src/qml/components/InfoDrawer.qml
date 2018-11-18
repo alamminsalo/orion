@@ -178,30 +178,6 @@ Drawer {
                     style: textStyle
                 }
             }
-
-            RowLayout {
-
-                IconButtonFlat {
-                    id: openChatBtn
-                    font.pointSize: 20
-                    padding: 0
-                    text: "\ue0ca"
-                    flat: false
-                    onClicked: {
-                        if (item) {
-                            chat.joinChannel(item.name, item._id);
-                            chatdrawer.open()
-                        }
-                        close()
-                    }
-                }
-
-                Label {
-                    visible: labelsVisible
-                    text: "Open chat"
-                    style: textStyle
-                }
-            }
         }
     }
 }
