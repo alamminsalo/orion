@@ -11,9 +11,14 @@ Drawer {
     property bool labelsVisible: width >= 400
     property int textStyle: Text.Sunken
     dim: false
-    interactive: visible
+    modal: false
     Material.theme: Material.Dark
     Material.foreground: "white"
+    closePolicy: Popup.CloseOnEscape
+    edge: Qt.BottomEdge
+
+    height: 200
+
 
     function show(channelItem) {
         item = Util.copyChannel(channelItem);
@@ -27,30 +32,30 @@ Drawer {
         if (item) {
             bgImage.source = item.preview || ""
             logoImg.source = item.logo || ""
-            title.text = "<b>" + item.title + "</b> playing " + item.game
+            title.text = "<b>" + item.title + "</b>"
+            if (item.game) title.text += " playing " + item.game
+            viewerCount.visible = item.viewers >= 0
             viewerCount.text = item.viewers + " viewers"
             description.text = item.info
         }
 
         open()
     }
-    height: 200
 
     Image {
+        z: -1
         id: bgImage
         fillMode: Image.PreserveAspectCrop
-        anchors {
-            fill: parent
-        }
-    }
-
+        anchors.fill: parent
     Rectangle {
-        color: "black"
+            id: bg
+            color: Material.background.hslLightness < 0.5 ? "black" : "white"
         opacity:  0.6
         anchors.fill: parent
         gradient: Gradient {
             GradientStop { position: 0.0; color: "transparent"}
-            GradientStop { position: 0.8; color: "black" }
+                GradientStop { position: 0.8; color: bg.color }
+            }
         }
     }
 
@@ -116,6 +121,7 @@ Drawer {
                     flat: false
                     onClicked: {
                         if (item) {
+                            vodsView.search(item)
                             playerView.getStreams(item)
                         }
                         close()

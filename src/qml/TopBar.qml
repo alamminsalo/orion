@@ -15,6 +15,8 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
+import QtQuick.Window 2.0
+import app.orion 1.0
 
 ToolBar {
     id: root
@@ -84,6 +86,23 @@ ToolBar {
         TabButton {
             text: !tab.showIcons ? "Settings" : "\ue8b8"
             onClicked: selectedView = 5
+            Rectangle {
+                visible: !Settings.hasAccessToken
+                anchors.horizontalCenter: parent.contentItem.right
+                anchors.verticalCenter: parent.contentItem.top
+                color: Material.accent
+                radius: width*0.5
+                width: 15
+                height: 15
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "i"
+                    font.bold: true
+                    font.pixelSize: parent.width * 0.7
+                    color: Material.foreground
+                }
+            }
         }
     }
 }

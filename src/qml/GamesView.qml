@@ -127,6 +127,8 @@ Page {
 
         BusyIndicator {
             id: busyIndicator
+            visible: running
+            hoverEnabled: false
             running: false
             anchors.centerIn: parent
         }

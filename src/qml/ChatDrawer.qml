@@ -5,54 +5,43 @@ import QtQuick.Controls.Material 2.1
 import "irc"
 import "components"
 import app.orion 1.0
+import "util.js" as Util
 
 Drawer {
     id: chatdrawer
 
     property alias chat: chatview
-    property bool isBottom: Settings.chatEdge == 2
+    property alias hasUnreadMessages : chatview.hasUnreadMessages
 
-    height: !isBottom ? view.height :
+    readonly property int orientation: edge === Qt.RightEdge || edge === Qt.LeftEdge ? Qt.Horizontal : Qt.Vertical
+    property real chatSize: 330
+
+    height: orientation === Qt.Horizontal ? parent.height :
                          // Fit playerview to 16:9
-                         rootWindow.height - topbar.height - (rootWindow.width * 0.5625)
-    width: !isBottom ? 330 : rootWindow.width
+                         Math.max(chatSize, parent.height - topbar.height - (parent.width * 0.5625))
 
-    y: header.visible ? header.height : 0
-    interactive: !isBottom && !chatview.pinned
+    width: orientation === Qt.Horizontal ? chatSize : parent.width
+
+    interactive: orientation === Qt.Horizontal && !chat.pinned
     modal: interactive
-    Material.elevation: chatview.pinned ? 0 : 12
+    Material.elevation: chat.pinned ? 0 : 12
     dim: false
-    edge: Qt.RightEdge //Initial value
-
-    Connections {
-        target: Settings
-        onChatEdgeChanged: {
+    edge: {
             switch (Settings.chatEdge) {
             case 0:
-                edge = Qt.LeftEdge;
-                break;
+            return Qt.LeftEdge;
             case 1:
-                edge = Qt.RightEdge;
-                break;
+            return Qt.RightEdge;
             case 2:
-                edge = Qt.BottomEdge
-                break;
-            }
-        }
-    }
-
-    onAboutToShow: {
-        if (!isMobile()) {
-            if (appFullScreen && isBottom) {
-                //Bottom chat can't be visible while fullscreen
-                Settings.chatEdge = 1
-            }
+            return Qt.BottomEdge;
+        case 3:
+            return Qt.TopEdge;
         }
     }
 
     Component.onCompleted: {
         var maybeShowChat = function(){
-            if (isBottom) {
+            if (orientation !== Qt.Horizontal) {
                 visible = view.playerVisible && isPortraitMode// && (isMobile() || !appFullScreen)
             }
         };
@@ -66,36 +55,56 @@ Drawer {
         rootWindow.appFullScreenChanged.connect(maybeShowChat)
     }
     
+    onActiveFocusChanged: if (activeFocus) chatview.forceActiveFocus()
+
     ChatView {
         id: chatview
         anchors.fill: parent
     }
     
     MouseArea {
-        width: 10
-        cursorShape: Qt.SplitHCursor
-        visible: !interactive && chatdrawer.edge !== Qt.BottomEdge
+        id: resizeBar
+        z: 1
+
+        x: chatdrawer.orientation == Qt.Horizontal ? (chatdrawer.edge === Qt.RightEdge ? parent.x : parent.x + parent.width) - width / 2 : 0
+        y: chatdrawer.orientation == Qt.Vertical ? (chatdrawer.edge === Qt.BottomEdge ? parent.y : parent.y + parent.height) - height / 2 : 0
+        width: chatdrawer.orientation === Qt.Horizontal ? 10 : parent.width
+        height: chatdrawer.orientation === Qt.Horizontal ? parent.height : 10
+
+        cursorShape: chatdrawer.orientation === Qt.Horizontal ? Qt.SplitHCursor : Qt.SplitVCursor
         enabled: visible
-        anchors {
-            horizontalCenter: chatdrawer.edge === Qt.RightEdge ? parent.left : parent.right
-            top: parent.top
-            bottom: parent.bottom
-        }
+
+        acceptedButtons: Qt.LeftButton
         propagateComposedEvents: false
+        preventStealing: true
+        property var initalPos
+        property var intialSize
+        onPressed: {
+            intialSize = chatdrawer.orientation === Qt.Horizontal ? chatdrawer.width : chatdrawer.height
+            initalPos = Util.globalPosition(this, mouseX, mouseY)
+        }
+        onReleased: initalPos = undefined
+
         onPositionChanged: {
+            var currentPos = Util.globalPosition(this, mouseX, mouseY)
             var w = 0
             switch (chatdrawer.edge) {
             case Qt.LeftEdge:
-                w = chatdrawer.width + mouseX
+                w = intialSize + (currentPos.x - initalPos.x)
                 break;
             case Qt.RightEdge:
-                w = chatdrawer.width - mouseX
+                w = intialSize - (currentPos.x - initalPos.x)
                 break;
+            case Qt.BottomEdge:
+                w = intialSize - (currentPos.y - initalPos.y)
+                break;
+            case Qt.TopEdge:
+                w = intialSize + (currentPos.y - initalPos.y)
             }
             
             //Min/max
-            w = Math.max(200, Math.min(rootWindow.width, w))
-            chatdrawer.width = w
+            w = Math.max(150, Math.min(chatdrawer.orientation === Qt.Horizontal ? chatdrawer.parent.width : chatdrawer.parent.height, w))
+            chatSize = w
         }
     }
 }

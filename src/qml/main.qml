@@ -104,14 +104,12 @@ ApplicationWindow {
     }
 
     function isMobile() {
-        return Qt.platform.os === "android"
+        return {android: true, ios: true, winphone: true}[Qt.platform.os] || false;
     }
 
     onClosing: {
-        if (!Settings.closeToTray) {
             Qt.quit()
         }
-    }
 
     ChatDrawer {
         id: chatdrawer
@@ -181,7 +179,11 @@ ApplicationWindow {
         console.log("Orientation", Screen.orientation)
 
         //Initial view
-        topbar.setView(1)
+        if (!Settings.hasAccessToken) {
+            topbar.setView(5)
+        } else {
+            topbar.setView(1)
+        }
 
         //Check version
         if (Settings.versionCheckEnabled) {

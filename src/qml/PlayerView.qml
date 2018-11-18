@@ -16,6 +16,8 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
+import Qt.labs.settings 1.0 as Labs
+
 import "components"
 import "util.js" as Util
 
@@ -89,9 +91,17 @@ Page {
             switch (error) {
 
             case "token_error":
+                setHeaderText("Token issue. Error getting stream")
+                break;
             case "playlist_error":
-                //Display messagetrue
+                //Todo: verify message
+                if (isVod) {
+                    setHeaderText("Unavailable: " + getWatchingTitle())
+                } else if (currentChannel) {
+                    setHeaderText("Offline: " + getWatchingTitle())
+                } else {
                 setHeaderText("Error getting stream")
+                }
                 break;
 
             default:
@@ -113,6 +123,8 @@ Page {
 
 
     function loadAndPlay(){
+        if (!streamMap) return
+
         var description = setWatchingTitle();
 
         var start = !isVod ? -1 : seekBar.value
@@ -122,6 +134,7 @@ Page {
         console.debug("Loading: ", url)
 
         renderer.load(url, start, description)
+        renderer.setVolume(volumeSlider.value)
     }
 
     function getStreams(channel, vod, startPos){
@@ -176,7 +189,6 @@ Page {
             "seekPreviews": isVod ? vod.seekPreviews : "",
         }
 
-        favBtn.update()
         setWatchingTitle()
 
         if (isVod) {
@@ -204,15 +216,18 @@ Page {
         title.text = text
     }
 
-    function setWatchingTitle(){
+    function getWatchingTitle() {
 	var description = ""
 	if (currentChannel) {
 	  description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
 		  + (currentChannel.game ? " playing " + currentChannel.game : "")
 		  + (isVod ? " (VOD)" : "");
-	  setHeaderText(description);
 	}
 	return description;
+    }
+
+    function setWatchingTitle() {
+        setHeaderText(getWatchingTitle());
     }
 
     function loadStreams(streams) {
@@ -277,11 +292,11 @@ Page {
         }
 
         onPlayingPaused: {
-            setHeaderText("Paused")
+            setHeaderText("Paused: " + getWatchingTitle());
         }
 
         onPlayingStopped: {
-            setHeaderText("Playback stopped")
+            setHeaderText("Stopped: " + getWatchingTitle());
         }
 
         onStatusChanged: {
@@ -363,8 +378,7 @@ Page {
         context: Qt.ApplicationShortcut
         onActivated: {
             if (!isVod || seekBar.pressed) return
-            seekBar.seek(seekBar.value + 5)
-            var totalSeek = seekBar.value - renderer.position
+            var totalSeek = seekBar.seekAdvance(5)
             clickRect.show((totalSeek > 0 ? "+" : "") + totalSeek + "s")
         }
     }
@@ -374,8 +388,7 @@ Page {
         context: Qt.ApplicationShortcut
         onActivated: {
             if (!isVod || seekBar.pressed) return
-            seekBar.seek(seekBar.value - 5)
-            var totalSeek = seekBar.value - renderer.position
+            var totalSeek = seekBar.seekAdvance(-5)
             clickRect.show((totalSeek > 0 ? "+" : "") + totalSeek + "s")
         }
     }
@@ -383,6 +396,14 @@ Page {
     Item {
         id: playerArea
         anchors.fill: parent
+
+        Keys.onShortcutOverride: {
+            event.accepted = false
+        }
+
+        Keys.onTabPressed: {
+            chatdrawer.forceActiveFocus()
+        }
 
         Loader {
             id: loader
@@ -417,7 +438,7 @@ Page {
             blur: 2
             visible: opacity > 0
             opacity: 0
-            Behavior on opacity { PropertyAnimation { easing: Easing.InOutCubic } }
+            Behavior on opacity { PropertyAnimation { easing.type: Easing.InOutCubic } }
 
             Connections {
                 target: seekBar
@@ -447,6 +468,8 @@ Page {
         }
 
         BusyIndicator {
+            visible: running
+            hoverEnabled: false
             anchors.centerIn: parent
             running: renderer.status === "BUFFERING"
         }
@@ -686,6 +709,7 @@ Page {
                 to: duration
                 visible: isVod && headersVisible
                 padding: 0
+                focusPolicy: Qt.NoFocus
                 hoverEnabled: true
                 clip: true
 
@@ -722,23 +746,25 @@ Page {
                 property real prev: 0
                 onValueChanged: {
                     if (seekTimer.running)
-                        value = seekTimer.to
+                        value = renderer.position + seekTimer.offset
                 }
 
                 Timer {
                     id: seekTimer
                     interval: 500
                     repeat: false
-                    property real to: 0
+                    property real offset: 0
                     onTriggered: {
-                        seekTo(seekBar.value);
+                        seekTo(renderer.position + offset);
+                        offset = 0
                     }
                 }
 
-                function seek(val) {
-                    seekTimer.to = val
-                    value = val
+                function seekAdvance(val) {
+                    seekTimer.offset += val
+                    value = renderer.position + seekTimer.offset
                     seekTimer.restart()
+                    return seekTimer.offset
                 }
 
                 MouseArea {
@@ -763,7 +789,7 @@ Page {
 
                 visible: opacity > 0
                 opacity: (seekBar.hovered || seekBar.pressed) ? 1 : 0
-                Behavior on opacity { PropertyAnimation { easing: Easing.InCubic } }
+                Behavior on opacity { PropertyAnimation { easing.type: Easing.InCubic } }
 
                 ColumnLayout {
                     id: seekTooltip
@@ -864,6 +890,7 @@ Page {
                     width: 0
                     opacity: 0
                     visible: !isMobile()
+                    focusPolicy: Qt.NoFocus
                     Layout.maximumWidth: width
                     hoverEnabled: true
 
