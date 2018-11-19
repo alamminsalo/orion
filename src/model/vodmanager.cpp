@@ -14,6 +14,8 @@
 
 #include "vodmanager.h"
 #include <QSettings>
+#include <QCoreApplication>
+#include <cmath>
 
 VodManager::VodManager(QObject *parent) :
     QObject(parent),
@@ -26,7 +28,7 @@ VodManager::VodManager(QObject *parent) :
     connect(netman, &NetworkManager::m3u8OperationBFinished, this, &VodManager::streamsGetFinished);
     connect(netman, &NetworkManager::vodChatPieceGetOperationFinished, this, &VodManager::vodChatPieceGetOperationFinished);
 
-    QSettings settings("orion.application", "Orion");
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
     int numLastPositions = settings.beginReadArray("lastPositions");
     for (int i = 0; i < numLastPositions; i++) {
         settings.setArrayIndex(i);
@@ -39,44 +41,20 @@ VodManager::VodManager(QObject *parent) :
     settings.endArray();
 
     emit modelChanged();
+
+    std::atexit([](){
+       VodManager::getInstance()->saveSettings();
+    });
 }
 
 VodManager *VodManager::getInstance() {
-    if (!instance)
-        instance = new VodManager();
-    return instance;
+    static VodManager instance;
+    return &instance;
 }
-
-VodManager *VodManager::instance = 0;
 
 VodManager::~VodManager()
 {
-    //Save
-    QSettings settings("orion.application", "Orion");
-
-    //Write last positions
-    int nextLastPositionEntry = settings.beginReadArray("lastPositions");
-    settings.endArray();
-
-    settings.beginWriteArray("lastPositions");
-    for (auto channelEntry = channelVodLastPositions.begin(); channelEntry != channelVodLastPositions.end(); channelEntry++) {
-        auto & vods = channelEntry.value();
-        for (auto vodEntry = vods.begin(); vodEntry != vods.end(); vodEntry++) {
-            auto & lastPosition = vodEntry.value();
-            if (lastPosition.modified) {
-                if (lastPosition.settingsIndex == -1) {
-                    lastPosition.settingsIndex = nextLastPositionEntry++;
-                }
-
-                settings.setArrayIndex(lastPosition.settingsIndex);
-                settings.setValue("channel", channelEntry.key());
-                settings.setValue("vod", vodEntry.key());
-                settings.setValue("position", vodEntry.value().lastPosition);
-            }
-        }
-    }
-    settings.endArray();
-
+    saveSettings();
     delete _model;
 }
 
@@ -103,6 +81,35 @@ void VodManager::onSearchFinished(QList<Vod *> items)
 VodListModel *VodManager::getModel() const
 {
     return _model;
+}
+
+void VodManager::saveSettings() {
+    //Save
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+
+    //Write last positions
+    int nextLastPositionEntry = settings.beginReadArray("lastPositions");
+    settings.endArray();
+
+    settings.beginWriteArray("lastPositions");
+    for (auto channelEntry = channelVodLastPositions.begin(); channelEntry != channelVodLastPositions.end(); channelEntry++) {
+        auto & vods = channelEntry.value();
+        for (auto vodEntry = vods.begin(); vodEntry != vods.end(); vodEntry++) {
+            auto & lastPosition = vodEntry.value();
+            if (lastPosition.modified) {
+                if (lastPosition.settingsIndex == -1) {
+                    lastPosition.settingsIndex = nextLastPositionEntry++;
+                }
+
+                settings.setArrayIndex(lastPosition.settingsIndex);
+                settings.setValue("channel", channelEntry.key());
+                settings.setValue("vod", vodEntry.key());
+                settings.setValue("position", vodEntry.value().lastPosition);
+            }
+        }
+    }
+    settings.endArray();
+
 }
 
 QString VodManager::getGame() const
@@ -145,10 +152,13 @@ void VodManager::setVodLastPlaybackPosition(const QString & channel, const QStri
     if (vodEntry != vodMap.end()) {
         vodEntry.value().lastPosition = position;
         vodEntry.value().modified = true;
-    }
-    else {
+        if (std::fabs(static_cast<double>(vodEntry.value().lastPosition) - static_cast<double>(position)) >= 10) {
+            saveSettings();
+        }
+    } else {
         // -1 index to be replaced at settings save time
         vodMap.insert(vod, {position, true, -1});
+        saveSettings();
     }
 
     emit vodLastPositionUpdated(channel, vod, position);

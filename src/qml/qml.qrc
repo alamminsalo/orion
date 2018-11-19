@@ -2,7 +2,7 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>components/Channel.qml</file>
-        <file>components/Tooltip.qml</file>
+        <file>components/GridTooltip.qml</file>
         <file>SearchView.qml</file>
         <file>components/ContextMenu.qml</file>
         <file>FollowedView.qml</file>
@@ -36,12 +36,16 @@
         <file>irc/ViewerList.qml</file>
         <file>components/InfoDrawer.qml</file>
         <file>irc/ChatMessagesView.qml</file>
-        <file>components/AppTray.qml</file>
         <file>components/FadeUpTransition.qml</file>
         <file>ChatDrawer.qml</file>
         <file>components/RoundImage.qml</file>
         <file>components/OptionButton.qml</file>
         <file>components/RotatingButton.qml</file>
         <file>components/SeekPreview.qml</file>
+        <file>components/TextMenu.qml</file>
+        <file>components/ResponsiveScrollBar.qml</file>
+        <file>components/StackView.qml</file>
+        <file>components/SidePanel.qml</file>
+        <file>components/EmoteTooltip.qml</file>
     </qresource>
 </RCC>

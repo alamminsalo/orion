@@ -13,18 +13,30 @@
  */
 
 import QtQuick 2.5
-import QtQuick.Controls 2.1
-import QtQuick.Controls.Material 2.1
-import QtQuick.Layouts 1.3
+import "components"
 
-StackLayout {
+StackView {
     id: root
+    property alias searchView : searchView
+    property alias favouritesView : favouritesView
+    property alias gamesView : gamesView
+    property alias vodsView : vodsView
+    property alias playerView : playerView
+    property alias settingsView : settingsView
+    property bool playerVisible : playerView.visible
 
-    property bool playerVisible: playerView.visible
-    signal requestSelectionChange(int index)
+    function requestSelectionChange(index) {
+        setCurrentIndex(index);
+    }
 
-    function setSelection(sel) {
-        currentIndex = sel
+    function isItemInView(item) {
+        while(item.parent) {
+            if (currentItem === item) {
+                return true
+            }
+            item = item.parent
+        }
+        return false
     }
 
     SearchView {

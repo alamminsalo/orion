@@ -14,8 +14,10 @@
 
 import QtQuick 2.8
 import QtQuick.Window 2.2
+import QtQuick.Layouts 1.0
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
+import Qt.labs.settings 1.0 as Labs
 import "irc"
 import "components"
 import app.orion 1.0
@@ -23,6 +25,8 @@ import app.orion 1.0
 ApplicationWindow {
     id: root
     visible: true
+
+    property alias app: root
 
     // Application main font
     font.family: Settings.font || appFont.name
@@ -32,11 +36,47 @@ ApplicationWindow {
     minimumHeight: 480
     minimumWidth: 480
 
+    Labs.Settings {
+        id: windowSettings
+        property var windowX
+        property var windowY
+        property var windowWidth
+        property var windowHeight
+        property var windowVisibility
+        function update() {
+            Qt.callLater(function() {
+                if (visibility === Window.Windowed) {
+                    windowX = x
+                    windowY = y
+                    windowWidth = width
+                    windowHeight = height
+                }
+                windowVisibility = visibility
+            })
+        }
+        Component.onCompleted: {
+            if (isMobile()) return
+            if (visibility === Window.Windowed) {
+                x = windowX !== undefined ? windowX : x
+                y = windowY !== undefined ? windowY : y
+                width = windowWidth !== undefined ? windowWidth : width
+                height = windowHeight !== undefined ? windowHeight : height
+                visibility = windowVisibility === Window.Maximized ? windowVisibility : visibility
+            }
+            root.onXChanged.connect(update)
+            root.onYChanged.connect(update)
+            root.onWidthChanged.connect(update)
+            root.onHeightChanged.connect(update)
+            root.onVisibilityChanged.connect(update)
+        }
+    }
+
     // Style settings
     Material.theme: Settings.lightTheme ? Material.Light : Material.Dark
 
     title: "Orion"
-    visibility: Window.AutomaticVisibility
+
+    visibility: (!isMobile() && Settings.minimizeOnStartup) ? Window.Minimized : Window.AutomaticVisibility
 
     property int restoredVisibility: Window.AutomaticVisibility
     onAppFullScreenChanged: {
@@ -45,12 +85,16 @@ ApplicationWindow {
         }
         visibility = appFullScreen ? Window.FullScreen : restoredVisibility
     }
+    onVisibilityChanged: {
+        if (!isMobile()) {
+            appFullScreen = visibility === Window.FullScreen
+        }
+    }
 
     property variant rootWindow: root
     property variant g_tooltip
     property bool g_contextMenuVisible: false
     property bool appFullScreen: isMobile() ? (view.playerVisible && !isPortraitMode) : false
-    property var chat: chatdrawer.chat
     property bool isPortraitMode: Screen.primaryOrientation === Qt.PortraitOrientation
                                   || Screen.primaryOrientation === Qt.InvertedPortraitOrientation
 
@@ -59,57 +103,32 @@ ApplicationWindow {
     }
 
     function isMobile() {
-        return Qt.platform.os === "android"
+        return {android: true, ios: true, winphone: true}[Qt.platform.os] || false;
     }
 
     onClosing: {
-        if (!Settings.closeToTray) {
-            Qt.quit()
-        }
+        Qt.quit()
     }
 
-    ChatDrawer {
-        id: chatdrawer
-    }
-
+    property alias view: view
     Views {
         id: view
-        anchors {
-            fill: parent
-            leftMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-            rightMargin: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
-            bottomMargin: chatdrawer.isBottom && chatdrawer.position > 0 ? chatdrawer.height : 0
-        }
 
-        onCurrentIndexChanged: {
-            if (chatdrawer.isBottom) {
-                if (!playerVisible)
-                    chatdrawer.close()
-                else if (isMobile()) {
-                    if (isPortraitMode)
-                        chatdrawer.open()
-                }
-            }
-        }
+        currentIndex: topbar.currentIndex
 
-        onRequestSelectionChange: {
-            topbar.setView(index)
-        }
+        anchors.fill: parent
+
     }
 
     header: TopBar {
         id: topbar
-        onSelectedViewChanged: {
-            view.setSelection(selectedView)
-        }
+        currentIndex: view.currentIndex
     }
 
     footer: ToolBar {
         id: connectionErrorRectangle
-        leftPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.LeftEdge ? chatdrawer.width : 0
-        rightPadding: !chatdrawer.interactive && chatdrawer.edge === Qt.RightEdge ? chatdrawer.width : 0
         Material.background: Material.Primary
-        visible: !Network.up
+        visible: !Network.up && !view.isItemInView(view.playerView)
 
         Label {
             anchors.centerIn: parent
@@ -118,9 +137,16 @@ ApplicationWindow {
     }
 
     Component.onCompleted: {
+        // remove binding. this is required to allow proper behaviour with Settings.minimizeOnStartup
+        visibility = visibility
+
         if (!isMobile()) {
-            var component = Qt.createComponent("components/Tooltip.qml")
-            g_tooltip = component.createObject(root)
+            var component = Qt.createComponent("components/GridTooltip.qml")
+            if(component.status === Component.Ready) {
+                g_tooltip = component.createObject(root)
+            } else {
+                console.error(component.errorString())
+            }
         }
 
         console.log("Pixel density", Screen.pixelDensity)
@@ -129,7 +155,11 @@ ApplicationWindow {
         console.log("Orientation", Screen.orientation)
 
         //Initial view
-        topbar.setView(1)
+        if (!Settings.hasAccessToken) {
+            topbar.setCurrentIndex(5)
+        } else {
+            topbar.setCurrentIndex(1)
+        }
 
         //Check version
         if (Settings.versionCheckEnabled) {
@@ -180,9 +210,65 @@ ApplicationWindow {
         name: "Noto Sans"
     }
 
-    Loader {
-        active: !isMobile()
-        sourceComponent: AppTray{}
+    Popup {
+        id: dialog
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+        modal: true
+        dim: true
+        property string text
+        property var callback
+        function showMessage(message, accepted) {
+            text = message
+            callback = accepted
+            dialog.open()
+        }
+        background: Pane { Material.elevation: 13 }
+        function accept() {
+            if (callback) callback()
+            dialog.close()
+        }
+        ColumnLayout {
+            Label {
+                font.bold: true
+                font.pointSize: 13
+                Layout.fillWidth: true
+                text: dialog.text
+            }
+            RowLayout {
+                spacing: 5
+                Item { Layout.fillWidth: true }
+                Button { text: "No"; onPressed: dialog.close() }
+                Button {
+                    text: "Yes";
+                    onPressed: dialog.accept()
+                    focus: true
+                    Keys.onReturnPressed: accept()
+                    Keys.onEnterPressed: accept()
+                }
+            }
+        }
+
+    }
+
+    function addToFavourites(channel, callback) {
+        dialog.showMessage("Do you want to follow " + (channel.name || "this channel") + "?", function() {
+            ChannelManager.addToFavourites(channel._id, channel.name,
+                                                       channel.title, channel.info,
+                                                       channel.logo, channel.preview,
+                                                       channel.game, channel.viewers,
+                                                       channel.online)
+            channel.favourite = true
+            if (callback) callback()
+        })
+    }
+
+    function removeFromFavourites(channel, callback) {
+        dialog.showMessage("Do you want to stop following " + (channel.name || "this channel") + "?", function() {
+            ChannelManager.removeFromFavourites(channel._id)
+            channel.favourite = false
+            if (callback) callback()
+        })
     }
 
     Connections{

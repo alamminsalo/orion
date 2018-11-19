@@ -16,6 +16,7 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.3
+import Qt.labs.settings 1.0 as Labs
 import "../components"
 import "../util.js" as Util
 
@@ -23,6 +24,8 @@ import app.orion 1.0
 
 Page {
     id: root
+
+    anchors.fill: parent
     property bool pinned: pinBtn.checked && chatdrawer.position > 0
     property alias hasUnreadMessages: chatList.hasUnreadMessages
 
@@ -30,8 +33,18 @@ Page {
         if (visible && !isMobile()) {
             _input.forceActiveFocus()
         } else {
-            _emotePicker.visible = false;
+            _emotePicker.startClosing();
         }
+    }
+
+    function addEmoteToChat(emoteName) {
+        _input.remove(_input.selectionStart, _input.selectionEnd);
+        var textToAdd = emoteName + " ";
+        var existingText = _input.getText(0, _input.selectionEnd);
+        if (existingText !== "" && existingText.charAt(existingText.length - 1) !== " ") {
+            textToAdd = " " + textToAdd;
+        }
+        _input.insert(_input.selectionEnd, textToAdd);
     }
 
     function cleanupPrevChannel() {
@@ -137,20 +150,11 @@ Page {
         }
     }
 
-    Connections {
-        target: rootWindow
-
-        onHeightChanged: {
-            chatList.positionViewAtEnd()
-        }
-    }
-
-
     // Tab bar header for switching chat/viewers
     header: ToolBar {
         Material.theme: rootWindow.Material.theme
         Material.background: rootWindow.Material.background
-        visible: Settings.chatEdge !== 2
+        visible: Settings.chatEdge < 2
         RowLayout {
             anchors.fill: parent
         ToolButton {
@@ -159,6 +163,9 @@ Page {
             font.family: "Material Icons"
             focusPolicy: Qt.NoFocus
             text: checked ? "\ue897" : "\ue898"
+            Labs.Settings {
+                property alias chatPinned: pinBtn.checked
+            }
         }
 
         TabBar {
@@ -169,11 +176,13 @@ Page {
 
             TabButton {
                 text: "\ue0b7"
+                focusPolicy: Qt.NoFocus
                 onClicked: chatContainer.currentIndex = 0
             }
 
             TabButton {
                 text: "\ue7fb"
+                focusPolicy: Qt.NoFocus
                 onClicked: chatContainer.currentIndex = 1
             }
         }
@@ -192,78 +201,12 @@ Page {
             id: viewerList
         }
 
-        EmotePicker {
-            id: _emotePicker
-
-            visible: false
-            height: 0
-
-            devicePixelRatio: Settings.hiDpi() ? 2.0 : 1.0
-
-            onVisibleChanged: {
-                if (visible) {
-                    focusFilterInput();
-                    height = Math.min(320, parent.height)
-                }
-                else {
-                    if (!isMobile() && _input.visible)
-                        _input.forceActiveFocus()
-                }
-            }
-
-            function startClosing() {
-                //visible = false;
-                height = 0;
-                _emotePickerCloseTimer.start();
-            }
-
-            onCloseRequested: {
-                startClosing();
-                _input.focus = true;
-            }
-
-            Behavior on height {
-                NumberAnimation {
-                    duration: 200
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Timer {
-                id: _emotePickerCloseTimer
-                interval: 200
-                repeat: false
-                onTriggered: {
-                    _emotePicker.visible = false
-                }
-            }
-
-            //            color: "#ffffff"
-
-            anchors {
-                bottom: parent.bottom
-                left: parent.left
-                right: parent.right
-            }
-
-            model: _emoteButton.setsVisible
-
-            filterTextProperty: "emoteName"
-
-            onItemClicked: {
-                var item = _emoteButton.setsVisible.get(index);
-                _emoteButton.addEmoteToChat(item.emoteName);
-            }
-
-            onMoveFocusDown: {
-                _input.forceActiveFocus();
-            }
-        }
-
         Chat {
             id: chat
 
             property variant colors:[]
+            property variant originalColors:[]
+
             property string emoteDirPath
             property variant lastEmoteSetIDs
             property variant lastEmoteSets
@@ -298,6 +241,15 @@ Page {
                     chat.lastBttvChannelEmotes = emotesByCode;
                 } else {
                     //console.log("bttv emotes loaded for a different channel", channel);
+                }
+            }
+
+            onChannelChanged: {
+                if (!channel) return
+                var streamer = channel.toLowerCase();
+                if (!originalColors[streamer]) {
+                    originalColors[streamer] = Qt.rgba(0.97, 0.26, 0.26, 1)
+                    colors[streamer] = Settings.pastelColors ? convertToPastel(originalColors[streamer]) : originalColors[streamer]
                 }
             }
 
@@ -348,6 +300,37 @@ Page {
                 return null;
             }
 
+            function convertToPastel(color) {
+                //convert string to qml color
+                color = Qt.lighter(color, 1);
+                var h = color.hslHue, s = color.hslSaturation, l = color.hslLightness, a = color.a;
+                //adjust saturation to range 0.3 - 0.8
+                s = s * 0.5 + 0.3;
+                // adjust brightness to create minimum contrast of 0.3 hsl-lightness from background
+                var offset;
+                if (Material.background.hslLightness < 0.5) {
+                    offset = Material.background.hslLightness + 0.3
+                    l = l * (1.0 - offset) + offset;
+                } else {
+                    offset = Material.background.hslLightness - 0.3;
+                    l = l * offset;
+                }
+                return Qt.hsla(h, s, l, a)
+            }
+
+            Connections {
+                target: Settings
+                function updateColors() {
+                    var newColors = []
+                    for (var u in chat.originalColors) {
+                        newColors[u] = Settings.pastelColors ? chat.convertToPastel(chat.originalColors[u]) : chat.originalColors[u]
+                    }
+                    chat.colors = newColors; //invalidate all old colors
+                }
+                onLightThemeChanged: updateColors()
+                onPastelColorsChanged: updateColors()
+            }
+
             onSetEmotePath: {
                 emoteDirPath = value
             }
@@ -355,17 +338,12 @@ Page {
             onMessageReceived: {
                 if (debugOutput) console.log("ChatView chat override onMessageReceived; typeof message " + typeof(message) + " toString: " + message.toString());
 
-                if (chatColor != "") {
-                    colors[user] = chatColor;
-                }
+                var u = user.toLowerCase();
 
-                if (!colors[user]) {
-                    colors[user] = Util.getRandomColor()
-                }
+                originalColors[u] = chatColor || originalColors[u] || Util.getRandomColor()
+                colors[u] = Settings.pastelColors ? convertToPastel(originalColors[u]) : originalColors[u]
 
-                // ListElement doesn't support putting in an array value, ugh.
-                var serializedMessage = JSON.stringify(message);
-                if (debugOutput) console.log("onMessageReceived: passing: " + serializedMessage);
+                if (debugOutput) console.log("onMessageReceived: passing: " + JSON.stringify(message));
 
                 var badgeEntries = [];
                 var imageFormatToUse = "image";
@@ -427,10 +405,7 @@ Page {
                     }
                 }
 
-                var jsonBadgeEntries = JSON.stringify(badgeEntries);
-
-                chatList.chatModel.append({"user": user, "message": serializedMessage, "isAction": isAction, "jsonBadgeEntries": jsonBadgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
-                chatList.scrollbuf = 6
+                chatList.chatModel.addMessage({"user": user, "message": message, "isAction": isAction, "badgeEntries": badgeEntries, "isChannelNotice": isChannelNotice, "systemMessage": systemMessage, "isWhisper": isWhisper})
             }
 
             onEmoteSetIDsChanged: {
@@ -482,33 +457,158 @@ Page {
         visible: chatContainer.currentIndex === 0 && !chat.isAnonymous
         padding: 5
 
-        RowLayout {
+        ColumnLayout {
             anchors.fill: parent
 
-            TextField {
-                id: _input
-                placeholderText: "Send your message"
+            EmotePicker {
+                id: _emotePicker
+                Layout.fillHeight: true
                 Layout.fillWidth: true
+                property real preferredHeight: 0
+                Layout.preferredHeight: preferredHeight
+                Layout.preferredWidth: parent.width
+                clip: true
+                focus: true
 
-                Keys.onUpPressed: {
-                    if (_emotePicker.visible) {
-                        _emotePicker.focusEntersFromBottom();
-                    } else {
-                        _emotePicker.visible = true
+                visible: preferredHeight > 0
+
+                //devicePixelRatio: Settings.hiDpi() ? 2.0 : 1.0
+
+                function startClosing() {
+                    preferredHeight = 0;
+                    if (!isMobile() && _input.visible)
+                        _input.forceActiveFocus()
+                }
+
+                function show() {
+                    focusFilterInput();
+                    preferredHeight = 320
+                }
+
+                onCloseRequested: {
+                    startClosing();
+                    _input.forceActiveFocus();
+                }
+
+                Behavior on preferredHeight {
+                    NumberAnimation {
+                        id: preferredHeightAnimation
+                        duration: 200
+                        easing.type: Easing.OutCubic
                     }
                 }
 
-                onAccepted: {
-                    _emotePicker.startClosing()
+                //            color: "#ffffff"
 
-                    if (_input.text.trim().length > 0)
-                        sendMessage()
+                model: _emoteButton.setsVisible
+
+                filterTextProperty: "emoteName"
+
+                onItemClicked: {
+                    var item = _emoteButton.setsVisible.get(index);
+                    addEmoteToChat(item.emoteName);
+                }
+
+                onMoveFocusDown: {
+                    _input.forceActiveFocus();
                 }
             }
 
-            EmoteSelector {
-                id: _emoteButton
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.preferredWidth: parent.width
+                Layout.alignment: Qt.AlignBottom
+
+                TextArea {
+                    id: _input
+                    placeholderText: "Send your message"
+                    selectByMouse: true
+                    wrapMode: TextEdit.Wrap
+                    activeFocusOnTab: true
+
+                    Layout.fillWidth: true
+
+                    TextMenu { }
+
+                    Keys.onUpPressed: {
+                        var selectedFirstLine = !getText(0, selectionStart).match('[\r\n]')
+                        if (event.modifiers === Qt.NoModifier) {
+                            if (selectedFirstLine) {
+                                if (!_emotePicker.visible) {
+                                    _emotePicker.show();
+                                }
+                                _emotePicker.focusEntersFromBottom();
+                            } else {
+                                event.accepted = false
+                            }
+                        } else if (event.modifiers === Qt.ShiftModifier) {
+                            if (selectedFirstLine) {
+                                _input.select(0, selectionEnd);
+                            } else {
+                                event.accepted = false;
+                            }
+                        } else {
+                            event.accepted = false;
+                        }
+                    }
+
+                    Keys.onDownPressed: {
+                        if (selectionStart !== selectionEnd) {
+                            _input.select(selectionEnd, selectionEnd)
+                        } else {
+                            event.accepted = false
+                        }
+                    }
+
+                    Keys.onTabPressed: {
+                        if (!_emotePicker.visible) {
+                            _emotePicker.show();
+                        }
+                        _emotePicker.focusFilterInput();
+                    }
+
+                    // will not work right now because of https://bugreports.qt.io/browse/QTBUG-68711
+                    Keys.onShortcutOverride: {
+                        event.accepted = true
+                    }
+
+                    Keys.onEscapePressed: {
+                        _emotePicker.startClosing()
+                    }
+
+                    onTextChanged: {
+                        text = text.replace(/^[\n\r\s]+/g, '');
+                    }
+
+                    function _onReturnPressed(event) {
+                        if (!(event.modifiers & Qt.ShiftModifier)) {
+                            if (!(event.modifiers & Qt.ControlModifier)) {
+                                _emotePicker.startClosing()
+                            }
+
+                            text = text.trim()
+                            if (_input.text.length > 0)
+                                sendMessage()
+                        } else {
+                            if (text.length > 0) {
+                                remove(selectionStart, selectionEnd)
+                                insert(selectionEnd, "\r\n")
+                            }
+                        }
+                        event.accepted = true
+                    }
+
+                    Keys.onReturnPressed: _onReturnPressed(event)
+                    Keys.onEnterPressed: _onReturnPressed(event)
+
+                }
+
+                EmoteSelector {
+                    id: _emoteButton
+                }
             }
         }
+
+
     }
 }

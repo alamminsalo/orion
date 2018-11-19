@@ -8,6 +8,7 @@ ToolBar {
     id: root
     padding: 20
     height: searchBtn.checked ? implicitHeight : 0
+
     Material.theme: rootWindow.Material.theme
     Material.background: rootWindow.Material.background
 
@@ -21,6 +22,9 @@ ToolBar {
             easing.type: Easing.OutCubic
         }
     }
+
+    // Workaround when resizing window and height == 0, Layout will not be updated otherwise
+    onWidthChanged: spacer.maximumWidth = width
     
     RowLayout {
         anchors.fill: parent
@@ -28,31 +32,37 @@ ToolBar {
             id: _input
             onAccepted: submit()
             inputMethodHints: Qt.ImhNoPredictiveText
+            selectByMouse: true
             Layout.fillWidth: true
-            visible: root.height === root.implicitHeight
+            visible: searchBtn.checked
             font.pointSize: 16
             onVisibleChanged:  {
-                focus = visible
+                if (visible)
+                    forceActiveFocus()
             }
             maximumLength: 48
         }
-        
+
         Item {
+            id: spacer
             Layout.fillWidth: true
-            visible : !_input.visible
+            property real maximumWidth: 0
+            Component.onCompleted: maximumWidth = parent.width
+            Layout.maximumWidth: maximumWidth
+            visible: !_input.visible
         }
 
         IconButtonFlat {
             id: clearBtn
+            Layout.alignment: Qt.AlignRight
             text: "\ue14c"
             visible: _input.visible && _input.text.length > 0
             onClicked: _input.clear()
         }
-        
+
         RoundButton {
+            Layout.alignment: Qt.AlignRight
             id: searchBtn
-            anchors.top: parent.top
-            anchors.right: parent.right
             text: "\ue8b6"
             Material.foreground: "#fff"
             font.pointSize: 20
@@ -60,9 +70,10 @@ ToolBar {
             font.family: "Material Icons"
             checkable: true
             checked: false
+            focusPolicy: Qt.NoFocus
 
             onClicked: {
-                if (!checked && isMobile()) {
+                if (!checked) {
                     submit()
                 }
             }

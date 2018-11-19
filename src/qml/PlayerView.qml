@@ -16,6 +16,8 @@ import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
 import QtQuick.Layouts 1.1
+import Qt.labs.settings 1.0 as Labs
+
 import "components"
 import "util.js" as Util
 
@@ -23,6 +25,11 @@ import app.orion 1.0
 
 Page {
     id: root
+
+    leftPadding: chatdrawer.edge === Qt.LeftEdge && !chatdrawer.interactive ? chatdrawer.position * chatdrawer.width : 0
+    rightPadding: chatdrawer.edge === Qt.RightEdge && !chatdrawer.interactive ? chatdrawer.position * chatdrawer.width : 0
+    bottomPadding: chatdrawer.edge === Qt.BottomEdge ? chatdrawer.position * chatdrawer.height : 0
+    topPadding: chatdrawer.edge === Qt.TopEdge ? chatdrawer.position * chatdrawer.height : 0
 
     property int duration: -1
     property var currentChannel
@@ -32,14 +39,6 @@ Page {
     property string curVodId
     property int lastSetPosition
     property bool headersVisible: true
-
-    onHeadersVisibleChanged: {
-        if (root.visible) {
-            pArea.hoverEnabled = false
-            topbar.visible = headersVisible
-            disableTimer.restart()
-        }
-    }
 
     Material.theme: rootWindow.Material.theme
 
@@ -55,17 +54,15 @@ Page {
 
         onAddedChannel: {
             console.log("Added channel")
-            if (currentChannel && currentChannel._id == chanid){
+            if (currentChannel && currentChannel._id === chanid){
                 currentChannel.favourite = true
-                favBtn.update()
             }
         }
 
         onDeletedChannel: {
             console.log("Deleted channel")
-            if (currentChannel && currentChannel._id == chanid){
+            if (currentChannel && currentChannel._id === chanid){
                 currentChannel.favourite = false
-                favBtn.update()
             }
         }
 
@@ -99,9 +96,17 @@ Page {
             switch (error) {
 
             case "token_error":
+                setHeaderText("Token issue. Error getting stream")
+                break;
             case "playlist_error":
-                //Display messagetrue
-                setHeaderText("Error getting stream")
+                //Todo: verify message
+                if (isVod) {
+                    setHeaderText("Unavailable: " + getWatchingTitle())
+                } else if (currentChannel) {
+                    setHeaderText("Offline: " + getWatchingTitle())
+                } else {
+                    setHeaderText("Error getting stream")
+                }
                 break;
 
             default:
@@ -123,6 +128,8 @@ Page {
 
 
     function loadAndPlay(){
+        if (!streamMap) return
+
         var description = setWatchingTitle();
 
         var start = !isVod ? -1 : seekBar.value
@@ -132,6 +139,7 @@ Page {
         console.debug("Loading: ", url)
 
         renderer.load(url, start, description)
+        renderer.setVolume(volumeSlider.value)
     }
 
     function getStreams(channel, vod, startPos){
@@ -186,7 +194,6 @@ Page {
             "seekPreviews": isVod ? vod.seekPreviews : "",
         }
 
-        favBtn.update()
         setWatchingTitle()
 
         if (isVod) {
@@ -199,10 +206,10 @@ Page {
             } else {
                 var vodIdNum = parseInt(vod._id.substring(1));
                 console.log("replaying chat for vod", vodIdNum, "starting at", startEpochTime);
-                chat.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
+                chatdrawer.chat.replayChat(currentChannel.name, currentChannel._id, vodIdNum, startEpochTime, startPos);
             }
         } else {
-            chat.joinChannel(currentChannel.name, currentChannel._id);
+            chatdrawer.chat.joinChannel(currentChannel.name, currentChannel._id);
         }
 
         pollTimer.restart()
@@ -214,15 +221,18 @@ Page {
         title.text = text
     }
 
-    function setWatchingTitle(){
-	var description = ""
-	if (currentChannel) {
-	  description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
-		  + (currentChannel.game ? " playing " + currentChannel.game : "")
-		  + (isVod ? " (VOD)" : "");
-	  setHeaderText(description);
-	}
-	return description;
+    function getWatchingTitle() {
+        var description = ""
+        if (currentChannel) {
+            description = currentChannel.title + (isVod ? ("\r\n" + currentChannel.name) : "")
+                    + (currentChannel.game ? " playing " + currentChannel.game : "")
+                    + (isVod ? " (VOD)" : "");
+        }
+        return description;
+    }
+
+    function setWatchingTitle() {
+        setHeaderText(getWatchingTitle());
     }
 
     function loadStreams(streams) {
@@ -241,7 +251,7 @@ Page {
     function seekTo(position) {
         console.log("Seeking to", position, duration)
         if (isVod){
-            chat.playerSeek(position)
+            chatdrawer.chat.playerSeek(position)
             renderer.seekTo(position)
         }
     }
@@ -270,7 +280,7 @@ Page {
 
         onPositionChanged: {
             var newPos = renderer.position;
-            chat.playerPositionUpdate(newPos);
+            chatdrawer.chat.playerPositionUpdate(newPos);
             if (root.isVod) {
                 if (Math.abs(newPos - root.lastSetPosition) > 10) {
                     root.lastSetPosition = newPos;
@@ -287,11 +297,11 @@ Page {
         }
 
         onPlayingPaused: {
-            setHeaderText("Paused")
+            setHeaderText("Paused: " + getWatchingTitle());
         }
 
         onPlayingStopped: {
-            setHeaderText("Playback stopped")
+            setHeaderText("Stopped: " + getWatchingTitle());
         }
 
         onStatusChanged: {
@@ -373,8 +383,7 @@ Page {
         context: Qt.ApplicationShortcut
         onActivated: {
             if (!isVod || seekBar.pressed) return
-            seekBar.seek(seekBar.value + 5)
-            var totalSeek = seekBar.value - renderer.position
+            var totalSeek = seekBar.seekAdvance(5)
             clickRect.show((totalSeek > 0 ? "+" : "") + totalSeek + "s")
         }
     }
@@ -384,8 +393,7 @@ Page {
         context: Qt.ApplicationShortcut
         onActivated: {
             if (!isVod || seekBar.pressed) return
-            seekBar.seek(seekBar.value - 5)
-            var totalSeek = seekBar.value - renderer.position
+            var totalSeek = seekBar.seekAdvance(-5)
             clickRect.show((totalSeek > 0 ? "+" : "") + totalSeek + "s")
         }
     }
@@ -394,12 +402,20 @@ Page {
         id: playerArea
         anchors.fill: parent
 
+        Keys.onShortcutOverride: {
+            event.accepted = false
+        }
+
+        Keys.onTabPressed: {
+            chatdrawer.forceActiveFocus()
+        }
+
         Loader {
             id: loader
             anchors.fill: parent
 
             source: {
-                switch (Settings.appPlayerBackend()) {
+                switch (Settings.backend) {
                 case "mpv":
                     return "MpvBackend.qml";
 
@@ -410,6 +426,10 @@ Page {
                 default:
                     return "MultimediaBackend.qml";
                 }
+            }
+
+            onSourceChanged: {
+                loadAndPlay()
             }
 
             onLoaded: {
@@ -423,7 +443,7 @@ Page {
             blur: 2
             visible: opacity > 0
             opacity: 0
-            Behavior on opacity { PropertyAnimation { easing: Easing.InOutCubic } }
+            Behavior on opacity { PropertyAnimation { easing.type: Easing.InOutCubic } }
 
             Connections {
                 target: seekBar
@@ -453,6 +473,8 @@ Page {
         }
 
         BusyIndicator {
+            visible: running
+            hoverEnabled: false
             anchors.centerIn: parent
             running: renderer.status === "BUFFERING"
         }
@@ -467,19 +489,11 @@ Page {
                 root.headersVisible = true
             hideTimer.restart()
         }
-	
-        Timer {
-            id: disableTimer
-            interval: 200
-            running: false
-            onTriggered:{
-                pArea.hoverEnabled = true
-            }
-        }
 
+        onReleased: playerArea.forceActiveFocus()
         onVisibleChanged: refreshHeaders()
         onPositionChanged: refreshHeaders()
-
+        
         Rectangle {
             id: clickRect
             anchors.centerIn: parent
@@ -537,15 +551,19 @@ Page {
         }
 
         onClicked: {
-            clickRect.run()
-            clickTimer.restart()
+            if (Settings.clickTogglePause) {
+                clickRect.run()
+                clickTimer.restart()
+            }
             refreshHeaders()
         }
         onDoubleClicked: {
             if (!isMobile()) {
                 clickTimer.stop()
                 clickRect.abort();
+                interactive = false /* avoid accidental view flicking */
                 appFullScreen = !appFullScreen
+                interactive = true
             }
         }
         hoverEnabled: true
@@ -573,7 +591,7 @@ Page {
                 if (renderer.status === "PAUSED" || renderer.status === "STOPPED") return
 
                 // Bug?: MouseArea doesn't work over Controls
-                var controls = [ favBtn, chatBtn, playBtn, resetBtn, volumeBtn, volumeSlider, seekBar, hwaccelBox, sourcesBox, cropBtn, fsBtn];
+                var controls = [ favBtn, chatBtn, playBtn, resetBtn, volumeBtn, volumeSlider, seekBar, sourcesBox, cropBtn, fsBtn];
                 for (var i = 0; i < controls.length; i++) {
                     if (controls[i].hovered || controls[i].pressed || controls[i].down)
                         return;
@@ -632,22 +650,18 @@ Page {
                 IconButtonFlat {
                     id: favBtn
                     text: "\ue87d"
-
-                    function update() {
-                        highlighted = currentChannel.favourite === true
-                    }
+                    highlighted: currentChannel !== undefined && currentChannel.favourite === true
 
                     onClicked: {
                         if (currentChannel){
                             if (currentChannel.favourite)
-                                ChannelManager.removeFromFavourites(currentChannel._id)
+                                app.removeFromFavourites(currentChannel, function() {
+                                    currentChannel = currentChannel
+                                })
                             else{
-                                //console.log(currentChannel)
-                                ChannelManager.addToFavourites(currentChannel._id, currentChannel.name,
-                                                               currentChannel.title, currentChannel.info,
-                                                               currentChannel.logo, currentChannel.preview,
-                                                               currentChannel.game, currentChannel.viewers,
-                                                               currentChannel.online)
+                                app.addToFavourites(currentChannel, function() {
+                                    currentChannel = currentChannel
+                                })
                             }
                         }
                     }
@@ -662,7 +676,7 @@ Page {
                         else
                             chatdrawer.close()
                     }
-                    text: chat.hasUnreadMessages ? "\ue87f" : "\ue0ca"
+                    text: chatdrawer.hasUnreadMessages ? "\ue87f" : "\ue0ca"
                 }
             }
         }
@@ -702,6 +716,7 @@ Page {
                 to: duration
                 visible: isVod && headersVisible
                 padding: 0
+                focusPolicy: Qt.NoFocus
                 hoverEnabled: true
                 clip: true
 
@@ -738,23 +753,25 @@ Page {
                 property real prev: 0
                 onValueChanged: {
                     if (seekTimer.running)
-                        value = seekTimer.to
+                        value = renderer.position + seekTimer.offset
                 }
 
                 Timer {
                     id: seekTimer
                     interval: 500
                     repeat: false
-                    property real to: 0
+                    property real offset: 0
                     onTriggered: {
-                        seekTo(seekBar.value);
+                        seekTo(renderer.position + offset);
+                        offset = 0
                     }
                 }
 
-                function seek(val) {
-                    seekTimer.to = val
-                    value = val
+                function seekAdvance(val) {
+                    seekTimer.offset += val
+                    value = renderer.position + seekTimer.offset
                     seekTimer.restart()
+                    return seekTimer.offset
                 }
 
                 MouseArea {
@@ -779,7 +796,7 @@ Page {
 
                 visible: opacity > 0
                 opacity: (seekBar.hovered || seekBar.pressed) ? 1 : 0
-                Behavior on opacity { PropertyAnimation { easing: Easing.InCubic } }
+                Behavior on opacity { PropertyAnimation { easing.type: Easing.InCubic } }
 
                 ColumnLayout {
                     id: seekTooltip
@@ -880,9 +897,10 @@ Page {
                     width: 0
                     opacity: 0
                     visible: !isMobile()
+                    focusPolicy: Qt.NoFocus
                     Layout.maximumWidth: width
                     hoverEnabled: true
-
+                    
                     Behavior on width { PropertyAnimation { easing.type: Easing.InOutQuad } }
                     Behavior on opacity { PropertyAnimation { easing.type: Easing.InOutQuad } }
 
@@ -948,44 +966,8 @@ Page {
 
 
                 ComboBox {
-                    id: hwaccelBox
-                    font.pointSize: 9
-                    font.bold: true
-                    focusPolicy: Qt.NoFocus
-                    flat: true
-                    Layout.fillWidth: true
-                    Layout.maximumWidth: 140
-                    Layout.minimumWidth: 100
-                    visible: renderer.getDecoder().length > 1
-
-                    onCurrentIndexChanged: {
-                        renderer.setDecoder(currentIndex)
-                        loadAndPlay()
-                        Settings.decoder = hwaccelBox.model[currentIndex]
-                        pArea.refreshHeaders()
-                    }
-
-                    Component.onCompleted: {
-                        var decoder = renderer.getDecoder()
-                        hwaccelBox.model = decoder
-                        selectItem(Settings.decoder)
-                        renderer.setDecoder(currentIndex)
-                    }
-
-                    function selectItem(name) {
-                        for (var i in hwaccelBox.model) {
-                            if (hwaccelBox.model[i] === name) {
-                                currentIndex = i;
-                                return;
-                            }
-                        }
-                        //None found, attempt to select first item
-                        currentIndex = 0
-                    }
-                }
-
-                ComboBox {
                     id: sourcesBox
+                    visible: !!model && model.length > 1
                     font.pointSize: 9
                     font.bold: true
                     focusPolicy: Qt.NoFocus
@@ -994,10 +976,12 @@ Page {
                     Layout.maximumWidth: 140
                     Layout.minimumWidth: 100
 
-                    onCurrentIndexChanged: {
-                        Settings.quality = sourcesBox.model[currentIndex]
-                        loadAndPlay()
-                        pArea.refreshHeaders()
+                    onActivated: {
+                        if (Settings.quality !== sourcesBox.model[currentIndex]) {
+                            Settings.quality = sourcesBox.model[currentIndex]
+                            loadAndPlay()
+                            pArea.refreshHeaders()
+                        }
                     }
 
                     function selectItem(name) {
@@ -1014,7 +998,7 @@ Page {
 
                 IconButtonFlat {
                     id: cropBtn
-                    visible: !appFullScreen && !isMobile() && !chat.visible && parent.width > 440
+                    visible: !appFullScreen && !isMobile() && !chatdrawer.visible && parent.width > 440
                     text: "\ue3bc"
                     onClicked: fitToAspectRatio()
                 }
@@ -1026,6 +1010,15 @@ Page {
                     onClicked: appFullScreen = !appFullScreen
                 }
             }
+        }
+    }
+
+    ChatDrawer {
+        parent: root
+        id: chatdrawer
+        Labs.Settings {
+            property alias chatVisible: chatdrawer.opened
+            property alias chatWidth: chatdrawer.width
         }
     }
 }

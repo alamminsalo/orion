@@ -46,6 +46,7 @@ NetworkManager::NetworkManager(QNetworkAccessManager *man) : QObject(man)
 
     //Set up listening to access token changes
     connect(SettingsManager::getInstance(), &SettingsManager::accessTokenChanged, this, &NetworkManager::setAccessToken);
+    setAccessToken(SettingsManager::getInstance()->accessToken());
 
     lastVodChatRequest = nullptr;
 }

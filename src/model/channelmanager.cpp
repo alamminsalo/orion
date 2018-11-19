@@ -13,6 +13,7 @@
  */
 
 #include "channelmanager.h"
+#include <QCoreApplication>
 
 ChannelManager *ChannelManager::instance = 0;
 
@@ -54,6 +55,11 @@ ChannelManager::ChannelManager() :
 
     //Start polling timer, setting id as property
     setProperty("pollTimer", startTimer(30000, Qt::VeryCoarseTimer));
+
+
+    if (SettingsManager::getInstance()->hasAccessToken()) {
+        updateAccessToken(SettingsManager::getInstance()->accessToken());
+    }
 }
 
 ChannelManager *ChannelManager::getInstance() {
@@ -190,7 +196,7 @@ ChannelListModel *ChannelManager::getResultsModel() const
 }
 
 void ChannelManager::load(){
-    QSettings settings("orion.application", "Orion");
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
     int size = settings.beginReadArray("channels");
     if (size > 0) {
@@ -212,7 +218,7 @@ void ChannelManager::load(){
 
 void ChannelManager::save()
 {
-    QSettings settings("orion.application", "Orion");
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
 
     if (!settings.isWritable())
         qDebug() << "Error: settings file not writable";

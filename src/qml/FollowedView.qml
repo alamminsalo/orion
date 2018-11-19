@@ -19,8 +19,9 @@ import "components"
 ChannelGrid {
     id: favourites
 
-    onVisibleChanged: {
-        if (visible) {
+    property bool itemInView: isItemInView(this)
+    onItemInViewChanged: {
+        if (itemInView) {
             ChannelManager.getFollowedChannels()
         }
     }

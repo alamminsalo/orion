@@ -25,14 +25,21 @@ GridView {
     signal updateTriggered()
     signal itemClicked(int index, Item clickedItem)
     signal itemRightClicked(int index, Item clickedItem, real mX, real mY)
-    signal itemTooltipHover(Item item, real mX, real mY)
+    signal itemTooltipHover(Item item, var getPosition)
     signal itemDoubleClicked(int index, Item clickedItem)
 
     highlightFollowsCurrentItem: false
     cellWidth: width / Math.floor(width / Math.min(190, width / 2)) - 1
     cellHeight: cellWidth
     maximumFlickVelocity: 1200
-    ScrollIndicator.vertical: ScrollIndicator {}
+    currentIndex: -1
+
+    ScrollIndicator.vertical: ScrollIndicator { visible: isMobile() }
+    ScrollBar.vertical: ResponsiveScrollBar {
+        id: scrollbar
+        visible: !isMobile()
+        scrollspeed: root.cellHeight / 2
+    }
 
     add: FadeUpTransition {}
 
@@ -47,10 +54,8 @@ GridView {
 
     function setFocus(){
         if (mArea.containsMouse) {
-            root.currentIndex = indexAt(contentX + mArea.mouseX, contentY + mArea.mouseY)
             if (tooltipEnabled)
                 tooltipTimer.restart()
-
         } else {
             if (g_tooltip)
                 g_tooltip.hide()
@@ -68,7 +73,7 @@ GridView {
             mY += p.y
             p = p.parent
         }
-        return {x: mX, y: mY}
+        return Qt.point(mX, mY)
     }
 
     RotatingButton {
@@ -95,6 +100,9 @@ GridView {
         tooltipTimer.stop()
     }
 
+    onContentXChanged: g_tooltip.hide()
+    onContentYChanged: g_tooltip.hide()
+
     MouseArea{
         id: mArea
         anchors.fill: parent
@@ -117,17 +125,14 @@ GridView {
             running: false
             repeat: false
             onTriggered: {
-                if (g_tooltip && tooltipEnabled){
-                    g_tooltip.hide()
+                if (g_tooltip && tooltipEnabled && !mArea.pressed){
+                    var pt = root.mapFromItem(mArea, mArea.mouseX, mArea.mouseY)
+                    pt = root.mapToItem(root, pt.x + root.contentX, pt.y + root.contentY)
 
-                    var mouseCoords = getMouseCoords()
-                    var mX = mouseCoords.x
-                    var mY = mouseCoords.y
-
-                    var item = root.itemAt(mX + root.contentX, mY + root.contentY)
+                    var item = root.itemAt(pt.x, pt.y)
 
                     if (item){
-                        root.itemTooltipHover(item, mX, mY);
+                        root.itemTooltipHover(item, getMouseCoords);
                     }
                 }
             }
@@ -146,19 +151,18 @@ GridView {
         }
 
         onClicked: {
-            // Note that click/press doesn't necessarily set grid's current item so we shouldn't use currentIndex
-            // TODO: rework this if something better than a single-point click solution is available for touchscreens
-            _ct.foo = function(){
-                var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
-                if (clickedIndex !== -1){
-                    var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
-                    if (mouse.button === Qt.LeftButton)
-                        itemClicked(clickedIndex, clickedItem)
-                    else if (mouse.button === Qt.RightButton){
-                        itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y)
-                    }
+            var foo;
+            var clickedIndex = indexAt(contentX + mouseX, contentY + mouseY);
+            root.currentIndex = clickedIndex;
+            if (clickedIndex !== -1){
+                var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
+                if (mouse.button === Qt.LeftButton) {
+                    foo = function(){ itemClicked(clickedIndex, clickedItem) }
+                } else if (mouse.button === Qt.RightButton){
+                    foo = function(){ itemRightClicked(clickedIndex, clickedItem, mouse.x, mouse.y) }
                 }
             }
+            _ct.foo = foo
             _ct.restart()
         }
 
@@ -169,8 +173,9 @@ GridView {
             var clickedIndex = indexAt(mouse.x + root.contentX, mouse.y + root.contentY);
             if (clickedIndex !== -1){
                 var clickedItem = itemAt(mouse.x + root.contentX, mouse.y + root.contentY);
-                if (mouse.button === Qt.LeftButton)
+                if (mouse.button === Qt.LeftButton) {
                     itemDoubleClicked(clickedIndex, clickedItem)
+                }
             }
         }
 

@@ -58,8 +58,9 @@ Item{
         return VodManager.getVodLastPlaybackPosition(channel.name, vod._id);
     }
 
-    onVisibleChanged: {
-        if (visible) {
+    property bool itemInView: isItemInView(this)
+    onItemInViewChanged: {
+        if (itemInView) {
             vodgrid.positionViewAtBeginning()
             vodgrid.checkScroll()
         }
@@ -101,14 +102,17 @@ Item{
             width: vodgrid.cellWidth
         }
 
-        onItemClicked: {
-            var lastPlaybackPosition = getLastPlaybackPosition(selectedChannel, clickedItem);
-            playerView.getStreams(selectedChannel, clickedItem, lastPlaybackPosition == null? 0 : lastPlaybackPosition);
+        function playItem(item) {
+            var lastPlaybackPosition = getLastPlaybackPosition(selectedChannel, item);
+            playerView.getStreams(selectedChannel, item, lastPlaybackPosition || 0);
         }
+
+        onItemClicked: playItem(clickedItem)
+        onItemDoubleClicked: playItem(clickedItem)
 
         onItemTooltipHover: {
             if (g_tooltip)
-                g_tooltip.displayVod(item, rootWindow.x + mX, rootWindow.y + mY)
+                g_tooltip.displayVod(item, getPosition)
         }
 
         onAtYEndChanged: checkScroll()

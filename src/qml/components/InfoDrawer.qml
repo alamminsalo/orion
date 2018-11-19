@@ -5,15 +5,20 @@ import QtQuick.Controls.Material 2.1
 import app.orion 1.0
 import "../util.js" as Util
 
-Drawer {
+SidePanel {
     id: root
     property var item: undefined
     property bool labelsVisible: width >= 400
     property int textStyle: Text.Sunken
     dim: false
-    interactive: visible
+    modal: false
     Material.theme: Material.Dark
     Material.foreground: "white"
+    closePolicy: Popup.CloseOnEscape
+    edge: Qt.BottomEdge
+
+    height: 200
+
 
     function show(channelItem) {
         item = Util.copyChannel(channelItem);
@@ -27,30 +32,30 @@ Drawer {
         if (item) {
             bgImage.source = item.preview || ""
             logoImg.source = item.logo || ""
-            title.text = "<b>" + item.title + "</b> playing " + item.game
+            title.text = "<b>" + item.title + "</b>"
+            if (item.game) title.text += " playing " + item.game
+            viewerCount.visible = item.viewers >= 0
             viewerCount.text = item.viewers + " viewers"
             description.text = item.info
         }
 
         open()
     }
-    height: 200
 
     Image {
+        z: -1
         id: bgImage
         fillMode: Image.PreserveAspectCrop
-        anchors {
-            fill: parent
-        }
-    }
-
-    Rectangle {
-        color: "black"
-        opacity:  0.6
         anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0.0; color: "transparent"}
-            GradientStop { position: 0.8; color: "black" }
+        Rectangle {
+            id: bg
+            color: Material.background.hslLightness < 0.5 ? "black" : "white"
+            opacity:  0.6
+            anchors.fill: parent
+            gradient: Gradient {
+                GradientStop { position: 0.0; color: "transparent"}
+                GradientStop { position: 0.8; color: bg.color }
+            }
         }
     }
 
@@ -116,6 +121,7 @@ Drawer {
                     flat: false
                     onClicked: {
                         if (item) {
+                            vodsView.search(item)
                             playerView.getStreams(item)
                         }
                         close()
@@ -139,16 +145,14 @@ Drawer {
                     onClicked: {
                         if (item) {
                             if (item.favourite === false)
-                                ChannelManager.addToFavourites(item._id, item.name,
-                                                               item.title, item.info,
-                                                               item.logo, item.preview,
-                                                               item.game, item.viewers,
-                                                               item.online)
+                                app.addToFavourites(item, function() {
+                                    item = item
+                                })
                             else {
-                                ChannelManager.removeFromFavourites(item._id)
+                                app.removeFromFavourites(item, function() {
+                                    item = item
+                                })
                             }
-                            item.favourite = !item.favourite
-                            item = item
                         }
                     }
                 }
@@ -177,30 +181,6 @@ Drawer {
                 Label {
                     visible: labelsVisible
                     text: "Videos"
-                    style: textStyle
-                }
-            }
-
-            RowLayout {
-
-                IconButtonFlat {
-                    id: openChatBtn
-                    font.pointSize: 20
-                    padding: 0
-                    text: "\ue0ca"
-                    flat: false
-                    onClicked: {
-                        if (item) {
-                            chat.joinChannel(item.name, item._id);
-                            chatdrawer.open()
-                        }
-                        close()
-                    }
-                }
-
-                Label {
-                    visible: labelsVisible
-                    text: "Open chat"
                     style: textStyle
                 }
             }

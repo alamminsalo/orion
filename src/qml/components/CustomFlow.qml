@@ -12,115 +12,67 @@
  * along with Orion.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import QtQuick 2.0
+import QtQuick 2.5
 
-Item {
-    /*
-     * A replacement for Flow that allows rows to be
-     * center or bottom aligned
-     */
+// Allows rows to be vertically aligned
+Flow {
+    property int verticalAlignment: Qt.AlignTop
 
-    id: root
-
-    property bool cComplete: false;
-
-    onChildrenChanged: {
-        updatePositions();
+    QtObject {
+        id: d
+        property bool debugGeometry: false
+        function assignGeometry() {
+            for (var i = 0; i < visibleChildren.length; i++) {
+                if (visibleChildren[i] && !visibleChildren[i].background) {
+                    try {
+                        var background = Qt.createQmlObject("import QtQuick 2.0; Rectangle { anchors.fill: parent; color: 'transparent'; border.color: 'green'; border.width: 1 }", visibleChildren[i], "debugGeometry");
+                        if (!Object.hasOwnProperty(visibleChildren[i], 'background')) {
+                            Object.defineProperty(visibleChildren[i], 'background', { value: background })
+                        } else {
+                            visibleChildren[i].background = background
+                        }
+                    } catch(e) {
+                        // type error for QtObject and such. Uncheckable before instanceof in Qt5.10
+                    }
+                }
+            }
+        }
+        function align() {
+            if (verticalAlignment === Qt.AlignTop)
+                return;
+            var heightMap = {}
+            var i;
+            for (i = 0; i < visibleChildren.length; i++) {
+                var visibleChild = visibleChildren[i];
+                heightMap[visibleChild.y] = Math.max(heightMap[visibleChild.y] || 0, visibleChild.implicitHeight || visibleChild.childrenRect.height || visibleChild.height);
+            }
+            if (verticalAlignment === Qt.AlignAbsolute) {
+                // adjust height of each item to the height of its line, allowing the items to align themselves
+                for (i = 0; i < visibleChildren.length; i++) {
+                    visibleChildren[i].height = heightMap[visibleChildren[i].y];
+                }
+            } else if (verticalAlignment === Qt.AlignBottom) {
+                // adjust each item vertically to the bottom of its line
+                for (i = 0; i < visibleChildren.length; i++) {
+                    visibleChildren[i].y += (heightMap[visibleChildren[i].y] - visibleChildren[i].height);
+                }
+            } else if (verticalAlignment === Qt.AlignVCenter || verticalAlignment === Qt.AlignCenter) {
+                // adjust each item to the vertical center of its line
+                for (i = 0; i < visibleChildren.length; i++) {
+                    visibleChildren[i].y += (heightMap[visibleChildren[i].y] - visibleChildren[i].height) / 2;
+                }
+            }
+        }
     }
 
     Component.onCompleted: {
-        cComplete = true;
-        updatePositions();
-    }
-
-    property int xSpacing: 0;
-    property int leftMargin: 0;
-    property int rightMargin: 0;
-    property int ySpacing: 0;
-    property int topMargin: 0;
-    property int bottomMargin: 0;
-    property string vAlignBottom: "VAlignBottom";
-    property string vAlignCenter: "VAlignCenter";
-    property string vAlignTop: "VAlignTop";
-    property string vAlign: vAlignBottom;
-
-    onVAlignChanged: {
-        updatePositions();
-    }
-
-    onWidthChanged: {
-        updatePositions();
-    }
-
-    function updatePositions() {
-        if (!cComplete) {
-            return;
+        // positioningComplete introduced in Qt 5.9, attach dynamically to stay somewhat backward-compatible
+        if (this.onPositioningComplete) {
+            this.onPositioningComplete.connect(function() {
+                d.align()
+                if (d.debugGeometry)
+                    d.assignGeometry()
+            })
         }
-
-        var items = root.children;
-
-        var xSize = root.width;
-
-        var lineStart = 0;
-        var xPos = leftMargin;
-        var yPos = topMargin;
-
-        function nextLine(lineEnd) {
-            //console.log("nextLine", lineEnd);
-            var item;
-
-            var lineFactor;
-            switch (vAlign) {
-            case vAlignBottom:
-                lineFactor = 1.0;
-                break;
-            case vAlignCenter:
-                lineFactor = 0.5;
-                break;
-            default:
-                lineFactor = 0;
-            }
-
-            // get max height
-            var maxHeight = 0;
-            if (lineFactor != 0) {
-                for (var j = lineStart; j < lineEnd; j++) {
-                    item = items[j];
-                    maxHeight = Math.max(maxHeight, item.height);
-                }
-            }
-
-            // position the items vertically
-            for (var j = lineStart; j < lineEnd; j++) {
-                item = items[j];
-                var itemHeight = item.height;
-                var deltaHeight = maxHeight - itemHeight;
-                item.y = yPos + deltaHeight * lineFactor;
-                //console.log("vertical positioning", j, item, "yPos", yPos, "maxHeight", maxHeight, "itemHeight", itemHeight, "deltaHeight", deltaHeight, "result", item.y);
-            }
-
-            // go to next line
-            lineStart = lineEnd;
-            xPos = leftMargin;
-            yPos += maxHeight + ySpacing;
-        }
-
-
-        for (var i = 0; i < items.length; ++i) {
-            var item = items[i];
-            //showKeys(item);
-            var itemWidth = item.width;
-            var itemFitsOnLine = xPos + itemWidth + rightMargin <= xSize;
-            //console.log("laying out i", i, item, "xPos", xPos, "width", itemWidth, "xSize", xSize);
-            if (i > lineStart && !itemFitsOnLine) {
-                nextLine(i);
-            }
-            item.x = xPos;
-            xPos += itemWidth + xSpacing;
-        }
-        if (lineStart < items.length) {
-            nextLine(items.length);
-        }
-        root.height = yPos + bottomMargin;
     }
 }

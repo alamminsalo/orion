@@ -25,8 +25,8 @@
 
 const int ImageProvider::MSEC_PER_DOWNLOAD = 16; // ~ 256kbit/sec for 2k images
 
-ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : 
-    _imageProviderName(imageProviderName), _extension(extension) {
+ImageProvider::ImageProvider(const QString imageProviderName, const QString extension, const QString cacheDirName) : QObject(),
+    _cacheProvider(this), _imageProviderName(imageProviderName), _extension(extension) {
 
     activeDownloadCount = 0;
 
@@ -39,7 +39,6 @@ ImageProvider::ImageProvider(const QString imageProviderName, const QString exte
 }
 
 ImageProvider::~ImageProvider() {
-    qDeleteAll(_imageTable);
 }
 
 bool ImageProvider::makeAvailable(QString key) {
@@ -77,7 +76,7 @@ bool ImageProvider::download(QString key) {
         loadImageFile(key, filename);
         return false;
     }
-    qDebug() << "downloading";
+    qDebug() << "downloading " << url.toString();
 
     QNetworkRequest request(url);
     QNetworkReply* _reply = nullptr;
@@ -148,19 +147,18 @@ void ImageProvider::individualDownloadComplete(QString filename, bool hadError) 
     }
 }
 
-QHash<QString, QImage*> ImageProvider::imageTable() {
+QHash<QString, QImage> ImageProvider::imageTable() {
     return _imageTable;
 }
 
 void ImageProvider::loadImageFile(QString emoteKey, QString filename) {
-    QImage* emoteImg = new QImage();
-    //qDebug() << "loading" << filename;
-    emoteImg->load(filename);
+    QImage emoteImg;
+    emoteImg.load(filename);
     _imageTable.insert(emoteKey, emoteImg);
 }
 
 QQmlImageProviderBase * ImageProvider::getQMLImageProvider() {
-    return new CachedImageProvider(_imageTable);
+    return &_cacheProvider;
 }
 
 bool ImageProvider::downloadsInProgress() const {
@@ -187,7 +185,7 @@ QString ImageProvider::getCanonicalKey(const QString key) {
 DownloadHandler::DownloadHandler(QString filename, QString key) : filename(filename), key(key), hadError(false) {
     _file.setFileName(filename);
     _file.open(QFile::WriteOnly);
-    qDebug() << "starting download of" << filename;
+    qDebug() << "save to" << filename;
 }
 
 void DownloadHandler::dataAvailable() {
@@ -199,7 +197,7 @@ void DownloadHandler::dataAvailable() {
 void DownloadHandler::error(QNetworkReply::NetworkError /*code*/) {
     hadError = true;
     QNetworkReply* _reply = qobject_cast<QNetworkReply*>(sender());
-    qDebug() << "Network error downloading" << filename << ":" << _reply->errorString();
+    qDebug() << "Network error downloading" << _reply->request().url().toString() << ":" << _reply->errorString();
 }
 
 void DownloadHandler::replyFinished() {
@@ -217,23 +215,18 @@ void DownloadHandler::replyFinished() {
 
 
 // CachedImageProvider
-CachedImageProvider::CachedImageProvider(QHash<QString, QImage*> & imageTable) : QQuickImageProvider(QQuickImageProvider::Image), imageTable(imageTable) {
+CachedImageProvider::CachedImageProvider(ImageProvider const* provider) : QQuickImageProvider(QQuickImageProvider::Image), _provider(provider) {
 
 }
 
 QImage CachedImageProvider::requestImage(const QString &id, QSize * size, const QSize & /*requestedSize*/) {
     // TODO figure out something sensible to do re requestedSize
     //qDebug() << "Requested id" << id << "from image provider";
-    QImage * entry = NULL;
-    auto result = imageTable.find(id);
-    if (result != imageTable.end()) {
-        entry = *result;
-    }
-    if (entry) {
-        if (size) {
-            *size = entry->size();
-        }
-        return *entry;
+
+    auto result = _provider->_imageTable.find(id);
+    if (result != _provider->_imageTable.end()) {
+        *size = result.value().size();
+        return result.value();
     }
     return QImage();
 }

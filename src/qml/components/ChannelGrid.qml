@@ -19,13 +19,30 @@ import app.orion 1.0
 CommonGrid {
     id: root
     property bool showFavIcons : true
+    property int clickedIndex: -1
+
+    onCurrentItemChanged: {
+        if (!currentItem || !infoDrawer.item) return
+        if (infoDrawer.item._id !== currentItem._id) infoDrawer.close()
+    }
 
     onItemClicked: {
-        infoDrawer.show(clickedItem)
+        if (infoDrawer.item && infoDrawer.opened && clickedItem._id === infoDrawer.item._id) {
+            infoDrawer.close()
+            currentIndex = -1;
+        } else {
+            infoDrawer.show(clickedItem)
+        }
     }
 
     onItemDoubleClicked: {
-        playerView.getStreams(clickedItem)
+        if (clickedItem.online) {
+            vodsView.search(clickedItem)
+            playerView.getStreams(clickedItem)
+        } else {
+            playerView.getStreams(clickedItem)
+            vodsView.search(clickedItem)
+        }
     }
 
     onItemRightClicked: {
@@ -37,8 +54,12 @@ CommonGrid {
 
     onItemTooltipHover: {
         if (item.online) {
-            g_tooltip.displayChannel(item, rootWindow.x + mX, rootWindow.y + mY)
+            g_tooltip.displayChannel(item, getPosition)
         }
+    }
+
+    onContentYChanged: {
+        if (infoDrawer.opened && !atYEnd && !atYBeginning) infoDrawer.close()
     }
 
     delegate: Channel {
@@ -64,7 +85,6 @@ CommonGrid {
 
     Menu {
         id: menu
-        modal: true
         dim: false
 
         property var channel: undefined
@@ -78,8 +98,10 @@ CommonGrid {
         MenuItem {
             text: "Watch"
             onTriggered: {
-                if (menu.channel !== undefined)
+                if (menu.channel !== undefined) {
+                    vodsView.search(menu.channel)
                     playerView.getStreams(menu.channel)
+                }
                 menu.channel = undefined
             }
         }
@@ -88,13 +110,13 @@ CommonGrid {
             onTriggered: {
                 if (menu.channel !== undefined) {
                     if (menu.channel.favourite === false)
-                        ChannelManager.addToFavourites(menu.channel._id, menu.channel.name,
-                                                       menu.channel.title, menu.channel.info,
-                                                       menu.channel.logo, menu.channel.preview,
-                                                       menu.channel.game, menu.channel.viewers,
-                                                       menu.channel.online)
+                        app.addToFavourites(menu.channel, function() {
+                            menu.channel = menu.channel
+                        })
                     else
-                        ChannelManager.removeFromFavourites(menu.channel._id)
+                        app.removeFromFavourites(menu.channel, function() {
+                            menu.channel = menu.channel
+                        })
                 }
                 menu.channel = undefined
             }
@@ -104,15 +126,6 @@ CommonGrid {
             onTriggered: {
                 if (menu.channel !== undefined)
                     vodsView.search(menu.channel)
-                menu.channel = undefined
-            }
-        }
-        MenuItem {
-            text: "Open chat"
-            onTriggered: {
-                if (menu.channel !== undefined)
-                    chat.joinChannel(menu.channel.name, menu.channel._id);
-                chatdrawer.open()
                 menu.channel = undefined
             }
         }

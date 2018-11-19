@@ -15,6 +15,8 @@
 import QtQuick 2.5
 import QtQuick.Controls 2.1
 import QtQuick.Controls.Material 2.1
+import QtQuick.Layouts 1.3
+import "../util.js" as Util
 
 //Channel.qml
 Item {
@@ -62,6 +64,7 @@ Item {
 
             BusyIndicator {
                 id:_spinner
+                visible: running
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: -title.height / 2
                 running: image.progress < 1
@@ -91,34 +94,117 @@ Item {
                 }
             }
 
+            RowLayout {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.margins: 5
+                spacing: 0
+                Label {
+                    visible: online && viewers > 0
+                    id: liveBanner
+                    Layout.minimumHeight: parent.height
+                    Material.foreground: "red"
+                    font.pointSize: 8
+                    text: "\ue061"
+                    verticalAlignment: Text.AlignVCenter
+                    height: parent.height
+                    font.family: "Material Icons"
+                    padding: 5
+                    rightPadding: 0
+                    background: Rectangle {
+                        color: Material.background
+                        opacity: 0.8
+                    }
+                }
+                Label {
+                    visible: online && viewers > 0
+                    font.pointSize: 8
+                    Layout.minimumHeight: parent.height
+                    padding: 5
+                    text: viewers
+                    verticalAlignment: Text.AlignVCenter
+                    background: Rectangle {
+                        color: Material.background
+                        opacity: 0.8
+                    }
+                }
+                Label {
+                    id: favIcon
+                    Layout.minimumHeight: parent.height
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignRight
+                    text: "\ue87d"
+                    font.family: "Material Icons"
+                    padding: 5
+                    opacity: favourite ? 1 : 0
+                    Material.foreground: Material.accent
+                    font.pointSize: 10
+                    visible: showFavIcon && favourite
+
+                    Behavior on opacity { PropertyAnimation { } }
+                    background: Rectangle {
+                        color: Material.background
+                        opacity: 0.8
+                    }
+                }
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 0
+                }
+                Item {
+                    visible: game
+                    Layout.maximumWidth: fullGameLabel.implicitWidth
+                    Layout.preferredWidth: fullGameLabel.implicitHeight
+                    Layout.minimumWidth: abbrGameLabel.implicitWidth
+                    Layout.fillWidth: true
+                    Layout.minimumHeight: parent.height
+                    Layout.alignment: Qt.AlignRight
+                    Label {
+                        anchors.right: parent.right
+                        visible: parent.width >= implicitWidth
+                        id: fullGameLabel
+                        text: game
+                        font.pointSize: 8
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignRight
+                        padding: 5
+                        background: Rectangle {
+                            color: Material.background
+                            opacity: 0.8
+                        }
+                    }
+                    Label {
+                        function abbreviate(str) {
+                            if (!str) return str;
+                            return str.replace(/[',\.]/g, '')
+                                .replace(/[A-Z]{4,}/g, function(s) { return s[0]; })
+                                .replace(/[a-z][A-Z]/g, function(s) { return s[0] + ' ' + s[1]; })
+                                .replace(/\B[a-z]/g, '')
+                                .replace(/\s/g, '');
+                        }
+                        anchors.right: parent.right
+                        visible: !fullGameLabel.visible
+                        id: abbrGameLabel
+                        text: abbreviate(game)
+                        font.pointSize: 8
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: Text.AlignRight
+                        padding: 5
+                        background: Rectangle {
+                            color: Material.background
+                            opacity: 0.8
+                        }
+                    }
+                }
+            }
+
             Rectangle {
                 id: imageShade
                 anchors.fill: image
                 color: "#000000"
                 opacity: root.online ? 0 : .8
-            }
-
-            Label {
-                id: favIcon
-                text: "\ue87d"
-                font.family: "Material Icons"
-                opacity: favourite ? 1 : 0
-                Material.foreground: Material.accent
-                font.pointSize: 14
-                visible: showFavIcon
-                anchors {
-                    top: parent.top
-                    right: parent.right
-                    margins: 10
-                }
-
-                Behavior on opacity{
-                    NumberAnimation{
-                        duration: 200
-                        easing.type: Easing.OutCubic
-                    }
-                }
-            }
+            }           
 
             Rectangle {
                 id: titleBg
