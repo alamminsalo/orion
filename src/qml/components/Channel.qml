@@ -105,7 +105,7 @@ Item {
                     id: liveBanner
                     Layout.minimumHeight: parent.height
                     Material.foreground: "red"
-                    font.pointSize: 8
+                    font.pointSize: 10
                     text: "\ue061"
                     verticalAlignment: Text.AlignVCenter
                     height: parent.height
@@ -119,7 +119,7 @@ Item {
                 }
                 Label {
                     visible: online && viewers > 0
-                    font.pointSize: 8
+                    font.pointSize: 10
                     Layout.minimumHeight: parent.height
                     padding: 5
                     text: viewers
@@ -165,7 +165,7 @@ Item {
                         visible: parent.width >= implicitWidth
                         id: fullGameLabel
                         text: game
-                        font.pointSize: 8
+                        font.pointSize: 10
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight
                         padding: 5
@@ -187,7 +187,7 @@ Item {
                         visible: !fullGameLabel.visible
                         id: abbrGameLabel
                         text: abbreviate(game)
-                        font.pointSize: 8
+                        font.pointSize: 10
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight
                         padding: 5

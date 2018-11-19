@@ -100,7 +100,7 @@ Item {
             Label {
                 z: 1
                 padding: 5
-                font.pointSize: 9
+                font.pointSize: 12
                 id: _text
                 wrapMode: Text.Wrap
                 width: parent.width
