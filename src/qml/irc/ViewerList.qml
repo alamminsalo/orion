@@ -45,7 +45,22 @@ Item {
             target: Viewers
             onChatterListLoaded: {
                 root.loading = false;
-                var groupOrder = ["staff", "global_mods", "admins", "moderators", "viewers"];
+                var standardGroupOrder = ["broadcaster", "staff", "global_mods", "admins", "moderators", "vips", "viewers"];
+                var extraGroupsPos = standardGroupOrder.indexOf("moderators") + 1;
+
+                var extraGroups = [];
+
+                for (var otherGroupName in chatters) {
+                    if (standardGroupOrder.indexOf(otherGroupName) == -1) {
+                        extraGroups.push(otherGroupName)
+                    }
+                }
+                extraGroups.sort();
+
+                //var groupOrder = standardGroupOrder.slice();
+                //groupOrder.splice.apply([extraGroupsPos, 0].concat(extraGroups));
+                var groupOrder = standardGroupOrder.slice(0, extraGroupsPos).concat(extraGroups, standardGroupOrder.slice(extraGroupsPos));
+
 
                 var viewers = []
                 for (var j = 0; j < groupOrder.length; j++) {
