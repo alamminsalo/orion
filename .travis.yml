@@ -34,7 +34,7 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew info qt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew --prefix qt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install dmgbuild; fi
 
 install:
