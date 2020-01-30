@@ -10,7 +10,7 @@ cd $HOME/Qt
 export QT_VERSION=$1
 ENVFILE=qt-${QT_VERSION}.env
 
-sudo apt-fast -y install axel libssl-dev libssl1.0.0 > /dev/null
+sudo apt -y install axel libssl-dev libssl1.0.0 > /dev/null
 
 if [[ ! -f ./${ENVFILE} ]]; then
     wget -q https://raw.githubusercontent.com/mrgreywater/qtci/master/bin/extract-qt-installer

@@ -13,7 +13,7 @@ export PACKAGES=platform-tool,build-tools-22.0.1,android-19
 
 mkdir -p $ANDROID_DIR  && cd $ANDROID_DIR 
 
-sudo apt-fast install -y p7zip openjdk-7-jdk ant lib32z1-dev lib32stdc++6 > /dev/null
+sudo apt install -y p7zip openjdk-7-jdk ant lib32z1-dev lib32stdc++6 > /dev/null
 sudo update-alternatives --display java
 sudo update-alternatives --set java /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java
 
