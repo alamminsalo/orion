@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial
 language: cpp
 
 matrix:
@@ -16,11 +16,11 @@ matrix:
         - BACKEND=mpv
       compiler: gcc
     
-    - os: linux
-      env:
-        - PLATFORM=android
-        - BACKEND=multimedia
-      compiler: gcc
+      #- os: linux
+      #  env:
+      #    - PLATFORM=android
+      #    - BACKEND=multimedia
+      #  compiler: gcc
 
 cache:
   apt: true
@@ -33,7 +33,8 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-fast -y install g++-7 > /dev/null; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 90; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 90; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt5 jq; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew --prefix qt; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then pip2 install dmgbuild; fi
 
 install:
@@ -53,7 +54,7 @@ deploy:
       file: 
         - 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.dmg'
         - 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.AppImage'
-        - 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.apk'
+          #- 'artifacts/orion-$PLATFORM-$TRAVIS_TAG.apk'
       skip_cleanup: true
       prerelease: true
       on:
