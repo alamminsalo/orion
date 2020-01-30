@@ -43,7 +43,7 @@ install:
   - cd $TRAVIS_BUILD_DIR
 
 script:
-  - qmake orion.pro CONFIG+=$BACKEND
+  - $QTDIR/bin/qmake orion.pro CONFIG+=$BACKEND
   - make -j2
   - mkdir -p artifacts && ci/deploy_$PLATFORM.sh $TRAVIS_BUILD_DIR/artifacts
 
