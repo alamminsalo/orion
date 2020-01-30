@@ -17,7 +17,7 @@ isEmpty(PREFIX){
     PREFIX = /usr
 }
 
-VERSION = 1.6.6
+VERSION = 1.6.7
 DEFINES += APP_VERSION=\\\"v$$VERSION\\\"
 DEFINES += APP_NAME=\\\"Orion\\\"
 
